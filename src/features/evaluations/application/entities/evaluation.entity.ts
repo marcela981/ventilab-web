@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation entities
-* Descripción: Domain types of the student evaluations feature and their pure rules. MyEvaluation is one assigned evaluation (assignment window, state UPCOMING|ACTIVE|CLOSED, summary, attempts, canStart from the backend); AttemptDetail is one attempt with its scenarios and questions, where correctness, explanation, rubric and earned score are optional because the backend only sends them once the grade is published; RichText is a description, prompt or scenario that is either plain/markdown text or a Tiptap document. Rules: client-side filtering by state and type (the endpoint has no filters), the evaluation shown on the intro page (several assignments of the same evaluation: the active one first), the intro action (start, continue or blocked with a reason) and the last submitted attempt. Grades and pass/fail always come from the API. Depends on the shared formatters. v1.1 (Bloque 3): MyEvaluation carries attemptsAllowed (maxAttempts plus granted resets) and its curriculum placement (moduleId, levelId, levelTitle, levelOrder, track); AttemptQuestion carries the WORKSHOP hint and the revealed correction (AnswerReveal); AttemptDetail carries partialClosedScore.
-* Versión: 1.1
+* Descripción: Domain types of the student evaluations feature and their pure rules. MyEvaluation is one assigned evaluation (assignment window, state UPCOMING|ACTIVE|CLOSED, summary, attempts, canStart from the backend); AttemptDetail is one attempt with its scenarios and questions, where correctness, explanation, rubric and earned score are optional because the backend only sends them once the grade is published; RichText is a description, prompt or scenario that is either plain/markdown text or a Tiptap document. Rules: client-side filtering by state and type (the endpoint has no filters), the evaluation shown on the intro page (several assignments of the same evaluation: the active one first), the intro action (start, continue or blocked with a reason) and the last submitted attempt. Grades and pass/fail always come from the API. Depends on the shared formatters. v1.1 (Bloque 3): MyEvaluation carries attemptsAllowed (maxAttempts plus granted resets) and its curriculum placement (moduleId, levelId, levelTitle, levelOrder, track); AttemptQuestion carries the WORKSHOP hint and the revealed correction (AnswerReveal); AttemptDetail carries partialClosedScore. v1.2 (Bloque 3): the intro blocks with the July re-entry text once attemptsAllowed is reached (BLOCKED_REASONS.alreadyTaken) and attemptOrdinalLabel gives "Intento x de N".
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { formatDateTime } from "@shared/lib/format";
+import { formatDate, formatDateTime } from "@shared/lib/format";
 
 export const EVALUATION_TYPES = ["EXAM", "QUIZ", "WORKSHOP"] as const;
 export type EvaluationType = (typeof EVALUATION_TYPES)[number];
@@ -247,6 +247,10 @@ export const BLOCKED_REASONS = {
   upcoming: (startsAt: string) => `Disponible desde el ${formatDateTime(startsAt)}.`,
   closed: "La evaluación ya cerró.",
   noAttempts: "Ya usaste todos tus intentos.",
+  // July re-entry text; with several attempts it names how many were allowed.
+  alreadyTaken: (submittedAt: string, allowed: number) => (allowed <= 1
+    ? `Ya realizaste esta evaluación el ${formatDate(submittedAt)}. Solo se permite un intento; contacta a tu docente si necesitas repetirla.`
+    : `Ya realizaste esta evaluación el ${formatDate(submittedAt)}. Usaste los ${allowed} intentos permitidos; contacta a tu docente si necesitas repetirla.`),
   unavailable: "No puedes iniciar esta evaluación en este momento.",
 } as const;
 
@@ -266,9 +270,26 @@ export function resolveIntroAction(evaluation: MyEvaluation): IntroAction {
     return { kind: "blocked", reason: BLOCKED_REASONS.closed };
   }
 
-  if (evaluation.attempts.length >= evaluation.maxAttempts) {
-    return { kind: "blocked", reason: BLOCKED_REASONS.noAttempts };
+  if (evaluation.attempts.length >= evaluation.attemptsAllowed) {
+    const submittedAt = findLastSubmittedAttempt(evaluation)?.submittedAt;
+
+    return {
+      kind: "blocked",
+      reason: submittedAt ? BLOCKED_REASONS.alreadyTaken(submittedAt, evaluation.attemptsAllowed) : BLOCKED_REASONS.noAttempts,
+    };
   }
 
   return { kind: "blocked", reason: BLOCKED_REASONS.unavailable };
+}
+
+// "Intento x de N" of the attempt the button starts or continues; null with a single attempt allowed.
+export function attemptOrdinalLabel(evaluation: MyEvaluation, action: IntroAction): string | null {
+  if (evaluation.attemptsAllowed <= 1 || action.kind === "blocked") {
+    return null;
+  }
+
+  const inProgress = action.kind === "continue" ? findInProgressAttempt(evaluation) : null;
+  const number = inProgress?.attemptNumber ?? evaluation.attempts.length + 1;
+
+  return `Intento ${number} de ${evaluation.attemptsAllowed}`;
 }

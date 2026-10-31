@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage
-* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]/result: the result of one attempt of the signed-in student. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt still IN_PROGRESS goes back to the player. Unpublished attempts show only their state ("Enviado" for SUBMITTED, "Pendiente de calificación" for PENDING_REVIEW or a GRADED grade not yet published) and what happens next, without reading correctness, explanation, rubric or earned score. Published attempts show the grade (es-CO, colored by `passed` from the API), the score, the overall AI feedback and every question (QuestionResult). The AI feedback (`GET .../feedback`, only once published) is refreshed by the socket: `notification:new` of type FEEDBACK_READY for this attempt revalidates the feedback, `grade:published` for this attempt revalidates the attempt and the feedback; spaced polling in useAttemptFeedback is the backup while items are pending. Links back to the list and to the evaluation intro. Depends on next/head, next/link, next/router, the design-system components, @shared/lib, @shared/realtime, the evaluations hooks, entities and components, and the attempt result CSS Module. v1.1 (A3 review S4): passes the polling-stopped flag to the pending feedback blocks. v1.2 (B2 closure): the attemptId of a notification is read from its typed data (no cast). v1.3 (closure B1): notification:new is the per-type union, so `type === "FEEDBACK_READY"` narrows `data` (no `"attemptId" in data` check).
-* Versión: 1.3
+* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]/result: the result of one attempt of the signed-in student. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt still IN_PROGRESS goes back to the player. Unpublished attempts show only their state ("Enviado" for SUBMITTED, "Pendiente de calificación" for PENDING_REVIEW or a GRADED grade not yet published) and what happens next, without reading correctness, explanation, rubric or earned score. Published attempts show the grade (es-CO, colored by `passed` from the API), the score, the overall AI feedback and every question (QuestionResult). The AI feedback (`GET .../feedback`, only once published) is refreshed by the socket: `notification:new` of type FEEDBACK_READY for this attempt revalidates the feedback, `grade:published` for this attempt revalidates the attempt and the feedback; spaced polling in useAttemptFeedback is the backup while items are pending. Links back to the list and to the evaluation intro. Depends on next/head, next/link, next/router, the design-system components, @shared/lib, @shared/realtime, the evaluations hooks, entities and components, and the attempt result CSS Module. v1.1 (A3 review S4): passes the polling-stopped flag to the pending feedback blocks. v1.2 (B2 closure): the attemptId of a notification is read from its typed data (no cast). v1.3 (closure B1): notification:new is the per-type union, so `type === "FEEDBACK_READY"` narrows `data` (no `"attemptId" in data` check). v1.4 (Bloque 3): July result band (ResultsBand: verdict with emojis except EXAM, "{c} de {t} correctas", pending text with the partial closed score) and the feedback requested in parallel with the attempt (stopped once the attempt is known to be unpublished).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,7 @@ import { useSocketEvent } from "@shared/realtime";
 import type { GradePublishedEvent, RealtimeEventMap } from "@shared/realtime";
 import { FeedbackBlock } from "../components/result/feedback-block";
 import { QuestionResult } from "../components/result/question-result";
+import { ResultsBand } from "../components/result/results-band";
 import type { AttemptFeedback } from "../entities/attempt-feedback";
 import { findQuestionFeedback } from "../entities/attempt-feedback";
 import type { AttemptDetail, AttemptResult } from "../entities/evaluation.entity";
@@ -122,8 +123,10 @@ export type AttemptResultPageProps = {
 export function AttemptResultPage({ evaluationId, attemptId }: AttemptResultPageProps) {
   const router = useRouter();
   const { attempt, isLoading, error, reload } = useAttempt(attemptId);
-  const published = attempt?.published === true;
-  const feedbackQuery = useAttemptFeedback(attemptId, published);
+  // Attempt and feedback load in parallel: the feedback is requested before the attempt arrives and stops
+  // once the attempt says the grade is not published (its 404 then just means "not published yet").
+  const feedbackEnabled = attempt === null || attempt.published;
+  const feedbackQuery = useAttemptFeedback(attemptId, feedbackEnabled);
   const { reload: reloadFeedback } = feedbackQuery;
   const leavingRef = useRef(false);
   const inProgress = attempt?.status === "IN_PROGRESS";
@@ -172,6 +175,7 @@ export function AttemptResultPage({ evaluationId, attemptId }: AttemptResultPage
               {EVALUATION_TYPE_LABELS[attempt.evaluation.type]} · {RESULT_COPY.attemptNumber(attempt.attemptNumber)}
             </p>
           </header>
+          <ResultsBand attempt={attempt} />
           {attempt.published ? (
             <PublishedResult
               attempt={attempt}

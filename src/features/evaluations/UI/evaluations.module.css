@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations styles
-* Descripción: Layout of the student evaluation pages (/evaluations and /evaluations/[evaluationId]): centered column, filter bar, grid of evaluation cards (border, radius, surface, shadow) like the learning and groups pages, detail lists, attempt status badges and the published grade colored with the semantic success/error tokens from the API `passed` flag, intro warnings and actions. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July grouping of the list (type disclosure sections, track titles, level labels, card chips, module filter notice).
-* Versión: 1.1
+* Descripción: Layout of the student evaluation pages (/evaluations and /evaluations/[evaluationId]): centered column, filter bar, grid of evaluation cards (border, radius, surface, shadow) like the learning and groups pages, detail lists, attempt status badges and the published grade colored with the semantic success/error tokens from the API `passed` flag, intro warnings and actions. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July grouping of the list (type disclosure sections, track titles, level labels, card chips, module filter notice). v1.2 (Bloque 3): intro attempt ordinal.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -297,4 +297,9 @@
   .typeIcon {
     transition: none;
   }
+}
+
+.attemptOrdinal {
+  margin: 0;
+  color: var(--vl-color-text-muted);
 }

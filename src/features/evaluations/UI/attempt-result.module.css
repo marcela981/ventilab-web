@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt result styles
-* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July result band (passed, failed, pending).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -245,4 +245,51 @@
   margin: 0;
   color: var(--vl-color-text-muted);
   font-size: 0.875rem;
+}
+
+/* Bloque 3 (W4): July result band. */
+
+.band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-3);
+  padding: var(--vl-space-4) var(--vl-space-5);
+  border: 1px solid currentColor;
+  border-left-width: 6px;
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.bandPassed {
+  color: var(--vl-color-success);
+}
+
+.bandFailed {
+  color: var(--vl-color-error);
+}
+
+.bandPending {
+  color: var(--vl-color-warning);
+}
+
+.bandText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.bandVerdict {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.bandDetail {
+  margin: 0;
+  color: var(--vl-color-text);
+}
+
+.bandBack {
+  color: var(--vl-color-link);
 }

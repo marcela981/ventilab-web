@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationIntroPage tests
-* Descripción: Renders /evaluations/[evaluationId] against a mocked backend (msw) with a mocked next/router: the active assignment wins over a closed one, the Tiptap instructions and details are shown with the attempt warnings, "Comenzar" starts the attempt (POST once, even on a double click) and pushes the attempt player URL, "Continuar intento" resumes the attempt in progress, a blocked evaluation disables the button with the reason and links to the last result, a start error shows its Spanish message, and an unknown evaluation shows the not-found state. Depends on vitest, Testing Library, msw and the evaluations test helpers.
-* Versión: 1.0
+* Descripción: Renders /evaluations/[evaluationId] against a mocked backend (msw) with a mocked next/router: the active assignment wins over a closed one, the Tiptap instructions and details are shown with the attempt warnings, "Comenzar" starts the attempt (POST once, even on a double click) and pushes the attempt player URL, "Continuar intento" resumes the attempt in progress, a blocked evaluation disables the button with the reason and links to the last result, a start error shows its Spanish message, and an unknown evaluation shows the not-found state. Depends on vitest, Testing Library, msw and the evaluations test helpers. v1.1 (Bloque 3): July re-entry text.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -132,7 +132,7 @@ describe("EvaluationIntroPage", () => {
     renderWithSession(<EvaluationIntroPage evaluationId="e1" />);
 
     expect(await screen.findByRole("button", { name: "Comenzar" })).toBeDisabled();
-    expect(screen.getByText("Ya usaste todos tus intentos.")).toBeInTheDocument();
+    expect(screen.getByText(/^Ya realizaste esta evaluación el .+ Solo se permite un intento; contacta a tu docente si necesitas repetirla.$/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Ver resultado" })).toHaveAttribute("href", "/evaluations/e1/attempts/at1/result");
     expect(screen.getByText("4,2")).toBeInTheDocument();
     expect(screen.queryByText(/El tiempo lo controla el servidor/)).not.toBeInTheDocument();

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: FeedbackBlock
-* Descripción: AI feedback of one question or of the whole attempt on the result page, by status: PENDING shows a labelled skeleton ("Generando retroalimentación…"), READY renders the content as rich text (markdown through RichTextView) with the shared "¿Te fue útil?" widget (ai-ratings GRADE_FEEDBACK target = feedback item id) and, for DETERMINISTIC items, the discreet label "Retroalimentación automática"; FAILED shows a discreet message. Renders nothing without an item. Depends on MUI Skeleton, @shared/ai-rating, the RichTextView, the attempt feedback entities and the attempt result CSS Module. v1.1 (A3 review S4): optional pollingStopped adds the "recarga la página" hint to a PENDING item once the backup polling gave up.
-* Versión: 1.1
+* Descripción: AI feedback of one question or of the whole attempt on the result page, by status: PENDING shows a labelled skeleton ("Generando retroalimentación…"), READY renders the content as rich text (markdown through RichTextView) with the shared "¿Te fue útil?" widget (ai-ratings GRADE_FEEDBACK target = feedback item id) and, for DETERMINISTIC items, the discreet label "Retroalimentación automática"; FAILED shows a discreet message. Renders nothing without an item. Depends on MUI Skeleton, @shared/ai-rating, the RichTextView, the attempt feedback entities and the attempt result CSS Module. v1.1 (A3 review S4): optional pollingStopped adds the "recarga la página" hint to a PENDING item once the backup polling gave up. v1.2 (Bloque 3): the rating widget receives the embedded own rating (initialRating = item.myRating, no ai-ratings/mine request per item) and sends surface=EVALUATION_FEEDBACK.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,7 +58,8 @@ export function FeedbackBlock({ item, title, pollingStopped = false }: FeedbackB
         {item.source === "DETERMINISTIC" ? <span className={cx(styles.feedbackSource)}>{FEEDBACK_COPY.deterministic}</span> : null}
       </div>
       <RichTextView value={item.content ? { kind: "text", text: item.content } : null} />
-      <AiRatingWidget key={item.id} targetType="GRADE_FEEDBACK" targetId={item.id} />
+      {/* The own rating comes embedded in the feedback (no request per item); the surface feeds the thesis analytics. */}
+      <AiRatingWidget key={item.id} targetType="GRADE_FEEDBACK" targetId={item.id} initialRating={item.myRating} surface="EVALUATION_FEEDBACK" />
     </section>
   );
 }

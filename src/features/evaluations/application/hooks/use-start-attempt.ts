@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStartAttempt
-* Descripción: Starts or resumes the attempt of one assignment (`POST /api/my-evaluations/{assignmentId}/attempts`, idempotent: it returns the attempt already in progress). Single-flight: a second call while one is pending returns "busy". After a success it revalidates the evaluation SWR keys (attempts and canStart change); a failure becomes the Spanish message of getEvaluationErrorMessage. Depends on SWR, @shared/api-client, the evaluations service and error messages.
-* Versión: 1.0
+* Descripción: Starts or resumes the attempt of one assignment (`POST /api/my-evaluations/{assignmentId}/attempts`, idempotent: it returns the attempt already in progress). Single-flight: a second call while one is pending returns "busy". After a success it revalidates the evaluation SWR keys (attempts and canStart change); a failure becomes the Spanish message of getEvaluationErrorMessage. Depends on SWR, @shared/api-client, the evaluations service and error messages. v1.1 (Bloque 3): the lists are invalidated without awaiting: the caller navigates to the player at once.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,8 +42,9 @@ export function useStartAttempt(): UseStartAttemptResult {
     try {
       const value = await startAttempt(assignmentId);
 
-      // The attempt exists; a failed refresh only leaves stale data on screen.
-      await invalidateApiQueries(mutate, EVALUATION_QUERY_PATHS).catch(() => undefined);
+      // The attempt exists: navigate at once and refresh the lists in the background (a failed refresh only
+      // leaves stale data on screen). Awaiting it added a whole request wave before the player.
+      void invalidateApiQueries(mutate, EVALUATION_QUERY_PATHS).catch(() => undefined);
 
       return { status: "success", value };
     } catch (caught) {
