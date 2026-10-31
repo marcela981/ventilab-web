@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsManageBody tests
-* Descripción: Renders /evaluations/manage against a mocked backend (msw) with a mocked next/router: the first page lists title, type, status, questions, activations and the update date with the row actions; the type and status filters and the debounced title search become query params of `GET /api/evaluations` (back to page 1), the next page asks for page 2; "Duplicar" posts the duplicate and opens the editor of the copy; "Archivar" asks for confirmation and sends `PATCH .../status` ARCHIVED; a 409 invalid_status_transition shows its Spanish message; read-only rows have no actions; an empty list offers "Nueva evaluación". Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 review follow-up): archiving the only row of the last page steps back to the previous page. v1.2 (Bloque 3): EvaluationsManageBody.
-* Versión: 1.2
+* Descripción: Renders /evaluations/manage against a mocked backend (msw) with a mocked next/router: the first page lists title, type, status, questions, activations and the update date with the row actions; the type and status filters and the debounced title search become query params of `GET /api/evaluations` (back to page 1), the next page asks for page 2; "Duplicar" posts the duplicate and opens the editor of the copy; "Archivar" asks for confirmation and sends `PATCH .../status` ARCHIVED; a 409 invalid_status_transition shows its Spanish message; read-only rows have no actions; an empty list offers "Nueva evaluación". Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 review follow-up): archiving the only row of the last page steps back to the previous page. v1.2 (Bloque 3): EvaluationsManageBody. v1.3 (Bloque 3): the row action "Asignar" opens the builder section.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,7 +97,7 @@ describe("EvaluationsManageBody", () => {
     expect(within(row).getByText("2")).toBeInTheDocument();
     expect(within(row).getByText(formatDateTime("2026-10-02T15:30:00.000Z"))).toBeInTheDocument();
     expect(within(row).getByRole("link", { name: "Editar «Quiz de PEEP»" })).toHaveAttribute("href", "/evaluations/manage/e1/edit");
-    expect(within(row).getByRole("link", { name: "Activaciones «Quiz de PEEP»" })).toHaveAttribute("href", "/evaluations/manage/e1/assignments");
+    expect(within(row).getByRole("link", { name: "Asignar «Quiz de PEEP»" })).toHaveAttribute("href", "/evaluations/manage/e1/edit?section=asignacion");
     expect(within(table).getByRole("row", { name: /Examen final/ })).toHaveTextContent("1 escenario");
     expect(screen.getByRole("link", { name: "Nueva evaluación" })).toHaveAttribute("href", "/evaluations/manage/new");
     expect(lastQuery()).toEqual({ sortBy: "updatedAt", sortOrder: "desc", page: "1", limit: "10" });

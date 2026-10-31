@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question drafts
-* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity. v1.2 (A3 review W2/S1): optionSaveSteps fixes the order of the option calls (options becoming correct, creates, the remaining updates such as isCorrect=false, deletes); clinical_case_required is no longer a readiness message; READY_CHANGE_REFUSED carries the READY hint shown when a 422 has no client explanation. v1.3 (S1): the draft carries the statement media (mediaIds, the list the question PATCH replaces, plus the resolved media to show them) and the option images (mediaId); addQuestionMedia (at most 20, the backend limit), removeQuestionMedia and setOptionMedia edit them; media changes are text changes (the backend accepts them with submitted attempts): mediaIds goes in the text PATCH, an option mediaId in its option PATCH, and stripStructuralEdits keeps them. v1.4 (T10 simulation): the parameter rubric rules and draft come from @shared/rubric-editor (moved unchanged). v1.5 (B3.10): the unused questionIssues filter is removed (evaluation-readiness.entity has its own). v1.6 (B4, D7): the points are read with the shared parseDecimal ("," or "." decimal, no thousands separator, no exponent, positive).
-* Versión: 1.6
+* Descripción: Pure rules of the question editor of the evaluation builder: Spanish labels of the question types, the local draft of a question (prompt document, points, explanation and, for choice questions, the option list with stable client keys; new options have no id yet), the correct-answer semantics (radio for SINGLE_CHOICE and TRUE_FALSE, checkbox for MULTIPLE_CHOICE), adding, removing and moving options, validation mirroring the backend DTOs (points positive, option text required, at most 20 options), the dirty check and the save plan of a draft against the loaded question: the question PATCH holding only the changed fields, the options to create, the option PATCHes (the ones that become correct first, so a multiple choice never drops to zero correct answers on the way), the options to delete and whether the final option order must be sent with `PUT .../options/order`. Also the body of a new question (TRUE_FALSE starts with the two options Verdadero and Falso) and the Spanish messages of the readiness issues of `GET /api/evaluations/{id}`. No dependencies besides the builder entities. v1.1 (A3): SIMULATION drafts carry the clinical case and the rubric draft (saved in the question PATCH, validated with the backend rubric rules); the question PATCH is split into the text part (prompt, explanation) and the structural part (points, clinical case, rubric) so texts still save on an evaluation with submitted attempts; stripStructuralEdits drops the structural edits of a draft once the structure is locked; withCreatedOptionIds gives created options their backend id; the option order check compares option ids (an option created by a failed save keeps its client key); readiness messages cover clinical_case_required and translate the English rubric details of the backend. Depends on the simulation rubric entity. v1.2 (A3 review W2/S1): optionSaveSteps fixes the order of the option calls (options becoming correct, creates, the remaining updates such as isCorrect=false, deletes); clinical_case_required is no longer a readiness message; READY_CHANGE_REFUSED carries the READY hint shown when a 422 has no client explanation. v1.3 (S1): the draft carries the statement media (mediaIds, the list the question PATCH replaces, plus the resolved media to show them) and the option images (mediaId); addQuestionMedia (at most 20, the backend limit), removeQuestionMedia and setOptionMedia edit them; media changes are text changes (the backend accepts them with submitted attempts): mediaIds goes in the text PATCH, an option mediaId in its option PATCH, and stripStructuralEdits keeps them. v1.4 (T10 simulation): the parameter rubric rules and draft come from @shared/rubric-editor (moved unchanged). v1.5 (B3.10): the unused questionIssues filter is removed (evaluation-readiness.entity has its own). v1.6 (B4, D7): the points are read with the shared parseDecimal ("," or "." decimal, no thousands separator, no exponent, positive). v1.7 (Bloque 3): the draft carries the hint (WORKSHOP only for students); it travels in the text PATCH and a blank hint sends null to remove it.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -90,6 +90,8 @@ export type QuestionDraft = {
   prompt: RichDoc
   points: string
   explanation: string
+  // Shown to students in WORKSHOP only, before answering; blank removes it.
+  hint: string
   // Statement media, in order (the question PATCH replaces the whole list).
   mediaIds: string[]
   // Resolved media of mediaIds, to show them (may miss some when storage is unavailable).
@@ -105,6 +107,7 @@ export function questionDraftFrom(question: BuilderQuestion): QuestionDraft {
     prompt: question.prompt,
     points: String(question.points),
     explanation: question.explanation ?? "",
+    hint: question.hint ?? "",
     mediaIds: [...question.mediaIds],
     media: [...question.media],
     options: question.options.map((option) => ({
@@ -239,10 +242,12 @@ export function hasQuestionErrors(errors: QuestionErrors): boolean {
     || errors.rubric !== undefined;
 }
 
-// Prompt, explanation and media: allowed even after attempts were submitted.
+// Prompt, explanation, hint and media: allowed even after attempts were submitted.
 export type QuestionTextChanges = {
   prompt?: RichDoc
   explanation?: string | null
+  // null removes the hint.
+  hint?: string | null
   mediaIds?: string[]
 };
 
@@ -289,6 +294,7 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
   const structure: QuestionStructureChanges = {};
   const points = parsePoints(draft.points);
   const explanation = draft.explanation.trim() === "" ? null : draft.explanation;
+  const hint = draft.hint.trim() === "" ? null : draft.hint;
 
   if (!sameRichText(draft.prompt, question.prompt)) {
     text.prompt = draft.prompt;
@@ -296,6 +302,10 @@ export function planQuestionSave(question: BuilderQuestion, draft: QuestionDraft
 
   if (explanation !== question.explanation) {
     text.explanation = explanation;
+  }
+
+  if (hint !== question.hint) {
+    text.hint = hint;
   }
 
   if (!sameIds(draft.mediaIds, question.mediaIds)) {

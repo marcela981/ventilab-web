@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsTable
-* Descripción: Table of one page of authorable evaluations (caption "Evaluaciones"): title as row header (with the author), type, status badge (draft, ready, archived), questions and scenarios, activations, last update (es-CO, America/Bogota) and the row actions. Editar and Activaciones link to the editor and activations routes; Duplicar and Archivar call back to the page. Actions are shown only when the backend says the caller can manage the evaluation (canManage); Archivar is hidden for archived ones and every action is disabled while a mutation is pending. The summary carries no total points, so they are not shown. Depends on next/link, MUI, @shared/lib and the authoring entities, URLs and CSS Module.
-* Versión: 1.0
+* Descripción: Table of one page of authorable evaluations (caption "Evaluaciones"): title as row header (with the author), type, status badge (draft, ready, archived), questions and scenarios, activations, last update (es-CO, America/Bogota) and the row actions. Editar and Activaciones link to the editor and activations routes; Duplicar and Archivar call back to the page. Actions are shown only when the backend says the caller can manage the evaluation (canManage); Archivar is hidden for archived ones and every action is disabled while a mutation is pending. The summary carries no total points, so they are not shown. Depends on next/link, MUI, @shared/lib and the authoring entities, URLs and CSS Module. v1.1 (Bloque 3): the assignments column and the "Asignar" row action (builder section ?section=asignacion).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,13 +31,13 @@ export const TABLE_COPY = {
   type: "Tipo",
   status: "Estado",
   questions: "Preguntas",
-  assignments: "Activaciones",
+  assignments: "Asignaciones",
   updated: "Actualizada",
   actions: "Acciones",
   by: (name: string) => `Por ${name}`,
   scenarios: (count: number) => `${count} ${count === 1 ? "escenario" : "escenarios"}`,
   edit: "Editar",
-  activations: "Activaciones",
+  activations: "Asignar",
   duplicate: "Duplicar",
   archive: "Archivar",
   readOnly: "Solo lectura",

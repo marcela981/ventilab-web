@@ -1,39 +1,13 @@
 /*
 * Funcionalidad: Evaluation assignments styles
-* Descripción: Layout of the activations page /evaluations/manage/[evaluationId]/assignments: centered column, header actions, the not-activatable notice, the activations table with its state badges (upcoming in info, active in success, closed muted) and attempt breakdown, and the activation dialog (scrollable group checklist and the date-time row that wraps on narrow screens). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the activations page /evaluations/manage/[evaluationId]/assignments: centered column, header actions, the not-activatable notice, the activations table with its state badges (upcoming in info, active in success, closed muted) and attempt breakdown, and the activation dialog (scrollable group checklist and the date-time row that wraps on narrow screens). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): styles of the "Asignación a grupos" section of the builder and its inline form; the page and dialog styles are gone.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
-
-.page {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 72rem;
-  margin: 0 auto;
-}
-
-.content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-4);
-}
-
-.headerActions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--vl-space-2);
-}
-
-.statusText {
-  font: var(--mui-font-body2);
-  color: var(--vl-color-text-muted);
-}
 
 .results {
   border: 1px solid var(--vl-color-border);
@@ -88,12 +62,6 @@
   gap: var(--vl-space-1);
 }
 
-.dialogBody {
-  display: flex;
-  flex-direction: column;
-  gap: var(--vl-space-4);
-}
-
 .groupFieldset {
   display: flex;
   flex-direction: column;
@@ -138,4 +106,49 @@
 .muted {
   margin: 0;
   color: var(--vl-color-text-muted);
+}
+
+/* Bloque 3 (W6): "Asignación a grupos" section of the builder. */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding: var(--vl-space-5);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  scroll-margin-top: var(--vl-space-8);
+}
+
+.sectionTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
+}
+
+.sectionTitle:focus {
+  outline: none;
+}
+
+.sectionTitle:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.inlineForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding-top: var(--vl-space-4);
+  border-top: 1px solid var(--vl-color-border);
+}
+
+.inlineFormTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.inlineFormActions {
+  display: flex;
+  justify-content: flex-end;
 }

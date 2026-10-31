@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationBuilderPage
-* Descripción: Staff page of the evaluation builder: /evaluations/manage/new (evaluationId null) and /evaluations/manage/[id]/edit. Header with "Volver a la lista", the "Cambios sin guardar"/"Todo guardado" indicator and the explicit "Guardar" ("Crear evaluación" while creating: the first save posts the evaluation and replaces the route with its editor). Below: the structure-locked banner with "Duplicar", the evaluation-level readiness issues after a 422, the metadata form and, once the evaluation exists, the scenarios and questions editor (BuilderStructure, loaded with React.lazy + retryImport so the drag-and-drop library stays in its own chunk) with delete confirmations. Leaving with unsaved changes asks for confirmation (route change and beforeunload). Loading and error-with-retry states for the edit route. Depends on React, MUI, next/head, next/link, the design-system components, @shared/lib, the builder hook, entities, components and CSS Module. v1.1 (A3): the header shows the evaluation status with "Marcar como lista (READY)" for a DRAFT (client READY validation first, issues on the cards, then `PATCH .../status`) and "Volver a borrador" for a READY evaluation; the evaluation-level issues come from the backend or from the client validation. v1.2 (A4): "Vista previa como estudiante" opens the StudentPreviewDialog (loaded on demand with React.lazy + retryImport) with the saved evaluation rendered by the student components.
-* Versión: 1.2
+* Descripción: Staff page of the evaluation builder: /evaluations/manage/new (evaluationId null) and /evaluations/manage/[id]/edit. Header with "Volver a la lista", the "Cambios sin guardar"/"Todo guardado" indicator and the explicit "Guardar" ("Crear evaluación" while creating: the first save posts the evaluation and replaces the route with its editor). Below: the structure-locked banner with "Duplicar", the evaluation-level readiness issues after a 422, the metadata form and, once the evaluation exists, the scenarios and questions editor (BuilderStructure, loaded with React.lazy + retryImport so the drag-and-drop library stays in its own chunk) with delete confirmations. Leaving with unsaved changes asks for confirmation (route change and beforeunload). Loading and error-with-retry states for the edit route. Depends on React, MUI, next/head, next/link, the design-system components, @shared/lib, the builder hook, entities, components and CSS Module. v1.1 (A3): the header shows the evaluation status with "Marcar como lista (READY)" for a DRAFT (client READY validation first, issues on the cards, then `PATCH .../status`) and "Volver a borrador" for a READY evaluation; the evaluation-level issues come from the backend or from the client validation. v1.2 (A4): "Vista previa como estudiante" opens the StudentPreviewDialog (loaded on demand with React.lazy + retryImport) with the saved evaluation rendered by the student components. v1.3 (Bloque 3): embedded "Asignación a grupos" section (AssignmentSection) once the evaluation exists, focused when opened with ?section=asignacion; "Volver a la lista" opens the Gestionar tab of the staff hub.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
@@ -25,9 +26,10 @@ import { RouteErrorBoundary } from "@shared/design-system/components/route-error
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { retryImport } from "@shared/lib/retry-import";
+import { AssignmentSection } from "../components/builder/assignment-section";
 import { EvaluationMetadataForm } from "../components/builder/evaluation-metadata-form";
 import { StructureLockedBanner } from "../components/builder/structure-locked-banner";
-import { EVALUATIONS_MANAGE_URL } from "../entities/authoring-urls";
+import { EVALUATIONS_LIST_URL } from "../entities/authoring-urls";
 import { EVALUATION_STATUS_LABELS } from "../entities/evaluation-authoring.entity";
 import { BUILDER_COPY } from "../entities/builder-copy";
 import { readinessIssueMessage } from "../entities/builder-question.entity";
@@ -52,6 +54,8 @@ type DeleteTarget = { kind: "question" | "scenario", id: string };
 
 export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPageProps) {
   const builder = useEvaluationBuilder(evaluationId);
+  const { query } = useRouter();
+  const focusAssignments = query?.section === "asignacion";
   const { creating, evaluation, form, layout } = builder;
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -83,7 +87,7 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
 
   const actions = (
     <div className={cx(styles.headerActions)}>
-      <Button component={Link} href={EVALUATIONS_MANAGE_URL} startIcon={<ArrowBackIcon />}>
+      <Button component={Link} href={EVALUATIONS_LIST_URL} startIcon={<ArrowBackIcon />}>
         {BUILDER_COPY.backToList}
       </Button>
       {form ? (
@@ -184,6 +188,9 @@ export function EvaluationBuilderPage({ evaluationId }: EvaluationBuilderPagePro
             <h2 id="builder-structure-title" className={cx(styles.panelTitle)}>{BUILDER_COPY.structureTitle}</h2>
             {renderStructure()}
           </section>
+          {!creating && evaluation ? (
+            <AssignmentSection evaluationId={evaluation.id} status={evaluation.status} focusOnMount={focusAssignments} />
+          ) : null}
         </div>
       ) : null}
       {previewOpen && evaluation ? (
