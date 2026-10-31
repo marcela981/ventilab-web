@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsListPage tests
-* Descripción: Renders /evaluations against a mocked backend (msw): active evaluations by default with counts per tab, the card details (type, linked title, duration, attempts, last attempt status and published grade colored by `passed`), switching tabs, the type filter chips with the filtered empty state, the load error with retry, and the socket events evaluation:activated and grade:published refetching my evaluations and my grades. Depends on vitest, Testing Library, msw and the evaluations test helpers.
-* Versión: 1.0
+* Descripción: Renders /evaluations against a mocked backend (msw): active evaluations by default with counts per tab, the card details (type, linked title, duration, attempts, last attempt status and published grade colored by `passed`), switching tabs, the type filter chips with the filtered empty state, the load error with retry, and the socket events evaluation:activated and grade:published refetching my evaluations and my grades. Depends on vitest, Testing Library, msw and the evaluations test helpers. v1.1 (Bloque 3): July grouping (type → track → level), "Completado ✓", empty texts, `?moduleId=` filter; the type filter chips are gone.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,7 +80,7 @@ describe("EvaluationsListPage", () => {
   it("shows the active evaluations with counts per tab and the card details", async() => {
     renderWithSession(<EvaluationsListPage />);
 
-    const list = await screen.findByRole("list", { name: "Evaluaciones activas" });
+    const list = await screen.findByRole("group", { name: "Evaluaciones activas" });
     const cards = within(list).getAllByRole("article");
 
     expect(cards).toHaveLength(2);
@@ -110,32 +110,74 @@ describe("EvaluationsListPage", () => {
 
     fireEvent.click(await screen.findByRole("tab", { name: "Cerradas (1)" }));
 
-    const list = await screen.findByRole("list", { name: "Evaluaciones cerradas" });
+    const list = await screen.findByRole("group", { name: "Evaluaciones cerradas" });
     const card = within(list).getByRole("article", { name: "Quiz cerrado" });
 
     expect(within(card).getByText("2,4").parentElement).toHaveClass("gradeFailed");
     expect(card).toHaveTextContent("No aprobado");
   });
 
-  it("filters by type and shows the empty state of the filter", async() => {
+  it("groups the tab by type, track and level as in July, with the completed chip and the empty section text", async() => {
+    server.use(http.get(apiUrl("/api/my-evaluations"), () => HttpResponse.json(envelope([
+      myEvaluationDto("as1", "e1", {
+        evaluation: { title: "Quiz nivel 2", type: "QUIZ", track: "mecanica", levelId: "l2", levelTitle: "Intermedio", levelOrder: 2 },
+      }),
+      myEvaluationDto("as2", "e2", {
+        evaluation: { title: "Quiz nivel 1", type: "QUIZ", track: "mecanica", levelId: "l1", levelTitle: "Principiante", levelOrder: 1 },
+        attempts: [attemptDto("at2", 1, { status: "SUBMITTED" })],
+      }),
+      myEvaluationDto("as3", "e3", { evaluation: { title: "Quiz suelto", type: "QUIZ" } }),
+      myEvaluationDto("as4", "e4", { evaluation: { title: "Examen VentyLab", type: "EXAM", track: "ventylab", levelId: "l9", levelTitle: "Avanzado", levelOrder: 1 } }),
+    ]))));
     renderWithSession(<EvaluationsListPage />);
 
-    await screen.findByRole("list", { name: "Evaluaciones activas" });
-    fireEvent.click(screen.getByRole("button", { name: "Quiz" }));
+    const group = await screen.findByRole("group", { name: "Evaluaciones activas" });
+    const headings = within(group).getAllByRole("heading").map((heading) => heading.textContent);
 
-    expect(screen.getByRole("button", { name: "Quiz" })).toHaveAttribute("aria-pressed", "true");
-    expect(within(screen.getByRole("list", { name: "Evaluaciones activas" })).getAllByRole("article")).toHaveLength(1);
-    expect(screen.getByRole("tab", { name: "Activas (1)" })).toBeInTheDocument();
+    expect(headings.filter((text) => /Quizzes|Talleres|Exámenes/.test(text ?? ""))).toEqual(["📝 Quizzes(3)", "📋 Talleres(0)", "🎓 Exámenes Finales(1)"]);
+    expect(within(group).getByRole("button", { name: /Talleres/ })).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(within(group).getByRole("button", { name: /Talleres/ }));
+    expect(within(group).getByText("Sin evaluaciones asignadas.")).toBeVisible();
 
-    fireEvent.click(screen.getByRole("button", { name: "Taller" }));
+    const quizzes = within(group).getByRole("region", { name: /Quizzes/ });
+    const levelLists = within(quizzes).getAllByRole("list").map((list) => list.getAttribute("aria-label"));
 
-    expect(screen.getByText("No tienes evaluaciones activas.")).toBeInTheDocument();
-    expect(screen.getByText("Prueba con otro tipo de evaluación.")).toBeInTheDocument();
+    expect(levelLists).toEqual([
+      "📝 Quizzes · Mecánica · Principiante",
+      "📝 Quizzes · Mecánica · Intermedio",
+      "📝 Quizzes · Otras · Otras",
+    ]);
 
-    fireEvent.click(screen.getByRole("tab", { name: "Próximas (1)" }));
+    const done = within(quizzes).getByRole("article", { name: "Quiz nivel 1" });
 
-    expect(within(screen.getByRole("list", { name: "Evaluaciones próximas" })).getByRole("article", { name: "Taller de modos" }))
-      .toBeInTheDocument();
+    expect(done).toHaveTextContent("Completado ✓");
+    expect(done).toHaveTextContent("Principiante");
+    expect(within(quizzes).getByRole("article", { name: "Quiz nivel 2" })).not.toHaveTextContent("Completado ✓");
+    expect(within(group).getByRole("heading", { name: "VentyLab", level: 3 })).toBeInTheDocument();
+  });
+
+  it("says nothing is assigned yet with an empty list, and filters by module", async() => {
+    let moduleQuery: string | null = null;
+
+    server.use(http.get(apiUrl("/api/my-evaluations"), ({ request }) => {
+      moduleQuery = new URL(request.url).searchParams.get("moduleId");
+
+      return HttpResponse.json(envelope([]));
+    }));
+    renderWithSession(<EvaluationsListPage moduleId="m1" />);
+
+    expect(await screen.findByText("No tienes evaluaciones asignadas todavía.")).toBeInTheDocument();
+    expect(moduleQuery).toBe("m1");
+    expect(screen.getByRole("link", { name: "Ver todas" })).toHaveAttribute("href", "/evaluations");
+  });
+
+  it("shows the empty state of a tab", async() => {
+    server.use(http.get(apiUrl("/api/my-evaluations"), () => HttpResponse.json(envelope([myEvaluationDto("as1", "e1")]))));
+    renderWithSession(<EvaluationsListPage />);
+
+    fireEvent.click(await screen.findByRole("tab", { name: "Próximas (0)" }));
+
+    expect(screen.getByText("No tienes evaluaciones próximas.")).toBeInTheDocument();
   });
 
   it("shows the load error and retries", async() => {
@@ -145,14 +187,14 @@ describe("EvaluationsListPage", () => {
     expect(await screen.findByText("No se pudieron cargar las evaluaciones")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Reintentar/ }));
 
-    expect(await screen.findByRole("list", { name: "Evaluaciones activas" })).toBeInTheDocument();
+    expect(await screen.findByRole("group", { name: "Evaluaciones activas" })).toBeInTheDocument();
   });
 
   it("refetches my evaluations and grades on evaluation:activated and grade:published", async() => {
     const socket = createFakeSocket();
 
     renderWithSession(<EvaluationsListPage />, { socket });
-    await screen.findByRole("list", { name: "Evaluaciones activas" });
+    await screen.findByRole("group", { name: "Evaluaciones activas" });
     await waitFor(() => {
       expect(socket.listenerCount("evaluation:activated")).toBe(1);
     });

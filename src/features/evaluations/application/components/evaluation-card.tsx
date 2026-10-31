@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationCard
-* Descripción: Card of one assigned evaluation in the student list: type chip, title linked to the intro page, date window (America/Bogota), duration, attempts used of the maximum, and the status of the last attempt with its grade when published. The summary of /api/my-evaluations has no module or level, so the card does not show them. Depends on MUI Chip, next/link, @shared/lib, the evaluation entities, labels, URLs and badges, and the evaluations CSS Module.
-* Versión: 1.0
+* Descripción: Card of one assigned evaluation in the student list: type chip, title linked to the intro page, date window (America/Bogota), duration, attempts used of the maximum, and the status of the last attempt with its grade when published. Depends on MUI Chip, next/link, @shared/lib, the evaluation entities, labels, URLs and badges, and the evaluations CSS Module. v1.1 (Bloque 3): level chip (levelTitle), July "Completado ✓" chip (a submitted attempt and none in progress), attempts counted against attemptsAllowed (grants included) and a configurable title heading level (h3 by default inside the grouped list).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,7 @@ import { cx } from "@shared/lib/class-names";
 import { formatDateRange, formatDuration } from "@shared/lib/format";
 import type { MyEvaluation } from "../entities/evaluation.entity";
 import { findLastAttempt } from "../entities/evaluation.entity";
+import { GROUP_COPY, isEvaluationCompleted } from "../entities/group-evaluations";
 import { EVALUATION_TYPE_LABELS, formatAttemptsUsed } from "../entities/evaluation-labels";
 import { buildEvaluationIntroUrl } from "../entities/evaluations-urls";
 import { AttemptStatusBadge, GradeBadge } from "./attempt-badges";
@@ -30,27 +31,38 @@ const CARD_COPY = {
   lastAttempt: "Último intento:",
 } as const;
 
-export function EvaluationCard({ evaluation }: { evaluation: MyEvaluation }) {
+export type EvaluationCardProps = {
+  evaluation: MyEvaluation
+  // Heading level of the title inside the grouped list (type → track → level).
+  headingLevel?: "h2" | "h3" | "h4" | undefined
+};
+
+export function EvaluationCard({ evaluation, headingLevel = "h3" }: EvaluationCardProps) {
   const titleId = useId();
   const lastAttempt = findLastAttempt(evaluation);
+  const Heading = headingLevel;
 
   return (
     <article className={cx(styles.card)} aria-labelledby={titleId}>
       <div className={cx(styles.cardHeader)}>
-        <Chip label={EVALUATION_TYPE_LABELS[evaluation.type]} size="small" variant="outlined" />
+        <div className={cx(styles.chips)}>
+          <Chip label={EVALUATION_TYPE_LABELS[evaluation.type]} size="small" variant="outlined" />
+          {evaluation.levelTitle ? <Chip label={evaluation.levelTitle} size="small" variant="outlined" /> : null}
+        </div>
+        {isEvaluationCompleted(evaluation) ? <Chip label={GROUP_COPY.completed} size="small" color="success" /> : null}
       </div>
-      <h2 id={titleId} className={cx(styles.cardTitle)}>
+      <Heading id={titleId} className={cx(styles.cardTitle)}>
         <Link href={buildEvaluationIntroUrl(evaluation.evaluationId)} className={cx(styles.titleLink)}>
           {evaluation.title}
         </Link>
-      </h2>
+      </Heading>
       <dl className={cx(styles.details)}>
         <dt>{CARD_COPY.window}</dt>
         <dd>{formatDateRange(evaluation.startsAt, evaluation.endsAt)}</dd>
         <dt>{CARD_COPY.duration}</dt>
         <dd>{evaluation.durationMinutes === null ? CARD_COPY.noTimeLimit : formatDuration(evaluation.durationMinutes)}</dd>
         <dt>{CARD_COPY.attempts}</dt>
-        <dd>{formatAttemptsUsed(evaluation.attempts.length, evaluation.maxAttempts)}</dd>
+        <dd>{formatAttemptsUsed(evaluation.attempts.length, evaluation.attemptsAllowed)}</dd>
       </dl>
       {lastAttempt ? (
         <div className={cx(styles.cardFooter)}>

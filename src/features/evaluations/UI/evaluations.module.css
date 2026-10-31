@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations styles
-* Descripción: Layout of the student evaluation pages (/evaluations and /evaluations/[evaluationId]): centered column, filter bar, grid of evaluation cards (border, radius, surface, shadow) like the learning and groups pages, detail lists, attempt status badges and the published grade colored with the semantic success/error tokens from the API `passed` flag, intro warnings and actions. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the student evaluation pages (/evaluations and /evaluations/[evaluationId]): centered column, filter bar, grid of evaluation cards (border, radius, surface, shadow) like the learning and groups pages, detail lists, attempt status badges and the published grade colored with the semantic success/error tokens from the API `passed` flag, intro warnings and actions. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July grouping of the list (type disclosure sections, track titles, level labels, card chips, module filter notice).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -177,4 +177,124 @@
 .backLink {
   align-self: flex-start;
   color: var(--vl-color-link);
+}
+
+/* Bloque 3 (W2): July grouping type → track → level. */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+}
+
+.moduleFilter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.typeSection {
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.typeHeading {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+}
+
+.typeTrigger {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  width: 100%;
+  padding: var(--vl-space-4) var(--vl-space-5);
+  border: 0;
+  border-radius: var(--vl-radius-lg);
+  background: transparent;
+  color: var(--vl-color-text);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.typeTrigger:hover {
+  background: var(--vl-color-hover);
+}
+
+.typeTrigger:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
+}
+
+.typeCount {
+  color: var(--vl-color-text-muted);
+  font-weight: 400;
+}
+
+.typeIcon {
+  margin-left: auto;
+  transition: transform var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.typeIconExpanded {
+  transform: rotate(180deg);
+}
+
+.typeBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding: 0 var(--vl-space-5) var(--vl-space-5);
+}
+
+.typeBody[hidden] {
+  display: none;
+}
+
+.emptySection {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.trackGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.trackTitle {
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  color: var(--vl-color-primary);
+}
+
+.levelGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.levelLabel {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typeIcon {
+    transition: none;
+  }
 }
