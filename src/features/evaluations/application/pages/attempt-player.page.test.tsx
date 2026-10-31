@@ -48,6 +48,7 @@ let submits = 0;
 
 function buildAttempt(overrides: Partial<StudentAttemptDetailDTO> = {}): StudentAttemptDetailDTO {
   return attemptDetailDto("at1", {
+    evaluation: { id: "e1", title: "Quiz de PEEP", type: "EXAM", description: null },
     scenarios: [scenarioDto("s1", 0, "Paciente de 60 kg con SDRA moderado.")],
     questions: [
       questionDto("q1", 0, "SINGLE_CHOICE", {
@@ -150,7 +151,7 @@ describe("AttemptPlayerPage", () => {
     renderPlayer();
 
     fireEvent.click(await screen.findByRole("radio", { name: "5 cmH2O" }));
-    fireEvent.click(screen.getByRole("button", { name: "Enviar intento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Enviar examen" }));
 
     const dialog = await screen.findByRole("dialog", { name: "¿Enviar el intento?" });
 
@@ -198,7 +199,7 @@ describe("AttemptPlayerPage", () => {
     await waitFor(() => {
       expect(router.replace).toHaveBeenCalledWith(RESULT_URL);
     });
-    expect(screen.queryByRole("button", { name: "Enviar intento" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Enviar examen" })).not.toBeInTheDocument();
   });
 
   it("submits automatically once when the timer reaches zero", async() => {
@@ -261,7 +262,7 @@ describe("AttemptPlayerPage", () => {
     }));
     renderPlayer();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Enviar intento" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Enviar examen" }));
     fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Enviar el intento?" })).getByRole("button", { name: "Enviar" }));
 
     await waitFor(() => {
@@ -295,7 +296,7 @@ describe("AttemptPlayerPage", () => {
       expect(submits).toBe(1);
     });
     expect(screen.getByRole("radio", { name: "10 cmH2O" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Enviar intento" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Enviar examen" })).toBeDisabled();
     expect(router.replace).not.toHaveBeenCalled();
 
     await act(async() => {
@@ -338,7 +339,7 @@ describe("AttemptPlayerPage", () => {
     }));
     renderPlayer();
 
-    fireEvent.click(await screen.findByRole("button", { name: "Enviar intento" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Enviar examen" }));
     fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Enviar el intento?" })).getByRole("button", { name: "Enviar" }));
     await waitFor(() => {
       expect(submits).toBe(1);
@@ -410,7 +411,7 @@ describe("AttemptPlayerPage", () => {
       await vi.advanceTimersByTimeAsync(4000);
     });
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Enviar intento" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Enviar examen" })).toBeEnabled();
     });
 
     await act(async() => {
@@ -447,7 +448,7 @@ describe("AttemptPlayerPage", () => {
     }
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Enviar intento" })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "Enviar examen" })).toBeEnabled();
     });
     await act(async() => {
       await vi.advanceTimersByTimeAsync(AUTO_SUBMIT_RETRY_WINDOW_MS);

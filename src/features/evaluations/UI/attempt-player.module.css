@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt player styles
-* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): workshop progress, quiz list and submit row, "Comprobar respuesta" row, the aria-live clock warning and the focus ring of the question heading.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -312,4 +312,55 @@
     top: var(--vl-space-8);
     max-height: calc(100vh - 8rem);
   }
+}
+
+/* Bloque 3 (W3): layouts per type. */
+
+.timerAnnouncement {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--vl-color-warning);
+  font-weight: 600;
+}
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.progressLabel {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+  font-weight: 600;
+}
+
+.quizList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.quizList .scenario {
+  position: static;
+  max-height: none;
+}
+
+.submitRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.checkRow {
+  display: flex;
+  gap: var(--vl-space-2);
+}
+
+.questionTitle:focus {
+  outline: none;
+}
+
+.questionTitle:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: var(--vl-focus-ring-offset);
 }
