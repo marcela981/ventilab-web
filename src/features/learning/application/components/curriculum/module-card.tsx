@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ModuleCard
-* Descripción: Card of a module in the Currículo tab (W4, Bloque 2; July ModuleCard, ModuleCardFooter and ComingSoonBadge): title, state badges (completed, locked, "Próximamente" for a published module without lessons with pages, "Borrador" for staff), description, lesson progress and the footer button with the July texts per state (Comenzar, Continuar, Completado, Bloqueado; "Próximamente" for coming soon). ONLY the button navigates (the card itself is not clickable): it links to /learn/modules/[id], which resolves where the module continues; locked and coming-soon cards get a disabled button. A locked module names its missing prerequisites (July PrerequisiteTooltip text). Staff also get the module PDF (print view) and, in edit mode, "Editar en el CMS". Depends on MUI icons, next/link, the curriculum view selectors, the learning URLs and the curriculum CSS Module.
-* Versión: 0.1
+* Descripción: Card of a module in the Currículo tab (W4, Bloque 2; July ModuleCard, ModuleCardFooter and ComingSoonBadge): title, state badges (completed, locked, "Próximamente" for a published module without lessons with pages, "Borrador" for staff), description, lesson progress and the footer button with the July texts per state (Comenzar, Continuar, Completado, Bloqueado; "Próximamente" for coming soon). ONLY the button navigates (the card itself is not clickable): it links to /learn/modules/[id], which resolves where the module continues; locked and coming-soon cards get a disabled button. A locked module names its missing prerequisites (July PrerequisiteTooltip text). Staff also get the module PDF (print view) and, in edit mode, "Editar en el CMS". Depends on MUI icons, next/link, the curriculum view selectors, the learning URLs and the curriculum CSS Module. v0.2 (Bloque 3): optional extraAction rendered in the footer (the curriculum composes "Quiz del módulo").
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,6 +70,8 @@ export type ModuleCardProps = {
   progress: ProgressValue | null
   isStaff: boolean
   editMode: boolean
+  // Extra action composed by the curriculum (e.g. "Quiz del módulo"); the card knows nothing about it.
+  extraAction?: ReactNode
 };
 
 function ModuleCardButton({ module, state }: { module: CurriculumModule, state: ModuleCardState }) {
@@ -93,7 +95,7 @@ function ModuleCardButton({ module, state }: { module: CurriculumModule, state: 
   );
 }
 
-export function ModuleCard({ module, state, progress, isStaff, editMode }: ModuleCardProps) {
+export function ModuleCard({ module, state, progress, isStaff, editMode, extraAction }: ModuleCardProps) {
   const titleId = `module-card-${module.id}-title`;
   const comingSoon = isComingSoon(module);
   const showLessonProgress = progress !== null && progress.totalLessons > 0 && state !== "coming_soon";
@@ -138,6 +140,7 @@ export function ModuleCard({ module, state, progress, isStaff, editMode }: Modul
       ) : null}
       <footer className={cx(styles.moduleCardFooter)}>
         <ModuleCardButton module={module} state={state} />
+        {extraAction ? <div className={cx(styles.extraAction)}>{extraAction}</div> : null}
         {isStaff ? (
           <div className={cx(styles.staffActions)}>
             <Link href={buildModulePrintUrl(module.id)} className={cx(styles.staffLink)} aria-label={`${MODULE_CARD_COPY.pdf}: ${module.title}`}>

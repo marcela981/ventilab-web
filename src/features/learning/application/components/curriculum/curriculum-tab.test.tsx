@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: CurriculumTab tests
-* Descripción: The Currículo tab of /learn against a mocked backend (msw) and a reactive mocked next/router (W4, Bloque 2): the three accordions in the July order with Mecánica open by default and "Opcional" on Prerequisitos; one open at a time, ?section= opens another and the arrow keys move between triggers; exactly the tree and summary requests (no per-module request); levels with the "x/y módulos" progress and the lock text; module cards with the five states and the July button texts, where only the button links to the module resolver; error with retry and a progress warning; staff see no locks, drafts with "Borrador" and the "Modo edición" toggle that reveals the CMS links and keeps the module PDF. Depends on vitest, Testing Library, msw, the learning router and test helpers.
-* Versión: 0.1
+* Descripción: The Currículo tab of /learn against a mocked backend (msw) and a reactive mocked next/router (W4, Bloque 2): the three accordions in the July order with Mecánica open by default and "Opcional" on Prerequisitos; one open at a time, ?section= opens another and the arrow keys move between triggers; exactly the tree and summary requests (no per-module request); levels with the "x/y módulos" progress and the lock text; module cards with the five states and the July button texts, where only the button links to the module resolver; error with retry and a progress warning; staff see no locks, drafts with "Borrador" and the "Modo edición" toggle that reveals the CMS links and keeps the module PDF. Depends on vitest, Testing Library, msw, the learning router and test helpers. v0.2 (Bloque 3): "Quiz del módulo" link for students on open modules, none for staff.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -140,11 +140,13 @@ describe("CurriculumTab", () => {
     const card = (name: string) => within(beginner).getByRole("article", { name });
 
     expect(within(card("Módulo m-b1")).getByRole("link", { name: "Módulo completado: Módulo m-b1" })).toHaveAttribute("href", "/learn/modules/m-b1");
-    expect(within(card("Módulo m-b1")).getByRole("link")).toHaveTextContent("Completado");
+    expect(within(card("Módulo m-b1")).getByRole("link", { name: /^Módulo completado/ })).toHaveTextContent("Completado");
     expect(within(card("Módulo m-b2")).getByRole("link", { name: "Continuar módulo: Módulo m-b2" })).toHaveAttribute("href", "/learn/modules/m-b2");
     expect(within(card("Módulo m-b2")).getByText("1 de 3 lecciones completadas")).toBeInTheDocument();
     expect(within(card("Módulo m-b3")).getByRole("button", { name: "Próximamente: Módulo m-b3" })).toBeDisabled();
     expect(within(card("Módulo m-b3")).queryByRole("link")).not.toBeInTheDocument();
+    // "Quiz del módulo" (Bloque 3): the evaluations of the module, only on modules the student can open.
+    expect(within(card("Módulo m-b2")).getByRole("link", { name: "Quiz del módulo: Módulo m-b2" })).toHaveAttribute("href", "/evaluations?moduleId=m-b2");
 
     const intermediate = screen.getByRole("heading", { level: 4, name: "Nivel Intermedio" }).closest("li") as HTMLElement;
 
@@ -159,12 +161,12 @@ describe("CurriculumTab", () => {
     expect(screen.queryByText("Borrador VentyLab")).not.toBeInTheDocument();
   });
 
-  it("only links the button of a card: the card itself does not navigate", async() => {
+  it("only links the button and the module quiz of a card: the card itself does not navigate", async() => {
     renderWithSession(<CurriculumTab />);
 
     const card = await screen.findByRole("article", { name: "Módulo m-b2" });
 
-    expect(within(card).getAllByRole("link")).toHaveLength(1);
+    expect(within(card).getAllByRole("link")).toHaveLength(2);
     fireEvent.click(card);
     expect(routerStore.push).not.toHaveBeenCalled();
   });
@@ -196,6 +198,7 @@ describe("CurriculumTab", () => {
     expect(within(intermediate).getByRole("link", { name: "Comenzar módulo: Módulo m-i1" })).toBeInTheDocument();
     expect(within(intermediate).getByRole("link", { name: "PDF del módulo: Módulo m-i1" })).toHaveAttribute("href", "/learn/modules/m-i1/print");
     expect(screen.queryByRole("link", { name: /Editar en el CMS/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Quiz del módulo/ })).not.toBeInTheDocument();
 
     fireEvent.click(trigger(/VentyLab/));
     const ventylab = screen.getByRole("region", { name: /VentyLab/ });
