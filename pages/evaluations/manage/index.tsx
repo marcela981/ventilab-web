@@ -1,6 +1,6 @@
 /*
-* Funcionalidad: Evaluations manage route
-* Descripción: Thin route for /evaluations/manage: composes the teacher layout (staff only: teachers and admins) with the EvaluationsManagePage of the evaluation-authoring feature, which lists, filters, duplicates and archives the evaluations the caller can author (GET /api/evaluations). Depends on @features/evaluation-authoring and @shared/layouts/teacher-layout.
+* Funcionalidad: Evaluations manage redirect
+* Descripción: The authoring list is the Gestionar tab of the staff evaluation hub (Bloque 3, W5): this thin route replaces /evaluations/manage with /evaluations?tab=gestionar on client navigations; full loads are redirected by next.config (config/legacy-redirects.mjs), which does not apply to client navigations. Depends on the staff hub entry point and the teacher layout. v1.1 (Bloque 3, W5): redirect only.
 * Versión: 1.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -9,13 +9,26 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { EvaluationsManagePage } from "@features/evaluation-authoring";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { staffHubUrl } from "@features/evaluation-authoring/staff-hub.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withTeacherLayout } from "@shared/layouts/teacher-layout";
 
-const EvaluationsManageRoute: NextPageWithLayout = () => <EvaluationsManagePage />;
+const EvaluationsManageRedirect: NextPageWithLayout = () => {
+  const router = useRouter();
+  const destination = router.isReady ? staffHubUrl("gestionar") : null;
 
-EvaluationsManageRoute.getLayout = withTeacherLayout;
+  useEffect(() => {
+    if (destination) {
+      void router.replace(destination);
+    }
+  }, [destination, router]);
 
-export default EvaluationsManageRoute;
+  return null;
+};
+
+EvaluationsManageRedirect.getLayout = withTeacherLayout;
+
+export default EvaluationsManageRedirect;

@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: Grade attempt route
-* Descripción: Thin route for /grading/attempts/[attemptId]: composes the teacher layout (RequireRole TEACHER/ADMIN + AppShell, which waits for router.isReady) with the lazy GradeAttemptPage of the grading feature for the attemptId of the URL. Depends on next/router, @features/grading and @shared/layouts/teacher-layout.
-* Versión: 1.0
+* Funcionalidad: Grading attempt resolver route
+* Descripción: Thin route for /grading/attempts/[attemptId] (teacher layout): the review of one attempt lives in the unified grading screen of its evaluation (Bloque 3, W5), so this route renders the GradingAttemptResolver, which reads the attempt and replaces the route with /grading/evaluations/<evaluationId>?attempt=<attemptId>. Old links and the teacher dashboard keep working. Depends on the grading workspace entry point and the teacher layout. v1.1 (Bloque 3, W5): resolver.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,18 +10,18 @@
 */
 
 import { useRouter } from "next/router";
-import { GradeAttemptPage } from "@features/grading";
+import { GradingAttemptResolver } from "@features/grading/workspace.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withTeacherLayout } from "@shared/layouts/teacher-layout";
 
-const GradeAttemptRoute: NextPageWithLayout = () => {
+const GradingAttemptRoute: NextPageWithLayout = () => {
   const { query } = useRouter();
   const attemptId = typeof query.attemptId === "string" ? query.attemptId : null;
 
-  return attemptId ? <GradeAttemptPage attemptId={attemptId} /> : null;
+  return attemptId ? <GradingAttemptResolver key={attemptId} attemptId={attemptId} /> : null;
 };
 
-GradeAttemptRoute.getLayout = withTeacherLayout;
+GradingAttemptRoute.getLayout = withTeacherLayout;
 
-export default GradeAttemptRoute;
+export default GradingAttemptRoute;

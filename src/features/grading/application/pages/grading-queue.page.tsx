@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: GradingQueuePage
-* Descripción: Staff page /grading (teachers and admins): the queue of attempts waiting for review from `GET /api/evaluation-grading/queue`, filtered on the server by evaluation (READY evaluations plus those already in the loaded page) and student group, always oldest first (the backend has no sort option), 10/25/50 per page (changing a filter returns to the first page). Each row shows the student, the evaluation and its type, the attempt number, the submission date in Bogota time with its age and the automatic score so far, and links to /grading/attempts/[attemptId]. Revalidates on window focus. Loading, error with retry and empty ("No hay intentos pendientes de calificación") states; when the requested page comes back empty beyond the last page the list steps back to the last available page. Depends on MUI, next/head, the design-system components, @shared/lib, the grading hooks, entities, components and CSS Module. v1.1 (G1 review W1/S7): no sort toggle (the backend ignores sortOrder; reported gap); when a refresh fails while a page is already shown, an inline warning with the Spanish error and a retry stays above the (possibly stale) list. v1.2 (closure B2): student filter on the server (`studentId`; options: the chosen group's students plus the students of the loaded page, the chosen one kept), cleared with the other filters.
-* Versión: 1.2
+* Funcionalidad: GradingQueueBody
+* Descripción: Staff page /grading (teachers and admins): the queue of attempts waiting for review from `GET /api/evaluation-grading/queue`, filtered on the server by evaluation (READY evaluations plus those already in the loaded page) and student group, always oldest first (the backend has no sort option), 10/25/50 per page (changing a filter returns to the first page). Each row shows the student, the evaluation and its type, the attempt number, the submission date in Bogota time with its age and the automatic score so far, and links to /grading/attempts/[attemptId]. Revalidates on window focus. Loading, error with retry and empty ("No hay intentos pendientes de calificación") states; when the requested page comes back empty beyond the last page the list steps back to the last available page. Depends on MUI, next/head, the design-system components, @shared/lib, the grading hooks, entities, components and CSS Module. v1.1 (G1 review W1/S7): no sort toggle (the backend ignores sortOrder; reported gap); when a refresh fails while a page is already shown, an inline warning with the Spanish error and a retry stays above the (possibly stale) list. v1.2 (closure B2): student filter on the server (`studentId`; options: the chosen group's students plus the students of the loaded page, the chosen one kept), cleared with the other filters. v1.3 (Bloque 3): extracted as GradingQueueBody, the Calificar tab of the staff hub /evaluations (no document title nor page header; the subtitle stays).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,12 +13,10 @@ import GradingIcon from "@mui/icons-material/Grading";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
-import Head from "next/head";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { LoadingState } from "@shared/design-system/components/loading-state";
-import { PageHeader } from "@shared/design-system/components/page-header";
 import { cx } from "@shared/lib/class-names";
 import { GradingQueueFilters } from "../components/grading-queue-filters";
 import { GradingQueueTable } from "../components/grading-queue-table";
@@ -31,8 +29,6 @@ import styles from "../../UI/grading.module.css";
 
 // TODO(i18n): move to a grading namespace in src/i18n.
 export const QUEUE_COPY = {
-  documentTitle: "Calificar | VentyLab",
-  title: "Calificar",
   subtitle: "Intentos enviados que esperan tu revisión, empezando por los más antiguos.",
   loading: "Cargando intentos pendientes…",
   loadErrorTitle: "No se pudo cargar la cola de calificación",
@@ -61,12 +57,12 @@ function hasFilters(filters: Filters): boolean {
     || filters.studentId !== DEFAULT_GRADING_FILTERS.studentId;
 }
 
-export type GradingQueuePageProps = {
+export type GradingQueueBodyProps = {
   // Reference instant of the "hace 3 días" ages; tests pin it.
   now?: Date | undefined
 };
 
-export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
+export function GradingQueueBody({ now }: GradingQueueBodyProps = {}) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_GRADING_FILTERS);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0] ?? 10);
@@ -154,11 +150,8 @@ export function GradingQueuePage({ now }: GradingQueuePageProps = {}) {
   };
 
   return (
-    <div className={cx(styles.page)}>
-      <Head>
-        <title>{QUEUE_COPY.documentTitle}</title>
-      </Head>
-      <PageHeader title={QUEUE_COPY.title} subtitle={QUEUE_COPY.subtitle} />
+    <div className={cx(styles.content)}>
+      <p className={cx(styles.subtitle)}>{QUEUE_COPY.subtitle}</p>
       <div className={cx(styles.content)}>
         {page && error ? (
           <Alert

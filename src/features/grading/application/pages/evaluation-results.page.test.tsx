@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationResultsPage tests
-* Descripción: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount. v1.2 (closure B1): fixtures carry the stats groupId and the dashboard passingGrade, riskThresholds and moduleSummary.
-* Versión: 1.2
+* Descripción: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount. v1.2 (closure B1): fixtures carry the stats groupId and the dashboard passingGrade, riskThresholds and moduleSummary. v1.3 (Bloque 3): the back link opens the Calificar tab of the staff hub.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -339,6 +339,6 @@ describe("EvaluationResultsPage — bulk publish", () => {
     renderPage();
     await loaded();
 
-    expect(screen.getByRole("link", { name: RESULTS_COPY.backToQueue })).toHaveAttribute("href", "/grading");
+    expect(screen.getByRole("link", { name: RESULTS_COPY.backToQueue })).toHaveAttribute("href", "/evaluations?tab=calificar");
   });
 });

@@ -1,6 +1,6 @@
 /*
-* Funcionalidad: Grading queue route
-* Descripción: Thin route for /grading: composes the teacher layout (staff only: teachers and admins) with the GradingQueuePage of the grading feature, the queue of attempts waiting for review (GET /api/evaluation-grading/queue). Depends on @features/grading and @shared/layouts/teacher-layout.
+* Funcionalidad: Grading queue redirect
+* Descripción: The grading queue is the Calificar tab of the staff evaluation hub (Bloque 3, W5): this thin route replaces /grading with /evaluations?tab=calificar on client navigations; full loads are redirected by next.config (config/legacy-redirects.mjs). Depends on the staff hub entry point and the teacher layout. v1.1 (Bloque 3, W5): redirect only.
 * Versión: 1.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -9,13 +9,26 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { GradingQueuePage } from "@features/grading";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
+import { staffHubUrl } from "@features/evaluation-authoring/staff-hub.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withTeacherLayout } from "@shared/layouts/teacher-layout";
 
-const GradingQueueRoute: NextPageWithLayout = () => <GradingQueuePage />;
+const GradingQueueRedirect: NextPageWithLayout = () => {
+  const router = useRouter();
+  const destination = router.isReady ? staffHubUrl("calificar") : null;
 
-GradingQueueRoute.getLayout = withTeacherLayout;
+  useEffect(() => {
+    if (destination) {
+      void router.replace(destination);
+    }
+  }, [destination, router]);
 
-export default GradingQueueRoute;
+  return null;
+};
+
+GradingQueueRedirect.getLayout = withTeacherLayout;
+
+export default GradingQueueRedirect;

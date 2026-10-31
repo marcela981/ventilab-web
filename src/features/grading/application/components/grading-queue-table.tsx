@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingQueueTable
-* Descripción: Table of the attempts waiting for review: student (name, or email when the name is missing, with the email below), evaluation title and type, attempt number, submission date in Bogota time with its age ("hace 3 días"), the automatic score so far when there is one, and a "Calificar" link to /grading/attempts/[attemptId]. Depends on MUI, next/link, @shared/lib, the grading entities and URLs and the CSS Module. v1.1 (G3): the evaluation title links to its results page /grading/evaluations/[evaluationId].
-* Versión: 1.1
+* Descripción: Table of the attempts waiting for review: student (name, or email when the name is missing, with the email below), evaluation title and type, attempt number, submission date in Bogota time with its age ("hace 3 días"), the automatic score so far when there is one, and a "Calificar" link to /grading/attempts/[attemptId]. Depends on MUI, next/link, @shared/lib, the grading entities and URLs and the CSS Module. v1.1 (G3): the evaluation title links to its results page /grading/evaluations/[evaluationId]. v1.2 (Bloque 3): the grading link opens the attempt in the unified grading screen (/grading/evaluations/<id>?attempt=<id>).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,7 +20,7 @@ import Link from "next/link";
 import { cx } from "@shared/lib/class-names";
 import { formatDateTime, formatRelativeAge } from "@shared/lib/format";
 import type { GradingEvaluationType, GradingQueueItem } from "../entities/grading.entity";
-import { buildGradingAttemptUrl, buildGradingEvaluationUrl } from "../entities/grading-urls";
+import { buildGradingEvaluationUrl, buildGradingReviewUrl } from "../entities/grading-urls";
 import styles from "../../UI/grading.module.css";
 
 // TODO(i18n): move to a grading namespace in src/i18n.
@@ -111,7 +111,7 @@ export function GradingQueueTable({ items, now }: GradingQueueTableProps) {
                 <TableCell>
                   <Button
                     component={Link}
-                    href={buildGradingAttemptUrl(item.attemptId)}
+                    href={buildGradingReviewUrl(item.evaluationId, item.attemptId)}
                     variant="outlined"
                     size="small"
                     aria-label={QUEUE_TABLE_COPY.gradeAction(student)}

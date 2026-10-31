@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: GradingQueuePage tests
-* Descripción: Verifies the /grading queue against MSW: the first page oldest first with student, evaluation, attempt, Bogota submission date, its age and auto score, the "Calificar" link; the evaluation and group filters sent as query params (back to page 1) with server pagination; the evaluation options merging READY evaluations with the loaded queue; the empty and the no-match states; and the error state with retry. Depends on vitest, Testing Library, msw, @shared/lib/format and the grading page, entities and test helpers. v1.1 (G1 review W1/S7): no sortOrder in the query and no order toggle; a failed refresh keeps the page with an inline warning and retry. v1.2 (closure B2): the student filter (`studentId`; page students without a group, the group's STUDENT members with one, cleared by a group change, kept selected when its page is empty).
-* Versión: 1.2
+* Funcionalidad: GradingQueueBody tests
+* Descripción: Verifies the /grading queue against MSW: the first page oldest first with student, evaluation, attempt, Bogota submission date, its age and auto score, the "Calificar" link; the evaluation and group filters sent as query params (back to page 1) with server pagination; the evaluation options merging READY evaluations with the loaded queue; the empty and the no-match states; and the error state with retry. Depends on vitest, Testing Library, msw, @shared/lib/format and the grading page, entities and test helpers. v1.1 (G1 review W1/S7): no sortOrder in the query and no order toggle; a failed refresh keeps the page with an inline warning and retry. v1.2 (closure B2): the student filter (`studentId`; page students without a group, the group's STUDENT members with one, cleared by a group change, kept selected when its page is empty). v1.3 (Bloque 3): GradingQueueBody (no page heading).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +18,7 @@ import { formatDateTime } from "@shared/lib/format";
 import type { GradingQueueItemDTO } from "../../api/dtos/grading.dto";
 import { GRADING_ERROR_MESSAGES } from "../entities/grading-error-messages";
 import { apiUrl, envelope, errorResponse, evaluationSummaryDto, groupDto, queueItemDto, renderWithSwr } from "./grading-test-helpers";
-import { GradingQueuePage, QUEUE_COPY } from "./grading-queue.page";
+import { GradingQueueBody, QUEUE_COPY } from "./grading-queue.page";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...rest }: { href: string, children: ReactNode }) => (
@@ -95,11 +95,11 @@ afterAll(() => {
   server.close();
 });
 
-describe("GradingQueuePage", () => {
+describe("GradingQueueBody", () => {
   it("lists the pending attempts oldest first with their age, score and grading link", async() => {
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
 
-    expect(screen.getByRole("heading", { name: "Calificar" })).toBeInTheDocument();
+    expect(screen.getByText(QUEUE_COPY.subtitle)).toBeInTheDocument();
 
     const table = await screen.findByRole("table", { name: "Intentos pendientes de calificación" });
     const first = within(table).getByRole("row", { name: /Ana Gómez/ });
@@ -111,7 +111,7 @@ describe("GradingQueuePage", () => {
     expect(first).toHaveTextContent(formatDateTime("2026-10-11T11:00:00.000Z"));
     expect(first).toHaveTextContent("hace 3 días");
     expect(first).toHaveTextContent("6 / 10");
-    expect(within(first).getByRole("link", { name: "Calificar el intento de Ana Gómez" })).toHaveAttribute("href", "/grading/attempts/a1");
+    expect(within(first).getByRole("link", { name: "Calificar el intento de Ana Gómez" })).toHaveAttribute("href", "/grading/evaluations/ev-1?attempt=a1");
 
     const second = within(table).getByRole("row", { name: /luis@ventylab.demo/ });
 
@@ -123,7 +123,7 @@ describe("GradingQueuePage", () => {
 
   it("sends the evaluation and group filters as query params and paginates on the server", async() => {
     total = 25;
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
     await screen.findByRole("table", { name: "Intentos pendientes de calificación" });
 
     fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
@@ -156,7 +156,7 @@ describe("GradingQueuePage", () => {
   });
 
   it("filters by student on the server with the students of the page and of the chosen group", async() => {
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
     await screen.findByRole("table", { name: "Intentos pendientes de calificación" });
 
     const studentSelect = screen.getByLabelText("Estudiante");
@@ -197,14 +197,14 @@ describe("GradingQueuePage", () => {
   it("shows the empty state when nothing waits for review", async() => {
     items = [];
     total = 0;
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
 
     expect(await screen.findByText(QUEUE_COPY.emptyTitle)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
   it("offers to clear the filters when they match nothing", async() => {
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
     await screen.findByRole("table", { name: "Intentos pendientes de calificación" });
 
     items = [];
@@ -223,7 +223,7 @@ describe("GradingQueuePage", () => {
 
   it("shows the Spanish error with a retry", async() => {
     failQueue = true;
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
 
     expect(await screen.findByText(GRADING_ERROR_MESSAGES["evaluation.grading_forbidden"])).toBeInTheDocument();
 
@@ -234,7 +234,7 @@ describe("GradingQueuePage", () => {
   });
 
   it("keeps the shown page with an inline warning when a refresh fails", async() => {
-    renderWithSwr(<GradingQueuePage now={NOW} />);
+    renderWithSwr(<GradingQueueBody now={NOW} />);
     await screen.findByRole("table", { name: "Intentos pendientes de calificación" });
     await waitFor(() => {
       expect(within(screen.getByLabelText("Grupo")).getByRole("option", { name: "Grupo A" })).toBeInTheDocument();

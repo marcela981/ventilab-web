@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: EvaluationsManagePage tests
-* Descripción: Renders /evaluations/manage against a mocked backend (msw) with a mocked next/router: the first page lists title, type, status, questions, activations and the update date with the row actions; the type and status filters and the debounced title search become query params of `GET /api/evaluations` (back to page 1), the next page asks for page 2; "Duplicar" posts the duplicate and opens the editor of the copy; "Archivar" asks for confirmation and sends `PATCH .../status` ARCHIVED; a 409 invalid_status_transition shows its Spanish message; read-only rows have no actions; an empty list offers "Nueva evaluación". Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 review follow-up): archiving the only row of the last page steps back to the previous page.
-* Versión: 1.1
+* Funcionalidad: EvaluationsManageBody tests
+* Descripción: Renders /evaluations/manage against a mocked backend (msw) with a mocked next/router: the first page lists title, type, status, questions, activations and the update date with the row actions; the type and status filters and the debounced title search become query params of `GET /api/evaluations` (back to page 1), the next page asks for page 2; "Duplicar" posts the duplicate and opens the editor of the copy; "Archivar" asks for confirmation and sends `PATCH .../status` ARCHIVED; a 409 invalid_status_transition shows its Spanish message; read-only rows have no actions; an empty list offers "Nueva evaluación". Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 review follow-up): archiving the only row of the last page steps back to the previous page. v1.2 (Bloque 3): EvaluationsManageBody.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,7 @@ import { formatDateTime } from "@shared/lib/format";
 import type { EvaluationSummaryDTO } from "../../api/dtos/evaluation-authoring.dto";
 import { AUTHORING_ERROR_MESSAGES } from "../entities/evaluation-authoring-error-messages";
 import { apiUrl, envelope, errorResponse, evaluationSummaryDto, renderWithProviders } from "./authoring-test-helpers";
-import { EvaluationsManagePage } from "./evaluations-manage.page";
+import { EvaluationsManageBody } from "./evaluations-manage.page";
 
 const router = vi.hoisted(() => ({
   push: vi.fn(() => Promise.resolve(true)),
@@ -84,9 +84,9 @@ afterAll(() => {
   server.close();
 });
 
-describe("EvaluationsManagePage", () => {
+describe("EvaluationsManageBody", () => {
   it("lists the first page with its details and actions", async() => {
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
 
     const table = await screen.findByRole("table", { name: "Evaluaciones" });
     const row = within(table).getByRole("row", { name: /Quiz de PEEP/ });
@@ -105,7 +105,7 @@ describe("EvaluationsManagePage", () => {
 
   it("sends the filters and the debounced search as query params and paginates on the server", async() => {
     total = 25;
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
     await screen.findByRole("table", { name: "Evaluaciones" });
 
     fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
@@ -132,7 +132,7 @@ describe("EvaluationsManagePage", () => {
   });
 
   it("duplicates an evaluation and opens the editor of the copy", async() => {
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Duplicar «Quiz de PEEP»" }));
 
@@ -144,7 +144,7 @@ describe("EvaluationsManagePage", () => {
   });
 
   it("archives after confirmation", async() => {
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Archivar «Examen final»" }));
 
@@ -186,7 +186,7 @@ describe("EvaluationsManagePage", () => {
         return HttpResponse.json(envelope(null));
       }),
     );
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
     await screen.findByRole("table", { name: "Evaluaciones" });
 
     fireEvent.click(screen.getByRole("button", { name: "Página siguiente" }));
@@ -203,7 +203,7 @@ describe("EvaluationsManagePage", () => {
 
   it("shows the Spanish message of a 409 when archiving fails", async() => {
     server.use(http.patch(apiUrl("/api/evaluations/:id/status"), () => errorResponse("evaluation.invalid_status_transition", 409)));
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Archivar «Quiz de PEEP»" }));
     fireEvent.click(within(await screen.findByRole("dialog", { name: "¿Archivar la evaluación?" })).getByRole("button", { name: "Archivar" }));
@@ -214,7 +214,7 @@ describe("EvaluationsManagePage", () => {
   it("shows no actions on an evaluation the caller cannot manage", async() => {
     evaluations = [evaluationSummaryDto("e9", { title: "Ajena", canManage: false })];
     total = 1;
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
 
     const row = await screen.findByRole("row", { name: /Ajena/ });
 
@@ -225,7 +225,7 @@ describe("EvaluationsManagePage", () => {
   it("offers to create the first evaluation when there is none", async() => {
     evaluations = [];
     total = 0;
-    renderWithProviders(<EvaluationsManagePage />);
+    renderWithProviders(<EvaluationsManageBody />);
 
     expect(await screen.findByText("Aún no hay evaluaciones")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Nueva evaluación" }).length).toBeGreaterThan(0);
