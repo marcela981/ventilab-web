@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: Grading workspace entry point
-* Descripción: Public entry point of the grading routes (Bloque 3 W5): the lazy page of /grading/evaluations/[evaluationId] and the GradingAttemptResolver of /grading/attempts/[attemptId], which sends an attempt to its evaluation screen (?attempt=). Routes import this file instead of the feature barrel. Depends on the grading application layer.
+* Descripción: Public entry point of the grading routes (Bloque 3 W5): the lazy unified grading screen of /grading/evaluations/[evaluationId] (EvaluationGradingPage) and the GradingAttemptResolver of /grading/attempts/[attemptId], which sends an attempt to its evaluation screen (?attempt=). Routes import this file instead of the feature barrel. Depends on the grading application layer.
 * Versión: 1.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -10,4 +10,4 @@
 */
 
 export { GradingAttemptResolver } from "./application/components/grading-attempt-resolver";
-export { EvaluationResultsPage } from "./application/pages/lazy-evaluation-results-page";
+export { EvaluationGradingPage } from "./application/pages/lazy-evaluation-grading-page";

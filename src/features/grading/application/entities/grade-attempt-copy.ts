@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grade attempt copy
-* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3. v1.2 (B4, D7): the score hint adds DECIMAL_HELPER_TEXT.
-* Versión: 1.2
+* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3. v1.2 (B4, D7): the score hint adds DECIMAL_HELPER_TEXT. v1.3 (Bloque 3): pane title (student and attempt) replaces the page title, subtitle and links.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,12 +19,9 @@ export function formatPoints(value: number): string {
 
 // TODO(i18n): move to a grading namespace in src/i18n.
 export const GRADE_COPY = {
-  documentTitle: (title: string) => `Calificar: ${title} | VentyLab`,
-  fallbackTitle: "Calificar intento",
   loading: "Cargando el intento…",
   loadErrorTitle: "No se pudo cargar el intento",
-  backToQueue: "Volver a la cola",
-  subtitle: (attemptNumber: number, studentId: string) => `Intento #${attemptNumber} · Estudiante ${studentId}`,
+  paneTitle: (student: string, attemptNumber: number) => `${student} · Intento #${attemptNumber}`,
   submittedAt: (date: string) => `Enviado el ${date}`,
   score: (score: string, max: string) => `${score} de ${max} puntos`,
   gradeLabel: "Nota",
@@ -56,7 +53,6 @@ export const GRADE_COPY = {
   commentOnlyOverrideHint: "Al guardar se registrará un puntaje manual igual al automático, y contará como una corrección del puntaje.",
   refreshFailed: "Las calificaciones se guardaron, pero no se pudo actualizar el intento. Recarga para ver los valores guardados.",
   reloadAttempt: "Recargar",
-  viewResults: "Ver resultados de la evaluación",
   rubricTitle: "Evaluación práctica (calculada por el servidor)",
   rubricScore: (percent: string) => `Puntaje práctico: ${percent}`,
   rubricUnavailable: "No se pudo calcular la evaluación práctica.",

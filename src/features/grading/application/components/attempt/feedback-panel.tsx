@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GradingFeedbackPanel
-* Descripción: AI feedback of an attempt as the staff sees it: one entry for the overall feedback and one per question (by position), each with its status (Generando…, Lista, Falló), its source, provider, model and update time, and its text when ready. Offers "Regenerar retroalimentación IA", enabled only for a GRADED attempt (the backend answers 409 otherwise), and a reload when the polling of a pending feedback gave up. Loading, error and empty states. Depends on MUI, the design-system AsyncButton, @shared/lib, the grading copy and entities and the grade-attempt CSS Module.
-* Versión: 1.0
+* Descripción: AI feedback of an attempt as the staff sees it: one entry for the overall feedback and one per question (by position), each with its status (Generando…, Lista, Falló), its source, provider, model and update time, and its text when ready. Offers "Regenerar retroalimentación IA", enabled only for a GRADED attempt (the backend answers 409 otherwise), and a reload when the polling of a pending feedback gave up. Loading, error and empty states. Depends on MUI, the design-system AsyncButton, @shared/lib, the grading copy and entities and the grade-attempt CSS Module. v1.1 (Bloque 3): shows why the last regeneration was refused (409 already generating, 429 too many requests).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +32,8 @@ export type GradingFeedbackPanelProps = {
   positions: ReadonlyMap<string, number>
   canRegenerate: boolean
   regenerating: boolean
+  // Why the last "Regenerar" was refused (409 already generating, 429 too many requests).
+  regenerateError?: string | null | undefined
   onRegenerate: () => Promise<void>
   onReload: () => void
 };
@@ -61,6 +63,7 @@ export function GradingFeedbackPanel({
   positions,
   canRegenerate,
   regenerating,
+  regenerateError = null,
   onRegenerate,
   onReload,
 }: GradingFeedbackPanelProps) {
@@ -96,6 +99,7 @@ export function GradingFeedbackPanel({
         </AsyncButton>
       </div>
       {!canRegenerate ? <p className={cx(styles.muted)}>{GRADE_COPY.regenerateNeedsGraded}</p> : null}
+      {regenerateError ? <Alert severity="warning">{regenerateError}</Alert> : null}
       {renderBody()}
       {pollingStopped ? (
         <Alert severity="info" action={<Button color="inherit" size="small" onClick={onReload}>{GRADE_COPY.feedbackReload}</Button>}>

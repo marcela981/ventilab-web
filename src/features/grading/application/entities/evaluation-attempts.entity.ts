@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation attempts entities
-* Descripción: View models and pure rules of the attempts list of the unified grading screen: one attempt row (student, status, attempt number, dates, score and grade, publication, lateness), a page of rows with the counts per status of the whole evaluation (the counts ignore the status filter), the status filter values read from and written to the URL (`?status=SUBMITTED,PENDING_REVIEW`), the query sent to `GET /api/evaluation-grading/attempts` (evaluationId required, groupId and status optional, 1-based page) and whether a teacher may offer "Reiniciar intento" for a row (SUBMITTED, PENDING_REVIEW and GRADED). Depends on nothing at runtime.
-* Versión: 1.0
+* Descripción: View models and pure rules of the unified grading screen (tabs revisar, estadisticas, publicacion with their labels; the attempt status labels; the builder URL that extends an assignment window) and of its attempts list: one attempt row (student, status, attempt number, dates, score and grade, publication, lateness), a page of rows with the counts per status of the whole evaluation (the counts ignore the status filter), the status filter values read from and written to the URL (`?status=SUBMITTED,PENDING_REVIEW`), the query sent to `GET /api/evaluation-grading/attempts` (evaluationId required, groupId and status optional, 1-based page) and whether a teacher may offer "Reiniciar intento" for a row (SUBMITTED, PENDING_REVIEW and GRADED). Depends on nothing at runtime. v1.1 (Bloque 3): tabs, status labels and the builder URL of the unified grading screen.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -105,3 +105,26 @@ export function summarizeCounts(counts: AttemptStatusCounts): { total: number, s
 }
 
 export const RESET_REASON_MAX = 500;
+
+// TODO(i18n): move to a grading namespace in src/i18n.
+export const GRADING_ATTEMPT_STATUS_LABELS: Record<GradingAttemptStatus, string> = {
+  IN_PROGRESS: "En curso",
+  SUBMITTED: "Entregado",
+  PENDING_REVIEW: "Por revisar",
+  GRADED: "Calificado",
+};
+
+export const GRADING_TABS = ["revisar", "estadisticas", "publicacion"] as const;
+export type GradingTab = (typeof GRADING_TABS)[number];
+export const DEFAULT_GRADING_TAB: GradingTab = "revisar";
+
+export const GRADING_TAB_LABELS: Record<GradingTab, string> = {
+  revisar: "Revisar",
+  estadisticas: "Estadísticas",
+  publicacion: "Publicación masiva",
+};
+
+// The builder section where the assignment window of an evaluation is extended (evaluation-authoring route).
+export function buildAssignmentSectionUrl(evaluationId: string): string {
+  return `/evaluations/manage/${encodeURIComponent(evaluationId)}/edit?section=asignacion`;
+}

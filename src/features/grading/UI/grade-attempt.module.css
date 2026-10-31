@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grade attempt styles
-* Descripción: Layout of the staff page /grading/attempts/[attemptId]: centered column, header actions, the attempt summary (status, publication, grade colored with the semantic success/error tokens from the API pass state), the sticky question navigator next to the question cards (stacked on narrow screens), the answer cards with their dirty marker, scores, staff references, grading fields and the rubric breakdown table, and the AI feedback panel with its status colors. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (G2 review W1): the read-only previous teacher comment above the grading fields.
-* Versión: 1.1
+* Descripción: Layout of the staff page /grading/attempts/[attemptId]: centered column, header actions, the attempt summary (status, publication, grade colored with the semantic success/error tokens from the API pass state), the sticky question navigator next to the question cards (stacked on narrow screens), the answer cards with their dirty marker, scores, staff references, grading fields and the rubric breakdown table, and the AI feedback panel with its status colors. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (G2 review W1): the read-only previous teacher comment above the grading fields. v1.2 (Bloque 3): review pane header inside the unified grading screen.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -315,4 +315,26 @@
 .page :focus-visible {
   outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
   outline-offset: var(--vl-focus-ring-offset);
+}
+
+/* Bloque 3 (W7): review pane inside the unified grading screen. */
+
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  min-width: 0;
+}
+
+.paneHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.paneTitle {
+  margin: 0;
+  font: var(--mui-font-h6);
 }
