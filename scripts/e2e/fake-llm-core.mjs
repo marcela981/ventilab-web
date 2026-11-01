@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Fake LLM core (automated tests)
-* Descripción: Pure helpers of the fake OpenAI-compatible chat completions server used by the Block 2 E2E specs (TutorAI deepen, questions, notes analysis): option parsing, the deterministic reply for a request (JSON with `onTopic` and a notes analysis when the caller asks for JSON or a full completion, a Spanish markdown answer when it streams), the split of that answer into delta chunks and the OpenAI SSE frames (deltas, usage, [DONE]). Without real provider keys the backend has no fake provider; pointing OPENAI_BASE_URL at this server exercises the real server path (conversation, messages, AI call telemetry and ratings). Depends on nothing.
-* Versión: 0.1
+* Descripción: Pure helpers of the fake OpenAI-compatible chat completions server used by the Block 2 E2E specs (TutorAI deepen, questions, notes analysis): option parsing, the deterministic reply for a request (JSON with `onTopic` and a notes analysis when the caller asks for JSON or a full completion, a Spanish markdown answer when it streams), the split of that answer into delta chunks and the OpenAI SSE frames (deltas, usage, [DONE]). Without real provider keys the backend has no fake provider; pointing OPENAI_BASE_URL at this server exercises the real server path (conversation, messages, AI call telemetry and ratings). Depends on nothing. v0.2 (Bloque 3, Ola 4): a grade feedback prompt (it asks for the `{"overall": …, "perQuestion": …}` JSON) gets a parseable grade feedback with a fixed overall text, so the evaluation result shows LLM feedback instead of the deterministic fallback.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -67,8 +67,20 @@ export const JSON_ANSWER = {
   suggestions: ["Repasar la diferencia entre presión pico y presión meseta"],
 };
 
+export const GRADE_FEEDBACK_ANSWER = {
+  overall: "Retroalimentación de prueba (proveedor falso de E2E): repasa las preguntas que fallaste y vuelve a intentarlo.",
+  perQuestion: [],
+};
+
+// The grade feedback prompt of the backend ends with its JSON format: {"overall": "...", "perQuestion": [...]}.
+const isGradeFeedbackRequest = (body) => /"overall"/.test(promptText(body)) && /"perQuestion"/.test(promptText(body));
+
 /** Text the fake answers for one chat completions request body. */
 export function replyFor(body) {
+  if (isGradeFeedbackRequest(body)) {
+    return JSON.stringify(GRADE_FEEDBACK_ANSWER);
+  }
+
   return body?.stream === true && body?.response_format?.type !== "json_object" ? STREAM_ANSWER : JSON.stringify(JSON_ANSWER);
 }
 
