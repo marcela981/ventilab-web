@@ -1,0 +1,2083 @@
+{
+  "meta": {
+    "label": "after",
+    "runs": 5,
+    "warmupRoundsDiscarded": 1,
+    "cpuThrottlingRate": 4,
+    "settleMs": 3000,
+    "autosaveSamplesPerRound": 0,
+    "network": "localhost, no network throttling",
+    "storageState": "e2e/.auth/student.json",
+    "student": "estudiante01@ventylab.demo",
+    "ids": {
+      "introEvaluationId": "45ebe14d-7313-5e93-b1ea-92f0a60b25fd",
+      "playerEvaluationId": "45ebe14d-7313-5e93-b1ea-92f0a60b25fd",
+      "playerAttemptId": "01a1946c-2b75-704a-8624-71666c785da1",
+      "resultEvaluationId": "b3dbecb8-e6fe-5de8-bedc-6ba265b77444",
+      "resultAttemptId": "3c56d675-4709-5c96-9113-1ae365ef3b5e"
+    },
+    "webCommit": "0fa9145",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-11-01T00:13:54.063Z",
+    "definitions": {
+      "contentMs": "page performance.now() at the first visible match of the content selector (MutationObserver); 0 = navigation start (cold/warm) or the click (start)",
+      "apiDepth": "sequential waves among API requests until the content: wave = 1 + highest wave of the API requests that had finished before it started",
+      "depthWithChunks": "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound",
+      "secondary": "attempt-result only: same metrics until the overall AI feedback section is visible (full useful content of a published result)",
+      "warm": "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
+      "start": "client-side navigation intro → player by clicking Continuar intento/Comenzar (idempotent start endpoint), measured to the first question",
+      "autosave": "pick another option of question 1: clickToPutStartMs includes the client debounce; putMs = PUT duration on the network; clickToSavedMs = click → status line shows the saved text again"
+    }
+  },
+  "screens": {
+    "evaluations-list": {
+      "url": "/evaluations",
+      "contentSelector": "ul[aria-label^=\"Evaluaciones\"] > li article, [role=\"group\"][aria-label^=\"Evaluaciones\"] li article",
+      "secondarySelector": null,
+      "median": {
+        "cold": {
+          "contentMs": 2189,
+          "api": 2,
+          "apiDepth": 2,
+          "chunksNetwork": 24,
+          "chunksFromCache": 0,
+          "depthWithChunks": 8,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 7,
+          "longTasksMsUntilContent": 1680,
+          "longTasksUntilSettle": 8,
+          "longTasksMsUntilSettle": 1716,
+          "longTaskMaxMs": 460
+        },
+        "warm": {
+          "contentMs": 932,
+          "api": 2,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 24,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 4,
+          "longTasksMsUntilContent": 419,
+          "longTasksUntilSettle": 4,
+          "longTasksMsUntilSettle": 426,
+          "longTaskMaxMs": 167
+        }
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2477,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 24,
+              "chunksFromCache": 0,
+              "depthWithChunks": 8,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 7,
+                "totalMs": 1888,
+                "maxMs": 542
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 2011,
+                "maxMs": 542
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 921,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 24,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 426,
+                "maxMs": 167
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 426,
+                "maxMs": 167
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2093,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 24,
+              "chunksFromCache": 0,
+              "depthWithChunks": 9,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 7,
+                "totalMs": 1656,
+                "maxMs": 460
+              },
+              "untilSettle": {
+                "count": 8,
+                "totalMs": 1716,
+                "maxMs": 460
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 989,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 24,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 419,
+                "maxMs": 145
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 419,
+                "maxMs": 145
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2178,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 24,
+              "chunksFromCache": 0,
+              "depthWithChunks": 8,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 7,
+                "totalMs": 1631,
+                "maxMs": 407
+              },
+              "untilSettle": {
+                "count": 7,
+                "totalMs": 1631,
+                "maxMs": 407
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 885,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 24,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 377,
+                "maxMs": 181
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 377,
+                "maxMs": 181
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2189,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 24,
+              "chunksFromCache": 0,
+              "depthWithChunks": 8,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 7,
+                "totalMs": 1680,
+                "maxMs": 394
+              },
+              "untilSettle": {
+                "count": 7,
+                "totalMs": 1680,
+                "maxMs": 394
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1003,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 24,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 435,
+                "maxMs": 182
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 435,
+                "maxMs": 182
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2314,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 24,
+              "chunksFromCache": 0,
+              "depthWithChunks": 9,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 8,
+                "totalMs": 1876,
+                "maxMs": 464
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 1927,
+                "maxMs": 464
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 932,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 24,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 14
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 416,
+                "maxMs": 149
+              },
+              "untilSettle": {
+                "count": 5,
+                "totalMs": 471,
+                "maxMs": 149
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evaluation-intro": {
+      "url": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd",
+      "contentSelector": "section[aria-label=\"Instrucciones\"]",
+      "secondarySelector": null,
+      "median": {
+        "cold": {
+          "contentMs": 2472,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 33,
+          "chunksFromCache": 0,
+          "depthWithChunks": 14,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 10,
+          "longTasksMsUntilContent": 1583,
+          "longTasksUntilSettle": 12,
+          "longTasksMsUntilSettle": 1750,
+          "longTaskMaxMs": 291
+        },
+        "warm": {
+          "contentMs": 922,
+          "api": 2,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 25,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 3,
+          "longTasksMsUntilContent": 351,
+          "longTasksUntilSettle": 3,
+          "longTasksMsUntilSettle": 364,
+          "longTaskMaxMs": 125
+        },
+        "start": {
+          "to": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+          "contentMs": 506,
+          "api": 3,
+          "apiDepth": 3,
+          "chunksNetwork": 0,
+          "chunksFromCache": 0,
+          "depthWithChunks": 3,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 1,
+          "longTasksMsUntilContent": 190,
+          "longTasksUntilSettle": 2,
+          "longTasksMsUntilSettle": 213,
+          "longTaskMaxMs": 176
+        }
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2502,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 33,
+              "chunksFromCache": 0,
+              "depthWithChunks": 14,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1625,
+                "maxMs": 291
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1760,
+                "maxMs": 291
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 884,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 25,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 34
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 313,
+                "maxMs": 121
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 371,
+                "maxMs": 121
+              }
+            }
+          },
+          "start": {
+            "to": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+            "contentMs": 506,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 0,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "POST /api/my-evaluations/1ce8e6d2-89be-5af2-bc21-4ca1a54023e0/attempts",
+                "GET /api/my-evaluations",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 2,
+                "totalMs": 243,
+                "maxMs": 175
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 351,
+                "maxMs": 175
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2545,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 33,
+              "chunksFromCache": 0,
+              "depthWithChunks": 14,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1720,
+                "maxMs": 308
+              },
+              "untilSettle": {
+                "count": 13,
+                "totalMs": 1862,
+                "maxMs": 308
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 922,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 25,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 34
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 379,
+                "maxMs": 135
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 379,
+                "maxMs": 135
+              }
+            }
+          },
+          "start": {
+            "to": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+            "contentMs": 503,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 0,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "POST /api/my-evaluations/1ce8e6d2-89be-5af2-bc21-4ca1a54023e0/attempts",
+                "GET /api/my-evaluations",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 1,
+                "totalMs": 190,
+                "maxMs": 190
+              },
+              "untilSettle": {
+                "count": 1,
+                "totalMs": 190,
+                "maxMs": 190
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2472,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 33,
+              "chunksFromCache": 0,
+              "depthWithChunks": 14,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1583,
+                "maxMs": 287
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1750,
+                "maxMs": 287
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 876,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 25,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 34
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 364,
+                "maxMs": 161
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 364,
+                "maxMs": 161
+              }
+            }
+          },
+          "start": {
+            "to": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+            "contentMs": 518,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 0,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "POST /api/my-evaluations/1ce8e6d2-89be-5af2-bc21-4ca1a54023e0/attempts",
+                "GET /api/my-evaluations",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 1,
+                "totalMs": 176,
+                "maxMs": 176
+              },
+              "untilSettle": {
+                "count": 2,
+                "totalMs": 238,
+                "maxMs": 176
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2317,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 33,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 8,
+                "totalMs": 1364,
+                "maxMs": 245
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1546,
+                "maxMs": 245
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1083,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 33,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 351,
+                "maxMs": 125
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 351,
+                "maxMs": 125
+              }
+            }
+          },
+          "start": {
+            "to": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+            "contentMs": 507,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 0,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "POST /api/my-evaluations/1ce8e6d2-89be-5af2-bc21-4ca1a54023e0/attempts",
+                "GET /api/my-evaluations",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 1,
+                "totalMs": 202,
+                "maxMs": 202
+              },
+              "untilSettle": {
+                "count": 1,
+                "totalMs": 202,
+                "maxMs": 202
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2281,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 33,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1494,
+                "maxMs": 295
+              },
+              "untilSettle": {
+                "count": 13,
+                "totalMs": 1683,
+                "maxMs": 295
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 995,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 33,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 26
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 321,
+                "maxMs": 124
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 321,
+                "maxMs": 124
+              }
+            }
+          },
+          "start": {
+            "to": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+            "contentMs": 474,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 0,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "POST /api/my-evaluations/1ce8e6d2-89be-5af2-bc21-4ca1a54023e0/attempts",
+                "GET /api/my-evaluations",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 0
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 1,
+                "totalMs": 163,
+                "maxMs": 163
+              },
+              "untilSettle": {
+                "count": 2,
+                "totalMs": 213,
+                "maxMs": 163
+              }
+            }
+          }
+        }
+      ]
+    },
+    "attempt-player": {
+      "url": "/evaluations/45ebe14d-7313-5e93-b1ea-92f0a60b25fd/attempts/01a1946c-2b75-704a-8624-71666c785da1",
+      "contentSelector": "section[aria-label^=\"Pregunta 1\"]",
+      "secondarySelector": null,
+      "median": {
+        "cold": {
+          "contentMs": 2492,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 38,
+          "chunksFromCache": 0,
+          "depthWithChunks": 13,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 10,
+          "longTasksMsUntilContent": 1600,
+          "longTasksUntilSettle": 11,
+          "longTasksMsUntilSettle": 1660,
+          "longTaskMaxMs": 242
+        },
+        "warm": {
+          "contentMs": 973,
+          "api": 2,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 29,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 3,
+          "longTasksMsUntilContent": 385,
+          "longTasksUntilSettle": 3,
+          "longTasksMsUntilSettle": 401,
+          "longTaskMaxMs": 185
+        }
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2289,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1361,
+                "maxMs": 222
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1482,
+                "maxMs": 222
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 969,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 377,
+                "maxMs": 193
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 450,
+                "maxMs": 193
+              }
+            }
+          },
+          "autosave": []
+        },
+        {
+          "cold": {
+            "contentMs": 2293,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1448,
+                "maxMs": 242
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 1448,
+                "maxMs": 242
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 973,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 401,
+                "maxMs": 187
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 401,
+                "maxMs": 187
+              }
+            }
+          },
+          "autosave": []
+        },
+        {
+          "cold": {
+            "contentMs": 2591,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1656,
+                "maxMs": 271
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1718,
+                "maxMs": 271
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1058,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 400,
+                "maxMs": 181
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 400,
+                "maxMs": 181
+              }
+            }
+          },
+          "autosave": []
+        },
+        {
+          "cold": {
+            "contentMs": 2525,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 14,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1607,
+                "maxMs": 242
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1667,
+                "maxMs": 242
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 973,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 385,
+                "maxMs": 185
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 472,
+                "maxMs": 185
+              }
+            }
+          },
+          "autosave": []
+        },
+        {
+          "cold": {
+            "contentMs": 2492,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1600,
+                "maxMs": 289
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1660,
+                "maxMs": 289
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 970,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a1946c-2b75-704a-8624-71666c785da1"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 385,
+                "maxMs": 166
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 385,
+                "maxMs": 166
+              }
+            }
+          },
+          "autosave": []
+        }
+      ]
+    },
+    "attempt-result": {
+      "url": "/evaluations/b3dbecb8-e6fe-5de8-bedc-6ba265b77444/attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/result",
+      "contentSelector": "section[aria-label=\"Resultado\"], #attempt-result-status",
+      "secondarySelector": "section[aria-label=\"Retroalimentación general\"]",
+      "median": {
+        "cold": {
+          "contentMs": 2647,
+          "api": 4,
+          "apiDepth": 3,
+          "chunksNetwork": 38,
+          "chunksFromCache": 0,
+          "depthWithChunks": 15,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 10,
+          "longTasksMsUntilContent": 1716,
+          "longTasksUntilSettle": 12,
+          "longTasksMsUntilSettle": 1843,
+          "longTaskMaxMs": 390
+        },
+        "warm": {
+          "contentMs": 1133,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 29,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 3,
+          "longTasksMsUntilContent": 391,
+          "longTasksUntilSettle": 5,
+          "longTasksMsUntilSettle": 513,
+          "longTaskMaxMs": 166
+        },
+        "coldSecondary": {
+          "contentMs": 2647,
+          "api": 4,
+          "apiDepth": 3,
+          "chunksNetwork": 38,
+          "chunksFromCache": 0,
+          "depthWithChunks": 15,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 10,
+          "longTasksMsUntilContent": 1716,
+          "longTasksUntilSettle": 12,
+          "longTasksMsUntilSettle": 1843,
+          "longTaskMaxMs": 390
+        },
+        "warmSecondary": {
+          "contentMs": 1133,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 29,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 4,
+          "longTasksMsUntilContent": 410,
+          "longTasksUntilSettle": 5,
+          "longTasksMsUntilSettle": 513,
+          "longTaskMaxMs": 166
+        }
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2660,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 15,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1752,
+                "maxMs": 390
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1975,
+                "maxMs": 390
+              }
+            },
+            "secondary": {
+              "contentMs": 2756,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 3,
+                "chunksNetwork": 38,
+                "chunksFromCache": 0,
+                "depthWithChunks": 15,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 10,
+                  "totalMs": 1828,
+                  "maxMs": 390
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1975,
+                  "maxMs": 390
+                }
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 990,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 391,
+                "maxMs": 173
+              },
+              "untilSettle": {
+                "count": 5,
+                "totalMs": 513,
+                "maxMs": 173
+              }
+            },
+            "secondary": {
+              "contentMs": 991,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 2,
+                "chunksNetwork": 0,
+                "chunksFromCache": 29,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/notifications/unread-count"
+                ],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 3,
+                  "totalMs": 391,
+                  "maxMs": 173
+                },
+                "untilSettle": {
+                  "count": 5,
+                  "totalMs": 513,
+                  "maxMs": 173
+                }
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2536,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 15,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1716,
+                "maxMs": 357
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1843,
+                "maxMs": 357
+              }
+            },
+            "secondary": {
+              "contentMs": 2537,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 3,
+                "chunksNetwork": 38,
+                "chunksFromCache": 0,
+                "depthWithChunks": 15,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 10,
+                  "totalMs": 1716,
+                  "maxMs": 357
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1843,
+                  "maxMs": 357
+                }
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1277,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 5,
+                "totalMs": 638,
+                "maxMs": 279
+              },
+              "untilSettle": {
+                "count": 8,
+                "totalMs": 813,
+                "maxMs": 279
+              }
+            },
+            "secondary": {
+              "contentMs": 1277,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 2,
+                "chunksNetwork": 0,
+                "chunksFromCache": 29,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/notifications/unread-count"
+                ],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 5,
+                  "totalMs": 638,
+                  "maxMs": 279
+                },
+                "untilSettle": {
+                  "count": 8,
+                  "totalMs": 813,
+                  "maxMs": 279
+                }
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2902,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 16,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1984,
+                "maxMs": 494
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 2142,
+                "maxMs": 494
+              }
+            },
+            "secondary": {
+              "contentMs": 2902,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 3,
+                "chunksNetwork": 38,
+                "chunksFromCache": 0,
+                "depthWithChunks": 16,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 10,
+                  "totalMs": 1984,
+                  "maxMs": 494
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 2142,
+                  "maxMs": 494
+                }
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 996,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 38,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 293,
+                "maxMs": 138
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 293,
+                "maxMs": 138
+              }
+            },
+            "secondary": {
+              "contentMs": 997,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 2,
+                "chunksNetwork": 0,
+                "chunksFromCache": 38,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 3,
+                  "totalMs": 293,
+                  "maxMs": 138
+                },
+                "untilSettle": {
+                  "count": 3,
+                  "totalMs": 293,
+                  "maxMs": 138
+                }
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2647,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 16,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1707,
+                "maxMs": 388
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1838,
+                "maxMs": 388
+              }
+            },
+            "secondary": {
+              "contentMs": 2647,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 3,
+                "chunksNetwork": 38,
+                "chunksFromCache": 0,
+                "depthWithChunks": 16,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 10,
+                  "totalMs": 1707,
+                  "maxMs": 388
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1838,
+                  "maxMs": 388
+                }
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1133,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 6,
+                "totalMs": 620,
+                "maxMs": 166
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 824,
+                "maxMs": 166
+              }
+            },
+            "secondary": {
+              "contentMs": 1133,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 2,
+                "chunksNetwork": 0,
+                "chunksFromCache": 29,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [
+                  "GET /api/notifications/unread-count"
+                ],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 620,
+                  "maxMs": 166
+                },
+                "untilSettle": {
+                  "count": 9,
+                  "totalMs": 824,
+                  "maxMs": 166
+                }
+              }
+            }
+          }
+        },
+        {
+          "cold": {
+            "contentMs": 2602,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 14,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 8,
+                "totalMs": 1641,
+                "maxMs": 396
+              },
+              "untilSettle": {
+                "count": 10,
+                "totalMs": 1803,
+                "maxMs": 396
+              }
+            },
+            "secondary": {
+              "contentMs": 2602,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 2,
+                "chunksNetwork": 38,
+                "chunksFromCache": 0,
+                "depthWithChunks": 14,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 8,
+                  "totalMs": 1641,
+                  "maxMs": 396
+                },
+                "untilSettle": {
+                  "count": 10,
+                  "totalMs": 1803,
+                  "maxMs": 396
+                }
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1170,
+            "untilContent": {
+              "api": 4,
+              "apiDepth": 3,
+              "chunksNetwork": 0,
+              "chunksFromCache": 38,
+              "depthWithChunks": 4,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 341,
+                "maxMs": 159
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 410,
+                "maxMs": 159
+              }
+            },
+            "secondary": {
+              "contentMs": 1257,
+              "untilContent": {
+                "api": 4,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 38,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e",
+                  "GET /api/evaluation-attempts/3c56d675-4709-5c96-9113-1ae365ef3b5e/feedback"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 11
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 4,
+                  "totalMs": 410,
+                  "maxMs": 159
+                },
+                "untilSettle": {
+                  "count": 4,
+                  "totalMs": 410,
+                  "maxMs": 159
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

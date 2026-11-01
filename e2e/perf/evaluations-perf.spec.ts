@@ -535,7 +535,10 @@ async function resolveIds(): Promise<Ids> {
         throw new Error(`Attempt start failed: ${started.status()} ${await started.text()}`);
       }
 
-      playerAttemptId = unwrap<{ attemptId: string }>(await started.json()).attemptId;
+      // The start endpoint answers the attempt as `id` (the July-era servers answered `attemptId`).
+      const startedAttempt = unwrap<{ id?: string, attemptId?: string }>(await started.json());
+
+      playerAttemptId = startedAttempt.id ?? startedAttempt.attemptId ?? "";
       playerItem = startable;
     }
 

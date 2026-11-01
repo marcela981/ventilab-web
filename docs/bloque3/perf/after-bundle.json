@@ -1,0 +1,41 @@
+{
+  "measuredAt": "2026-11-01T00:09:33.731Z",
+  "shared": {
+    "gzipKb": 204.3,
+    "rawKb": 622.5
+  },
+  "routes": [
+    {
+      "route": "/evaluations",
+      "present": true,
+      "pageOnlyGzipKb": 69.2,
+      "pageOnlyRawKb": 200.8,
+      "firstLoadGzipKb": 273.5,
+      "firstLoadRawKb": 823.3
+    },
+    {
+      "route": "/evaluations/[evaluationId]",
+      "present": true,
+      "pageOnlyGzipKb": 65.2,
+      "pageOnlyRawKb": 188.8,
+      "firstLoadGzipKb": 269.5,
+      "firstLoadRawKb": 811.3
+    },
+    {
+      "route": "/evaluations/[evaluationId]/attempts/[attemptId]",
+      "present": true,
+      "pageOnlyGzipKb": 95.9,
+      "pageOnlyRawKb": 283.2,
+      "firstLoadGzipKb": 300.2,
+      "firstLoadRawKb": 905.7
+    },
+    {
+      "route": "/evaluations/[evaluationId]/attempts/[attemptId]/result",
+      "present": true,
+      "pageOnlyGzipKb": 89.4,
+      "pageOnlyRawKb": 262.1,
+      "firstLoadGzipKb": 293.7,
+      "firstLoadRawKb": 884.6
+    }
+  ]
+}
