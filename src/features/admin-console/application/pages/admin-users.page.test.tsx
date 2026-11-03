@@ -310,7 +310,8 @@ describe("AdminUsersPage", () => {
 
     expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.changeRole })).toBeDisabled();
     expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.deactivate })).toBeDisabled();
-    expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.editCode })).toBeEnabled();
+    expect(within(root).getByRole("button", { name: USERS_TABLE_COPY.editCode })).toBeDisabled();
+    expect(within(rowActions("Ana Gómez")).getByRole("button", { name: USERS_TABLE_COPY.editCode })).toBeEnabled();
     expect(screen.getByText(USERS_TABLE_COPY.superadmin)).toBeInTheDocument();
     expect(screen.getByText(SUPERADMIN_PROTECTED_MESSAGE)).toBeInTheDocument();
     expect(within(rowActions("Ana Gómez")).getByRole("button", { name: USERS_TABLE_COPY.changeRole })).toBeEnabled();
