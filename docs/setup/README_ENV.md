@@ -38,23 +38,10 @@ NEXT_PUBLIC_API_URL="http://localhost:3001"
 
 **Por qué:** El backend expone las rutas bajo `/api`, por lo que todas las peticiones deben incluir este prefijo.
 
-### `NEXTAUTH_URL`
-Debe coincidir con la URL donde corre Next.js:
+### `NEXT_PUBLIC_GOOGLE_CLIENT_ID`
+ID de cliente OAuth de Google Identity Services (es público por diseño). Si está vacío, el botón de Google no se muestra y solo queda el ingreso con correo. El secreto del cliente de Google vive únicamente en el backend.
 
-```env
-# Desarrollo
-NEXTAUTH_URL="http://localhost:3000"
-
-# Producción
-NEXTAUTH_URL="https://tu-dominio.com"
-```
-
-### `DATABASE_URL`
-URL de conexión a PostgreSQL para NextAuth:
-
-```env
-DATABASE_URL="postgresql://usuario:password@host:puerto/database?schema=public"
-```
+La sesión la emite el backend (token de acceso y token de refresco); la web no tiene base de datos ni secretos de autenticación propios.
 
 ## 🚀 Configuración Rápida
 
@@ -79,9 +66,7 @@ Configura las variables de entorno en el panel de tu hosting:
 
 ```
 NEXT_PUBLIC_API_URL=https://tu-backend.com/api
-NEXTAUTH_URL=https://tu-dominio.com
-NEXTAUTH_SECRET=tu-secret-de-produccion
-DATABASE_URL=tu-database-url-de-produccion
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=tu-client-id-de-google
 ```
 
 ## 🔍 Verificación
@@ -112,12 +97,11 @@ console.log(process.env.NEXT_PUBLIC_API_URL)
 2. Reinicia el servidor Next.js: `npm run dev`
 3. Limpia el caché: `Remove-Item -Recurse -Force .next`
 
-### Problema: NextAuth no funciona
+### Problema: El botón de Google no aparece
 
 **Solución:**
-1. Verifica que `NEXTAUTH_SECRET` esté configurado
-2. Verifica que `NEXTAUTH_URL` coincida con la URL del frontend
-3. Verifica que `DATABASE_URL` sea correcta y la BD esté accesible
+1. Verifica que `NEXT_PUBLIC_GOOGLE_CLIENT_ID` esté configurado
+2. Reinicia el servidor Next.js (las variables `NEXT_PUBLIC_*` se incrustan al compilar)
 
 ### Problema: Variables no se cargan
 
@@ -138,4 +122,4 @@ console.log(process.env.NEXT_PUBLIC_API_URL)
 - `.env.local` - Variables de desarrollo local (creado)
 - `.env.local.example` - Template para otros desarrolladores
 - `src/services/api/progressService.js` - Usa `NEXT_PUBLIC_API_URL`
-- `lib/auth.ts` - Usa `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
+- `.env.example` - Plantilla con todas las variables que lee la web
