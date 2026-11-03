@@ -20628,7 +20628,7 @@ export interface components {
              */
             id: string;
             /**
-             * @description Profile image URL
+             * @description Profile image URL: a signed URL of the uploaded photo (it expires; read it again instead of storing it), or else the stored image (the Google picture)
              * @example https://example.com/avatar.png
              */
             image: string | null;
