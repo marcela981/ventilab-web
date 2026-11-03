@@ -6692,7 +6692,7 @@ export interface paths {
         };
         /**
          * Get student by ID
-         * @description Retrieves a student with their lesson progress summary. Teachers only see students assigned to them.
+         * @description Retrieves a student with their institutional code, active STUDENT groups and lesson progress summary. Teachers only see students of the groups they created or supervise (or assigned to them).
          *
          *     **Required access:** bearer token holding `students:read`; minimum role TEACHER.
          */
@@ -9089,7 +9089,7 @@ export interface components {
              */
             id: string;
             /**
-             * @description Profile image URL
+             * @description Profile image URL, same as UserDTO.image: a signed URL of the uploaded photo (it expires; read it again instead of storing it), or else the stored image (the Google picture)
              * @example https://example.com/avatar.png
              */
             image: string | null;
@@ -20620,6 +20620,8 @@ export interface components {
              * @example student@ventylab.com
              */
             email: string;
+            /** @description Active STUDENT groups of the student, in joining order */
+            groups: components["schemas"]["StudentGroupDTO"][];
             /**
              * @description Student unique identifier
              * @example cm5x2k9a00000abcd1234efgh
@@ -20643,6 +20645,11 @@ export interface components {
             role: "STUDENT" | "TEACHER" | "ADMIN";
             /** @description Lesson progress summary */
             stats: components["schemas"]["StudentProgressDTO"];
+            /**
+             * @description Institutional student code
+             * @example 2026-0001
+             */
+            studentCode: string | null;
             /**
              * Format: date-time
              * @description Last update timestamp
@@ -20795,6 +20802,18 @@ export interface components {
             averageGrade: number | null;
             /** @description Counted grade per evaluation */
             evaluations: components["schemas"]["StudentEvaluationGradeDTO"][];
+        };
+        StudentGroupDTO: {
+            /**
+             * @description Group ID
+             * @example cm5group01
+             */
+            id: string;
+            /**
+             * @description Group name
+             * @example Grupo A
+             */
+            name: string;
         };
         StudentGroupLeaderDTO: {
             /**

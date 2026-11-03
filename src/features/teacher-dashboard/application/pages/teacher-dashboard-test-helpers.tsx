@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard test helpers
-* Descripción: Shared fixtures of the teacher dashboard tests: backend URL, envelope with pagination, error response, DTO builders typed against the generated schema (group, dashboard row, evaluation stats, timeline entry, assignment, grading queue item, reservation, student, progress summary, curriculum tree) and a renderer that wraps the UI in a fresh SWR cache, an authenticated TEACHER session and the global ToastProvider. v1.1 (O3 review): the test SWR config keeps previous data like the app (API_SWR_CONFIG), so group switches are tested under the real default. v1.2 (closure B1): fixtures carry the new contract fields (progress item titles, row risk fields and last activity, stats groupId). Depends on Testing Library, msw, SWR, the design-system toast, the session context and the teacher dashboard DTOs.
-* Versión: 1.2
+* Descripción: Shared fixtures of the teacher dashboard tests: backend URL, envelope with pagination, error response, DTO builders typed against the generated schema (group, dashboard row, evaluation stats, timeline entry, assignment, grading queue item, reservation, student, progress summary, curriculum tree) and a renderer that wraps the UI in a fresh SWR cache, an authenticated TEACHER session and the global ToastProvider. v1.1 (O3 review): the test SWR config keeps previous data like the app (API_SWR_CONFIG), so group switches are tested under the real default. v1.2 (closure B1): fixtures carry the new contract fields (progress item titles, row risk fields and last activity, stats groupId). v1.3 (Bloque 4 integration): the student fixture carries studentCode and groups and takes overrides. Depends on Testing Library, msw, SWR, the design-system toast, the session context and the teacher dashboard DTOs.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -197,16 +197,19 @@ export function reservationDto(id: string, groupId: string | null, purpose: stri
   };
 }
 
-export function studentDto(id: string, name: string): StudentDTO {
+export function studentDto(id: string, name: string, overrides: Partial<StudentDTO> = {}): StudentDTO {
   return {
     createdAt: "2026-01-01T00:00:00.000Z",
     email: `${id}@ventylab.demo`,
+    groups: [],
     id,
     image: null,
     name,
     role: "STUDENT",
     stats: { completedLessons: 4, lastAccess: "2026-10-15T20:00:00.000Z", progressPercentage: 40, totalLessons: 10, totalTimeSpent: 120 },
+    studentCode: null,
     updatedAt: "2026-01-01T00:00:00.000Z",
+    ...overrides,
   };
 }
 

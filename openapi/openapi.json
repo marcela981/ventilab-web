@@ -3424,7 +3424,7 @@
             "type": "string"
           },
           "image": {
-            "description": "Profile image URL",
+            "description": "Profile image URL, same as UserDTO.image: a signed URL of the uploaded photo (it expires; read it again instead of storing it), or else the stored image (the Google picture)",
             "example": "https://example.com/avatar.png",
             "type": [
               "string",
@@ -22250,6 +22250,13 @@
             "format": "email",
             "type": "string"
           },
+          "groups": {
+            "description": "Active STUDENT groups of the student, in joining order",
+            "items": {
+              "$ref": "#/components/schemas/StudentGroupDTO"
+            },
+            "type": "array"
+          },
           "id": {
             "description": "Student unique identifier",
             "example": "cm5x2k9a00000abcd1234efgh",
@@ -22289,6 +22296,14 @@
             ],
             "description": "Lesson progress summary"
           },
+          "studentCode": {
+            "description": "Institutional student code",
+            "example": "2026-0001",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "updatedAt": {
             "description": "Last update timestamp",
             "example": "2024-01-20T14:45:00.000Z",
@@ -22301,6 +22316,8 @@
           "email",
           "name",
           "role",
+          "studentCode",
+          "groups",
           "image",
           "createdAt",
           "updatedAt",
@@ -22626,6 +22643,25 @@
         "required": [
           "averageGrade",
           "evaluations"
+        ],
+        "type": "object"
+      },
+      "StudentGroupDTO": {
+        "properties": {
+          "id": {
+            "description": "Group ID",
+            "example": "cm5group01",
+            "type": "string"
+          },
+          "name": {
+            "description": "Group name",
+            "example": "Grupo A",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
         ],
         "type": "object"
       },
@@ -78924,7 +78960,7 @@
     },
     "/api/users/students/{id}": {
       "get": {
-        "description": "Retrieves a student with their lesson progress summary. Teachers only see students assigned to them.\n\n**Required access:** bearer token holding `students:read`; minimum role TEACHER.",
+        "description": "Retrieves a student with their institutional code, active STUDENT groups and lesson progress summary. Teachers only see students of the groups they created or supervise (or assigned to them).\n\n**Required access:** bearer token holding `students:read`; minimum role TEACHER.",
         "operationId": "getStudentById",
         "parameters": [
           {
