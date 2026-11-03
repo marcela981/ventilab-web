@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher general tab mapper and entities tests
-* Descripción: Unit tests of the General tab of /teacher: toPlatformStatCards keeps the julio order and destinations and drops cards without a finite value; toRecentStudents uses the email when the name is blank and clamps the progress; greetingFor follows the Bogotá hour (UTC-5) and progressTone the julio thresholds. Depends on vitest, the teacher general mapper, DTOs and entities.
-* Versión: 1.0
+* Descripción: Unit tests of the General tab of /teacher: toPlatformStatCards keeps the julio order and destinations and drops cards without a finite value; toRecentStudents uses the email when the name is blank and clamps the progress; greetingFor follows the Bogotá hour (UTC-5) and progressTone the julio thresholds. Depends on vitest, the teacher general mapper and entities and the students directory DTOs.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { bogotaHour, greetingFor, progressTone } from "../../application/entities/teacher-general.entity";
-import type { AdminStudentListItemDTO, PlatformStatisticsDTO } from "../dtos/teacher-general.dto";
+import type { AdminStudentListItemDTO, PlatformStatisticsDTO } from "../dtos/students-directory.dto";
 import { toPlatformStatCards, toRecentStudents } from "./teacher-general.mapper";
 
 const studentRow = (overrides: Partial<AdminStudentListItemDTO>): AdminStudentListItemDTO => ({

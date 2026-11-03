@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Students directory entity
-* Descripción: Pure model of the students directory (/teacher/students): its tabs (Directorio, Estadísticas), the URL state (?page ?q ?sort ?scope; parsed leniently, defaults omitted when written back), the column sort toggle (name starts ascending, progress descending), the `GET /api/admin/students` query it maps to (scope "mine" → myGroups=true), the key that clears the row selection when the filter, search, sort or page change, the directory row and statistics card models and the Spanish load error message (a 403 names the directory). No dependencies besides the shared API error helpers and the teacher dashboard error messages.
-* Versión: 1.0
+* Descripción: Pure model of the students directory (/teacher/students): its tabs (Directorio, Estadísticas), the URL state (?page ?q ?sort ?scope; parsed leniently, defaults omitted when written back), the column sort toggle (name starts ascending, progress descending), the `GET /api/admin/students` query it maps to (scope "mine" → myGroups=true), the key that clears the row selection when the filter, search, sort or page change, the directory row model and the Spanish load error message (a 403 names the directory). No dependencies besides the shared API error helpers and the teacher dashboard error messages.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -130,10 +130,6 @@ export type DirectoryRow = {
 };
 
 export const rowDisplayName = (row: Pick<DirectoryRow, "name" | "email">): string => row.name?.trim() || row.email;
-
-export type DirectoryStatisticKey = "activeStudents" | "publishedModules" | "totalLessons" | "completionsToday";
-
-export type DirectoryStatisticCard = { key: DirectoryStatisticKey, value: number };
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const DIRECTORY_ERROR_COPY = {

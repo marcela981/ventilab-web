@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StatisticsPanel
-* Descripción: Estadísticas tab of /teacher/students (July's "Estadísticas Globales"): the four global cards of `GET /api/admin/statistics`: "Estudiantes activos" (last 30 days; July showed the total by mistake), "Módulos publicados", "Lecciones totales" (published) and "Completados hoy" (lessons, Bogotá day). A card without a number is hidden. States: skeleton, error with retry. Depends on React, the design-system states, the directory statistics hook, the students directory entity and CSS Module.
-* Versión: 1.0
+* Descripción: Estadísticas tab of /teacher/students (July's "Estadísticas Globales"): the four global cards of `GET /api/admin/statistics`: "Estudiantes activos" (last 30 days; July showed the total by mistake), "Módulos publicados", "Lecciones totales" (published) and "Completados hoy" (lessons, Bogotá day). A card without a number is hidden. States: skeleton, error with retry. Depends on React, the design-system states, the shared platform statistics hook, the students directory and teacher general entities and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,8 +14,8 @@ import { ErrorState } from "@shared/design-system/components/error-state";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { getDirectoryErrorMessage } from "../../entities/students-directory.entity";
-import type { DirectoryStatisticKey } from "../../entities/students-directory.entity";
-import { useDirectoryStatistics } from "../../hooks/use-directory-statistics";
+import type { PlatformStatKey } from "../../entities/teacher-general.entity";
+import { usePlatformStatistics } from "../../hooks/use-platform-statistics";
 import styles from "../../../UI/students-directory.module.css";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
@@ -29,13 +29,13 @@ export const STATISTICS_PANEL_COPY = {
     publishedModules: { title: "Módulos publicados", hint: "Visibles para los estudiantes" },
     totalLessons: { title: "Lecciones totales", hint: "Lecciones publicadas" },
     completionsToday: { title: "Completados hoy", hint: "Lecciones completadas hoy" },
-  } satisfies Record<DirectoryStatisticKey, { title: string, hint: string }>,
+  } satisfies Record<PlatformStatKey, { title: string, hint: string }>,
 } as const;
 
 const formatCount = (value: number): string => value.toLocaleString("es-CO");
 
 export function StatisticsPanel() {
-  const { cards, error, reload } = useDirectoryStatistics();
+  const { cards, error, reload } = usePlatformStatistics();
 
   if (error) {
     return (

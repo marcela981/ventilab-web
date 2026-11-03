@@ -16,7 +16,7 @@ import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from
 import { NavBadgeContext } from "@shared/layouts/nav-badges";
 import type { NavBadgeCounts } from "@shared/layouts/nav-badges";
 import type { Role } from "@shared/session/session.entity";
-import type { AdminStudentListItemDTO } from "../../../api/dtos/teacher-general.dto";
+import type { AdminStudentListItemDTO } from "../../../api/dtos/students-directory.dto";
 import { apiUrl, envelope, errorResponse, renderTeacherDashboard } from "../../pages/teacher-dashboard-test-helpers";
 import { GENERAL_TAB_COPY, GeneralTab } from "./general-tab";
 import { QUICK_ACTIONS_COPY } from "./quick-actions";

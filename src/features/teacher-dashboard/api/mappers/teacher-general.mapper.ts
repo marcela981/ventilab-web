@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher general tab mapper
-* Descripción: Maps the General tab DTOs to its entities. toPlatformStatCards turns `GET /api/admin/statistics` into the four julio cards in order (Estudiantes activos → /teacher/students, Módulos publicados → /content, Lecciones totales → /content, Completados hoy → /teacher/students) and drops every card whose value is missing or not a finite number (no synthetic data). toRecentStudents keeps id, display name (name, else email), progress clamped to 0–100 and canView of `GET /api/admin/students` rows. Depends on the teacher general DTOs, entities and the teacher dashboard routes.
-* Versión: 1.0
+* Descripción: Maps the General tab DTOs to its entities. toPlatformStatCards turns `GET /api/admin/statistics` into the four julio cards in order (Estudiantes activos → /teacher/students, Módulos publicados → /content, Lecciones totales → /content, Completados hoy → /teacher/students) and drops every card whose value is missing or not a finite number (no synthetic data). toRecentStudents keeps id, display name (name, else email), progress clamped to 0–100 and canView of `GET /api/admin/students` rows. Depends on the students directory DTOs, the teacher general entities and the teacher dashboard routes.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { TEACHER_STUDENTS_URL } from "../../application/config/teacher-dashboard.routes";
 import { CONTENT_URL } from "../../application/entities/teacher-general.entity";
 import type { PlatformStatCard, PlatformStatKey, RecentStudent } from "../../application/entities/teacher-general.entity";
-import type { AdminStudentListItemDTO, PlatformStatisticsDTO } from "../dtos/teacher-general.dto";
+import type { AdminStudentListItemDTO, PlatformStatisticsDTO } from "../dtos/students-directory.dto";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 const STAT_CARDS: readonly { key: PlatformStatKey, title: string, href: string }[] = [

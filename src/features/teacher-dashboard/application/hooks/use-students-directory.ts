@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStudentsDirectory
-* Descripción: Reads one page of `GET /api/admin/students` for the directory URL state (search by name, email or student code, server sort by name or progress, "Mis grupos" → myGroups=true, 25 rows per page) through useApiQuery, and maps the rows and the envelope pagination. keepPreviousData is off: a new page, search or filter never shows the previous rows as its own (the row selection belongs to the rows on screen). Depends on React, @shared/api-client and the students directory mapper, service and entity.
-* Versión: 1.0
+* Descripción: Reads one page of `GET /api/admin/students` for the directory URL state (search by name, email or student code, server sort by name or progress, "Mis grupos" → myGroups=true, 25 rows per page) through useApiQuery, and maps the rows and the envelope pagination. keepPreviousData is off: a new page, search or filter never shows the previous rows as its own (the row selection belongs to the rows on screen). Depends on React, @shared/api-client and the students directory mapper and entity and the teacher dashboard service.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import { useCallback, useMemo } from "react";
 import type { ApiError } from "@shared/api-client/api-error";
 import { useApiQuery } from "@shared/api-client/use-api-query";
 import { toDirectoryRow } from "../../api/mappers/students-directory.mapper";
-import { ADMIN_STUDENTS_PATH } from "../../api/services/students-directory.service";
+import { ADMIN_STUDENTS_PATH } from "../../api/services/teacher-dashboard.service";
 import { toAdminStudentsQuery } from "../entities/students-directory.entity";
 import type { DirectoryRow, DirectoryState } from "../entities/students-directory.entity";
 
