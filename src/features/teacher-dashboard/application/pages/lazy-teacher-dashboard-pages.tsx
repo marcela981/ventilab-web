@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lazy teacher dashboard pages
-* Descripción: Lazy entry points of /teacher (TeacherDashboardPage) and /teacher/students/[userId] (StudentDetailPage): each page module loads through React.lazy + retryImport inside RouteErrorBoundary and Suspense (skeleton fallback), so the feature barrel stays light. Depends on React, the design-system skeletons and route error boundary and @shared/lib/retry-import.
-* Versión: 1.0
+* Descripción: Lazy entry points of /teacher (TeacherDashboardPage), /teacher/students (StudentsDirectoryPage) and /teacher/students/[userId] (StudentDetailPage): each page module loads through React.lazy + retryImport inside RouteErrorBoundary and Suspense (skeleton fallback), so the feature barrel stays light. Depends on React, the design-system skeletons and route error boundary and @shared/lib/retry-import. v1.1 (W1 Bloque 4): StudentsDirectoryPage, the lazy entry of /teacher/students.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,10 @@ const LoadedTeacherDashboardPage = lazy(() =>
   retryImport(() => import("./teacher-dashboard.page")).then((module) => ({ default: module.TeacherDashboardPage })),
 );
 
+const LoadedStudentsDirectoryPage = lazy(() =>
+  retryImport(() => import("./students-directory.page")).then((module) => ({ default: module.StudentsDirectoryPage })),
+);
+
 const LoadedStudentDetailPage = lazy(() =>
   retryImport(() => import("./student-detail.page")).then((module) => ({ default: module.StudentDetailPage })),
 );
@@ -26,6 +30,7 @@ const LoadedStudentDetailPage = lazy(() =>
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 const LOADING_LABELS = {
   dashboard: "Cargando el panel docente…",
+  students: "Cargando los estudiantes…",
   student: "Cargando el estudiante…",
 } as const;
 
@@ -34,6 +39,16 @@ export function TeacherDashboardPage() {
     <RouteErrorBoundary>
       <Suspense fallback={<CardSkeleton label={LOADING_LABELS.dashboard} />}>
         <LoadedTeacherDashboardPage />
+      </Suspense>
+    </RouteErrorBoundary>
+  );
+}
+
+export function StudentsDirectoryPage() {
+  return (
+    <RouteErrorBoundary>
+      <Suspense fallback={<CardSkeleton label={LOADING_LABELS.students} />}>
+        <LoadedStudentsDirectoryPage />
       </Suspense>
     </RouteErrorBoundary>
   );

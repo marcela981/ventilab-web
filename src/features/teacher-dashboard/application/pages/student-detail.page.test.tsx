@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail page tests
-* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, published grades from `GET /api/evaluation-grading/students/{userId}/grades` linked to their attempt, the student's pending attempts from the queue filtered by `studentId` and paged with the API pagination, simulation sessions from `GET /api/simulation/sessions/history?userId` with the case title and replay links, the truncated flag and "Cargar anteriores" requesting the previous timeline window; the grades do not depend on ?groupId; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): grades, pending attempts and sessions come from the staff endpoints (no group dashboard row, no 50-row group queue scan and its warning, no sessions from the timeline). Depends on vitest, msw, Testing Library and the teacher dashboard test helpers. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null).
-* Versión: 1.3
+* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, published grades from `GET /api/evaluation-grading/students/{userId}/grades` linked to their attempt, the student's pending attempts from the queue filtered by `studentId` and paged with the API pagination, simulation sessions from `GET /api/simulation/sessions/history?userId` with the case title and replay links, the truncated flag and "Cargar anteriores" requesting the previous timeline window; the grades do not depend on ?groupId; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): grades, pending attempts and sessions come from the staff endpoints (no group dashboard row, no 50-row group queue scan and its warning, no sessions from the timeline). Depends on vitest, msw, Testing Library and the teacher dashboard test helpers. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null). v1.4 (W1 Bloque 4): the back link returns to the Grupo tab of /teacher (?tab=grupo&groupId=).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -169,7 +169,7 @@ describe("StudentDetailPage", () => {
 
     expect(await screen.findByRole("heading", { name: "Ana Gómez" })).toBeInTheDocument();
     expect(screen.getByText("u1@ventylab.demo")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: STUDENT_DETAIL_COPY.back })).toHaveAttribute("href", "/teacher?groupId=g1");
+    expect(screen.getByRole("link", { name: STUDENT_DETAIL_COPY.back })).toHaveAttribute("href", "/teacher?tab=grupo&groupId=g1");
 
     const progress = section(STUDENT_DETAIL_COPY.progressTitle);
 
