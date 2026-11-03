@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: StudentDetailPage
-* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the same profile, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); no read waits for another one. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. v2.1 (Bloque 4 integration): the code and groups come with the profile (no directory lookup). Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules.
+* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the same profile, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); no read waits for another one. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. v2.1 (Bloque 4 integration): the code and groups come with the profile (no directory lookup); the origin is read with readStudentDetailOrigin. Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules.
 * Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -25,13 +25,9 @@ import { StudentDetailContext } from "../components/detail/student-detail-contex
 import type { StudentDetailContextValue } from "../components/detail/student-detail-context";
 import { StudentDetailHeader } from "../components/detail/student-detail-header";
 import { StudentDetailTabs } from "../components/detail/student-detail-tabs";
-import {
-  buildStudentDetailBackUrl,
-  studentDetailBackOf,
-  studentDetailPanelId,
-  studentDetailTabId,
-} from "../config/student-detail.routes";
-import type { StudentDetailBack } from "../config/student-detail.routes";
+import { buildStudentDetailBackUrl, studentDetailPanelId, studentDetailTabId } from "../config/student-detail.routes";
+import { readStudentDetailOrigin, STUDENT_DETAIL_FROM_DIRECTORY } from "../config/teacher-dashboard.routes";
+import type { StudentDetailOrigin } from "../config/teacher-dashboard.routes";
 import {
   completedModules,
   DEFAULT_STUDENT_DETAIL_TAB,
@@ -85,8 +81,8 @@ function readQueryValue(value: string | string[] | undefined): string | null {
   return typeof value === "string" && value.trim() ? value : null;
 }
 
-function backLabel(back: StudentDetailBack, groupId: string | null): string {
-  if (back === "directory") {
+function backLabel(origin: StudentDetailOrigin | null, groupId: string | null): string {
+  if (origin === STUDENT_DETAIL_FROM_DIRECTORY) {
     return STUDENT_DETAIL_COPY.backToDirectory;
   }
 
@@ -100,7 +96,7 @@ export type StudentDetailPageProps = {
 export function StudentDetailPage({ userId }: StudentDetailPageProps) {
   const router = useRouter();
   const groupId = readQueryValue(router.query.groupId);
-  const back = studentDetailBackOf(router.query.from);
+  const origin = readStudentDetailOrigin(router.query.from);
   const { student, studentLoading, studentError, summary, summaryLoading, summaryError, reload } = useStudentDetail(userId);
   const titles = useCurriculumTitles();
   const { grades } = useStudentGrades(userId);
@@ -114,7 +110,7 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
   );
   const name = student ? (student.name?.trim() ? student.name : student.email) : STUDENT_DETAIL_COPY.fallbackTitle;
   const backLink = (
-    <Link href={buildStudentDetailBackUrl(back, groupId)} className={cx(styles.link)}>{backLabel(back, groupId)}</Link>
+    <Link href={buildStudentDetailBackUrl(origin, groupId)} className={cx(styles.link)}>{backLabel(origin, groupId)}</Link>
   );
 
   const renderBlocked = () => {

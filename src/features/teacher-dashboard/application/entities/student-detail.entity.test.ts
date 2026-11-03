@@ -10,7 +10,8 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { buildRecordingPlaybackUrl, buildStudentDetailBackUrl, studentDetailBackOf } from "../config/student-detail.routes";
+import { buildRecordingPlaybackUrl, buildStudentDetailBackUrl } from "../config/student-detail.routes";
+import { readStudentDetailOrigin } from "../config/teacher-dashboard.routes";
 import type { LearningSummary } from "./curriculum-titles.entity";
 import { completedModules, initialsOf, levelPercent, passedEvaluations } from "./student-detail.entity";
 import type { StudentGrade } from "./teacher-dashboard.entity";
@@ -67,9 +68,9 @@ describe("student detail selectors", () => {
 
 describe("student detail routes", () => {
   it("returns to the directory only when opened from it", () => {
-    expect(buildStudentDetailBackUrl(studentDetailBackOf("directory"), "g1")).toBe("/teacher/students");
-    expect(buildStudentDetailBackUrl(studentDetailBackOf(undefined), "g1")).toBe("/teacher?tab=grupo&groupId=g1");
-    expect(buildStudentDetailBackUrl(studentDetailBackOf(["directory", "x"]), null)).toBe("/teacher");
+    expect(buildStudentDetailBackUrl(readStudentDetailOrigin("directory"), "g1")).toBe("/teacher/students");
+    expect(buildStudentDetailBackUrl(readStudentDetailOrigin(undefined), "g1")).toBe("/teacher?tab=grupo&groupId=g1");
+    expect(buildStudentDetailBackUrl(readStudentDetailOrigin(["directory", "x"]), null)).toBe("/teacher");
   });
 
   it("links a recording to its playback", () => {

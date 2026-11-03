@@ -22,6 +22,7 @@ import { STUDENT_GAMIFICATION_COPY } from "../components/detail/student-gamifica
 import { STUDENT_GRADES_COPY } from "../components/detail/student-grades";
 import { STUDENT_SESSIONS_COPY } from "../components/detail/student-sessions";
 import { TEAM_RECORDINGS_COPY } from "../components/detail/team-recordings";
+import { buildStudentDetailUrl, STUDENT_DETAIL_FROM_DIRECTORY } from "../config/teacher-dashboard.routes";
 import { STUDENT_DETAIL_TAB_LABELS, STUDENT_DETAIL_TABS } from "../entities/student-detail.entity";
 import {
   apiUrl,
@@ -307,10 +308,12 @@ describe("StudentDetailPage header", () => {
     expect(await screen.findByRole("link", { name: STUDENT_DETAIL_COPY.backToDashboard })).toHaveAttribute("href", "/teacher");
     second.unmount();
 
-    router.query = { userId: "u1", from: "directory" };
+    // The directory links mark their origin with the shared helper; the detail parses it back.
+    expect(buildStudentDetailUrl("u1", null, STUDENT_DETAIL_FROM_DIRECTORY)).toBe("/teacher/students/u1?from=directory");
+    router.query = { userId: "u1", from: STUDENT_DETAIL_FROM_DIRECTORY };
     renderDetail();
 
-    expect(await screen.findByRole("link", { name: STUDENT_DETAIL_COPY.backToDirectory })).toHaveAttribute("href", "/teacher/students");
+    expect(await screen.findByRole("link", { name: "Volver a la lista" })).toHaveAttribute("href", "/teacher/students");
   });
 
   it("shows the no-access state when the student is outside the caller's groups", async() => {
