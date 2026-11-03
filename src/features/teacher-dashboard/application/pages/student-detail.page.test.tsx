@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail page tests
-* Descripción: /teacher/students/[userId] with msw. Header: name, email, initials avatar, student code and active groups from the directory row (`GET /api/admin/students?search=<email>`), overall progress and the cards Módulos completados, Evaluaciones aprobadas x/y (hidden without published grades) and Sesiones de simulador, never "Tiempo de estudio"; the header reads start in parallel (the profile answers only after summary, grades and sessions were requested). Tabs (?tab=): Módulos (progress tree in curriculum order), Evaluaciones (published grades linked to their attempt, pending attempts paged from the queue filtered by `studentId`), Simulador (sessions with result and replay; "Grabaciones del equipo real" only when the recordings list is non-empty), Actividad (truncated flag, "Cargar anteriores", date range validation), Gamificación (XP, level, streak, achievements); a panel requests its data only on its first visit. Back link: /teacher/students with ?from=directory, otherwise the dashboard. 403 shows the no-access state, 404 the not-found state. Privacy: across every tab, no request for notes or AI conversations is made and none is rendered (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): staff endpoints for grades, pending attempts and sessions. v1.3 (S8): regenerated block 1 contract fields. v1.4 (W1 Bloque 4): the back link returns to the Grupo tab. v2.0 (W4 Bloque 4): tabs, header facts and cards, recordings, gamification, directory back link, 404 and privacy. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
-* Versión: 2.0
+* Descripción: /teacher/students/[userId] with msw. Header: name, email, initials avatar, student code and active groups from the profile itself (hidden when absent), overall progress and the cards Módulos completados, Evaluaciones aprobadas x/y (hidden without published grades) and Sesiones de simulador, never "Tiempo de estudio"; the header reads start in parallel (the profile answers only after summary, grades and sessions were requested) and no read waits for the profile: the directory (`GET /api/admin/students`) is never requested. Tabs (?tab=): Módulos (progress tree in curriculum order), Evaluaciones (published grades linked to their attempt, pending attempts paged from the queue filtered by `studentId`), Simulador (sessions with result and replay; "Grabaciones del equipo real" only when the recordings list is non-empty), Actividad (truncated flag, "Cargar anteriores", date range validation), Gamificación (XP, level, streak, achievements); a panel requests its data only on its first visit. Back link: /teacher/students with ?from=directory, otherwise the dashboard. 403 shows the no-access state, 404 the not-found state. Privacy: across every tab, no request for notes or AI conversations is made and none is rendered (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): staff endpoints for grades, pending attempts and sessions. v1.3 (S8): regenerated block 1 contract fields. v1.4 (W1 Bloque 4): the back link returns to the Grupo tab. v2.0 (W4 Bloque 4): tabs, header facts and cards, recordings, gamification, directory back link, 404 and privacy. v2.1 (Bloque 4 integration): code and groups from the profile, no directory lookup waterfall. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AchievementsDTO, DirectoryStudentDTO, GamificationStatsDTO, TelemetryRecordingSummaryDTO } from "../../api/dtos/student-detail.dto";
+import type { AchievementsDTO, GamificationStatsDTO, TelemetryRecordingSummaryDTO } from "../../api/dtos/student-detail.dto";
 import type { SimulationSessionDTO, StudentGradeDTO } from "../../api/dtos/teacher-dashboard.dto";
 import { STUDENT_ACTIVITY_COPY } from "../components/detail/student-activity";
 import { STUDENT_PANELS_COPY } from "../components/detail/student-detail-panels";
@@ -56,7 +56,6 @@ let requestedPaths: string[];
 let timelineQueries: Array<{ from: string, to: string }>;
 let queueQueries: URLSearchParams[];
 let sessionQueries: URLSearchParams[];
-let directoryQueries: URLSearchParams[];
 let studentStatus: number;
 let grades: StudentGradeDTO[];
 let recordings: TelemetryRecordingSummaryDTO[];
@@ -102,22 +101,10 @@ function sessionDto(id: string, caseTitle: string | null, overrides: Partial<Sim
   };
 }
 
-function directoryRowDto(id: string, overrides: Partial<DirectoryStudentDTO> = {}): DirectoryStudentDTO {
-  return {
-    canView: true,
-    completedModules: 1,
-    email: `${id}@ventylab.demo`,
-    groupName: "Grupo A",
-    groups: [{ id: "g1", name: "Grupo A" }, { id: "g2", name: "Grupo B" }],
-    id,
-    lastActivity: null,
-    name: "Ana Gómez",
-    overallProgress: 40,
-    studentCode: "202312345",
-    totalModules: 2,
-    ...overrides,
-  };
-}
+const PROFILE_FACTS = {
+  studentCode: "202312345",
+  groups: [{ id: "g1", name: "Grupo A" }, { id: "g2", name: "Grupo B" }],
+};
 
 const gamificationDto: GamificationStatsDTO = {
   level: 3,
@@ -167,7 +154,6 @@ beforeEach(() => {
   timelineQueries = [];
   queueQueries = [];
   sessionQueries = [];
-  directoryQueries = [];
   studentStatus = 200;
   grades = [
     gradeDto("at-9", "Parcial de PEEP"),
@@ -178,13 +164,8 @@ beforeEach(() => {
   router.replace.mockClear();
   server.use(
     http.get(apiUrl("/api/users/students/:id"), ({ params }) => (studentStatus === 200
-      ? HttpResponse.json(envelope(studentDto(String(params.id), "Ana Gómez")))
+      ? HttpResponse.json(envelope(studentDto(String(params.id), "Ana Gómez", PROFILE_FACTS)))
       : errorResponse(studentStatus === 403 ? "groups.student_out_of_scope" : "users.not_found", studentStatus))),
-    http.get(apiUrl("/api/admin/students"), ({ request }) => {
-      directoryQueries.push(new URL(request.url).searchParams);
-
-      return HttpResponse.json(envelope([directoryRowDto("u10", { email: "ju.u1@ventylab.demo", studentCode: "999" }), directoryRowDto("u1")], { total: 2, pages: 1, page: 1, limit: 100 }));
-    }),
     http.get(apiUrl("/api/progress/users/:userId/summary"), () => HttpResponse.json(envelope(summaryDto()))),
     http.get(apiUrl("/api/progress/users/:userId/gamification"), () => HttpResponse.json(envelope(gamificationDto))),
     http.get(apiUrl("/api/progress/users/:userId/achievements"), () => HttpResponse.json(envelope(achievementsDto))),
@@ -262,7 +243,6 @@ describe("StudentDetailPage header", () => {
     const groups = screen.getByRole("list", { name: STUDENT_HEADER_COPY.groupsLabel });
 
     expect(within(groups).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Grupo A", "Grupo B"]);
-    expect(directoryQueries[0]?.get("search")).toBe("u1@ventylab.demo");
     expect(screen.getByText("40 %")).toBeInTheDocument();
 
     const cards = screen.getByRole("list", { name: STUDENT_HEADER_COPY.cardsLabel });
@@ -286,17 +266,33 @@ describe("StudentDetailPage header", () => {
     expect(within(cards).queryByText(STUDENT_HEADER_COPY.evaluations)).not.toBeInTheDocument();
   });
 
-  it("requests the header reads in parallel, before the profile answers", async() => {
+  it("requests the header reads in parallel, before the profile answers, and none waits for it", async() => {
     const parallel = ["/api/progress/users/u1/summary", "/api/evaluation-grading/students/u1/grades", "/api/simulation/sessions/history", "/api/curriculum/tree"];
+    let requestedBeforeProfile: string[] = [];
 
     server.use(http.get(apiUrl("/api/users/students/:id"), async() => {
       await waitFor(() => expect(requestedPaths).toEqual(expect.arrayContaining(parallel)));
+      requestedBeforeProfile = [...requestedPaths];
 
-      return HttpResponse.json(envelope(studentDto("u1", "Ana Gómez")));
+      return HttpResponse.json(envelope(studentDto("u1", "Ana Gómez", PROFILE_FACTS)));
     }));
     renderDetail();
 
     expect(await screen.findByRole("heading", { name: "Ana Gómez" })).toBeInTheDocument();
+    // The code and groups come with the profile: once it answers, the header needs no further read.
+    expect(screen.getByText(STUDENT_HEADER_COPY.code("202312345"))).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: STUDENT_HEADER_COPY.groupsLabel })).toBeInTheDocument();
+    expect(requestedPaths.slice(requestedBeforeProfile.length).filter((path) => !path.startsWith("/api/users/students/"))).toEqual([]);
+    expect(requestedPaths).not.toContain("/api/admin/students");
+  });
+
+  it("hides the code and the groups when the profile has none", async() => {
+    server.use(http.get(apiUrl("/api/users/students/:id"), () => HttpResponse.json(envelope(studentDto("u1", "Ana Gómez")))));
+    renderDetail();
+
+    expect(await screen.findByRole("heading", { name: "Ana Gómez" })).toBeInTheDocument();
+    expect(screen.queryByText(/Código/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: STUDENT_HEADER_COPY.groupsLabel })).not.toBeInTheDocument();
   });
 
   it("returns to the group panel, the dashboard or the directory depending on where it was opened", async() => {

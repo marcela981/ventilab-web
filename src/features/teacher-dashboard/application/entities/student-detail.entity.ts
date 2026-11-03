@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail entity
-* Descripción: View models and pure selectors of /teacher/students/[userId] (DISENO_BLOQUE4 §2.4): the tabs (?tab=modulos|evaluaciones|simulador|actividad|gamificacion, default modulos) and their labels, the student profile (name, email, avatar, last access), the directory facts of the header (student code and active groups), gamification stats and achievements (read-only), the real ventilator recordings, the completed modules of the progress summary and the passed evaluations of the published grades (distinct evaluations: passed when any published attempt passed). No value is invented: a missing datum gives null so its card is hidden. No dependencies besides the teacher dashboard entities.
-* Versión: 1.0
+* Descripción: View models and pure selectors of /teacher/students/[userId] (DISENO_BLOQUE4 §2.4): the tabs (?tab=modulos|evaluaciones|simulador|actividad|gamificacion, default modulos) and their labels, the student profile (name, email, avatar, last access, student code and active groups), gamification stats and achievements (read-only), the real ventilator recordings, the completed modules of the progress summary and the passed evaluations of the published grades (distinct evaluations: passed when any published attempt passed). No value is invented: a missing datum gives null so its card is hidden. No dependencies besides the teacher dashboard entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,17 +31,14 @@ export type StudentProfile = {
   email: string
   image: string | null
   lastAccess: string | null
+  studentCode: string | null
+  /** Active STUDENT groups, in joining order. */
+  groups: StudentGroupRef[]
 };
 
 export type StudentGroupRef = {
   id: string
   name: string
-};
-
-/** Facts of the student only the directory carries; null when the directory row was not found. */
-export type StudentDirectoryFacts = {
-  studentCode: string | null
-  groups: StudentGroupRef[]
 };
 
 export type StudentGamification = {

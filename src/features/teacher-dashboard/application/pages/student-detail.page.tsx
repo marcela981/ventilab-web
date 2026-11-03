@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentDetailPage
-* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the directory row, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); only the directory lookup waits for the profile email. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules.
-* Versión: 2.0
+* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the same profile, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); no read waits for another one. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. v2.1 (Bloque 4 integration): the code and groups come with the profile (no directory lookup). Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules.
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -101,7 +101,7 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
   const router = useRouter();
   const groupId = readQueryValue(router.query.groupId);
   const back = studentDetailBackOf(router.query.from);
-  const { student, studentLoading, studentError, summary, summaryLoading, summaryError, directory, reload } = useStudentDetail(userId);
+  const { student, studentLoading, studentError, summary, summaryLoading, summaryError, reload } = useStudentDetail(userId);
   const titles = useCurriculumTitles();
   const { grades } = useStudentGrades(userId);
   const { total: sessionsTotal } = useStudentSessions(userId, 1);
@@ -144,7 +144,6 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
       <StudentDetailContext.Provider value={context}>
         <StudentDetailHeader
           student={student}
-          directory={directory}
           overallProgress={summary ? summary.overall.percentage : null}
           modules={modules}
           evaluations={evaluations}
