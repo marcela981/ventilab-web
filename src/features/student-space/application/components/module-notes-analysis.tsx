@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: ModuleNotesAnalysis
 * Descripción: "Analizar mis notas con IA" for one module of /me/notes: the same flow and presentation as the lesson analysis of the learning feature (button with pending state, error alert, summary, key concepts, gaps and suggestions) over `POST /api/notes/analyze` with the moduleId, rated with the shared AiRatingWidget (target NOTES_ANALYSIS, the AI call id). Depends on MUI, @shared/ai-rating, the design-system async button, the module analysis hook and error messages and the student space CSS Module.
-* Versión: 1.0
+*   v1.1 (W6, Bloque 4): the rating carries the NOTES_ANALYSIS surface and the MODULE scope (thesis analytics by surface and scope).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -73,7 +74,14 @@ export function ModuleNotesAnalysis({ moduleId, moduleTitle }: ModuleNotesAnalys
           <AnalysisList title={MODULE_ANALYSIS_COPY.keyConcepts} items={analysis.keyConcepts} />
           <AnalysisList title={MODULE_ANALYSIS_COPY.gaps} items={analysis.gaps} />
           <AnalysisList title={MODULE_ANALYSIS_COPY.suggestions} items={analysis.suggestions} />
-          <AiRatingWidget key={analysis.aiCallId} targetType="NOTES_ANALYSIS" targetId={analysis.aiCallId} initialRating={null} />
+          <AiRatingWidget
+            key={analysis.aiCallId}
+            targetType="NOTES_ANALYSIS"
+            targetId={analysis.aiCallId}
+            initialRating={null}
+            surface="NOTES_ANALYSIS"
+            scope="MODULE"
+          />
         </section>
       ) : null}
     </div>
