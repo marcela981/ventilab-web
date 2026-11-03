@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations route
-* Descripción: Thin route for /evaluations: composes the student layout (RequireAuth + AppShell; every authenticated role may open it) and decides by role (DISENO_BLOQUE3 §2.6). Students get the EvaluationsListPage (grouped list; `?moduleId=` narrows it to one curriculum module); teachers and admins get the StaffEvaluationsHub (Gestionar, Calificar, Resultados), loaded lazily with retryImport so its chunk is never downloaded by students. Imports the feature entry points (no barrel). v1.1 (Bloque 3, W5): role decision and staff hub.
-* Versión: 1.1
+* Descripción: Thin route for /evaluations: composes the student layout (RequireAuth + AppShell; every authenticated role may open it) and decides by role (DISENO_BLOQUE3 §2.6). Students get the EvaluationsListPage (grouped list; `?moduleId=` narrows it to one curriculum module); teachers and admins get the StaffEvaluationsHub (Gestionar, Calificar, Resultados), loaded lazily with retryImport so its chunk is never downloaded by students. Imports the feature entry points (no barrel). v1.1 (Bloque 3, W5): role decision and staff hub. v1.2 (W1 Bloque 4): withRoleShellLayout (RequireAuth; staff get the PanelShell, students keep the AppShell), so the staff hub renders inside the staff panel.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@ import { LoadingState } from "@shared/design-system/components/loading-state";
 import { RouteErrorBoundary } from "@shared/design-system/components/route-error-boundary";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
-import { withStudentLayout } from "@shared/layouts/student-layout";
+import { withRoleShellLayout } from "@shared/layouts/role-shell-layout";
 import { retryImport } from "@shared/lib/retry-import";
 import { useSession } from "@shared/session/use-session";
 
@@ -44,6 +44,6 @@ const EvaluationsRoute: NextPageWithLayout = () => {
   return role === null ? null : <EvaluationsListPage moduleId={typeof query.moduleId === "string" ? query.moduleId : null} />;
 };
 
-EvaluationsRoute.getLayout = withStudentLayout;
+EvaluationsRoute.getLayout = withRoleShellLayout;
 
 export default EvaluationsRoute;
