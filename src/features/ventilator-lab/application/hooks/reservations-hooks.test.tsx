@@ -3,7 +3,8 @@
 * Descripción: useHolderOptions by role (a student gets only the student groups they lead from /api/groups/mine; a teacher the active student groups of /api/groups; an admin every active group and the user search; a failed read keeps no groups and reports the error), useUserHolderSearch (nothing below two characters, then the users search), useReservationsCalendar (range query, revalidated by ventilator:availability through useReservationsRealtime) and useCreateReservation (request body, calendar and mine revalidated after the data-null 201, a 409 with its parsed conflict, other failures without conflict). v1.1 (T2 review fix): a teacher is offered only the groups of the list the teacher did not create (certainly supervised), and the calendar never returns the previous range's data while another range loads or fails. v1.2 (T4 review fix S3): useCancelReservation resolves before the revalidations finish. Depends on vitest, msw, Testing Library and the lab test helpers.
 *   v1.3 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
 *   v1.4 (W6, Bloque 4): a teacher is offered every active group of the list, created or supervised (supersedes the v1.1 created-group filter).
-* Versión: 1.4
+*   v1.5 (Bloque 4 integration): useCancelActor gives a teacher the ids of the groups they manage from the holder options query (one request, in parallel with the led groups) and a student none.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,7 +28,7 @@ import {
   summaryDto,
   userDto,
 } from "../pages/lab-test-helpers";
-import { useCancelReservation } from "./use-cancel-reservation";
+import { useCancelActor, useCancelReservation } from "./use-cancel-reservation";
 import { useCreateReservation } from "./use-create-reservation";
 import { useHolderOptions, useUserHolderSearch } from "./use-holder-options";
 import { useMyReservations } from "./use-lab-reservations";
@@ -278,6 +279,37 @@ describe("useCreateReservation", () => {
     const outcome = await act(() => result.current.submit(request));
 
     expect(outcome).toMatchObject({ kind: "failed", error: { code: "reservations.limit_reached" }, conflict: null });
+  });
+});
+
+describe("useCancelActor", () => {
+  it("gives a teacher the groups they manage, from the same query as the holder options", async() => {
+    server.use(
+      http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([
+        groupDto("g1", "Grupo supervisado", { createdBy: "other-teacher" }),
+        groupDto("g2", "Grupo creado", { createdBy: "teacher-1" }),
+      ]))),
+      http.get(apiUrl("/api/groups/mine"), () => HttpResponse.json(envelope(myGroupsDto([])))),
+    );
+
+    const { result } = renderLabHook(() => ({ actor: useCancelActor(), holders: useHolderOptions() }), {
+      role: "TEACHER",
+      permissions: ["groups:read", "groups:read_own"],
+    });
+
+    await waitFor(() => expect([...result.current.actor.managedGroupIds]).toEqual(["g1", "g2"]));
+    expect(result.current.actor.leadGroupIds.size).toBe(0);
+    expect(requests.filter((request) => request.startsWith("GET /api/groups?"))).toEqual(["GET /api/groups?isActive=true&type=STUDENT"]);
+  });
+
+  it("never reads the managed groups for a student", async() => {
+    server.use(http.get(apiUrl("/api/groups/mine"), () => HttpResponse.json(envelope(myGroupsDto([membership("g1", "Grupo A", "LEADER")])))));
+
+    const { result } = renderLabHook(() => useCancelActor(), { role: "STUDENT", permissions: ["groups:read_own"] });
+
+    await waitFor(() => expect([...result.current.leadGroupIds]).toEqual(["g1"]));
+    expect(result.current.managedGroupIds.size).toBe(0);
+    expect(requests).toEqual(["GET /api/groups/mine"]);
   });
 });
 

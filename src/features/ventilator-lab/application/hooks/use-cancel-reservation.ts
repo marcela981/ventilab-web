@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useCancelReservation / useCancelActor
-* Descripción: useCancelReservation cancels a scheduled reservation (POST /api/reservations/{id}/cancel, 200 with data null) and then revalidates the current reservation, the caller's reservations and every cached calendar range; it also revalidates them after a failure, because a 404/409 means the list is stale. It never throws: it resolves with the ApiError. v1.1 (T4 review fix S3): it resolves as soon as the cancel answers; the revalidations run in the background. useCancelActor gathers what the client knows to mirror the backend cancel permission: the session user and role and the groups the caller leads (GET /api/groups/mine memberships with memberRole LEADER, shared SWR cache with the holder options). Teacher supervision is not readable by a teacher (GET /api/groups/{id}/supervisions is admin only), so supervisedGroupIds stays empty: a teacher's "mine" holds only reservations the teacher holds or created, which the creator/holder rule already covers. Depends on SWR, the session, the api-client query/error/invalidation helpers, the holders and reservations services and the create reservation mapper.
-* Versión: 1.1
+* Descripción: useCancelReservation cancels a scheduled reservation (POST /api/reservations/{id}/cancel, 200 with data null) and then revalidates the current reservation, the caller's reservations and every cached calendar range; it also revalidates them after a failure, because a 404/409 means the list is stale. It never throws: it resolves with the ApiError. v1.1 (T4 review fix S3): it resolves as soon as the cancel answers; the revalidations run in the background. useCancelActor gathers what the client knows to mirror the backend cancel permission: the session user and role and the groups the caller leads (GET /api/groups/mine memberships with memberRole LEADER, shared SWR cache with the holder options). v1.2 (Bloque 4 integration): a teacher also gets managedGroupIds, the active student groups of GET /api/groups (the groups the teacher created or supervises, the same SWR key as the holder options and requested in parallel, no waterfall), so the client rule matches the backend managesGroup; inactive groups are left out, which only hides a button the backend would allow. Depends on SWR, the session, the api-client query/error/invalidation helpers, the holders and reservations services and the create reservation mapper.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@ import type { ApiError } from "@shared/api-client/api-error";
 import { invalidateApiQueries, useApiQuery } from "@shared/api-client/use-api-query";
 import { useSession } from "@shared/session/use-session";
 import { leaderGroupIds } from "../../api/mappers/create-reservation.mapper";
-import { MY_GROUPS_PATH, MY_GROUPS_PERMISSION } from "../../api/services/holders.service";
+import { GROUPS_PATH, GROUPS_PERMISSION, groupsQuery, MY_GROUPS_PATH, MY_GROUPS_PERMISSION } from "../../api/services/holders.service";
 import {
   cancelReservation,
   CURRENT_RESERVATION_PATH,
@@ -28,6 +28,9 @@ import type { CancelActor } from "../entities/my-reservations.entity";
 const CANCEL_INVALIDATES = [RESERVATIONS_PATH, MY_RESERVATIONS_PATH, CURRENT_RESERVATION_PATH] as const;
 
 const NO_GROUPS: ReadonlySet<string> = new Set<string>();
+
+// Same query as the teacher holder options, so both share one SWR entry.
+const MANAGED_GROUPS_QUERY = groupsQuery(true);
 
 export type CancelReservationOutcome = { kind: "cancelled" } | { kind: "failed", error: ApiError };
 
@@ -62,13 +65,19 @@ export function useCancelReservation(): UseCancelReservationResult {
 export function useCancelActor(): CancelActor {
   const { user, role, hasPermission } = useSession();
   const myGroups = useApiQuery(hasPermission(MY_GROUPS_PERMISSION) ? MY_GROUPS_PATH : null);
+  const readManaged = role === "TEACHER" && hasPermission(GROUPS_PERMISSION);
+  const managedGroups = useApiQuery(readManaged ? GROUPS_PATH : null, { query: MANAGED_GROUPS_QUERY });
   const leadGroupIds = useMemo(
     () => (myGroups.data ? new Set(leaderGroupIds(myGroups.data.data)) : NO_GROUPS),
     [myGroups.data],
   );
+  const managedGroupIds = useMemo(
+    () => (managedGroups.data ? new Set(managedGroups.data.data.map((group) => group.id)) : NO_GROUPS),
+    [managedGroups.data],
+  );
 
   return useMemo(
-    () => ({ userId: user?.id ?? null, role, leadGroupIds, supervisedGroupIds: NO_GROUPS }),
-    [user?.id, role, leadGroupIds],
+    () => ({ userId: user?.id ?? null, role, leadGroupIds, managedGroupIds }),
+    [user?.id, role, leadGroupIds, managedGroupIds],
   );
 }
