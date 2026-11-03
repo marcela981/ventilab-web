@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: ProfileForm styles
-* Descripción: Card, vertical field stack, avatar row and action alignment of the profile edit form. Tokens only.
+* Descripción: Card, vertical field stack and action alignment of the profile edit form. Tokens only.
 * Versión: 1.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -25,14 +25,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
-}
-
-.avatarRow {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--vl-space-3);
-  margin-bottom: var(--vl-space-2);
 }
 
 .actions {

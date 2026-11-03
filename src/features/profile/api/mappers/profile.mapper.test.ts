@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Profile mapper tests
-* Descripción: Tests of the profile mappers: UserDTO -> Profile, and the PATCH /api/users/me body that carries ONLY the changed fields (trimmed name; blank avatar -> null to remove it). Depends on vitest. v1.1 (closure B1): UserDTO fixture carries isSuperadmin and studentCode.
-* Versión: 1.1
+* Descripción: Tests of the profile mappers: UserDTO -> Profile (including `hasPassword`), and the PATCH /api/users/me body that carries ONLY the changed, trimmed name. Depends on vitest. v1.1 (closure B1): UserDTO fixture carries isSuperadmin and studentCode. v1.2 (Bloque 4, W7): the avatar is no longer part of the PATCH body; `hasPassword` mapped.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,6 +20,7 @@ const profile: Profile = {
   image: "https://cdn.example/old.png",
   role: "TEACHER",
   isActive: true,
+  hasPassword: false,
 };
 
 describe("toProfile", () => {
@@ -34,7 +35,7 @@ describe("toProfile", () => {
       isSuperadmin: false,
       studentCode: null,
       emailVerified: null,
-      hasPassword: true,
+      hasPassword: false,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-02T00:00:00.000Z",
     })).toEqual(profile);
@@ -43,25 +44,14 @@ describe("toProfile", () => {
 
 describe("toUpdateMeRequest", () => {
   it("is empty when nothing changed", () => {
-    const draft = { name: " Ana Torres ", image: "https://cdn.example/old.png" };
+    const draft = { name: " Ana Torres " };
 
     expect(toUpdateMeRequest(draft, profile)).toEqual({});
     expect(hasProfileChanges(draft, profile)).toBe(false);
   });
 
   it("sends only the changed name, trimmed", () => {
-    expect(toUpdateMeRequest({ name: "  Ana María Torres ", image: "https://cdn.example/old.png" }, profile)).toEqual({
-      name: "Ana María Torres",
-    });
-  });
-
-  it("sends only the changed avatar", () => {
-    expect(toUpdateMeRequest({ name: "Ana Torres", image: " https://cdn.example/new.png " }, profile)).toEqual({
-      image: "https://cdn.example/new.png",
-    });
-  });
-
-  it("sends null to remove the avatar", () => {
-    expect(toUpdateMeRequest({ name: "Ana Torres", image: "  " }, profile)).toEqual({ image: null });
+    expect(toUpdateMeRequest({ name: "  Ana María Torres " }, profile)).toEqual({ name: "Ana María Torres" });
+    expect(hasProfileChanges({ name: "Ana María Torres" }, profile)).toBe(true);
   });
 });

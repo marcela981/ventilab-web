@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ProfilePage styles
-* Descripción: Page column of the profile page: readable max width and a two-column grid (form + account data) from 900px. Tokens only.
-* Versión: 1.0
+* Descripción: Page column of the profile page: readable max width, the tab bar, a two-column grid (form + account data) from 900px in the "Información personal" tab and a narrow column for the password form. Tokens only. v1.1 (Bloque 4, W7): tabs.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,4 +28,13 @@
   .content {
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
+}
+
+.tabs {
+  margin-bottom: var(--vl-space-4);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.narrow {
+  max-width: 36rem;
 }
