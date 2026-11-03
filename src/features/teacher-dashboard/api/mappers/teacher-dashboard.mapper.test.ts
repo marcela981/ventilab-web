@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard mapper tests
-* Descripción: DTO → view model mappers of the teacher dashboard: STUDENT groups only, dashboard rows copied as the API sends them (no derived value), evaluation stats histogram, active assignments with their pending reviews, calendar rows (only detail rows carry a group), grading queue rows, student header, learning summary, timeline and the curriculum tree reduced to titles in curriculum order. Depends on vitest, the teacher dashboard mapper and test helpers. v1.1 (closure B1): the dashboard fixture comes from dashboardDto (new contract fields). v1.2 (closure B2): group relation, API risk fields, thresholds and module summary copied; student grades and sessions mapped. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null).
-* Versión: 1.3
+* Descripción: DTO → view model mappers of the teacher dashboard: STUDENT groups only, dashboard rows copied as the API sends them (no derived value), evaluation stats histogram, active assignments with their pending reviews, calendar rows (only detail rows carry a group), grading queue rows, learning summary, timeline and the curriculum tree reduced to titles in curriculum order. Depends on vitest, the teacher dashboard mapper and test helpers. v1.1 (closure B1): the dashboard fixture comes from dashboardDto (new contract fields). v1.2 (closure B2): group relation, API risk fields, thresholds and module summary copied; student grades and sessions mapped. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +18,6 @@ import {
   reservationDto,
   rowDto,
   statsDto,
-  studentDto,
   summaryDto,
   timelineEntryDto,
   treeDto,
@@ -33,7 +32,6 @@ import {
   toLearningSummary,
   toPendingAttempts,
   toStudentGrades,
-  toStudentHeader,
   toStudentSessions,
   toStudentTimeline,
 } from "./teacher-dashboard.mapper";
@@ -106,9 +104,7 @@ describe("teacher dashboard mappers", () => {
     expect(toPendingAttempts([queueItemDto("at-1", "u1", "Taller")])[0]).toMatchObject({ attemptId: "at-1", studentId: "u1", evaluationTitle: "Taller" });
   });
 
-  it("maps the student header, learning summary and timeline", () => {
-    expect(toStudentHeader(studentDto("u1", "Ana"))).toEqual({ id: "u1", name: "Ana", email: "u1@ventylab.demo", lastAccess: "2026-10-15T20:00:00.000Z" });
-
+  it("maps the learning summary and timeline", () => {
     const summary = toLearningSummary(summaryDto());
 
     expect(summary.overall).toEqual({ percentage: 40, completedLessons: 4, totalLessons: 10, completed: false });

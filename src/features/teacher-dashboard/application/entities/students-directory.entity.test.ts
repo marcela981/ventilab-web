@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Students directory entity tests
 * Descripción: Verifies the URL state of /teacher/students (lenient parsing of ?page ?q ?sort ?scope, defaults left out when written back, round trip), the `GET /api/admin/students` query it maps to (myGroups only for "Mis grupos"), the sort toggle, the selection key and the directory load error message (403 names the directory). Depends on vitest, the shared API error and the students directory entity.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
 import {
-  DEFAULT_DIRECTORY_STATE,
   DIRECTORY_ERROR_COPY,
   directorySelectionKey,
   getDirectoryErrorMessage,
@@ -22,6 +21,8 @@ import {
   toDirectoryQuery,
   toggleDirectorySort,
 } from "./students-directory.entity";
+
+const DEFAULT_DIRECTORY_STATE = { page: 1, q: "", sort: { key: "name", direction: "asc" }, scope: "all" } as const;
 
 describe("readDirectoryState", () => {
   it("gives the defaults for an empty or invalid query", () => {

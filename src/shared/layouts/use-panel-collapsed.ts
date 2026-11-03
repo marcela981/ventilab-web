@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: usePanelCollapsed
-* Descripción: Collapsed state of the staff panel side menu, kept in localStorage ("ventylab.panel.collapsed" = "1"; absent = expanded) through a small useSyncExternalStore store (the pattern of learning's edit-mode-store): the server snapshot is expanded, the client reads the stored value once and other tabs follow through the `storage` event. Every storage access is inside try/catch (private mode, blocked storage or a quota error keep the in-memory state). Depends on React.
-* Versión: 1.0
+* Descripción: Collapsed state of the staff panel side menu, kept in localStorage ("ventylab.panel.collapsed" = "1"; absent = expanded) through a small useSyncExternalStore store (the pattern of learning's edit-mode-store): the server snapshot is expanded, the client reads the stored value when the first subscriber arrives and other tabs follow through the `storage` event (a change made while nothing was mounted is picked up on the next mount). Every storage access is inside try/catch (private mode, blocked storage or a quota error keep the in-memory state). Depends on React.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -48,6 +48,8 @@ function onStorage(event: StorageEvent): void {
 
 function subscribe(listener: () => void): () => void {
   if (listeners.size === 0) {
+    // Nobody listened to `storage` meanwhile: read it again.
+    current = null;
     window.addEventListener("storage", onStorage);
   }
 
@@ -83,9 +85,4 @@ export function usePanelCollapsed(): [collapsed: boolean, toggle: () => void] {
   const toggle = useCallback(() => setCollapsed(!getSnapshot()), []);
 
   return [collapsed, toggle];
-}
-
-/** Test hook: forget the cached value so the next read comes from storage. */
-export function resetPanelCollapsedCache(): void {
-  current = null;
 }

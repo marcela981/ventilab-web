@@ -39,13 +39,6 @@ export type DirectoryState = {
 
 export const DEFAULT_DIRECTORY_SORT: DirectorySort = { key: "name", direction: "asc" };
 
-export const DEFAULT_DIRECTORY_STATE: DirectoryState = {
-  page: 1,
-  q: "",
-  sort: DEFAULT_DIRECTORY_SORT,
-  scope: "all",
-};
-
 // The direction a column starts with when it becomes the sort column.
 const FIRST_DIRECTION: Record<DirectorySortKey, SortDirection> = { name: "asc", progress: "desc" };
 

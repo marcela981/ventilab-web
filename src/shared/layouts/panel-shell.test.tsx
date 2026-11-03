@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PanelShell tests
 * Descripción: Verifies the staff panel chrome: the "Navegación del panel" landmark with the role's items and aria-current on the active one, the header with the user's name, email and role chip, the "Volver a la plataforma" link to /simulador, the collapse toggle (aria-expanded, labels kept as accessible names, state persisted in localStorage and restored, storage failures tolerated), the skip link, the user menu, the grading badge in the Evaluaciones accessible name, the device indicator on Laboratorio, the registration as nav-badge and indicator host and the error boundary that keeps the panel. Depends on vitest, Testing Library and the session and layouts contexts.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +19,7 @@ import type { SessionContextValue } from "@shared/session/session-context";
 import { NavBadgeProvider, useNavBadgesVisible, useSetNavBadgeCount } from "./nav-badges";
 import { NavIndicatorProvider, useNavIndicatorVisible, useSetNavIndicator } from "./nav-indicators";
 import { PanelShell } from "./panel-shell";
-import { PANEL_COLLAPSED_STORAGE_KEY, resetPanelCollapsedCache } from "./use-panel-collapsed";
+import { PANEL_COLLAPSED_STORAGE_KEY } from "./use-panel-collapsed";
 
 const router = vi.hoisted(() => ({
   pathname: "/teacher",
@@ -75,7 +75,6 @@ beforeEach(() => {
   router.pathname = "/teacher";
   router.asPath = "/teacher";
   window.localStorage.clear();
-  resetPanelCollapsedCache();
 });
 
 afterEach(() => {
