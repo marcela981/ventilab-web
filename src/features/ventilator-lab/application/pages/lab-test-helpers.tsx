@@ -141,6 +141,7 @@ export function userDto(id: string, name: string | null, overrides: Partial<User
     isSuperadmin: false,
     studentCode: null,
     emailVerified: null,
+    hasPassword: true,
     createdAt: "2026-02-01T10:00:00.000Z",
     updatedAt: "2026-02-01T10:00:00.000Z",
     ...overrides,

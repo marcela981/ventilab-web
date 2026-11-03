@@ -404,7 +404,7 @@ export interface paths {
          * Export AI ratings as CSV
          * @description One RFC 4180 row per rating without user identifiers, oldest first, capped at the export row limit; the X-Export-Truncated header is "true" when rows were left out
          *
-         *     **Required access:** bearer token holding `ai-ratings:read`; minimum role TEACHER.
+         *     **Required access:** bearer token holding `ai-ratings:read`; minimum role ADMIN.
          */
         get: operations["exportAiRatingsCsv"];
         put?: never;
@@ -424,9 +424,9 @@ export interface paths {
         };
         /**
          * Get AI rating stats
-         * @description Helpful rate and mean with n per QUEST dimension, grouped by use case, provider, model and prompt version of the linked AI call ("unknown" when the rating has no linked call)
+         * @description Helpful rate and mean with n per QUEST dimension, grouped by surface (stored, or implied by the target type when missing), scope, and the use case, provider, model and prompt version of the linked AI call ("unknown" when there is no value)
          *
-         *     **Required access:** bearer token holding `ai-ratings:read`; minimum role TEACHER.
+         *     **Required access:** bearer token holding `ai-ratings:read`; minimum role ADMIN.
          */
         get: operations["getAiRatingStats"];
         put?: never;
@@ -534,7 +534,7 @@ export interface paths {
         };
         /**
          * Get dashboard students
-         * @description Paginated students with progress summary and group; myGroups=true limits it to the caller's groups as teacher
+         * @description Paginated students with their published-content progress, active groups, student code and whether the caller may open their detail (canView); search matches name, email or student code; myGroups=true limits it to the groups the caller created or supervises (an empty page when there are none); sorting by progress or lastActivity is computed on the server before paging
          *
          *     **Required access:** bearer token holding `students:read`; minimum role TEACHER.
          */
@@ -556,7 +556,7 @@ export interface paths {
         };
         /**
          * Get dashboard student progress
-         * @description Full activity detail and statistics of a student
+         * @description Full activity detail and statistics of a student; a teacher only reads students of the groups they created or supervise
          *
          *     **Required access:** bearer token holding `students:read`; minimum role TEACHER.
          */
@@ -578,7 +578,7 @@ export interface paths {
         };
         /**
          * Get dashboard teachers
-         * @description Teachers and admins ordered by name with their groups and student counts
+         * @description Teachers and admins ordered by name with the active student groups they created or supervise and the number of distinct students in them
          *
          *     **Required access:** bearer token holding `users:read`; minimum role ADMIN.
          */
@@ -896,6 +896,28 @@ export interface paths {
         get: operations["getAuditLogEntry"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/change-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change own password
+         * @description Changes the authenticated user's password (8 to 128 characters with an uppercase letter, a lowercase letter and a number), revokes every refresh token issued so far and returns a new token pair for the current session; other sessions must sign in again once their access token expires (at most 15 minutes). Accounts without a password (Google sign-in) answer 400. Limited to 5 requests per minute.
+         *
+         *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
+         */
+        post: operations["authChangePassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4903,6 +4925,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/progress/users/{userId}/achievements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a user's achievements
+         * @description Read-only for staff: the achievements unlocked by the given user, newest first
+         *
+         *     **Required access:** bearer token holding `progress:read`; minimum role TEACHER.
+         */
+        get: operations["getUserAchievements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/progress/users/{userId}/activity/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a user's recent activity
+         * @description Read-only for staff: the latest ledger milestones of the given user (lesson and module completions, passed evaluations and unlocked achievements) with the title of the referenced item, newest first
+         *
+         *     **Required access:** bearer token holding `progress:read`; minimum role TEACHER.
+         */
+        get: operations["getUserRecentActivity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/progress/users/{userId}/gamification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a user's gamification statistics
+         * @description Read-only for staff: XP, level, XP inside the level, the XP of the next level, the current and longest streak (America/Bogota days) and today's XP of the given user
+         *
+         *     **Required access:** bearer token holding `progress:read`; minimum role TEACHER.
+         */
+        get: operations["getUserGamification"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/progress/users/{userId}/levels/{levelId}": {
         parameters: {
             query?: never;
@@ -6491,11 +6579,39 @@ export interface paths {
         head?: never;
         /**
          * Update own profile
-         * @description Updates the authenticated user's name or profile image
+         * @description Updates the authenticated user's name or profile image URL (http(s) only; upload a photo with PUT /api/users/me/avatar)
          *
          *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
          */
         patch: operations["updateMe"];
+        trace?: never;
+    };
+    "/api/users/me/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Upload own profile photo
+         * @description Stores the photo after checking its type, size and first bytes, replaces the previous uploaded photo (which is deleted) and returns the profile with the photo's signed URL as image
+         *
+         *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
+         */
+        put: operations["updateMyAvatar"];
+        post?: never;
+        /**
+         * Remove own profile photo
+         * @description Removes the uploaded photo and deletes its file; image falls back to the stored image (the Google picture), if any
+         *
+         *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
+         */
+        delete: operations["removeMyAvatar"];
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/users/me/change-password": {
@@ -6509,11 +6625,14 @@ export interface paths {
         put?: never;
         /**
          * Change own password
-         * @description Changes the authenticated user's password; access and refresh tokens already issued stay valid until they expire
+         * @deprecated
+         * @description Deprecated alias of POST /api/auth/change-password without reissuing tokens: changes the authenticated user's password and revokes every refresh token issued so far (the current session too); access tokens stay valid until they expire
          *
          *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
+         *
+         *     **Deprecated:** use `POST /api/auth/change-password`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel="successor-version"`.
          */
-        post: operations["changePassword"];
+        post: operations["usersChangePassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6824,6 +6943,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/ventilator/telemetry/recordings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List telemetry recordings of a user
+         * @description Reservations with recorded telemetry held by the user or by a group they belong to, whose start falls in [from, to) (by default the last 90 days, at most 366), newest first, at most 100; userId defaults to the caller; another user's list is for administrators and for teachers who created or supervise one of the student's groups
+         *
+         *     **Required access:** bearer token holding `simulation:read`; minimum role STUDENT.
+         */
+        get: operations["listTelemetryRecordings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/ventilator/telemetry/recordings/start": {
         parameters: {
             query?: never;
@@ -6877,7 +7018,7 @@ export interface paths {
         };
         /**
          * Get a telemetry recording
-         * @description Decompressed frames of a reservation ordered by server time; allowed to the reservation holders, teachers and administrators
+         * @description Decompressed frames of a reservation ordered by server time; allowed to administrators, the reservation holders and creator, and teachers who manage the holder (a student of, or one of, the groups they created or supervise)
          *
          *     **Required access:** bearer token holding `simulation:read`; minimum role STUDENT.
          */
@@ -6948,7 +7089,7 @@ export interface components {
              * @description Next page number
              * @example 3
              */
-            next: Record<string, never> | null;
+            next: number | null;
             /**
              * @description Current page number (1-based)
              * @example 2
@@ -6963,7 +7104,7 @@ export interface components {
              * @description Previous page number
              * @example 1
              */
-            previous: Record<string, never> | null;
+            previous: number | null;
             /**
              * @description Total number of items across all pages
              * @example 100
@@ -7569,6 +7710,18 @@ export interface components {
              */
             name: string | null;
         };
+        AdminGroupRefDTO: {
+            /**
+             * @description Group ID
+             * @example cm5group01
+             */
+            id: string;
+            /**
+             * @description Group name
+             * @example Grupo A
+             */
+            name: string;
+        };
         AdminLessonCompletionDTO: {
             /**
              * Format: date-time
@@ -7787,7 +7940,12 @@ export interface components {
         };
         AdminStudentListItemDTO: {
             /**
-             * @description Completed modules
+             * @description Whether the caller may open the student's detail (an administrator always; a teacher when they created or supervise one of the student's groups)
+             * @example true
+             */
+            canView: boolean;
+            /**
+             * @description Completed published modules
              * @example 2
              */
             completedModules: number;
@@ -7797,10 +7955,12 @@ export interface components {
              */
             email: string;
             /**
-             * @description Name of the first group of the student
+             * @description Name of the first active group of the student
              * @example Grupo A
              */
             groupName: string | null;
+            /** @description Active STUDENT groups of the student */
+            groups: components["schemas"]["AdminGroupRefDTO"][];
             /**
              * @description Student ID
              * @example cm5student01
@@ -7808,7 +7968,7 @@ export interface components {
             id: string;
             /**
              * Format: date-time
-             * @description Most recent module access
+             * @description Most recent page or lesson activity
              * @example 2026-03-01T10:00:00.000Z
              */
             lastActivity: string | null;
@@ -7818,12 +7978,17 @@ export interface components {
              */
             name: string | null;
             /**
-             * @description Rounded average progress over started modules (0-100)
+             * @description Lesson-weighted progress over all published content (0-100, rounded down)
              * @example 45
              */
             overallProgress: number;
             /**
-             * @description Started modules
+             * @description Institutional student code
+             * @example 2026-0001
+             */
+            studentCode: string | null;
+            /**
+             * @description Published modules
              * @example 5
              */
             totalModules: number;
@@ -7950,7 +8115,7 @@ export interface components {
              * @example luis@example.com
              */
             email: string;
-            /** @description Groups where the user is a teacher */
+            /** @description Active student groups the user created or supervises from an active teacher group */
             groups: components["schemas"]["AdminTeacherGroupDTO"][];
             /**
              * @description Groups created by the user
@@ -7978,7 +8143,7 @@ export interface components {
              */
             role: string;
             /**
-             * @description Student memberships across those groups
+             * @description Distinct students across those groups
              * @example 25
              */
             studentCount: number;
@@ -8248,7 +8413,7 @@ export interface components {
              * @example POPUP
              * @enum {string}
              */
-            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK";
+            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
             /**
              * @description Rated output id
              * @example cm1x2y3z40000abcd1234efgh
@@ -17572,7 +17737,7 @@ export interface components {
              */
             completionRate: number;
             /**
-             * @description Lessons completed since local midnight
+             * @description Lessons completed since midnight in America/Bogota
              * @example 5
              */
             completionsToday: number;
@@ -17588,7 +17753,7 @@ export interface components {
              */
             hasActiveReservation: boolean;
             /**
-             * @description Published modules (same as active modules)
+             * @description Active modules that students can see (published, inside a published level and section)
              * @example 12
              */
             publishedModules: number;
@@ -17600,7 +17765,7 @@ export interface components {
              */
             totalAdmins: number;
             /**
-             * @description Active clinical cases
+             * @description Evaluations ready to assign (status READY)
              * @example 10
              */
             totalEvaluations: number;
@@ -17610,7 +17775,7 @@ export interface components {
              */
             totalGroups: number;
             /**
-             * @description Active lessons
+             * @description Active published lessons inside a published module
              * @example 60
              */
             totalLessons: number;
@@ -21450,6 +21615,52 @@ export interface components {
              */
             sampleRateHz: number | null;
         };
+        TelemetryRecordingSummaryDTO: {
+            /**
+             * @description Number of stored chunks
+             * @example 12
+             */
+            chunkCount: number;
+            /**
+             * Format: date-time
+             * @description Reservation end
+             * @example 2026-10-30T14:30:00.000Z
+             */
+            endsAt: string;
+            /**
+             * @description Holder group of a group reservation
+             * @example cm5group01
+             */
+            groupId: string | null;
+            /**
+             * @description Whether the reservation is held by a user or a group
+             * @example USER
+             * @enum {string}
+             */
+            holderType: "USER" | "GROUP";
+            /**
+             * @description Recorded reservation
+             * @example 0192f3a4-5b6c-7d8e-9f01-23456789abcd
+             */
+            reservationId: string;
+            /**
+             * @description Recording sample rate in Hz
+             * @example 20
+             */
+            sampleRateHz: number | null;
+            /**
+             * Format: date-time
+             * @description Reservation start
+             * @example 2026-10-30T14:00:00.000Z
+             */
+            startsAt: string;
+            /**
+             * @description Reservation status
+             * @example COMPLETED
+             * @enum {string}
+             */
+            status: "SCHEDULED" | "CANCELLED" | "PREEMPTED" | "COMPLETED";
+        };
         TimelineEntryDTO: {
             /**
              * @description End of a session or reservation
@@ -21938,7 +22149,7 @@ export interface components {
         };
         UpdateMeDTO: {
             /**
-             * @description Profile image as an http(s) URL or a base64 image data URL. Send null or an empty string to remove it.
+             * @description Profile image as an http(s) URL of at most 2048 characters (upload a photo with PUT /api/users/me/avatar). Send null or an empty string to remove it.
              * @example https://example.com/avatar.png
              */
             image?: string | null;
@@ -22258,11 +22469,11 @@ export interface components {
              */
             scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
             /**
-             * @description Where the answer was shown: tutor popup, deepen accordion, assistant page or notes analysis (thesis analytics)
+             * @description Where the answer was shown: tutor popup, deepen accordion, assistant page, notes analysis, evaluation feedback or simulator assistant (thesis analytics)
              * @example POPUP
              * @enum {string}
              */
-            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK";
+            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
             /**
              * @description Rated output: the grade feedback id (GRADE_FEEDBACK), the assistant message id (MESSAGE; announced by the SSE start event, so a stopped answer can be rated too) or the AI call id of the analysis (NOTES_ANALYSIS)
              * @example cm1x2y3z40000abcd1234efgh
@@ -22426,12 +22637,17 @@ export interface components {
              */
             emailVerified: string | null;
             /**
+             * @description Whether the account has a local password (false for Google sign-in accounts, whose password is managed by Google)
+             * @example true
+             */
+            hasPassword: boolean;
+            /**
              * @description User unique identifier
              * @example cm5x2k9a00000abcd1234efgh
              */
             id: string;
             /**
-             * @description Profile image URL
+             * @description Profile image URL: a signed URL of the uploaded photo (it expires; read it again instead of storing it), or else the stored image (the Google picture)
              * @example https://example.com/avatar.png
              */
             image: string | null;
@@ -24389,8 +24605,8 @@ export interface operations {
                 to?: string;
                 /** @description Only ratings of this kind of output */
                 targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
-                /** @description Only ratings given on this surface */
-                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK";
+                /** @description Only ratings given on this surface; a rating stored without one is read with the surface its target type implies */
+                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
                 /** @description Only ratings of answers with this content scope */
                 scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
                 /** @description Only ratings linked to calls of this use case */
@@ -24482,8 +24698,8 @@ export interface operations {
                 to?: string;
                 /** @description Only ratings of this kind of output */
                 targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
-                /** @description Only ratings given on this surface */
-                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK";
+                /** @description Only ratings given on this surface; a rating stored without one is read with the surface its target type implies */
+                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
                 /** @description Only ratings of answers with this content scope */
                 scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
                 /** @description Only ratings linked to calls of this use case */
@@ -24865,13 +25081,13 @@ export interface operations {
                 limit?: number;
                 /** @description Only students of this group */
                 groupId?: string;
-                /** @description Partial, case-insensitive match against name or email */
+                /** @description Partial, case-insensitive match against name, email or student code */
                 search?: string;
                 /** @description Sort field */
                 sortBy?: "name" | "email" | "lastActivity" | "progress";
                 /** @description Sort direction */
                 sortOrder?: "asc" | "desc";
-                /** @description Only students of the groups where the caller is a teacher (ignored when groupId is sent) */
+                /** @description Only students of the STUDENT groups the caller created or supervises (an administrator manages all of them); combined with groupId it keeps that group only when the caller manages it */
                 myGroups?: "true" | "false";
             };
             header?: never;
@@ -24978,7 +25194,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden or the student is outside the teacher's groups */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -26178,6 +26394,77 @@ export interface operations {
                 };
             };
             /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    authChangePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordDTO"];
+            };
+        };
+        responses: {
+            /** @description Password changed; new token pair for the current session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["LoginResponseDTO"];
+                    };
+                };
+            };
+            /** @description Validation error, wrong current password, same password or no password set */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many password change attempts */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -42671,6 +42958,243 @@ export interface operations {
             };
         };
     };
+    getUserAchievements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Achievements retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["AchievementsDTO"];
+                    };
+                };
+            };
+            /** @description Validation error or malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden or the student is outside the teacher's groups */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getUserRecentActivity: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of entries */
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recent activity retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["RecentActivityItemDTO"][];
+                    };
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden or the student is outside the teacher's groups */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getUserGamification: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gamification statistics retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["GamificationStatsDTO"];
+                    };
+                };
+            };
+            /** @description Validation error or malformed request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden or the student is outside the teacher's groups */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getUserLevelLearningProgress: {
         parameters: {
             query?: never;
@@ -42712,7 +43236,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden or the student is outside the teacher's groups */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42791,7 +43315,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden or the student is outside the teacher's groups */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42870,7 +43394,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden or the student is outside the teacher's groups */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -42948,7 +43472,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Forbidden */
+            /** @description Forbidden or the student is outside the teacher's groups */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -49121,7 +49645,169 @@ export interface operations {
             };
         };
     };
-    changePassword: {
+    updateMyAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /**
+                     * Format: binary
+                     * @description Profile photo: png, jpeg or webp of at most 2 MB (the client crops it square and resizes it to 512 px)
+                     */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Profile photo updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["UserDTO"];
+                    };
+                };
+            };
+            /** @description No file or an empty file was sent */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The photo exceeds 2 MB */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not a png, jpeg or webp image, or the content does not match its type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description File storage is not configured */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    removeMyAvatar: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Profile photo removed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["UserDTO"];
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description User not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    usersChangePassword: {
         parameters: {
             query?: never;
             header?: never;
@@ -50345,6 +51031,89 @@ export interface operations {
             };
         };
     };
+    listTelemetryRecordings: {
+        parameters: {
+            query?: {
+                /** @description User whose recordings are listed; defaults to the caller. Staff only for another user (a teacher only for students of the groups they created or supervise) */
+                userId?: string;
+                /** @description Reservation start lower bound (inclusive, ISO 8601); defaults to 90 days before `to` */
+                from?: string;
+                /** @description Reservation start upper bound (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Recordings retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["TelemetryRecordingSummaryDTO"][];
+                    };
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Another user's recordings outside the caller's scope */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The range does not start before it ends or spans more than 366 days */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     startTelemetryRecording: {
         parameters: {
             query?: never;
@@ -50519,7 +51288,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Not a holder of the reservation */
+            /** @description Not a holder of the reservation nor a teacher who manages it */
             403: {
                 headers: {
                     [name: string]: unknown;

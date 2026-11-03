@@ -147,7 +147,7 @@
             "description": "Next page number",
             "example": 3,
             "type": [
-              "object",
+              "number",
               "null"
             ]
           },
@@ -165,7 +165,7 @@
             "description": "Previous page number",
             "example": 1,
             "type": [
-              "object",
+              "number",
               "null"
             ]
           },
@@ -1223,6 +1223,25 @@
         ],
         "type": "object"
       },
+      "AdminGroupRefDTO": {
+        "properties": {
+          "id": {
+            "description": "Group ID",
+            "example": "cm5group01",
+            "type": "string"
+          },
+          "name": {
+            "description": "Group name",
+            "example": "Grupo A",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
       "AdminLessonCompletionDTO": {
         "properties": {
           "completedAt": {
@@ -1535,8 +1554,13 @@
       },
       "AdminStudentListItemDTO": {
         "properties": {
+          "canView": {
+            "description": "Whether the caller may open the student's detail (an administrator always; a teacher when they created or supervise one of the student's groups)",
+            "example": true,
+            "type": "boolean"
+          },
           "completedModules": {
-            "description": "Completed modules",
+            "description": "Completed published modules",
             "example": 2,
             "type": "number"
           },
@@ -1546,12 +1570,19 @@
             "type": "string"
           },
           "groupName": {
-            "description": "Name of the first group of the student",
+            "description": "Name of the first active group of the student",
             "example": "Grupo A",
             "type": [
               "string",
               "null"
             ]
+          },
+          "groups": {
+            "description": "Active STUDENT groups of the student",
+            "items": {
+              "$ref": "#/components/schemas/AdminGroupRefDTO"
+            },
+            "type": "array"
           },
           "id": {
             "description": "Student ID",
@@ -1559,7 +1590,7 @@
             "type": "string"
           },
           "lastActivity": {
-            "description": "Most recent module access",
+            "description": "Most recent page or lesson activity",
             "example": "2026-03-01T10:00:00.000Z",
             "format": "date-time",
             "type": [
@@ -1576,12 +1607,20 @@
             ]
           },
           "overallProgress": {
-            "description": "Rounded average progress over started modules (0-100)",
+            "description": "Lesson-weighted progress over all published content (0-100, rounded down)",
             "example": 45,
             "type": "number"
           },
+          "studentCode": {
+            "description": "Institutional student code",
+            "example": "2026-0001",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "totalModules": {
-            "description": "Started modules",
+            "description": "Published modules",
             "example": 5,
             "type": "number"
           }
@@ -1590,11 +1629,14 @@
           "id",
           "name",
           "email",
+          "studentCode",
           "lastActivity",
           "overallProgress",
           "completedModules",
           "totalModules",
-          "groupName"
+          "groupName",
+          "groups",
+          "canView"
         ],
         "type": "object"
       },
@@ -1816,7 +1858,7 @@
             "type": "string"
           },
           "groups": {
-            "description": "Groups where the user is a teacher",
+            "description": "Active student groups the user created or supervises from an active teacher group",
             "items": {
               "$ref": "#/components/schemas/AdminTeacherGroupDTO"
             },
@@ -1854,7 +1896,7 @@
             "type": "string"
           },
           "studentCount": {
-            "description": "Student memberships across those groups",
+            "description": "Distinct students across those groups",
             "example": 25,
             "type": "number"
           }
@@ -2283,7 +2325,8 @@
               "ACCORDION",
               "ASSISTANT",
               "NOTES_ANALYSIS",
-              "EVALUATION_FEEDBACK"
+              "EVALUATION_FEEDBACK",
+              "SIMULATOR_ASSIST"
             ],
             "example": "POPUP",
             "type": "string"
@@ -17540,7 +17583,7 @@
             "type": "number"
           },
           "completionsToday": {
-            "description": "Lessons completed since local midnight",
+            "description": "Lessons completed since midnight in America/Bogota",
             "example": 5,
             "type": "number"
           },
@@ -17556,7 +17599,7 @@
             "type": "boolean"
           },
           "publishedModules": {
-            "description": "Published modules (same as active modules)",
+            "description": "Active modules that students can see (published, inside a published level and section)",
             "example": 12,
             "type": "number"
           },
@@ -17573,7 +17616,7 @@
             "type": "number"
           },
           "totalEvaluations": {
-            "description": "Active clinical cases",
+            "description": "Evaluations ready to assign (status READY)",
             "example": 10,
             "type": "number"
           },
@@ -17583,7 +17626,7 @@
             "type": "number"
           },
           "totalLessons": {
-            "description": "Active lessons",
+            "description": "Active published lessons inside a published module",
             "example": 60,
             "type": "number"
           },
@@ -24053,6 +24096,79 @@
         ],
         "type": "object"
       },
+      "TelemetryRecordingSummaryDTO": {
+        "properties": {
+          "chunkCount": {
+            "description": "Number of stored chunks",
+            "example": 12,
+            "type": "number"
+          },
+          "endsAt": {
+            "description": "Reservation end",
+            "example": "2026-10-30T14:30:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "groupId": {
+            "description": "Holder group of a group reservation",
+            "example": "cm5group01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "holderType": {
+            "description": "Whether the reservation is held by a user or a group",
+            "enum": [
+              "USER",
+              "GROUP"
+            ],
+            "example": "USER",
+            "type": "string"
+          },
+          "reservationId": {
+            "description": "Recorded reservation",
+            "example": "0192f3a4-5b6c-7d8e-9f01-23456789abcd",
+            "type": "string"
+          },
+          "sampleRateHz": {
+            "description": "Recording sample rate in Hz",
+            "example": 20,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "startsAt": {
+            "description": "Reservation start",
+            "example": "2026-10-30T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Reservation status",
+            "enum": [
+              "SCHEDULED",
+              "CANCELLED",
+              "PREEMPTED",
+              "COMPLETED"
+            ],
+            "example": "COMPLETED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reservationId",
+          "holderType",
+          "groupId",
+          "startsAt",
+          "endsAt",
+          "status",
+          "chunkCount",
+          "sampleRateHz"
+        ],
+        "type": "object"
+      },
       "TimelineEntryDTO": {
         "properties": {
           "endedAt": {
@@ -24736,8 +24852,9 @@
       "UpdateMeDTO": {
         "properties": {
           "image": {
-            "description": "Profile image as an http(s) URL or a base64 image data URL. Send null or an empty string to remove it.",
+            "description": "Profile image as an http(s) URL of at most 2048 characters (upload a photo with PUT /api/users/me/avatar). Send null or an empty string to remove it.",
             "example": "https://example.com/avatar.png",
+            "maxLength": 2048,
             "type": [
               "string",
               "null"
@@ -25222,13 +25339,14 @@
             "type": "string"
           },
           "surface": {
-            "description": "Where the answer was shown: tutor popup, deepen accordion, assistant page or notes analysis (thesis analytics)",
+            "description": "Where the answer was shown: tutor popup, deepen accordion, assistant page, notes analysis, evaluation feedback or simulator assistant (thesis analytics)",
             "enum": [
               "POPUP",
               "ACCORDION",
               "ASSISTANT",
               "NOTES_ANALYSIS",
-              "EVALUATION_FEEDBACK"
+              "EVALUATION_FEEDBACK",
+              "SIMULATOR_ASSIST"
             ],
             "example": "POPUP",
             "type": "string"
@@ -25510,13 +25628,18 @@
               "null"
             ]
           },
+          "hasPassword": {
+            "description": "Whether the account has a local password (false for Google sign-in accounts, whose password is managed by Google)",
+            "example": true,
+            "type": "boolean"
+          },
           "id": {
             "description": "User unique identifier",
             "example": "cm5x2k9a00000abcd1234efgh",
             "type": "string"
           },
           "image": {
-            "description": "Profile image URL",
+            "description": "Profile image URL: a signed URL of the uploaded photo (it expires; read it again instead of storing it), or else the stored image (the Google picture)",
             "example": "https://example.com/avatar.png",
             "type": [
               "string",
@@ -25575,6 +25698,7 @@
           "isActive",
           "studentCode",
           "isSuperadmin",
+          "hasPassword",
           "emailVerified",
           "createdAt",
           "updatedAt"
@@ -29071,7 +29195,7 @@
     },
     "/api/admin/ai-ratings/export.csv": {
       "get": {
-        "description": "One RFC 4180 row per rating without user identifiers, oldest first, capped at the export row limit; the X-Export-Truncated header is \"true\" when rows were left out\n\n**Required access:** bearer token holding `ai-ratings:read`; minimum role TEACHER.",
+        "description": "One RFC 4180 row per rating without user identifiers, oldest first, capped at the export row limit; the X-Export-Truncated header is \"true\" when rows were left out\n\n**Required access:** bearer token holding `ai-ratings:read`; minimum role ADMIN.",
         "operationId": "exportAiRatingsCsv",
         "parameters": [
           {
@@ -29111,7 +29235,7 @@
             }
           },
           {
-            "description": "Only ratings given on this surface",
+            "description": "Only ratings given on this surface; a rating stored without one is read with the surface its target type implies",
             "in": "query",
             "name": "surface",
             "required": false,
@@ -29121,7 +29245,8 @@
                 "ACCORDION",
                 "ASSISTANT",
                 "NOTES_ANALYSIS",
-                "EVALUATION_FEEDBACK"
+                "EVALUATION_FEEDBACK",
+                "SIMULATOR_ASSIST"
               ],
               "example": "POPUP",
               "type": "string"
@@ -29306,7 +29431,7 @@
         "tags": [
           "AI ratings"
         ],
-        "x-min-role": "TEACHER",
+        "x-min-role": "ADMIN",
         "x-required-permissions": [
           "ai-ratings:read"
         ]
@@ -29314,7 +29439,7 @@
     },
     "/api/admin/ai-ratings/stats": {
       "get": {
-        "description": "Helpful rate and mean with n per QUEST dimension, grouped by use case, provider, model and prompt version of the linked AI call (\"unknown\" when the rating has no linked call)\n\n**Required access:** bearer token holding `ai-ratings:read`; minimum role TEACHER.",
+        "description": "Helpful rate and mean with n per QUEST dimension, grouped by surface (stored, or implied by the target type when missing), scope, and the use case, provider, model and prompt version of the linked AI call (\"unknown\" when there is no value)\n\n**Required access:** bearer token holding `ai-ratings:read`; minimum role ADMIN.",
         "operationId": "getAiRatingStats",
         "parameters": [
           {
@@ -29354,7 +29479,7 @@
             }
           },
           {
-            "description": "Only ratings given on this surface",
+            "description": "Only ratings given on this surface; a rating stored without one is read with the surface its target type implies",
             "in": "query",
             "name": "surface",
             "required": false,
@@ -29364,7 +29489,8 @@
                 "ACCORDION",
                 "ASSISTANT",
                 "NOTES_ANALYSIS",
-                "EVALUATION_FEEDBACK"
+                "EVALUATION_FEEDBACK",
+                "SIMULATOR_ASSIST"
               ],
               "example": "POPUP",
               "type": "string"
@@ -29563,7 +29689,7 @@
         "tags": [
           "AI ratings"
         ],
-        "x-min-role": "TEACHER",
+        "x-min-role": "ADMIN",
         "x-required-permissions": [
           "ai-ratings:read"
         ]
@@ -30170,7 +30296,7 @@
     },
     "/api/admin/students": {
       "get": {
-        "description": "Paginated students with progress summary and group; myGroups=true limits it to the caller's groups as teacher\n\n**Required access:** bearer token holding `students:read`; minimum role TEACHER.",
+        "description": "Paginated students with their published-content progress, active groups, student code and whether the caller may open their detail (canView); search matches name, email or student code; myGroups=true limits it to the groups the caller created or supervises (an empty page when there are none); sorting by progress or lastActivity is computed on the server before paging\n\n**Required access:** bearer token holding `students:read`; minimum role TEACHER.",
         "operationId": "adminGetStudents",
         "parameters": [
           {
@@ -30209,7 +30335,7 @@
             }
           },
           {
-            "description": "Partial, case-insensitive match against name or email",
+            "description": "Partial, case-insensitive match against name, email or student code",
             "in": "query",
             "name": "search",
             "required": false,
@@ -30251,7 +30377,7 @@
             }
           },
           {
-            "description": "Only students of the groups where the caller is a teacher (ignored when groupId is sent)",
+            "description": "Only students of the STUDENT groups the caller created or supervises (an administrator manages all of them); combined with groupId it keeps that group only when the caller manages it",
             "in": "query",
             "name": "myGroups",
             "required": false,
@@ -30387,7 +30513,7 @@
     },
     "/api/admin/students/{id}/progress": {
       "get": {
-        "description": "Full activity detail and statistics of a student\n\n**Required access:** bearer token holding `students:read`; minimum role TEACHER.",
+        "description": "Full activity detail and statistics of a student; a teacher only reads students of the groups they created or supervise\n\n**Required access:** bearer token holding `students:read`; minimum role TEACHER.",
         "operationId": "getStudentProgress",
         "parameters": [
           {
@@ -30468,7 +30594,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden or the student is outside the teacher's groups"
           },
           "404": {
             "content": {
@@ -30533,7 +30659,7 @@
     },
     "/api/admin/teachers": {
       "get": {
-        "description": "Teachers and admins ordered by name with their groups and student counts\n\n**Required access:** bearer token holding `users:read`; minimum role ADMIN.",
+        "description": "Teachers and admins ordered by name with the active student groups they created or supervise and the number of distinct students in them\n\n**Required access:** bearer token holding `users:read`; minimum role ADMIN.",
         "operationId": "getTeachers",
         "parameters": [
           {
@@ -32885,6 +33011,136 @@
         "x-required-permissions": [
           "audit:read"
         ]
+      }
+    },
+    "/api/auth/change-password": {
+      "post": {
+        "description": "Changes the authenticated user's password (8 to 128 characters with an uppercase letter, a lowercase letter and a number), revokes every refresh token issued so far and returns a new token pair for the current session; other sessions must sign in again once their access token expires (at most 15 minutes). Accounts without a password (Google sign-in) answer 400. Limited to 5 requests per minute.\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
+        "operationId": "authChangePassword",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/LoginResponseDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Password changed; new token pair for the current session"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error, wrong current password, same password or no password set"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many password change attempts"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Change own password",
+        "tags": [
+          "Authentication"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": []
       }
     },
     "/api/auth/google": {
@@ -65084,6 +65340,460 @@
         ]
       }
     },
+    "/api/progress/users/{userId}/achievements": {
+      "get": {
+        "description": "Read-only for staff: the achievements unlocked by the given user, newest first\n\n**Required access:** bearer token holding `progress:read`; minimum role TEACHER.",
+        "operationId": "getUserAchievements",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AchievementsDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Achievements retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden or the student is outside the teacher's groups"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a user's achievements",
+        "tags": [
+          "Progress"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "progress:read"
+        ]
+      }
+    },
+    "/api/progress/users/{userId}/activity/recent": {
+      "get": {
+        "description": "Read-only for staff: the latest ledger milestones of the given user (lesson and module completions, passed evaluations and unlocked achievements) with the title of the referenced item, newest first\n\n**Required access:** bearer token holding `progress:read`; minimum role TEACHER.",
+        "operationId": "getUserRecentActivity",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Maximum number of entries",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "maximum": 50,
+              "minimum": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/RecentActivityItemDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Recent activity retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden or the student is outside the teacher's groups"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a user's recent activity",
+        "tags": [
+          "Progress"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "progress:read"
+        ]
+      }
+    },
+    "/api/progress/users/{userId}/gamification": {
+      "get": {
+        "description": "Read-only for staff: XP, level, XP inside the level, the XP of the next level, the current and longest streak (America/Bogota days) and today's XP of the given user\n\n**Required access:** bearer token holding `progress:read`; minimum role TEACHER.",
+        "operationId": "getUserGamification",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/GamificationStatsDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Gamification statistics retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error or malformed request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden or the student is outside the teacher's groups"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a user's gamification statistics",
+        "tags": [
+          "Progress"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "progress:read"
+        ]
+      }
+    },
     "/api/progress/users/{userId}/levels/{levelId}": {
       "get": {
         "description": "Returns the lesson-weighted progress of the level for the given user\n\n**Required access:** bearer token holding `progress:read`; minimum role TEACHER.",
@@ -65175,7 +65885,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden or the student is outside the teacher's groups"
           },
           "404": {
             "content": {
@@ -65329,7 +66039,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden or the student is outside the teacher's groups"
           },
           "404": {
             "content": {
@@ -65483,7 +66193,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden or the student is outside the teacher's groups"
           },
           "404": {
             "content": {
@@ -65629,7 +66339,7 @@
                 }
               }
             },
-            "description": "Forbidden"
+            "description": "Forbidden or the student is outside the teacher's groups"
           },
           "404": {
             "content": {
@@ -77352,7 +78062,7 @@
         "x-required-permissions": []
       },
       "patch": {
-        "description": "Updates the authenticated user's name or profile image\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
+        "description": "Updates the authenticated user's name or profile image URL (http(s) only; upload a photo with PUT /api/users/me/avatar)\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
         "operationId": "updateMe",
         "parameters": [],
         "requestBody": {
@@ -77480,10 +78190,299 @@
         "x-required-permissions": []
       }
     },
+    "/api/users/me/avatar": {
+      "delete": {
+        "description": "Removes the uploaded photo and deletes its file; image falls back to the stored image (the Google picture), if any\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
+        "operationId": "removeMyAvatar",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/UserDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Profile photo removed successfully"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Remove own profile photo",
+        "tags": [
+          "Users"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": []
+      },
+      "put": {
+        "description": "Stores the photo after checking its type, size and first bytes, replaces the previous uploaded photo (which is deleted) and returns the profile with the photo's signed URL as image\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
+        "operationId": "updateMyAvatar",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "description": "Profile photo: png, jpeg or webp of at most 2 MB (the client crops it square and resizes it to 512 px)",
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/UserDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Profile photo updated successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "No file or an empty file was sent"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "User not found"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "GenericError": {
+                    "$ref": "#/components/examples/GenericError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The photo exceeds 2 MB"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "GenericError": {
+                    "$ref": "#/components/examples/GenericError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not a png, jpeg or webp image, or the content does not match its type"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ServiceUnavailableError": {
+                    "$ref": "#/components/examples/ServiceUnavailableError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "File storage is not configured"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Upload own profile photo",
+        "tags": [
+          "Users"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": []
+      }
+    },
     "/api/users/me/change-password": {
       "post": {
-        "description": "Changes the authenticated user's password; access and refresh tokens already issued stay valid until they expire\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
-        "operationId": "changePassword",
+        "deprecated": true,
+        "description": "Deprecated alias of POST /api/auth/change-password without reissuing tokens: changes the authenticated user's password and revokes every refresh token issued so far (the current session too); access tokens stay valid until they expire\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.\n\n**Deprecated:** use `POST /api/auth/change-password`. Responses carry the `Deprecation` header (RFC 9745) and, when the successor URL can be built from this request, `Link: <successor>; rel=\"successor-version\"`.",
+        "operationId": "usersChangePassword",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -77607,7 +78606,8 @@
           "Users"
         ],
         "x-min-role": "STUDENT",
-        "x-required-permissions": []
+        "x-required-permissions": [],
+        "x-successor": "POST /api/auth/change-password"
       }
     },
     "/api/users/me/stats": {
@@ -79846,6 +80846,177 @@
         ]
       }
     },
+    "/api/ventilator/telemetry/recordings": {
+      "get": {
+        "description": "Reservations with recorded telemetry held by the user or by a group they belong to, whose start falls in [from, to) (by default the last 90 days, at most 366), newest first, at most 100; userId defaults to the caller; another user's list is for administrators and for teachers who created or supervise one of the student's groups\n\n**Required access:** bearer token holding `simulation:read`; minimum role STUDENT.",
+        "operationId": "listTelemetryRecordings",
+        "parameters": [
+          {
+            "description": "User whose recordings are listed; defaults to the caller. Staff only for another user (a teacher only for students of the groups they created or supervise)",
+            "in": "query",
+            "name": "userId",
+            "required": false,
+            "schema": {
+              "example": "cm5student01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Reservation start lower bound (inclusive, ISO 8601); defaults to 90 days before `to`",
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "example": "2026-08-01T00:00:00Z",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Reservation start upper bound (exclusive, ISO 8601); defaults to now. The range spans at most 366 days",
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "example": "2026-11-01T00:00:00Z",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/TelemetryRecordingSummaryDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Recordings retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Another user's recordings outside the caller's scope"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnprocessableError": {
+                    "$ref": "#/components/examples/UnprocessableError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The range does not start before it ends or spans more than 366 days"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List telemetry recordings of a user",
+        "tags": [
+          "Ventilator telemetry"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "simulation:read"
+        ]
+      }
+    },
     "/api/ventilator/telemetry/recordings/start": {
       "post": {
         "description": "Records the active reservation's telemetry, subsampled to VENTILATOR_RECORDING_HZ, in gzip-json chunks; allowed to the reservation holders, teachers and administrators. Stops automatically when the reservation ends or is preempted\n\n**Required access:** bearer token holding `simulation:read`; minimum role STUDENT.",
@@ -80092,7 +81263,7 @@
     },
     "/api/ventilator/telemetry/recordings/{reservationId}": {
       "get": {
-        "description": "Decompressed frames of a reservation ordered by server time; allowed to the reservation holders, teachers and administrators\n\n**Required access:** bearer token holding `simulation:read`; minimum role STUDENT.",
+        "description": "Decompressed frames of a reservation ordered by server time; allowed to administrators, the reservation holders and creator, and teachers who manage the holder (a student of, or one of, the groups they created or supervise)\n\n**Required access:** bearer token holding `simulation:read`; minimum role STUDENT.",
         "operationId": "getTelemetryRecording",
         "parameters": [
           {
@@ -80173,7 +81344,7 @@
                 }
               }
             },
-            "description": "Not a holder of the reservation"
+            "description": "Not a holder of the reservation nor a teacher who manages it"
           },
           "404": {
             "content": {

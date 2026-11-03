@@ -48,6 +48,7 @@ export function userDto(id: string, name: string | null, overrides: Partial<User
     createdAt: "2026-01-15T10:30:00.000Z",
     email: `${id}@ventylab.demo`,
     emailVerified: null,
+    hasPassword: true,
     id,
     image: null,
     isActive: true,
