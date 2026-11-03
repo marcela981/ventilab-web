@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Legacy route redirects tests
-* Descripción: The legacy routes redirect (temporary, 307) to the migrated screens through the next.config `redirects()` rules of config/legacy-redirects.mjs: /panel and /panel/students → /teacher, /panel/students/[id] → /teacher/students/[id], /panel/admin → /admin/users, /panel/settings → /admin/settings; the seven /evaluation/** routes → /evaluations, /evaluations/manage, /evaluations/manage/new or /grading; /teaching/[moduleId]/[lessonId] and /teaching?moduleId=&lessonId= → page 1 of the same lesson, any other /teaching → /learn. Concrete paths are resolved with Next's own matchers (path-match, matchHas, prepareDestination) in rule order, so the order of the list is tested too; static destinations are routes of the session route table and next.config.mjs serves exactly this list. v1.0 covered only the panel getServerSideProps helpers. Depends on vitest, Next's routing utils and the session route table. v2.1 (W1 Bloque 1): /simulador is no longer redirected (it is the workspace); /simulator, /lab and /lab/live go to /simulador with their `tab` (query passed through, the rule's tab wins), exact paths only: the case editor, the session pages, /lab/reservations and /lab/recordings/** are left alone; no rule targets another rule's source (no cycles). v2.2 (W3, Bloque 2): /learn/:sectionId goes to the Currículo tab; /learn and its module routes are not redirected.
-* Versión: 2.2
+* Descripción: The legacy routes redirect (temporary, 307) to the migrated screens through the next.config `redirects()` rules of config/legacy-redirects.mjs: /panel and /panel/students → /teacher, /panel/students/[id] → /teacher/students/[id], /panel/admin → /admin/users, /panel/settings → /admin/settings; the seven /evaluation/** routes → /evaluations, /evaluations/manage, /evaluations/manage/new or /grading; /teaching/[moduleId]/[lessonId] and /teaching?moduleId=&lessonId= → page 1 of the same lesson, any other /teaching → /learn. Concrete paths are resolved with Next's own matchers (path-match, matchHas, prepareDestination) in rule order, so the order of the list is tested too; static destinations are routes of the session route table and next.config.mjs serves exactly this list. v1.0 covered only the panel getServerSideProps helpers. Depends on vitest, Next's routing utils and the session route table. v2.1 (W1 Bloque 1): /simulador is no longer redirected (it is the workspace); /simulator, /lab and /lab/live go to /simulador with their `tab` (query passed through, the rule's tab wins), exact paths only: the case editor, the session pages, /lab/reservations and /lab/recordings/** are left alone; no rule targets another rule's source (no cycles). v2.2 (W3, Bloque 2): /learn/:sectionId goes to the Currículo tab; /learn and its module routes are not redirected. v2.3 (Bloque 3): Bloque 3 hub redirects (gestionar, calificar, assignments → builder) and the updated legacy destinations.
+* Versión: 2.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,6 +80,9 @@ describe("legacy redirect rules", () => {
       "/evaluation/grade",
       "/evaluation/grade/:activityId",
       "/evaluation/:activityId",
+      "/evaluations/manage",
+      "/evaluations/manage/:evaluationId/assignments",
+      "/grading",
       "/teaching/:moduleId/:lessonId",
       "/teaching (query)",
       "/teaching",
@@ -104,11 +107,14 @@ describe("legacy redirect rules", () => {
   it.each([
     ["/evaluation", "/evaluations"],
     ["/evaluation/a1", "/evaluations"],
-    ["/evaluation/manage", "/evaluations/manage"],
+    ["/evaluation/manage", "/evaluations?tab=gestionar"],
     ["/evaluation/manage/new", "/evaluations/manage/new"],
-    ["/evaluation/manage/a1/edit", "/evaluations/manage"],
-    ["/evaluation/grade", "/grading"],
-    ["/evaluation/grade/a1", "/grading"],
+    ["/evaluation/manage/a1/edit", "/evaluations?tab=gestionar"],
+    ["/evaluation/grade", "/evaluations?tab=calificar"],
+    ["/evaluation/grade/a1", "/evaluations?tab=calificar"],
+    ["/evaluations/manage", "/evaluations?tab=gestionar"],
+    ["/evaluations/manage/e1/assignments", "/evaluations/manage/e1/edit?section=asignacion"],
+    ["/grading", "/evaluations?tab=calificar"],
   ])("redirects the legacy evaluation route %s to %s", (from, to) => {
     expect(resolve(from)).toBe(to);
   });
@@ -166,6 +172,11 @@ describe("legacy redirect rules", () => {
 
   it("leaves the new routes alone", () => {
     expect(resolve("/evaluations")).toBeNull();
+    expect(resolve("/evaluations?tab=calificar")).toBeNull();
+    expect(resolve("/evaluations/manage/new")).toBeNull();
+    expect(resolve("/evaluations/manage/e1/edit")).toBeNull();
+    expect(resolve("/grading/evaluations/e1")).toBeNull();
+    expect(resolve("/grading/attempts/a1")).toBeNull();
     expect(resolve("/teacher/students/u1")).toBeNull();
     expect(resolve("/learn")).toBeNull();
     expect(resolve("/learn?tab=progreso")).toBeNull();
@@ -181,6 +192,7 @@ describe("legacy redirect rules", () => {
         .replace(/[?].*$/, "")
         .replace(/:id\b/, "[userId]")
         .replace(/:moduleId\b/, "[moduleId]")
+        .replace(/:evaluationId\b/, "[evaluationId]")
         .replace(/:lessonId\b/, "[lessonId]")
         .replace(/\/1$/, "/[pageNumber]");
 

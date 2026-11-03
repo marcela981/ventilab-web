@@ -60,6 +60,8 @@ function toQuestion(dto: GradingQuestionDTO, index: number, answer: AttemptAnswe
     clinicalCaseId: dto.clinicalCaseId,
     options: [...dto.options].sort(byOrder).map(toOption),
     answer,
+    hint: null,
+    reveal: null,
   };
 }
 

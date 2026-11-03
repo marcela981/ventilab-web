@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationIntroPage
-* Descripción: Page /evaluations/[evaluationId]: introduction of one assigned evaluation, taken from `GET /api/my-evaluations` (there is no intro endpoint; when the evaluation is assigned several times the active assignment wins). Shows the type, the instructions (rich text or plain text), questions, duration, attempts used, the date window (America/Bogota) and the attempt warnings (the server controls the time, answers are saved automatically). "Comenzar" or "Continuar intento" calls the idempotent start endpoint and opens the attempt player; when the backend does not allow a start the button is disabled with the reason. "Ver resultado" links to the result of the last submitted attempt. Depends on MUI Alert, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the evaluations CSS Module.
-* Versión: 1.0
+* Descripción: Page /evaluations/[evaluationId]: introduction of one assigned evaluation, taken from `GET /api/my-evaluations` (there is no intro endpoint; when the evaluation is assigned several times the active assignment wins). Shows the type, the instructions (rich text or plain text), questions, duration, attempts used, the date window (America/Bogota) and the attempt warnings (the server controls the time, answers are saved automatically). "Comenzar" or "Continuar intento" calls the idempotent start endpoint and opens the attempt player; when the backend does not allow a start the button is disabled with the reason. "Ver resultado" links to the result of the last submitted attempt. Depends on MUI Alert, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the evaluations CSS Module. v1.1 (Bloque 3): re-entry text when every allowed attempt was used ("Ya realizaste esta evaluación el <fecha>…"), "Intento x de N" when more than one attempt is allowed, attempts counted against attemptsAllowed and the player route prefetched (router.prefetch) while the start is possible.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import Alert from "@mui/material/Alert";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
@@ -25,7 +25,7 @@ import { formatDateRange, formatDuration } from "@shared/lib/format";
 import { GradeBadge } from "../components/attempt-badges";
 import { RichTextView } from "../components/rich-text-view";
 import type { MyEvaluation } from "../entities/evaluation.entity";
-import { findIntroEvaluation, findLastSubmittedAttempt, resolveIntroAction } from "../entities/evaluation.entity";
+import { attemptOrdinalLabel, findIntroEvaluation, findLastSubmittedAttempt, resolveIntroAction } from "../entities/evaluation.entity";
 import { EVALUATION_TYPE_LABELS, formatAttemptsUsed } from "../entities/evaluation-labels";
 import { getEvaluationErrorMessage } from "../entities/evaluations-error-messages";
 import { buildAttemptResultUrl, buildAttemptUrl, EVALUATIONS_URL } from "../entities/evaluations-urls";
@@ -69,6 +69,17 @@ function IntroBody({ evaluation }: { evaluation: MyEvaluation }) {
   const action = resolveIntroAction(evaluation);
   const lastSubmitted = findLastSubmittedAttempt(evaluation);
   const duration = evaluation.durationMinutes === null ? null : formatDuration(evaluation.durationMinutes);
+  const ordinal = attemptOrdinalLabel(evaluation, action);
+  const prefetchUrl = action.kind === "blocked"
+    ? null
+    // Any attempt id loads the same player chunk; the real id is only known after the start.
+    : buildAttemptUrl(evaluation.evaluationId, action.kind === "continue" ? action.attemptId : "nuevo");
+
+  useEffect(() => {
+    if (prefetchUrl) {
+      void Promise.resolve(router.prefetch?.(prefetchUrl)).catch(() => undefined);
+    }
+  }, [prefetchUrl, router]);
 
   const handleStart = async() => {
     setStartError(null);
@@ -96,7 +107,7 @@ function IntroBody({ evaluation }: { evaluation: MyEvaluation }) {
           <dt>{PAGE_COPY.duration}</dt>
           <dd>{duration ?? PAGE_COPY.noTimeLimit}</dd>
           <dt>{PAGE_COPY.attempts}</dt>
-          <dd>{formatAttemptsUsed(evaluation.attempts.length, evaluation.maxAttempts)}</dd>
+          <dd>{formatAttemptsUsed(evaluation.attempts.length, evaluation.attemptsAllowed)}</dd>
           <dt>{PAGE_COPY.window}</dt>
           <dd>{formatDateRange(evaluation.startsAt, evaluation.endsAt)}</dd>
         </dl>
@@ -127,6 +138,7 @@ function IntroBody({ evaluation }: { evaluation: MyEvaluation }) {
         >
           {action.kind === "continue" ? PAGE_COPY.continue : PAGE_COPY.start}
         </AsyncButton>
+        {ordinal ? <p className={cx(styles.attemptOrdinal)}>{ordinal}</p> : null}
         {action.kind === "blocked" ? <p className={cx(styles.blockedReason)}>{action.reason}</p> : null}
         {lastSubmitted ? (
           <Link href={buildAttemptResultUrl(evaluation.evaluationId, lastSubmitted.id)} className={cx(styles.link)}>

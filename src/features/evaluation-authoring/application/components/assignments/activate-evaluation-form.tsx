@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: ActivateEvaluationDialog
-* Descripción: Dialog "Activar evaluación" of the activations page: a checklist of the active student groups the caller manages (admins: every group; `GET /api/groups`), and the start and end date-time of the window as native datetime-local fields read in America/Bogota (UTC-5). Defaults to the next full hour for one week. On submit it validates (at least one group, valid dates, end after start) and sends the body with the window converted to UTC ISO; a failure from the backend (403, 409, 422 mapped to Spanish by the page) stays visible in the dialog. Mounted only while open, so every opening starts from a fresh form. Depends on MUI, the design-system components, @shared/lib, the assignment entities and copy, the staff groups hook and the assignments CSS Module. v1.1 (A4 review S4): the validation receives the submit instant (or the injected `now`) and rejects an end that is not in the future.
-* Versión: 1.1
+* Funcionalidad: ActivateEvaluationForm
+* Descripción: Inline form "Nueva asignación" of the "Asignación a grupos" section of the builder (extracted from the former "Activar evaluación" dialog; Bloque 3, W6): a checklist of the active student groups the caller manages (admins: every group; `GET /api/groups`), and the start and end date-time of the window as native datetime-local fields read in America/Bogota (UTC-5). Defaults to the next full hour for one week. On submit it validates (at least one group, valid dates, end after start, end in the future) and sends the body with the window converted to UTC ISO; a failure from the backend (403, 409, 422) is shown inside the form. The parent remounts it (key) after a successful assignment to start a clean form. Depends on React, MUI, the design-system form field and async button, @shared/lib, the assignment entities, the staff groups hook and the assignments CSS Module.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,10 +12,6 @@
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import Checkbox from "@mui/material/Checkbox";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import { useId, useState } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
@@ -27,17 +23,16 @@ import type { ActivationBody, ActivationErrors, ActivationForm } from "../../ent
 import { useStaffGroups } from "../../hooks/use-staff-groups";
 import styles from "../../../UI/assignments.module.css";
 
-const COPY = ASSIGNMENTS_COPY.dialog;
+const COPY = ASSIGNMENTS_COPY.form;
 
-export type ActivateEvaluationDialogProps = {
+export type ActivateEvaluationFormProps = {
   pending: boolean
-  // Resolves to an error message, or null once the evaluation was activated.
+  // Resolves to an error message, or null once the evaluation was assigned.
   onSubmit: (body: ActivationBody) => Promise<string | null>
-  onClose: () => void
   now?: Date | undefined
 };
 
-export function ActivateEvaluationDialog({ pending, onSubmit, onClose, now }: ActivateEvaluationDialogProps) {
+export function ActivateEvaluationForm({ pending, onSubmit, now }: ActivateEvaluationFormProps) {
   const { groups, isLoading, error, reload } = useStaffGroups(true);
   const [form, setForm] = useState<ActivationForm>(() => defaultActivationForm(now ?? new Date()));
   const [errors, setErrors] = useState<ActivationErrors>({});
@@ -101,48 +96,43 @@ export function ActivateEvaluationDialog({ pending, onSubmit, onClose, now }: Ac
   };
 
   return (
-    <Dialog open fullWidth maxWidth="sm" onClose={pending ? undefined : onClose} aria-labelledby={titleId}>
-      <DialogTitle id={titleId}>{COPY.title}</DialogTitle>
-      <DialogContent>
-        <div className={cx(styles.dialogBody)}>
-          <fieldset className={cx(styles.groupFieldset)} aria-describedby={errors.groupIds ? groupsErrorId : undefined}>
-            <legend className={cx(styles.groupLegend)}>{COPY.groups}</legend>
-            {renderGroups()}
-            {errors.groupIds ? <p id={groupsErrorId} className={cx(styles.fieldError)} role="alert">{errors.groupIds}</p> : null}
-          </fieldset>
-          <div className={cx(styles.dateRow)}>
-            <FormField
-              type="datetime-local"
-              label={COPY.startsAt}
-              value={form.startsAt}
-              required
-              error={errors.startsAt}
-              helperText={COPY.timeZoneHint}
-              className={cx(styles.dateField)}
-              onChange={(event) => setForm({ ...form, startsAt: event.target.value })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-            <FormField
-              type="datetime-local"
-              label={COPY.endsAt}
-              value={form.endsAt}
-              required
-              error={errors.endsAt}
-              helperText={COPY.timeZoneHint}
-              className={cx(styles.dateField)}
-              onChange={(event) => setForm({ ...form, endsAt: event.target.value })}
-              slotProps={{ inputLabel: { shrink: true } }}
-            />
-          </div>
-          {submitError ? <Alert severity="error">{submitError}</Alert> : null}
-        </div>
-      </DialogContent>
-      <DialogActions>
-        <Button disabled={pending} onClick={onClose}>{COPY.cancel}</Button>
+    <div className={cx(styles.inlineForm)} role="group" aria-labelledby={titleId}>
+      <h3 id={titleId} className={cx(styles.inlineFormTitle)}>{COPY.title}</h3>
+      <fieldset className={cx(styles.groupFieldset)} aria-describedby={errors.groupIds ? groupsErrorId : undefined}>
+        <legend className={cx(styles.groupLegend)}>{COPY.groups}</legend>
+        {renderGroups()}
+        {errors.groupIds ? <p id={groupsErrorId} className={cx(styles.fieldError)} role="alert">{errors.groupIds}</p> : null}
+      </fieldset>
+      <div className={cx(styles.dateRow)}>
+        <FormField
+          type="datetime-local"
+          label={COPY.startsAt}
+          value={form.startsAt}
+          required
+          error={errors.startsAt}
+          helperText={COPY.timeZoneHint}
+          className={cx(styles.dateField)}
+          onChange={(event) => setForm({ ...form, startsAt: event.target.value })}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <FormField
+          type="datetime-local"
+          label={COPY.endsAt}
+          value={form.endsAt}
+          required
+          error={errors.endsAt}
+          helperText={COPY.timeZoneHint}
+          className={cx(styles.dateField)}
+          onChange={(event) => setForm({ ...form, endsAt: event.target.value })}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+      </div>
+      {submitError ? <Alert severity="error">{submitError}</Alert> : null}
+      <div className={cx(styles.inlineFormActions)}>
         <AsyncButton variant="contained" loading={pending} disabled={pending} onClick={submit}>
           {COPY.submit}
         </AsyncButton>
-      </DialogActions>
-    </Dialog>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useMyEvaluations
-* Descripción: Reads the evaluations assigned to the signed-in user (`GET /api/my-evaluations`, no filters or pagination: the pages filter by state and type on the client) through useApiQuery and maps them to MyEvaluation entities. Depends on @shared/api-client and the evaluations mappers/service.
-* Versión: 1.0
+* Descripción: Reads the evaluations assigned to the signed-in user (`GET /api/my-evaluations`, no filters or pagination: the pages filter by state and type on the client) through useApiQuery and maps them to MyEvaluation entities. Depends on @shared/api-client and the evaluations mappers/service. v1.1 (Bloque 3): optional moduleId sent as `?moduleId=` (evaluations linked to one curriculum module).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,8 +23,9 @@ export type UseMyEvaluationsResult = {
   reload: () => Promise<void>
 };
 
-export function useMyEvaluations(): UseMyEvaluationsResult {
-  const { data, error, isLoading, mutate } = useApiQuery(MY_EVALUATIONS_PATH);
+// moduleId narrows the list to the evaluations linked to one curriculum module.
+export function useMyEvaluations(moduleId?: string | null): UseMyEvaluationsResult {
+  const { data, error, isLoading, mutate } = useApiQuery(MY_EVALUATIONS_PATH, moduleId ? { query: { moduleId } } : undefined);
   const evaluations = useMemo(() => (data ? toMyEvaluations(data.data) : null), [data]);
 
   const reload = useCallback(async() => {

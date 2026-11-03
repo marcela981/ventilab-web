@@ -2282,7 +2282,8 @@
               "POPUP",
               "ACCORDION",
               "ASSISTANT",
-              "NOTES_ANALYSIS"
+              "NOTES_ANALYSIS",
+              "EVALUATION_FEEDBACK"
             ],
             "example": "POPUP",
             "type": "string"
@@ -3076,6 +3077,123 @@
         },
         "required": [
           "answers"
+        ],
+        "type": "object"
+      },
+      "AttemptResetNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AttemptResetNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Evaluation the student may take again"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "ATTEMPT_RESET"
+            ],
+            "example": "ATTEMPT_RESET",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "AttemptResetNotificationDataDTO": {
+        "properties": {
+          "evaluationId": {
+            "description": "ID of the evaluation the student may take again",
+            "example": "01932e9f-2345-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evaluationId"
+        ],
+        "type": "object"
+      },
+      "AttemptStatusCountsDTO": {
+        "properties": {
+          "GRADED": {
+            "description": "Graded attempts",
+            "example": 10,
+            "type": "number"
+          },
+          "IN_PROGRESS": {
+            "description": "Attempts in progress",
+            "example": 2,
+            "type": "number"
+          },
+          "PENDING_REVIEW": {
+            "description": "Attempts waiting for the teacher",
+            "example": 3,
+            "type": "number"
+          },
+          "SUBMITTED": {
+            "description": "Submitted attempts not yet graded",
+            "example": 0,
+            "type": "number"
+          },
+          "total": {
+            "description": "Every attempt of the evaluation (and group) in the caller scope, whatever the status filter",
+            "example": 15,
+            "type": "number"
+          }
+        },
+        "required": [
+          "IN_PROGRESS",
+          "SUBMITTED",
+          "PENDING_REVIEW",
+          "GRADED",
+          "total"
         ],
         "type": "object"
       },
@@ -3906,6 +4024,57 @@
         },
         "required": [
           "studentCode"
+        ],
+        "type": "object"
+      },
+      "CheckEvaluationAnswerDTO": {
+        "properties": {
+          "selectedOptionIds": {
+            "description": "Selected option IDs to check (choice questions)",
+            "example": [
+              "cm5option01"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "selectedOptionIds"
+        ],
+        "type": "object"
+      },
+      "CheckEvaluationAnswerResponseDTO": {
+        "properties": {
+          "correctOptionIds": {
+            "description": "Correct option IDs",
+            "example": [
+              "cm5option01"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "explanation": {
+            "description": "Teacher explanation",
+            "example": "PEEP keeps the alveoli open",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isCorrect": {
+            "description": "Whether the selected options are exactly the correct ones",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isCorrect",
+          "correctOptionIds",
+          "explanation"
         ],
         "type": "object"
       },
@@ -5649,6 +5818,12 @@
           "explanation": {
             "description": "Explanation shown with the results",
             "example": "A PEEP of 8 keeps the alveoli open",
+            "type": "string"
+          },
+          "hint": {
+            "description": "Hint the student can open while answering (shown in WORKSHOP evaluations only)",
+            "example": "Think about alveolar recruitment",
+            "maxLength": 2000,
             "type": "string"
           },
           "mediaIds": {
@@ -7836,6 +8011,30 @@
         ],
         "type": "object"
       },
+      "EvaluationAttemptsPageDTO": {
+        "properties": {
+          "counts": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AttemptStatusCountsDTO"
+              }
+            ],
+            "description": "Attempts by status of the evaluation (and group) in the caller scope, ignoring the status filter"
+          },
+          "items": {
+            "description": "Attempts of this page, ordered by student and attempt number",
+            "items": {
+              "$ref": "#/components/schemas/GradingAttemptListItemDTO"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "counts"
+        ],
+        "type": "object"
+      },
       "EvaluationDetailDTO": {
         "properties": {
           "canManage": {
@@ -8289,6 +8488,14 @@
               "null"
             ]
           },
+          "hint": {
+            "description": "Hint shown to students on demand (WORKSHOP evaluations only)",
+            "example": "Think about alveolar recruitment",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "description": "Question ID (legacy questions look like <evaluationId>:q1)",
             "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
@@ -8387,6 +8594,7 @@
           "media",
           "points",
           "explanation",
+          "hint",
           "clinicalCaseId",
           "rubric",
           "options"
@@ -9236,6 +9444,72 @@
         ],
         "type": "object"
       },
+      "GradeFeedbackMyRatingDTO": {
+        "properties": {
+          "comment": {
+            "description": "Free-text comment",
+            "example": "Me ayudó a entender la PEEP",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "First rated at",
+            "example": "2026-10-05T12:00:00.000Z",
+            "type": "string"
+          },
+          "expression": {
+            "description": "Expression style and clarity (1–5)",
+            "example": 4,
+            "type": "number"
+          },
+          "helpful": {
+            "description": "Whether the feedback was helpful",
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Rating id",
+            "example": "0192f0c4-7b1e-7a3d-9c2b-3f4e5d6a7b8c",
+            "type": "string"
+          },
+          "quality": {
+            "description": "Overall quality (1–5)",
+            "example": 4,
+            "type": "number"
+          },
+          "safety": {
+            "description": "Safety and harm avoidance (1–5)",
+            "example": 5,
+            "type": "number"
+          },
+          "surface": {
+            "description": "Surface where the feedback was rated",
+            "example": "EVALUATION_FEEDBACK",
+            "type": "string"
+          },
+          "trust": {
+            "description": "Trust and confidence (1–5)",
+            "example": 3,
+            "type": "number"
+          },
+          "understanding": {
+            "description": "Understanding of the answer (1–5)",
+            "example": 5,
+            "type": "number"
+          },
+          "updatedAt": {
+            "description": "Last edited at",
+            "example": "2026-10-05T12:05:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "helpful",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
       "GradeFeedbackRegenerationDTO": {
         "properties": {
           "attemptId": {
@@ -9730,6 +10004,130 @@
           "scenarios",
           "questions",
           "answers"
+        ],
+        "type": "object"
+      },
+      "GradingAttemptListItemDTO": {
+        "properties": {
+          "assignmentId": {
+            "description": "Assignment ID",
+            "example": "cm5assignment01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "attemptId": {
+            "description": "Attempt ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "attemptNumber": {
+            "description": "Attempt number",
+            "example": 1,
+            "type": "number"
+          },
+          "evaluationId": {
+            "description": "Evaluation ID",
+            "example": "cm5evaluation01",
+            "type": "string"
+          },
+          "grade": {
+            "description": "Grade 0.0–5.0 (null while pending)",
+            "example": 3,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "gradePublishedAt": {
+            "description": "When the grade was published (null while unpublished)",
+            "example": "2026-10-06T09:00:00.000Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "groupId": {
+            "description": "STUDENT group of the assignment",
+            "example": "cm5group01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isLate": {
+            "description": "Whether the attempt was closed after its deadline",
+            "example": false,
+            "type": "boolean"
+          },
+          "maxScore": {
+            "description": "Total points",
+            "example": 5,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "score": {
+            "description": "Points earned so far",
+            "example": 3,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "description": "When the attempt started",
+            "example": "2026-10-06T08:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "status": {
+            "description": "Attempt status",
+            "enum": [
+              "IN_PROGRESS",
+              "SUBMITTED",
+              "PENDING_REVIEW",
+              "GRADED"
+            ],
+            "example": "GRADED",
+            "type": "string"
+          },
+          "student": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GradingStudentDTO"
+              }
+            ],
+            "description": "Student"
+          },
+          "submittedAt": {
+            "description": "When the attempt was submitted or closed",
+            "example": "2026-10-06T08:30:00.000Z",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "attemptId",
+          "evaluationId",
+          "assignmentId",
+          "groupId",
+          "attemptNumber",
+          "student",
+          "status",
+          "startedAt",
+          "submittedAt",
+          "score",
+          "maxScore",
+          "grade",
+          "gradePublishedAt",
+          "isLate"
         ],
         "type": "object"
       },
@@ -14591,6 +14989,11 @@
             },
             "type": "array"
           },
+          "attemptsAllowed": {
+            "description": "Attempts the student may use: maxAttempts plus the extra attempts granted by teacher resets",
+            "example": 2,
+            "type": "number"
+          },
           "canStart": {
             "description": "Whether an attempt can be started or resumed now",
             "example": true,
@@ -14644,6 +15047,7 @@
           "endsAt",
           "evaluation",
           "attempts",
+          "attemptsAllowed",
           "canStart"
         ],
         "type": "object"
@@ -14784,10 +15188,42 @@
             "example": "cm5evaluation01",
             "type": "string"
           },
+          "levelId": {
+            "description": "Curriculum level (the evaluation's own, or its module's)",
+            "example": "cm5level01",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "levelOrder": {
+            "description": "Order of that level within its track",
+            "example": 1,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "levelTitle": {
+            "description": "Title of that level",
+            "example": "Fundamentos de la ventilación mecánica",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "maxAttempts": {
             "description": "Attempts allowed",
             "example": 1,
             "type": "number"
+          },
+          "moduleId": {
+            "description": "Curriculum module of the evaluation",
+            "example": "cm5module01",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "questionCount": {
             "description": "Number of questions",
@@ -14798,6 +15234,14 @@
             "description": "Evaluation title",
             "example": "Mechanical ventilation midterm",
             "type": "string"
+          },
+          "track": {
+            "description": "Track (section slug) of that level",
+            "example": "mecanica",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "type": {
             "description": "Evaluation type",
@@ -14817,7 +15261,12 @@
           "description",
           "durationMinutes",
           "maxAttempts",
-          "questionCount"
+          "questionCount",
+          "moduleId",
+          "levelId",
+          "levelTitle",
+          "levelOrder",
+          "track"
         ],
         "type": "object"
       },
@@ -15474,6 +15923,9 @@
                     "$ref": "#/components/schemas/FeedbackReadyNotificationDataDTO"
                   },
                   {
+                    "$ref": "#/components/schemas/AttemptResetNotificationDataDTO"
+                  },
+                  {
                     "$ref": "#/components/schemas/RoleChangedNotificationDataDTO"
                   },
                   {
@@ -15518,6 +15970,7 @@
               "EVALUATION_ACTIVATED",
               "GRADE_PUBLISHED",
               "FEEDBACK_READY",
+              "ATTEMPT_RESET",
               "ROLE_CHANGED",
               "VENTILATOR_OFFLINE"
             ],
@@ -16583,6 +17036,25 @@
           "withinRange",
           "errorClassification",
           "priority"
+        ],
+        "type": "object"
+      },
+      "PartialClosedScoreDTO": {
+        "properties": {
+          "correct": {
+            "description": "Closed (choice) questions answered correctly",
+            "example": 3,
+            "type": "number"
+          },
+          "total": {
+            "description": "Closed (choice) questions in the evaluation",
+            "example": 4,
+            "type": "number"
+          }
+        },
+        "required": [
+          "correct",
+          "total"
         ],
         "type": "object"
       },
@@ -18958,6 +19430,21 @@
         },
         "required": [
           "durationMinutes"
+        ],
+        "type": "object"
+      },
+      "ResetEvaluationAttemptDTO": {
+        "properties": {
+          "reason": {
+            "description": "Why the student may take the evaluation again (audited)",
+            "example": "Connection lost during the quiz",
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
         ],
         "type": "object"
       },
@@ -21352,6 +21839,46 @@
         ],
         "type": "object"
       },
+      "StudentAnswerRevealDTO": {
+        "properties": {
+          "correctOptionIds": {
+            "description": "Correct option IDs",
+            "example": [
+              "cm5option01"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "explanation": {
+            "description": "Teacher explanation",
+            "example": "PEEP keeps the alveoli open",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "isCorrect": {
+            "description": "Whether the checked answer is correct",
+            "example": false,
+            "type": "boolean"
+          },
+          "revealedAt": {
+            "description": "When the answer was checked (it is locked since then)",
+            "example": "2026-10-06T08:05:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "revealedAt",
+          "isCorrect",
+          "correctOptionIds",
+          "explanation"
+        ],
+        "type": "object"
+      },
       "StudentAssignmentCheckDTO": {
         "properties": {
           "isAssigned": {
@@ -21423,6 +21950,21 @@
             "description": "Maximum score (published only)",
             "example": 10,
             "type": "number"
+          },
+          "partialClosedScore": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PartialClosedScoreDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correct closed questions while open questions wait for the teacher (PENDING_REVIEW QUIZ or WORKSHOP attempts only; null otherwise)"
           },
           "passed": {
             "description": "Whether the grade reaches the passing grade (published only)",
@@ -21496,6 +22038,7 @@
           "deadlineAt",
           "serverNow",
           "published",
+          "partialClosedScore",
           "evaluation",
           "scenarios",
           "questions"
@@ -21962,6 +22505,21 @@
             "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
             "type": "string"
           },
+          "myRating": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GradeFeedbackMyRatingDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The caller's own rating of this block (target GRADE_FEEDBACK with this id), or null when not rated"
+          },
           "questionId": {
             "description": "Question ID, or null for the overall feedback",
             "example": "cm5question01",
@@ -21999,7 +22557,8 @@
           "questionId",
           "status",
           "source",
-          "content"
+          "content",
+          "myRating"
         ],
         "type": "object"
       },
@@ -22349,6 +22908,14 @@
               "null"
             ]
           },
+          "hint": {
+            "description": "Hint shown on demand (WORKSHOP evaluations only; null otherwise)",
+            "example": "Think about the alveolar recruitment",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "id": {
             "description": "Question ID",
             "example": "cm5question01",
@@ -22381,6 +22948,21 @@
           "prompt": {
             "description": "Question prompt (Tiptap document)",
             "type": "object"
+          },
+          "reveal": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StudentAnswerRevealDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Correction of an answer the student checked for immediate feedback (QUIZ and WORKSHOP); null when the answer was not checked"
           },
           "rubric": {
             "description": "Rubric (only once the grade is published)",
@@ -22420,7 +23002,9 @@
           "points",
           "clinicalCaseId",
           "options",
-          "answer"
+          "answer",
+          "hint",
+          "reveal"
         ],
         "type": "object"
       },
@@ -23835,6 +24419,15 @@
               "null"
             ]
           },
+          "hint": {
+            "description": "Hint (WORKSHOP evaluations only); null removes it",
+            "example": "Think about alveolar recruitment",
+            "maxLength": 2000,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "mediaIds": {
             "description": "Media attached to the question (replaces the list)",
             "example": [
@@ -24634,7 +25227,8 @@
               "POPUP",
               "ACCORDION",
               "ASSISTANT",
-              "NOTES_ANALYSIS"
+              "NOTES_ANALYSIS",
+              "EVALUATION_FEEDBACK"
             ],
             "example": "POPUP",
             "type": "string"
@@ -28526,7 +29120,8 @@
                 "POPUP",
                 "ACCORDION",
                 "ASSISTANT",
-                "NOTES_ANALYSIS"
+                "NOTES_ANALYSIS",
+                "EVALUATION_FEEDBACK"
               ],
               "example": "POPUP",
               "type": "string"
@@ -28768,7 +29363,8 @@
                 "POPUP",
                 "ACCORDION",
                 "ASSISTANT",
-                "NOTES_ANALYSIS"
+                "NOTES_ANALYSIS",
+                "EVALUATION_FEEDBACK"
               ],
               "example": "POPUP",
               "type": "string"
@@ -40098,7 +40694,7 @@
                 }
               }
             },
-            "description": "The attempt is closed, read-only or past its deadline"
+            "description": "The attempt is closed, read-only or past its deadline, or the answer was already checked (locked)"
           },
           "422": {
             "content": {
@@ -40163,7 +40759,7 @@
     },
     "/api/evaluation-attempts/{attemptId}/feedback": {
       "get": {
-        "description": "Overall and per-question feedback of the own attempt with its status; content and source only when READY; available once the grade is published\n\n**Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.",
+        "description": "Overall and per-question feedback of the own attempt with its status (a PENDING generation older than 10 minutes reads as FAILED); content, source and the caller's own rating (myRating) only when READY; available once the grade is published\n\n**Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.",
         "operationId": "getMyFeedback",
         "parameters": [
           {
@@ -40490,6 +41086,184 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "evaluations:attempt"
+        ]
+      }
+    },
+    "/api/evaluation-grading/attempts": {
+      "get": {
+        "description": "Every non-legacy attempt of one evaluation in the caller grading scope (same scope as the grading queue), optionally filtered by STUDENT group and statuses, ordered by student and attempt number, with grade, publication date, late flag and the counts by status of the evaluation and group (the status filter does not apply to the counts); expired attempts in progress are closed first (at most 50 per request)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "operationId": "getEvaluationAttempts",
+        "parameters": [
+          {
+            "description": "Page number (1-based)",
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "Number of items per page",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "description": "Evaluation whose attempts are listed",
+            "in": "query",
+            "name": "evaluationId",
+            "required": true,
+            "schema": {
+              "example": "cm5evaluation01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only attempts of this STUDENT group",
+            "in": "query",
+            "name": "groupId",
+            "required": false,
+            "schema": {
+              "example": "cm5group01",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only these statuses (comma-separated or repeated query parameter)",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "example": "PENDING_REVIEW,GRADED",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/EvaluationAttemptsPageDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Attempts retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List evaluation attempts",
+        "tags": [
+          "Evaluation grading"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "evaluations:grade"
         ]
       }
     },
@@ -40981,7 +41755,7 @@
     },
     "/api/evaluation-grading/attempts/{attemptId}/feedback/regenerate": {
       "post": {
-        "description": "Replaces the feedback of a graded attempt with a PENDING one and generates it asynchronously (language model with deterministic fallback)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "description": "Supersedes the current feedback of a graded attempt (kept, never deleted, so its ratings still resolve) with a PENDING one and generates it asynchronously (language model with deterministic fallback); at most 5 requests per minute\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
         "operationId": "regenerateFeedback",
         "parameters": [
           {
@@ -41092,7 +41866,7 @@
                 }
               }
             },
-            "description": "The attempt is not graded yet"
+            "description": "The attempt is not graded yet, or a generation started less than 10 minutes ago is still PENDING"
           },
           "429": {
             "content": {
@@ -41819,6 +42593,185 @@
           }
         ],
         "summary": "Count the grading queue",
+        "tags": [
+          "Evaluation grading"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "evaluations:grade"
+        ]
+      }
+    },
+    "/api/evaluation-grading/students/{userId}/evaluations/{evaluationId}/reset": {
+      "post": {
+        "description": "Non-destructive reset: grants the student one more attempt of the evaluation (maxAttempts plus the accumulated grants), keeping every previous attempt, grade and feedback; the reason is audited and the student is notified (ATTEMPT_RESET). Requires the grading scope over the student group and an ACTIVE assignment of that group\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "operationId": "resetAttempt",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "evaluationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetEvaluationAttemptDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Attempt reset successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The student group is outside the caller grading scope"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Evaluation not found, or not assigned to the student group"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ConflictError": {
+                    "$ref": "#/components/examples/ConflictError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "evaluation.attempt_in_progress: the student has an attempt in progress; evaluation.assignment_not_active: the assignment of the student group is not active (data: assignmentId, startsAt, endsAt, to extend its window)"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Reset a student attempt",
         "tags": [
           "Evaluation grading"
         ],
@@ -55823,9 +56776,20 @@
     },
     "/api/my-evaluations": {
       "get": {
-        "description": "Assignments of the caller's active STUDENT group with derived state, evaluation summary (no answers) and own attempts; grades only when published; empty without group\n\n**Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.",
+        "description": "Assignments of the caller's active STUDENT group with derived state, evaluation summary (no answers, with its curriculum module, level and track) and own attempts; grades only when published; empty without group; optionally only the evaluations of one module\n\n**Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.",
         "operationId": "getMyEvaluations",
-        "parameters": [],
+        "parameters": [
+          {
+            "description": "Only evaluations linked to this curriculum module",
+            "in": "query",
+            "name": "moduleId",
+            "required": false,
+            "schema": {
+              "example": "cm5module01",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -55854,6 +56818,21 @@
               }
             },
             "description": "Evaluations retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
           },
           "401": {
             "content": {
@@ -55922,6 +56901,200 @@
           }
         ],
         "summary": "Get my evaluations",
+        "tags": [
+          "Student evaluations"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "evaluations:attempt"
+        ]
+      }
+    },
+    "/api/my-evaluations/attempts/{attemptId}/answers/{questionId}/check": {
+      "post": {
+        "description": "Immediate feedback (QUIZ and WORKSHOP choice questions): saves the selected options of the own attempt in progress, reveals whether they are correct with the correct options and the explanation, and locks the answer (a later save or check answers 409); the score is still computed only at submission\n\n**Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.",
+        "operationId": "checkAnswer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "attemptId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "questionId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckEvaluationAnswerDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CheckEvaluationAnswerResponseDTO"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Answer checked successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The caller lacks the required permission or is not allowed to act on this resource"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Attempt or question not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ConflictError": {
+                    "$ref": "#/components/examples/ConflictError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The attempt is closed, read-only or past its deadline, or the answer was already checked"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnprocessableError": {
+                    "$ref": "#/components/examples/UnprocessableError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "EXAM evaluation, non-choice question, or options that do not match the question"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Check evaluation answer",
         "tags": [
           "Student evaluations"
         ],
@@ -57742,6 +58915,7 @@
                           "items": {
                             "discriminator": {
                               "mapping": {
+                                "ATTEMPT_RESET": "#/components/schemas/AttemptResetNotificationDTO",
                                 "EVALUATION_ACTIVATED": "#/components/schemas/EvaluationActivatedNotificationDTO",
                                 "FEEDBACK_READY": "#/components/schemas/FeedbackReadyNotificationDTO",
                                 "GRADE_PUBLISHED": "#/components/schemas/GradePublishedNotificationDTO",
@@ -57767,6 +58941,9 @@
                               },
                               {
                                 "$ref": "#/components/schemas/FeedbackReadyNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/AttemptResetNotificationDTO"
                               },
                               {
                                 "$ref": "#/components/schemas/RoleChangedNotificationDTO"
@@ -58201,6 +59378,7 @@
                         "data": {
                           "discriminator": {
                             "mapping": {
+                              "ATTEMPT_RESET": "#/components/schemas/AttemptResetNotificationDTO",
                               "EVALUATION_ACTIVATED": "#/components/schemas/EvaluationActivatedNotificationDTO",
                               "FEEDBACK_READY": "#/components/schemas/FeedbackReadyNotificationDTO",
                               "GRADE_PUBLISHED": "#/components/schemas/GradePublishedNotificationDTO",
@@ -58226,6 +59404,9 @@
                             },
                             {
                               "$ref": "#/components/schemas/FeedbackReadyNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/AttemptResetNotificationDTO"
                             },
                             {
                               "$ref": "#/components/schemas/RoleChangedNotificationDTO"

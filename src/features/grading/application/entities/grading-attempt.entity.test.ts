@@ -38,6 +38,8 @@ function item(overrides: Partial<GradingItem> = {}): GradingItem {
       media: [],
       points: 2,
       clinicalCaseId: null,
+      hint: null,
+      reveal: null,
       options: [],
       answer: null,
     },

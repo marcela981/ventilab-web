@@ -1,0 +1,138 @@
+/*
+* Funcionalidad: Staff evaluation hub styles
+* Descripción: Layout of the staff evaluation hub at /evaluations: centered column, top tab list with the selected tab underlined and the Calificar pending badge, kept-mounted panels (hidden when inactive) and the Resultados list. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.hub {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.tabList {
+  display: flex;
+  gap: var(--vl-space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: 48px;
+  padding: var(--vl-space-2) var(--vl-space-4);
+  font: var(--mui-font-button);
+  color: var(--vl-color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--vl-color-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+  border-bottom-color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  padding: 0 var(--vl-space-1);
+  border-radius: var(--vl-radius-pill);
+  background: var(--vl-color-error);
+  color: var(--vl-color-on-primary);
+  font: var(--mui-font-caption);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+}
+
+.resultsToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-2);
+}
+
+.muted {
+  margin: 0;
+  color: var(--vl-color-text-muted);
+}
+
+.resultsList {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.resultsItem {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-4);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.resultsItem:last-child {
+  border-bottom: 0;
+}
+
+.resultsTitle {
+  flex: 1 1 16rem;
+  font-weight: 600;
+}
+
+.link {
+  color: var(--vl-color-link);
+}

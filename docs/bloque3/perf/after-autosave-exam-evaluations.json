@@ -1,0 +1,532 @@
+{
+  "meta": {
+    "label": "after-autosave-exam",
+    "runs": 5,
+    "warmupRoundsDiscarded": 1,
+    "cpuThrottlingRate": 4,
+    "settleMs": 3000,
+    "autosaveSamplesPerRound": 3,
+    "network": "localhost, no network throttling",
+    "storageState": "e2e/.auth/student.json",
+    "student": "estudiante01@ventylab.demo",
+    "ids": {
+      "introEvaluationId": "45ebe14d-7313-5e93-b1ea-92f0a60b25fd",
+      "playerEvaluationId": "01a19474-ea10-723a-ac6d-62756baf65fe",
+      "playerAttemptId": "01a19474-eafe-70bc-aa68-df55e19cb803",
+      "resultEvaluationId": "b3dbecb8-e6fe-5de8-bedc-6ba265b77444",
+      "resultAttemptId": "3c56d675-4709-5c96-9113-1ae365ef3b5e"
+    },
+    "webCommit": "0fa9145",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-11-01T00:17:33.764Z",
+    "definitions": {
+      "contentMs": "page performance.now() at the first visible match of the content selector (MutationObserver); 0 = navigation start (cold/warm) or the click (start)",
+      "apiDepth": "sequential waves among API requests until the content: wave = 1 + highest wave of the API requests that had finished before it started",
+      "depthWithChunks": "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound",
+      "secondary": "attempt-result only: same metrics until the overall AI feedback section is visible (full useful content of a published result)",
+      "warm": "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
+      "start": "client-side navigation intro → player by clicking Continuar intento/Comenzar (idempotent start endpoint), measured to the first question",
+      "autosave": "pick another option of question 1: clickToPutStartMs includes the client debounce; putMs = PUT duration on the network; clickToSavedMs = click → status line shows the saved text again"
+    }
+  },
+  "screens": {
+    "attempt-player": {
+      "url": "/evaluations/01a19474-ea10-723a-ac6d-62756baf65fe/attempts/01a19474-eafe-70bc-aa68-df55e19cb803",
+      "contentSelector": "section[aria-label^=\"Pregunta 1\"]",
+      "secondarySelector": null,
+      "median": {
+        "cold": {
+          "contentMs": 2333,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 38,
+          "chunksFromCache": 0,
+          "depthWithChunks": 13,
+          "apiAfterContent": 0,
+          "longTasksUntilContent": 9,
+          "longTasksMsUntilContent": 1450,
+          "longTasksUntilSettle": 9,
+          "longTasksMsUntilSettle": 1450,
+          "longTaskMaxMs": 255
+        },
+        "warm": {
+          "contentMs": 989,
+          "api": 2,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 29,
+          "depthWithChunks": 3,
+          "apiAfterContent": 1,
+          "longTasksUntilContent": 3,
+          "longTasksMsUntilContent": 413,
+          "longTasksUntilSettle": 4,
+          "longTasksMsUntilSettle": 461,
+          "longTaskMaxMs": 173
+        },
+        "autosave": {
+          "samples": 15,
+          "clickToPutStartMs": 170,
+          "putMs": 31.2,
+          "putEndToSavedMs": 42,
+          "clickToSavedMs": 245.4
+        }
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2383,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1465,
+                "maxMs": 255
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 1465,
+                "maxMs": 255
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 889,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 310,
+                "maxMs": 141
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 366,
+                "maxMs": 141
+              }
+            }
+          },
+          "autosave": [
+            {
+              "clickToPutStartMs": 170,
+              "putMs": 29.9,
+              "putStatus": 200,
+              "clickToSavedMs": 245.4,
+              "putEndToSavedMs": 45.5
+            },
+            {
+              "clickToPutStartMs": 155.2,
+              "putMs": 26.4,
+              "putStatus": 200,
+              "clickToSavedMs": 214.3,
+              "putEndToSavedMs": 32.7
+            },
+            {
+              "clickToPutStartMs": 172.1,
+              "putMs": 28.9,
+              "putStatus": 200,
+              "clickToSavedMs": 237.3,
+              "putEndToSavedMs": 36.4
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2258,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1343,
+                "maxMs": 234
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 1343,
+                "maxMs": 234
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 989,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 5,
+                "totalMs": 526,
+                "maxMs": 214
+              },
+              "untilSettle": {
+                "count": 5,
+                "totalMs": 526,
+                "maxMs": 214
+              }
+            }
+          },
+          "autosave": [
+            {
+              "clickToPutStartMs": 180.9,
+              "putMs": 28.4,
+              "putStatus": 200,
+              "clickToSavedMs": 265.5,
+              "putEndToSavedMs": 56.2
+            },
+            {
+              "clickToPutStartMs": 172.7,
+              "putMs": 42.3,
+              "putStatus": 200,
+              "clickToSavedMs": 261.3,
+              "putEndToSavedMs": 46.3
+            },
+            {
+              "clickToPutStartMs": 156.7,
+              "putMs": 26.1,
+              "putStatus": 200,
+              "clickToSavedMs": 223.1,
+              "putEndToSavedMs": 40.3
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2333,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 14,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1450,
+                "maxMs": 280
+              },
+              "untilSettle": {
+                "count": 10,
+                "totalMs": 1450,
+                "maxMs": 280
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 1015,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 413,
+                "maxMs": 178
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 472,
+                "maxMs": 178
+              }
+            }
+          },
+          "autosave": [
+            {
+              "clickToPutStartMs": 180.5,
+              "putMs": 27.4,
+              "putStatus": 200,
+              "clickToSavedMs": 277.3,
+              "putEndToSavedMs": 69.4
+            },
+            {
+              "clickToPutStartMs": 166.2,
+              "putMs": 38.4,
+              "putStatus": 200,
+              "clickToSavedMs": 247.4,
+              "putEndToSavedMs": 42.8
+            },
+            {
+              "clickToPutStartMs": 161.2,
+              "putMs": 41.2,
+              "putStatus": 200,
+              "clickToSavedMs": 229.8,
+              "putEndToSavedMs": 27.4
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2546,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1682,
+                "maxMs": 257
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1682,
+                "maxMs": 257
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 983,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 461,
+                "maxMs": 173
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 461,
+                "maxMs": 173
+              }
+            }
+          },
+          "autosave": [
+            {
+              "clickToPutStartMs": 156.7,
+              "putMs": 44.3,
+              "putStatus": 200,
+              "clickToSavedMs": 229.9,
+              "putEndToSavedMs": 28.9
+            },
+            {
+              "clickToPutStartMs": 162.9,
+              "putMs": 31.2,
+              "putStatus": 200,
+              "clickToSavedMs": 243.3,
+              "putEndToSavedMs": 49.2
+            },
+            {
+              "clickToPutStartMs": 176.8,
+              "putMs": 34.3,
+              "putStatus": 200,
+              "clickToSavedMs": 250,
+              "putEndToSavedMs": 38.9
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2263,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 38,
+              "chunksFromCache": 0,
+              "depthWithChunks": 13,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/notifications/unread-count",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 9,
+                "totalMs": 1368,
+                "maxMs": 241
+              },
+              "untilSettle": {
+                "count": 9,
+                "totalMs": 1368,
+                "maxMs": 241
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 996,
+            "untilContent": {
+              "api": 2,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 29,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/evaluation-attempts/01a19474-eafe-70bc-aa68-df55e19cb803"
+              ],
+              "apiErrors": []
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 20
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 382,
+                "maxMs": 161
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 382,
+                "maxMs": 161
+              }
+            }
+          },
+          "autosave": [
+            {
+              "clickToPutStartMs": 170,
+              "putMs": 30.1,
+              "putStatus": 200,
+              "clickToSavedMs": 242,
+              "putEndToSavedMs": 42
+            },
+            {
+              "clickToPutStartMs": 176,
+              "putMs": 38,
+              "putStatus": 200,
+              "clickToSavedMs": 246.8,
+              "putEndToSavedMs": 32.8
+            },
+            {
+              "clickToPutStartMs": 167,
+              "putMs": 39.8,
+              "putStatus": 200,
+              "clickToSavedMs": 249.7,
+              "putEndToSavedMs": 42.9
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

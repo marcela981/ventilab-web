@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: EvaluationsManagePage
-* Descripción: Staff page /evaluations/manage (teachers and admins): lists the evaluations the caller can author from `GET /api/evaluations` with server filters and pagination: type, status (draft and ready by default, or one status, archived included), title search debounced 300 ms, sorted by last update, 10/25/50 per page (changing a filter returns to the first page). The module filter narrows only the loaded page on the client (the API has no module filter). "Nueva evaluación" links to /evaluations/manage/new. Row actions: Editar and Activaciones link to their routes, Duplicar (`POST .../duplicate`) shows a toast and opens the editor of the copy, Archivar asks for confirmation and sends `PATCH .../status` ARCHIVED. Mutations are single-flight and refresh every authoring key; failures (409 invalid_status_transition, 403, 422…) show the Spanish message of the authoring error map as a toast. Loading, error with retry, empty and no-match states. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the authoring hooks, entities, components and CSS Module. v1.1 (A3 review follow-up): when the requested page comes back empty beyond the last page (for example after archiving the only row of the last page) the list steps back to the last available page instead of showing the no-match state.
-* Versión: 1.1
+* Funcionalidad: EvaluationsManageBody
+* Descripción: "Gestionar" tab of the staff evaluation hub (/evaluations?tab=gestionar; it was the page /evaluations/manage): lists the evaluations the caller can author from `GET /api/evaluations` with server filters and pagination: type, status (draft and ready by default, or one status, archived included), title search debounced 300 ms, sorted by last update, 10/25/50 per page (changing a filter returns to the first page). The module filter narrows only the loaded page on the client (the API has no module filter). "Nueva evaluación" links to /evaluations/manage/new. Row actions: Editar and Activaciones link to their routes, Duplicar (`POST .../duplicate`) shows a toast and opens the editor of the copy, Archivar asks for confirmation and sends `PATCH .../status` ARCHIVED. Mutations are single-flight and refresh every authoring key; failures (409 invalid_status_transition, 403, 422…) show the Spanish message of the authoring error map as a toast. Loading, error with retry, empty and no-match states. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the authoring hooks, entities, components and CSS Module. v1.1 (A3 review follow-up): when the requested page comes back empty beyond the last page (for example after archiving the only row of the last page) the list steps back to the last available page instead of showing the no-match state. v1.2 (Bloque 3): extracted as EvaluationsManageBody, the Gestionar tab of the staff hub /evaluations (no document title nor page header; the subtitle and "Nueva evaluación" in a toolbar).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,6 @@ import AddIcon from "@mui/icons-material/Add";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
-import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
@@ -21,7 +20,6 @@ import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { LoadingState } from "@shared/design-system/components/loading-state";
-import { PageHeader } from "@shared/design-system/components/page-header";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { changeEvaluationStatus, duplicateEvaluation } from "../../api/services/evaluation-authoring.service";
@@ -42,9 +40,7 @@ import styles from "../../UI/authoring.module.css";
 
 // TODO(i18n): move to an evaluation-authoring namespace in src/i18n.
 export const MANAGE_COPY = {
-  documentTitle: "Gestionar evaluaciones | VentyLab",
-  title: "Gestionar evaluaciones",
-  subtitle: "Crea, edita, duplica y activa las evaluaciones de tus grupos.",
+  subtitle: "Crea, edita, duplica y asigna las evaluaciones de tus grupos.",
   create: "Nueva evaluación",
   loading: "Cargando evaluaciones…",
   loadErrorTitle: "No se pudieron cargar las evaluaciones",
@@ -87,7 +83,7 @@ function CreateAction() {
   );
 }
 
-export function EvaluationsManagePage() {
+export function EvaluationsManageBody() {
   const router = useRouter();
   const toast = useToast();
   const [filters, setFilters] = useState<EvaluationListFilters>(EMPTY_EVALUATION_FILTERS);
@@ -204,11 +200,11 @@ export function EvaluationsManagePage() {
   };
 
   return (
-    <div className={cx(styles.page)}>
-      <Head>
-        <title>{MANAGE_COPY.documentTitle}</title>
-      </Head>
-      <PageHeader title={MANAGE_COPY.title} subtitle={MANAGE_COPY.subtitle} actions={<CreateAction />} />
+    <div className={cx(styles.content)}>
+      <div className={cx(styles.toolbar)}>
+        <p className={cx(styles.toolbarText)}>{MANAGE_COPY.subtitle}</p>
+        <CreateAction />
+      </div>
       <div className={cx(styles.content)}>
         {renderList()}
         {!page && isLoading ? <LoadingState label={MANAGE_COPY.loading} /> : null}

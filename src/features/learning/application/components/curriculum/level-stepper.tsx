@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LevelStepper
-* Descripción: Levels of one Currículo accordion as a vertical stepper (W4, Bloque 2; July LevelStepper): each step has a marker (its number, a check when completed, a lock when locked), the level title, its status chip (July texts: Completado, En progreso, Sin iniciar, Bloqueado), description, the backend progress bar with "x % · x/y módulos", and the module card grid. A level locked for a student shows the lock and "Completa el nivel anterior para desbloquear" (or the missing prerequisites by name) and no modules, like July (the locked level does not expand). Staff are never locked, see drafts with "Borrador" and, in edit mode, "Editar en el CMS" on each level. Each level is an anchor (level-<id>) for the deep links. Depends on MUI, the curriculum view selectors, the learning URLs, the ModuleCard and the curriculum CSS Module.
-* Versión: 0.1
+* Descripción: Levels of one Currículo accordion as a vertical stepper (W4, Bloque 2; July LevelStepper): each step has a marker (its number, a check when completed, a lock when locked), the level title, its status chip (July texts: Completado, En progreso, Sin iniciar, Bloqueado), description, the backend progress bar with "x % · x/y módulos", and the module card grid. A level locked for a student shows the lock and "Completa el nivel anterior para desbloquear" (or the missing prerequisites by name) and no modules, like July (the locked level does not expand). Staff are never locked, see drafts with "Borrador" and, in edit mode, "Editar en el CMS" on each level. Each level is an anchor (level-<id>) for the deep links. Depends on MUI, the curriculum view selectors, the learning URLs, the ModuleCard and the curriculum CSS Module. v0.2 (Bloque 3): optional moduleAction passes an extra action to each module card.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,9 +14,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import LockIcon from "@mui/icons-material/Lock";
 import LinearProgress from "@mui/material/LinearProgress";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
-import type { CurriculumLevel } from "../../entities/curriculum.entity";
-import type { LevelStatus } from "../../entities/curriculum-view.entity";
+import type { CurriculumLevel, CurriculumModule } from "../../entities/curriculum.entity";
+import type { LevelStatus, ModuleCardState } from "../../entities/curriculum-view.entity";
 import { isDraft, levelLockText, levelModuleProgress, levelStatus, moduleCardState } from "../../entities/curriculum-view.entity";
 import { buildContentNodeUrl, levelAnchorId } from "../../entities/learning-urls";
 import type { ProgressSummary } from "../../entities/progress.entity";
@@ -44,6 +45,8 @@ export type LevelStepperProps = {
   summary: ProgressSummary | null
   isStaff: boolean
   editMode: boolean
+  // Extra action of each module card, composed by the curriculum tab.
+  moduleAction?: ((module: CurriculumModule, state: ModuleCardState) => ReactNode) | undefined
 };
 
 type LevelStepProps = Omit<LevelStepperProps, "levels"> & {
@@ -52,7 +55,7 @@ type LevelStepProps = Omit<LevelStepperProps, "levels"> & {
   index: number
 };
 
-function LevelStep({ level, previous, index, summary, isStaff, editMode }: LevelStepProps) {
+function LevelStep({ level, previous, index, summary, isStaff, editMode, moduleAction }: LevelStepProps) {
   const headingId = `${levelAnchorId(level.id)}-title`;
   const studentLocked = level.locked && !isStaff;
   const cards = level.modules.map((module) => {
@@ -114,7 +117,14 @@ function LevelStep({ level, previous, index, summary, isStaff, editMode }: Level
               <ul aria-label={LEVEL_STEPPER_COPY.modulesOf(level.title)} className={cx(styles.moduleGrid)}>
                 {cards.map(({ module, progress: moduleProgress, state }) => (
                   <li key={module.id}>
-                    <ModuleCard module={module} state={state} progress={moduleProgress} isStaff={isStaff} editMode={editMode} />
+                    <ModuleCard
+                      module={module}
+                      state={state}
+                      progress={moduleProgress}
+                      isStaff={isStaff}
+                      editMode={editMode}
+                      extraAction={moduleAction?.(module, state)}
+                    />
                   </li>
                 ))}
               </ul>
@@ -128,7 +138,7 @@ function LevelStep({ level, previous, index, summary, isStaff, editMode }: Level
   );
 }
 
-export function LevelStepper({ levels, summary, isStaff, editMode }: LevelStepperProps) {
+export function LevelStepper({ levels, summary, isStaff, editMode, moduleAction }: LevelStepperProps) {
   return (
     <ol className={cx(styles.stepper)}>
       {levels.map((level, index) => (
@@ -140,6 +150,7 @@ export function LevelStepper({ levels, summary, isStaff, editMode }: LevelSteppe
           summary={summary}
           isStaff={isStaff}
           editMode={editMode}
+          moduleAction={moduleAction}
         />
       ))}
     </ol>

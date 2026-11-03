@@ -44,6 +44,9 @@ function toPreviewQuestion(dto: EvaluationQuestionDTO, index: number): AttemptQu
     clinicalCaseId: dto.clinicalCaseId,
     options: [...dto.options].sort(byOrder).map(toPreviewOption),
     answer: null,
+    // Never the hint (a student sees it only while answering a WORKSHOP) and nothing is revealed.
+    hint: null,
+    reveal: null,
   };
 }
 

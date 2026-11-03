@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation entities tests
-* Descripción: Verifies the pure rules of the student evaluations feature: filtering and counting by state and type, choosing the assignment shown on the intro page (active first, then the next upcoming, then the latest closed), the intro action (start, continue the attempt in progress, or blocked with the reason for upcoming, closed, no attempts left or unavailable), the last submitted attempt, and the URL builders. Depends on vitest, the mappers, the entities, the URLs and the test helpers.
-* Versión: 1.0
+* Descripción: Verifies the pure rules of the student evaluations feature: filtering and counting by state and type, choosing the assignment shown on the intro page (active first, then the next upcoming, then the latest closed), the intro action (start, continue the attempt in progress, or blocked with the reason for upcoming, closed, no attempts left or unavailable), the last submitted attempt, and the URL builders. Depends on vitest, the mappers, the entities, the URLs and the test helpers. v1.1 (Bloque 3): re-entry text and "Intento x de N".
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import { toMyEvaluations } from "../../api/mappers/evaluations.mapper";
 import { attemptDto, myEvaluationDto } from "../pages/evaluations-test-helpers";
 import type { MyEvaluation } from "./evaluation.entity";
 import {
+  attemptOrdinalLabel,
   BLOCKED_REASONS,
   countByState,
   filterEvaluations,
@@ -88,8 +89,26 @@ describe("resolveIntroAction", () => {
     expect(resolveIntroAction(single({
       canStart: false,
       attempts: [attemptDto("at1", 1), attemptDto("at2", 2)],
-    }))).toEqual({ kind: "blocked", reason: BLOCKED_REASONS.noAttempts });
+    }))).toEqual({ kind: "blocked", reason: BLOCKED_REASONS.alreadyTaken("2026-10-14T14:20:00.000Z", 2) });
     expect(resolveIntroAction(single({ canStart: false }))).toEqual({ kind: "blocked", reason: BLOCKED_REASONS.unavailable });
+  });
+});
+
+describe("re-entry and attempt ordinal (Bloque 3)", () => {
+  it("uses the July text when the only attempt was taken and counts granted attempts", () => {
+    const taken = single({ canStart: false, attemptsAllowed: 1, attempts: [attemptDto("at1", 1)] });
+
+    expect(resolveIntroAction(taken)).toEqual({
+      kind: "blocked",
+      reason: BLOCKED_REASONS.alreadyTaken("2026-10-14T14:20:00.000Z", 1),
+    });
+    expect(BLOCKED_REASONS.alreadyTaken("2026-10-14T14:20:00.000Z", 1)).toMatch(/^Ya realizaste esta evaluación el .+. Solo se permite un intento; contacta a tu docente si necesitas repetirla.$/);
+
+    const granted = single({ canStart: true, attemptsAllowed: 2, attempts: [attemptDto("at1", 1)] });
+
+    expect(resolveIntroAction(granted)).toEqual({ kind: "start" });
+    expect(attemptOrdinalLabel(granted, { kind: "start" })).toBe("Intento 2 de 2");
+    expect(attemptOrdinalLabel(single({ attemptsAllowed: 1 }), { kind: "start" })).toBeNull();
   });
 });
 

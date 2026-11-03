@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder copy
-* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. Depends on @shared/rubric-editor (rubric copy). v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions. v1.4 (S1): upload copy of the statement media and the option images (replaces the "próximamente" placeholder). v1.5 (T10 simulation): the rubric editor copy (`rubric*` keys, same texts) lives in @shared/rubric-editor and is spread back into BUILDER_COPY.
-* Versión: 1.5
+* Descripción: Spanish UI copy of the evaluation builder (/evaluations/manage/new and /evaluations/manage/[id]/edit): page titles, metadata form labels, the question and scenario editors, the unsaved-changes indicator and guard, save results, the structure-locked banner and the delete confirmations. Shared by the builder hook, components and page. Depends on @shared/rubric-editor (rubric copy). v1.1 (A3): copy of the SIMULATION editor (clinical case selector and rubric editor), the READY and DRAFT status actions, the client readiness check, the READY-evaluation hints and the structural edits dropped after a 409. v1.2 (A4): the "Vista previa como estudiante" action and its loading label. v1.3 (A3 review W2/S2): the clinical case filter reads "Filtrar por título" with the hint "Filtra solo esta página", and the non-blocking "Se recomienda vincular un caso clínico" hint of SIMULATION questions. v1.4 (S1): upload copy of the statement media and the option images (replaces the "próximamente" placeholder). v1.5 (T10 simulation): the rubric editor copy (`rubric*` keys, same texts) lives in @shared/rubric-editor and is spread back into BUILDER_COPY. v1.6 (Bloque 3): hint field label and help.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,6 +80,8 @@ export const BUILDER_COPY = {
   points: "Puntos",
   explanation: "Explicación (se muestra con los resultados)",
   explanationHelp: "Texto simple o markdown.",
+  hint: "Pista (solo talleres)",
+  hintHelp: "El estudiante la ve en los talleres antes de responder, con \"Pista 💡\". No escribas aquí la respuesta.",
   openTextHelp: "La respuesta abierta la califica el docente. Usa la explicación como respuesta de referencia.",
   options: "Opciones",
   optionText: (position: number) => `Texto de la opción ${position}`,

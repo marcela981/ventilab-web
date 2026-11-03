@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Builder question draft tests
-* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false. v1.3 (S1): statement media and option images: added media go in the text PATCH (mediaIds), option images in the option PATCH (mediaId, null removes it), the statement media limit, and stripStructuralEdits keeps them. v1.4 (B4, D7): points read through the shared es-CO parser (one separator is decimal; grouping and exponents are invalid).
-* Versión: 1.4
+* Descripción: Unit tests of the question draft rules of the evaluation builder: radio semantics of the correct answer for SINGLE_CHOICE and TRUE_FALSE and checkbox semantics for MULTIPLE_CHOICE, moving options, validation (points, option text), the save plan (question PATCH with only the changed fields, option creates, PATCHes with the newly correct ones first, deletes and the reorder flag), the dirty check and the body of a new TRUE_FALSE question. Depends on vitest and the builder entities. v1.1 (A3): the plan splits the text PATCH from the structural PATCH and covers the clinical case and the rubric of a SIMULATION question; an option created by a failed save (id set, client key kept) is neither recreated nor reordered; stripStructuralEdits keeps only the texts; withCreatedOptionIds merges created ids by key; SIMULATION rubric errors block the draft; backend rubric details are translated in readiness messages. v1.2 (A3 review S1): optionSaveSteps runs the creates before the updates that set isCorrect=false. v1.3 (S1): statement media and option images: added media go in the text PATCH (mediaIds), option images in the option PATCH (mediaId, null removes it), the statement media limit, and stripStructuralEdits keeps them. v1.4 (B4, D7): points read through the shared es-CO parser (one separator is decimal; grouping and exponents are invalid). v1.5 (Bloque 3): the hint travels in the text PATCH (blank sends null).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,6 +43,7 @@ function choiceQuestion(type: BuilderQuestion["type"] = "SINGLE_CHOICE"): Builde
     prompt,
     points: 2,
     explanation: null,
+    hint: null,
     mediaIds: [],
     media: [],
     clinicalCaseId: null,
@@ -267,6 +268,14 @@ describe("newQuestionBody", () => {
 
 describe("question media", () => {
   const image = (mediaId: string) => ({ mediaId, url: `https://cdn.example.org/${mediaId}.png`, mimeType: "image/png", kind: "IMAGE" as const });
+
+  it("sends the hint in the text PATCH and null to remove it (Bloque 3)", () => {
+    const question = choiceQuestion();
+
+    expect(planQuestionSave(question, { ...questionDraftFrom(question), hint: "Piensa en la PEEP" }).text).toEqual({ hint: "Piensa en la PEEP" });
+    expect(planQuestionSave({ ...question, hint: "Vieja" }, { ...questionDraftFrom({ ...question, hint: "Vieja" }), hint: "  " }).text).toEqual({ hint: null });
+    expect(planQuestionSave(question, questionDraftFrom(question)).text).toBeNull();
+  });
 
   it("sends the statement media list in the text PATCH", () => {
     const question = { ...choiceQuestion(), mediaIds: ["m1"], media: [image("m1")] };

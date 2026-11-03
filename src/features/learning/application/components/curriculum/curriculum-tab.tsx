@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: CurriculumTab
-* Descripción: Currículo panel of the /learn workspace (W3, Bloque 2). v0.2 (W4, Bloque 2; DISENO_BLOQUE2 §2.4, §2.5, §2.13 and §7b decisions 2 and 3): ONE load of the curriculum tree and the progress summary (2 parallel SWR requests; no per-module request) split in the client into the three July accordions (VentyLab, Prerequisitos with the "Opcional" badge, Mecánica respiratoria open by default; one open at a time) with their level steppers and module cards. `?section=` opens the accordion it resolves to (accordion key, track, level id, section id or slug; see the curriculum view selectors) and the level anchor of the URL is scrolled into view; a later toggle wins until the URL changes again. Arrow up/down, Home and End move between the accordion triggers. Skeleton while the tree loads, error with retry (both requests); a failed progress read only warns (with retry) and the cards fall back to the tree completion. Staff: preview notice, no locks, drafts with "Borrador" and the floating "Modo edición" toggle that shows "Editar en el CMS" links. Lazy loaded by the workspace (lazyPanel). Depends on next/router, MUI, the design-system states, the learning hooks, entities, edit mode store and components, and the curriculum CSS Module.
-* Versión: 0.2
+* Descripción: Currículo panel of the /learn workspace (W3, Bloque 2). v0.2 (W4, Bloque 2; DISENO_BLOQUE2 §2.4, §2.5, §2.13 and §7b decisions 2 and 3): ONE load of the curriculum tree and the progress summary (2 parallel SWR requests; no per-module request) split in the client into the three July accordions (VentyLab, Prerequisitos with the "Opcional" badge, Mecánica respiratoria open by default; one open at a time) with their level steppers and module cards. `?section=` opens the accordion it resolves to (accordion key, track, level id, section id or slug; see the curriculum view selectors) and the level anchor of the URL is scrolled into view; a later toggle wins until the URL changes again. Arrow up/down, Home and End move between the accordion triggers. Skeleton while the tree loads, error with retry (both requests); a failed progress read only warns (with retry) and the cards fall back to the tree completion. Staff: preview notice, no locks, drafts with "Borrador" and the floating "Modo edición" toggle that shows "Editar en el CMS" links. Lazy loaded by the workspace (lazyPanel). Depends on next/router, MUI, the design-system states, the learning hooks, entities, edit mode store and components, and the curriculum CSS Module. v0.3 (Bloque 3): students get "Quiz del módulo" on each open module card (extraAction composed here: /evaluations?moduleId=). v0.4 (Bloque 3, Ola 4): the link only shows on modules with at least one evaluation for the student, derived from ONE `GET /api/my-evaluations` (useEvaluatedModuleIds of the @features/evaluations module-evaluations entry; no request per card and none for staff); while that read is pending or failed no card shows it.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import MenuBookIcon from "@mui/icons-material/MenuBook";
 import SchoolIcon from "@mui/icons-material/School";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
@@ -21,6 +22,7 @@ import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
+import { useEvaluatedModuleIds } from "@features/evaluations/module-evaluations.entry";
 import {
   CURRICULUM_ACCORDIONS,
   DEFAULT_OPEN_ACCORDION,
@@ -29,7 +31,9 @@ import {
 } from "../../entities/curriculum-view.entity";
 import type { CurriculumAccordionKey } from "../../entities/curriculum-view.entity";
 import { getLearningErrorMessage } from "../../entities/learning-error-messages";
-import { CURRICULUM_SECTION_PARAM } from "../../entities/learning-urls";
+import { buildModuleEvaluationsUrl, CURRICULUM_SECTION_PARAM } from "../../entities/learning-urls";
+import type { CurriculumModule } from "../../entities/curriculum.entity";
+import type { ModuleCardState } from "../../entities/curriculum-view.entity";
 import { useCurriculumTree } from "../../hooks/use-curriculum-tree";
 import { usePreviewMode } from "../../hooks/use-preview-mode";
 import { useProgressSummary } from "../../hooks/use-progress";
@@ -97,12 +101,33 @@ type Toggle = {
   open: CurriculumAccordionKey | null
 };
 
+// TODO(i18n): move to a learning namespace in src/i18n.
+export const MODULE_QUIZ_LABEL = "Quiz del módulo";
+
+// "Quiz del módulo" (Bloque 3): the student evaluations filtered by this module. Composed here, not in the card,
+// and only on modules with at least one evaluation for the student (one my-evaluations read, not one per card).
+function moduleQuizAction(evaluatedModuleIds: ReadonlySet<string>) {
+  return function moduleQuizLink(module: CurriculumModule, state: ModuleCardState): ReactNode {
+    if (state === "locked" || state === "coming_soon" || !evaluatedModuleIds.has(module.id)) {
+      return null;
+    }
+
+    return (
+      <Link href={buildModuleEvaluationsUrl(module.id)} className={cx(styles.staffLink)} aria-label={`${MODULE_QUIZ_LABEL}: ${module.title}`}>
+        {MODULE_QUIZ_LABEL}
+      </Link>
+    );
+  };
+}
+
 export function CurriculumTab() {
   const isStaff = usePreviewMode();
   const router = useRouter();
   const { enabled: editMode } = useEditMode();
   const treeQuery = useCurriculumTree();
   const summaryQuery = useProgressSummary();
+  const evaluatedModuleIds = useEvaluatedModuleIds(!isStaff);
+  const moduleAction = useMemo(() => (evaluatedModuleIds ? moduleQuizAction(evaluatedModuleIds) : undefined), [evaluatedModuleIds]);
   const { tree } = treeQuery;
   const rawParam = router.isReady ? router.query[CURRICULUM_SECTION_PARAM] : undefined;
   const sectionParam = typeof rawParam === "string" ? rawParam : undefined;
@@ -161,7 +186,13 @@ export function CurriculumTab() {
             onTriggerKeyDown={moveBetweenTriggers}
           >
             {accordions[key].length > 0 ? (
-              <LevelStepper levels={accordions[key]} summary={summaryQuery.progress} isStaff={isStaff} editMode={isStaff && editMode} />
+              <LevelStepper
+                levels={accordions[key]}
+                summary={summaryQuery.progress}
+                isStaff={isStaff}
+                editMode={isStaff && editMode}
+                moduleAction={isStaff ? undefined : moduleAction}
+              />
             ) : (
               <p className={cx(styles.muted)}>{CURRICULUM_TAB_COPY.empty[key]}</p>
             )}

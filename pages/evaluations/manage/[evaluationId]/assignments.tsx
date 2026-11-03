@@ -1,6 +1,6 @@
 /*
-* Funcionalidad: Evaluation assignments route
-* Descripción: Thin route for /evaluations/manage/[evaluationId]/assignments: reads the evaluation id from the router and composes the teacher layout (staff only: teachers and admins) with the EvaluationAssignmentsPage of the evaluation-authoring feature (activate for groups, list, close now). Renders nothing until the id is available. Depends on next/router, @features/evaluation-authoring and @shared/layouts/teacher-layout.
+* Funcionalidad: Evaluation assignments redirect
+* Descripción: The assignment of an evaluation to groups lives in its builder (section "Asignación a grupos", Bloque 3, W6): this thin route replaces /evaluations/manage/[id]/assignments with /evaluations/manage/[id]/edit?section=asignacion on client navigations; full loads are redirected by next.config (config/legacy-redirects.mjs). Depends on the builder entry point and the teacher layout. v1.1 (Bloque 3, W5): redirect only.
 * Versión: 1.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -10,18 +10,26 @@
 */
 
 import { useRouter } from "next/router";
-import { EvaluationAssignmentsPage } from "@features/evaluation-authoring";
+import { useEffect } from "react";
+import { buildEvaluationEditUrl } from "@features/evaluation-authoring/builder.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withTeacherLayout } from "@shared/layouts/teacher-layout";
 
-const EvaluationAssignmentsRoute: NextPageWithLayout = () => {
-  const { query } = useRouter();
-  const evaluationId = typeof query.evaluationId === "string" ? query.evaluationId : null;
+const EvaluationAssignmentsRedirect: NextPageWithLayout = () => {
+  const router = useRouter();
+  const evaluationId = typeof router.query.evaluationId === "string" ? router.query.evaluationId : null;
+  const destination = evaluationId ? `${buildEvaluationEditUrl(evaluationId)}?section=asignacion` : null;
 
-  return evaluationId ? <EvaluationAssignmentsPage key={evaluationId} evaluationId={evaluationId} /> : null;
+  useEffect(() => {
+    if (destination) {
+      void router.replace(destination);
+    }
+  }, [destination, router]);
+
+  return null;
 };
 
-EvaluationAssignmentsRoute.getLayout = withTeacherLayout;
+EvaluationAssignmentsRedirect.getLayout = withTeacherLayout;
 
-export default EvaluationAssignmentsRoute;
+export default EvaluationAssignmentsRedirect;

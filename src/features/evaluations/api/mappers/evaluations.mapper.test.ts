@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers tests
-* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items. v1.2 (B1 closure): the published grade fixture carries the new moduleId and moduleTitle fields.
-* Versión: 1.2
+* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items. v1.2 (B1 closure): the published grade fixture carries the new moduleId and moduleTitle fields. v1.3 (Bloque 3): curriculum placement, attemptsAllowed, hint, reveal, partialClosedScore and myRating.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 import { attemptDto, myEvaluationDto } from "../../application/pages/evaluations-test-helpers";
 import type { StudentAttemptDetailDTO, StudentQuestionDTO } from "../dtos/evaluations.dto";
-import { toAttemptDetail, toAttemptFeedback, toAttemptStart, toMyEvaluations, toMyGrade, toRichText } from "./evaluations.mapper";
+import { toAnswerReveal, toAttemptDetail, toAttemptFeedback, toAttemptStart, toMyEvaluations, toMyGrade, toRichText } from "./evaluations.mapper";
 
 const tiptapDoc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hola" }] }] };
 
@@ -134,6 +134,8 @@ function questionDto(id: string, position: number, overrides: Partial<StudentQue
       { id: `${id}-a`, order: 1, content: "A", media: null },
     ],
     answer: { selectedOptionIds: [`${id}-a`], textAnswer: null, simulationSessionId: null },
+    hint: null,
+    reveal: null,
     ...overrides,
   };
 }
@@ -155,6 +157,7 @@ function attemptDetailDto(overrides: Partial<StudentAttemptDetailDTO> = {}): Stu
       { id: "s1", order: 1, content: tiptapDoc as unknown as StudentAttemptDetailDTO["scenarios"][number]["content"], media: [] },
     ],
     questions: [questionDto("q2", 2), questionDto("q1", 1)],
+    partialClosedScore: null,
     ...overrides,
   };
 }
@@ -198,15 +201,63 @@ describe("toAttemptDetail", () => {
 });
 
 describe("toAttemptFeedback", () => {
-  it("keeps the overall item and the question items", () => {
+  it("keeps the overall item and the question items with the caller's own rating", () => {
     expect(toAttemptFeedback({
       attemptId: "at1",
       overall: null,
-      questions: [{ id: "f1", questionId: "q1", status: "READY", source: "DETERMINISTIC", content: "Correcto." }],
+      questions: [
+        { id: "f1", questionId: "q1", status: "READY", source: "DETERMINISTIC", content: "Correcto.", myRating: null },
+        {
+          id: "f2",
+          questionId: "q2",
+          status: "READY",
+          source: "LLM",
+          content: "Bien.",
+          myRating: { id: "r1", helpful: true, createdAt: "2026-10-14T15:00:00.000Z", updatedAt: "2026-10-14T15:00:00.000Z" },
+        },
+      ],
     })).toEqual({
       attemptId: "at1",
       overall: null,
-      questions: [{ id: "f1", questionId: "q1", status: "READY", source: "DETERMINISTIC", content: "Correcto." }],
+      questions: [
+        { id: "f1", questionId: "q1", status: "READY", source: "DETERMINISTIC", content: "Correcto.", myRating: null },
+        { id: "f2", questionId: "q2", status: "READY", source: "LLM", content: "Bien.", myRating: { helpful: true, comment: "" } },
+      ],
     });
+  });
+});
+
+describe("Bloque 3 fields", () => {
+  it("maps the curriculum placement and the attempts allowed of my evaluations", () => {
+    const [item] = toMyEvaluations([myEvaluationDto("as1", "e1", {
+      attemptsAllowed: 3,
+      evaluation: { moduleId: "m1", levelId: "l1", levelTitle: "Fundamentos", levelOrder: 2, track: "mecanica" },
+    })]);
+
+    expect(item).toMatchObject({ attemptsAllowed: 3, moduleId: "m1", levelId: "l1", levelTitle: "Fundamentos", levelOrder: 2, track: "mecanica" });
+  });
+
+  it("maps the hint (blank is null), the revealed correction and the partial closed score", () => {
+    const detail = toAttemptDetail(attemptDetailDto({
+      status: "PENDING_REVIEW",
+      partialClosedScore: { correct: 2, total: 3 },
+      questions: [
+        questionDto("q1", 1, {
+          hint: "Piensa en la PEEP",
+          reveal: { revealedAt: "2026-10-14T15:02:00.000Z", isCorrect: false, correctOptionIds: ["q1-b"], explanation: "La B." },
+        }),
+        questionDto("q2", 2, { hint: "  " }),
+      ],
+    }));
+
+    expect(detail.partialClosedScore).toEqual({ correct: 2, total: 3 });
+    expect(detail.questions[0]?.hint).toBe("Piensa en la PEEP");
+    expect(detail.questions[0]?.reveal).toEqual({ isCorrect: false, correctOptionIds: ["q1-b"], explanation: "La B." });
+    expect(detail.questions[1]?.hint).toBeNull();
+    expect(detail.questions[1]?.reveal).toBeNull();
+  });
+
+  it("maps a check response to the same reveal shape (blank explanation is null)", () => {
+    expect(toAnswerReveal({ isCorrect: true, correctOptionIds: ["a"], explanation: " " })).toEqual({ isCorrect: true, correctOptionIds: ["a"], explanation: null });
   });
 });

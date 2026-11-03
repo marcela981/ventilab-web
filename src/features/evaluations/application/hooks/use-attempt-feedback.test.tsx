@@ -26,7 +26,7 @@ let failStatus = 404;
 let feedback: StudentGradeFeedbackDTO;
 
 const item = (status: "PENDING" | "READY") =>
-  ({ id: "f1", questionId: "q1", status, source: status === "READY" ? "LLM" as const : null, content: status === "READY" ? "Bien." : null });
+  ({ id: "f1", questionId: "q1", status, source: status === "READY" ? "LLM" as const : null, content: status === "READY" ? "Bien." : null, myRating: null });
 
 function wrapper({ children }: { children: ReactNode }) {
   return <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>{children}</SWRConfig>;

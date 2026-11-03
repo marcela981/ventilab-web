@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations error messages
-* Descripción: Spanish message for any failure of a student evaluations request: the evaluation error codes the student endpoints can return (backend evaluation.errors.ts mapped in common/presentation/errors-map.ts: not_open 403, max_attempts_reached 409, attempt_deadline_passed 409, attempt_not_in_progress 409, attempt_read_only 409, answer_invalid 422, assignment_closed 409, evaluation/assignment/attempt/question/option not found 404, grade_feedback_not_available 404), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors. v1.1 (A3 review follow-up): isRetryableEvaluationError tells transient failures (network, timeout, 429, 5xx) from permanent ones.
-* Versión: 1.1
+* Descripción: Spanish message for any failure of a student evaluations request: the evaluation error codes the student endpoints can return (backend evaluation.errors.ts mapped in common/presentation/errors-map.ts: not_open 403, max_attempts_reached 409, attempt_deadline_passed 409, attempt_not_in_progress 409, attempt_read_only 409, answer_invalid 422, assignment_closed 409, evaluation/assignment/attempt/question/option not found 404, grade_feedback_not_available 404), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors. v1.1 (A3 review follow-up): isRetryableEvaluationError tells transient failures (network, timeout, 429, 5xx) from permanent ones. v1.2 (Bloque 3): messages of the immediate-feedback check (evaluation.answer_locked, evaluation.answer_check_unavailable).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +26,8 @@ export const EVALUATION_ERROR_MESSAGES = {
   "evaluation.attempt_not_found": "No se encontró el intento o no tienes acceso a él.",
   "evaluation.question_not_found": "La pregunta no pertenece a esta evaluación.",
   "evaluation.option_not_found": "La opción no pertenece a esta pregunta.",
+  "evaluation.answer_locked": "Esta respuesta ya fue revisada y no se puede cambiar.",
+  "evaluation.answer_check_unavailable": "Esta pregunta no tiene retroalimentación inmediata.",
   "evaluation.grade_feedback_not_available": "La retroalimentación estará disponible cuando se publique la nota.",
 } as const satisfies Record<string, string>;
 

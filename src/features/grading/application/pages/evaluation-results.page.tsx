@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: EvaluationResultsPage
-* Descripción: Staff page /grading/evaluations/[evaluationId] (teachers and admins). Shows the statistics the API computes for the evaluation (`GET /api/analytics/evaluations/{evaluationId}/stats`): average, median, minimum and maximum grade in es-CO, pass rate as a percentage, the passing grade of the API and the total, graded and published attempt counts; nothing is computed on the client. The grade histogram (the API 0.5 buckets) and the per-question difficulty index are drawn by a lazily loaded chart chunk (@shared/charts and Chart.js stay out of the page chunk); without graded attempts the charts are replaced by a note, and without attempts the page shows an empty state. A group filter (the groups of `GET /api/evaluation-assignments?evaluationId`) narrows the per-group attempt counts table, the per-student results and the bulk publish. The API has no per-evaluation results endpoint (reported gap): the per-student section explains it and, for a chosen group, lists the published grades of this evaluation read from the group dashboard (`GET /api/analytics/groups/{groupId}/dashboard`). "Publicar calificaciones" asks for confirmation stating the scope only (all graded, unpublished grades of the chosen group or of every group), then sends `POST /api/evaluation-grading/publish` {evaluationId, groupId?}, toasts the publishedCount of the response and refreshes the grading reads (stats, assignments, dashboard, queue). Links back to /grading. Depends on MUI, next/head, next/link, the design-system components, @shared/lib, the grading hooks, service, entities and components and the CSS Module. v1.1 (G3 review): W1/S1 no client-side estimate (the confirmation states the scope, the toast reports the API publishedCount, the button is not disabled by computed counts); W2 after a successful publish an info note warns that the stats (cached up to 60 s by the backend) may take up to a minute, and the stats are revalidated once more after STATS_REFRESH_DELAY_MS while the page stays mounted (timer cleared on unmount); S2 a note states that the indicators cover every group (the stats have no group filter).
-* Versión: 1.1
+* Funcionalidad: EvaluationResultsBody
+* Descripción: v2.0 (Bloque 3, W7): the former results page is now the body of the "Estadísticas" and "Publicación masiva" tabs of the unified grading screen /grading/evaluations/[evaluationId] (section prop): "estadisticas" shows the statistics, the group filter, the attempts per group and the published grades per student; "publicacion" shows the group filter, "Publicar calificaciones" with its confirmation, the stats delay notice and the attempts per group. The page header, document title and back link moved to the screen. Before: Staff page /grading/evaluations/[evaluationId] (teachers and admins). Shows the statistics the API computes for the evaluation (`GET /api/analytics/evaluations/{evaluationId}/stats`): average, median, minimum and maximum grade in es-CO, pass rate as a percentage, the passing grade of the API and the total, graded and published attempt counts; nothing is computed on the client. The grade histogram (the API 0.5 buckets) and the per-question difficulty index are drawn by a lazily loaded chart chunk (@shared/charts and Chart.js stay out of the page chunk); without graded attempts the charts are replaced by a note, and without attempts the page shows an empty state. A group filter (the groups of `GET /api/evaluation-assignments?evaluationId`) narrows the per-group attempt counts table, the per-student results and the bulk publish. The API has no per-evaluation results endpoint (reported gap): the per-student section explains it and, for a chosen group, lists the published grades of this evaluation read from the group dashboard (`GET /api/analytics/groups/{groupId}/dashboard`). "Publicar calificaciones" asks for confirmation stating the scope only (all graded, unpublished grades of the chosen group or of every group), then sends `POST /api/evaluation-grading/publish` {evaluationId, groupId?}, toasts the publishedCount of the response and refreshes the grading reads (stats, assignments, dashboard, queue). Links back to /grading. Depends on MUI, next/head, next/link, the design-system components, @shared/lib, the grading hooks, service, entities and components and the CSS Module. v1.1 (G3 review): W1/S1 no client-side estimate (the confirmation states the scope, the toast reports the API publishedCount, the button is not disabled by computed counts); W2 after a successful publish an info note warns that the stats (cached up to 60 s by the backend) may take up to a minute, and the stats are revalidated once more after STATS_REFRESH_DELAY_MS while the page stays mounted (timer cleared on unmount); S2 a note states that the indicators cover every group (the stats have no group filter).
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,18 +9,14 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import Head from "next/head";
-import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
-import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton, ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
@@ -37,18 +33,13 @@ import {
 import type { EvaluationStats } from "../entities/evaluation-results.entity";
 import { ALL_OPTION } from "../entities/grading.entity";
 import { getGradingErrorMessage } from "../entities/grading-error-messages";
-import { GRADING_URL } from "../entities/grading-urls";
 import { useEvaluationAssignments, useEvaluationStats, useGroupStudentResults } from "../hooks/use-evaluation-results";
 import { useGradingMutation } from "../hooks/use-grading-mutation";
-import { EVALUATION_TYPE_LABELS } from "../components/grading-queue-table";
 import styles from "../../UI/evaluation-results.module.css";
 
 // TODO(i18n): move to a grading namespace in src/i18n.
 export const RESULTS_COPY = {
-  documentTitle: (title: string) => `Resultados: ${title} | VentyLab`,
-  fallbackTitle: "Resultados de la evaluación",
-  subtitle: (type: string | null, passingGrade: string) => `${type ? `${type} · ` : ""}Nota mínima para aprobar: ${passingGrade}`,
-  backToQueue: "Volver a la cola",
+  publishIntro: "Publica de una vez las calificaciones ya calificadas y aún no publicadas, de todos los grupos o de uno.",
   loading: "Cargando los resultados…",
   loadErrorTitle: "No se pudieron cargar los resultados",
   emptyTitle: "Todavía no hay intentos en esta evaluación",
@@ -124,18 +115,21 @@ function Kpis({ stats }: { stats: EvaluationStats }) {
   );
 }
 
-export type EvaluationResultsPageProps = {
+export type ResultsSection = "estadisticas" | "publicacion";
+
+export type EvaluationResultsBodyProps = {
   evaluationId: string
+  section: ResultsSection
 };
 
-export function EvaluationResultsPage({ evaluationId }: EvaluationResultsPageProps) {
+export function EvaluationResultsBody({ evaluationId, section }: EvaluationResultsBodyProps) {
   const toast = useToast();
   const groupFieldId = useId();
   const stats = useEvaluationStats(evaluationId);
   const assignments = useEvaluationAssignments(evaluationId);
   const [groupId, setGroupId] = useState<string>(ALL_OPTION);
   const selectedGroup = groupId === ALL_OPTION ? null : groupId;
-  const students = useGroupStudentResults(selectedGroup, evaluationId);
+  const students = useGroupStudentResults(section === "estadisticas" ? selectedGroup : null, evaluationId);
   const { pending: publishing, run } = useGradingMutation();
   const [confirmPublish, setConfirmPublish] = useState(false);
   const [statsDelayed, setStatsDelayed] = useState(false);
@@ -154,7 +148,6 @@ export function EvaluationResultsPage({ evaluationId }: EvaluationResultsPagePro
     [assignments.data, selectedGroup],
   );
   const groupName = groups.find((group) => group.id === selectedGroup)?.label ?? null;
-  const title = stats.data?.title ?? RESULTS_COPY.fallbackTitle;
 
   const publish = async() => {
     const outcome = await run(() => publishEvaluationGrades(
@@ -182,9 +175,7 @@ export function EvaluationResultsPage({ evaluationId }: EvaluationResultsPagePro
 
   const actions = (
     <div className={cx(styles.headerActions)}>
-      <Button component={Link} href={GRADING_URL} startIcon={<ArrowBackIcon />}>
-        {RESULTS_COPY.backToQueue}
-      </Button>
+      <p className={cx(styles.muted)}>{RESULTS_COPY.publishIntro}</p>
       <Button
         variant="contained"
         disabled={!stats.data || stats.data.totalAttempts === 0 || publishing}
@@ -280,20 +271,11 @@ export function EvaluationResultsPage({ evaluationId }: EvaluationResultsPagePro
   const confirmDescription = groupName ? RESULTS_COPY.publishScopeGroup(groupName) : RESULTS_COPY.publishScopeAll;
 
   return (
-    <div className={cx(styles.page)}>
-      <Head>
-        <title>{RESULTS_COPY.documentTitle(title)}</title>
-      </Head>
-      <PageHeader
-        title={title}
-        subtitle={stats.data
-          ? RESULTS_COPY.subtitle(stats.data.type ? EVALUATION_TYPE_LABELS[stats.data.type] : null, formatStatGrade(stats.data.passingGrade))
-          : undefined}
-        actions={actions}
-      />
+    <div className={cx(styles.content)}>
       <div className={cx(styles.content)}>
+        {section === "publicacion" ? actions : null}
         {statsDelayed ? <Alert severity="info">{RESULTS_COPY.statsDelay}</Alert> : null}
-        {renderStats()}
+        {section === "estadisticas" ? renderStats() : null}
         {groups.length > 0 ? (
           <div className={cx(styles.filters)}>
             <TextField
@@ -314,11 +296,13 @@ export function EvaluationResultsPage({ evaluationId }: EvaluationResultsPagePro
           <h2 id={`${groupFieldId}-groups`} className={cx(styles.sectionTitle)}>{RESULTS_COPY.groupsTitle}</h2>
           {renderGroups()}
         </section>
+        {section === "estadisticas" ? (
         <section className={cx(styles.section)} aria-labelledby={`${groupFieldId}-students`}>
           <h2 id={`${groupFieldId}-students`} className={cx(styles.sectionTitle)}>{RESULTS_COPY.studentsTitle}</h2>
           <Alert severity="info">{RESULTS_COPY.studentsGap}</Alert>
           {renderStudents()}
         </section>
+        ) : null}
       </div>
       <ConfirmDialog
         open={confirmPublish}

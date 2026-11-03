@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage tests
-* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast). v1.4 (closure B1): the full-suite timeouts (cold lazy markdown renderer under 278 parallel files) get headroom: lazy waits 10 s, Testing Library waits 5 s and every test 20 s (not only the first one).
-* Versión: 1.4
+* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast). v1.4 (closure B1): the full-suite timeouts (cold lazy markdown renderer under 278 parallel files) get headroom: lazy waits 10 s, Testing Library waits 5 s and every test 20 s (not only the first one). v1.5 (Bloque 3): July band (published with emojis or not, pending with the partial score), feedback requested in parallel, embedded own rating and the EVALUATION_FEEDBACK surface.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { configure, screen, waitFor, within } from "@testing-library/react";
+import { configure, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -111,7 +111,7 @@ function publishedAttempt(overrides: Partial<StudentAttemptDetailDTO> = {}): Stu
 }
 
 const feedbackItem = (id: string, questionId: string | null, status: "PENDING" | "READY" | "FAILED", source: "LLM" | "DETERMINISTIC" | null = null, content: string | null = null) =>
-  ({ id, questionId, status, source, content });
+  ({ id, questionId, status, source, content, myRating: null });
 
 function renderResult(socket?: FakeSocket) {
   return renderWithSession(<AttemptResultPage evaluationId="e1" attemptId="at1" />, socket ? { socket } : {});
@@ -167,7 +167,8 @@ describe("AttemptResultPage", () => {
     expect(screen.queryByTestId("attempt-grade")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Volver a mis evaluaciones" })).toHaveAttribute("href", "/evaluations");
     expect(screen.getByRole("link", { name: "Ver la evaluación" })).toHaveAttribute("href", "/evaluations/e1");
-    expect(feedbackRequests).toBe(0);
+    // Requested in parallel with the attempt, then never polled once the attempt is known to be unpublished.
+    expect(feedbackRequests).toBeLessThanOrEqual(1);
   });
 
   it("shows a pending review attempt as pending grading", async() => {
@@ -176,7 +177,8 @@ describe("AttemptResultPage", () => {
     renderResult();
 
     expect(await screen.findByRole("heading", { level: 2, name: "Pendiente de calificación" })).toBeInTheDocument();
-    expect(feedbackRequests).toBe(0);
+    // Requested in parallel with the attempt, then never polled once the attempt is known to be unpublished.
+    expect(feedbackRequests).toBeLessThanOrEqual(1);
   });
 
   it("shows the published grade, the per-question result and the rubric", async() => {
@@ -329,5 +331,64 @@ describe("AttemptResultPage", () => {
     });
 
     expect(await screen.findByTestId("attempt-grade")).toHaveClass("gradeFailed");
+  });
+
+  it("shows the July band of a published quiz with the correct count", async() => {
+    renderResult();
+
+    const band = await screen.findByRole("region", { name: "Reprobado 😔" });
+
+    expect(band).toHaveTextContent("0 de 2 correctas");
+    expect(within(band).getByRole("link", { name: "Volver a evaluaciones" })).toHaveAttribute("href", "/evaluations");
+  });
+
+  it("shows the band without emojis for an exam", async() => {
+    attempt = publishedAttempt({ grade: 4.2, passed: true, evaluation: { id: "e1", title: "Examen final", type: "EXAM", description: null } });
+    renderResult();
+
+    expect(await screen.findByRole("region", { name: "Aprobado" })).toBeInTheDocument();
+  });
+
+  it("shows the pending band with the partial score of the closed questions", async() => {
+    attempt = { ...unpublishedAttempt("PENDING_REVIEW"), partialClosedScore: { correct: 2, total: 3 } };
+    renderResult();
+
+    const band = await screen.findByRole("region", { name: "Respuestas enviadas — pendiente de revisión por el docente" });
+
+    expect(band).toHaveTextContent("2 de 3 correctas");
+  });
+
+  it("uses the embedded own rating and rates with the evaluation feedback surface", async() => {
+    let mineRequests = 0;
+    let rated: unknown = null;
+
+    server.use(
+      http.get(apiUrl("/api/ai-ratings/mine"), () => {
+        mineRequests += 1;
+
+        return HttpResponse.json(envelope(null));
+      }),
+      http.put(apiUrl("/api/ai-ratings"), async({ request }) => {
+        rated = await request.json();
+
+        return HttpResponse.json(envelope({ id: "r1" }));
+      }),
+    );
+    feedback = {
+      attemptId: "at1",
+      overall: { ...feedbackItem("f0", null, "READY", "LLM", "Buen trabajo."), myRating: { id: "r0", helpful: true, createdAt: "2026-10-14T16:00:00.000Z", updatedAt: "2026-10-14T16:00:00.000Z" } },
+      questions: [],
+    };
+    renderResult();
+
+    const overall = await screen.findByRole("region", { name: "Retroalimentación general" });
+    const yes = await within(overall).findByRole("button", { name: /útil/i, pressed: true });
+
+    expect(yes).toBeInTheDocument();
+    fireEvent.click(within(overall).getByRole("button", { name: /útil/i, pressed: false }));
+    await waitFor(() => {
+      expect(rated).toMatchObject({ targetType: "GRADE_FEEDBACK", targetId: "f0", helpful: false, surface: "EVALUATION_FEEDBACK" });
+    });
+    expect(mineRequests).toBe(0);
   });
 });

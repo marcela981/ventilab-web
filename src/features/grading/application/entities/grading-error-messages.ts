@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading error messages
-* Descripción: Spanish message for any failure of a grading request: the grading error codes of the backend (evaluation.errors.ts mapped in common/presentation/errors-map.ts: evaluation_not_found 404, question_not_found 404, attempt_not_found 404, management_forbidden 403, grading_forbidden 403, attempt_read_only 409, attempt_not_gradable 409, attempt_not_graded 409, manual_score_invalid 422, grade_override_comment_required 422, grade_feedback_not_available 404, grade_feedback_attempt_not_graded 409, grade_feedback_forbidden 403; analytics.evaluation_not_found 404 and analytics.out_of_scope 403 for the evaluation stats), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors.
-* Versión: 1.0
+* Descripción: Spanish message for any failure of a grading request: the grading error codes of the backend (evaluation.errors.ts mapped in common/presentation/errors-map.ts: evaluation_not_found 404, question_not_found 404, attempt_not_found 404, management_forbidden 403, grading_forbidden 403, attempt_read_only 409, attempt_not_gradable 409, attempt_not_graded 409, manual_score_invalid 422, grade_override_comment_required 422, grade_feedback_not_available 404, grade_feedback_attempt_not_graded 409, grade_feedback_forbidden 403; analytics.evaluation_not_found 404 and analytics.out_of_scope 403 for the evaluation stats), then fallbacks by status (403, 404, 409, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. Depends on the api-client errors. v1.1 (Bloque 3): messages of the reset conflicts (evaluation.attempt_in_progress, evaluation.assignment_not_active) and of a regeneration already in progress (evaluation.grade_feedback_generation_in_progress).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +26,9 @@ export const GRADING_ERROR_MESSAGES = {
   "evaluation.grade_feedback_not_available": "La retroalimentación estará disponible cuando se publique la calificación.",
   "evaluation.grade_feedback_attempt_not_graded": "La retroalimentación solo se puede generar para un intento calificado.",
   "evaluation.grade_feedback_forbidden": "No tienes permiso para revisar este intento.",
+  "evaluation.attempt_in_progress": "El estudiante tiene un intento en curso. Espera a que lo envíe o a que venza antes de reiniciarlo.",
+  "evaluation.assignment_not_active": "La asignación de esta evaluación no está activa. Extiende la ventana de la asignación para que el estudiante pueda repetirla.",
+  "evaluation.grade_feedback_generation_in_progress": "La retroalimentación ya se está generando. Espera unos minutos antes de regenerarla.",
   "analytics.evaluation_not_found": "La evaluación ya no existe o no tienes acceso a sus estadísticas.",
   "analytics.out_of_scope": "Las estadísticas solicitadas incluyen grupos que no administras.",
 } as const satisfies Record<string, string>;

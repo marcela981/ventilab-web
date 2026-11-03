@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: GradeAttemptPage
-* Descripción: Staff page /grading/attempts/[attemptId] (teachers and admins). Loads the attempt for grading (`GET /api/evaluation-grading/attempts/{attemptId}`) and shows a header with the evaluation, attempt number, student, status badge, the grade in es-CO with pass/fail from `passed` (or the passingGrade of the API, never a fixed threshold), the passing grade and the publication state; a navigator of anchors to every question (pending ones marked) and one AnswerGradingCard per question. Every card keeps a draft (score and comment); "Guardar calificación" validates the changed drafts on the client (score in [0, points] with up to two decimals; a comment when the answer already had an automatic or manual score, mirroring 422 evaluation.grade_override_comment_required) and sends `PUT .../answers/{questionId}` one at a time; each failure stays on its card (manual_score_invalid on the score, override_comment_required on the comment, any other message as an alert) and keeps its draft, while saved drafts are dropped after the grading keys are refreshed (the backend recomputes the status, GRADED once nothing is pending). A dirty counter and an unsaved-changes guard (beforeunload and client navigation) protect the drafts. "Publicar" is enabled only for a GRADED, unpublished attempt without unsaved drafts and asks for confirmation before `POST .../publish` (idempotent, alreadyPublished). The AI feedback panel reads `GET .../feedback`, "Regenerar retroalimentación IA" sends `POST .../feedback/regenerate` (202, PENDING) and the pending feedback is polled with spaced delays ("Volver a cargar" restarts the polling). Loading, error with retry and a link back to /grading. Depends on MUI, next/head, next/link, the evaluations barrel, the design-system components, @shared/lib, @shared/realtime, the grading hooks, service, entities and components and the grade-attempt CSS Module. v1.1 (G2 review W1/W2/S3/S4, G3): no FEEDBACK_READY socket handler (the backend only notifies the student); the answer cards start an empty override comment on a score change and show the previous comment read-only; when the attempt cannot be read again after a successful save the drafts stay and an alert asks to reload ("Recarga para ver los valores guardados"); a link to the evaluation results page /grading/evaluations/[evaluationId].
-* Versión: 1.1
+* Funcionalidad: AttemptReviewPane
+* Descripción: Review pane of one attempt in the "Revisar" tab of the unified grading screen /grading/evaluations/[evaluationId]?attempt=<id> (DISENO_BLOQUE3 §2.8; extracted from the former grade-attempt page /grading/attempts/[attemptId], which now resolves to this screen). Reads the attempt (`GET /api/evaluation-grading/attempts/{attemptId}`) and its AI feedback. Shows the student and attempt, the status, publication, grade with pass/fail from the API, score and passing grade (legacy attempts are read-only), a question navigator, each answer with its grading card (the scenario above the first of its questions; SIMULATION answers with the server rubric breakdown), "Guardar" (only the changed answers, one PUT at a time; overriding a score needs a comment; backend 422 codes land on their field; a failed save keeps its draft and a failed read-back keeps every draft with a reload alert), "Publicar" after confirmation (GRADED attempts only, nothing unsaved) and the AI feedback panel with "Regenerar" (409 when a generation is already running and 429 when regenerating too often are shown in the panel). Unsaved grades are reported to the screen (onDirtyChange), which asks before switching attempts; the browser and other routes are guarded by useUnsavedGradesGuard. Depends on React, MUI, the evaluations entry points (scenario, status badge), the design-system components, @shared/lib, the grading services, hooks, entities and components and the grade-attempt CSS Module.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,26 +9,22 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import Head from "next/head";
-import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
-import { AttemptStatusBadge, ScenarioPanel } from "@features/evaluations";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AttemptStatusBadge, ScenarioPanel } from "@features/evaluations/review.entry";
 import { toApiError } from "@shared/api-client/api-error";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { ErrorState } from "@shared/design-system/components/error-state";
-import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
 import { formatDateTime, formatGrade } from "@shared/lib/format";
-import { gradeAnswer, publishAttemptGrade, regenerateFeedback } from "../../api/services/grading.service";
-import { AnswerGradingCard, gradingAnchorId } from "../components/attempt/answer-grading-card";
-import { GradingFeedbackPanel } from "../components/attempt/feedback-panel";
-import { formatPoints, GRADE_COPY } from "../entities/grade-attempt-copy";
+import { gradeAnswer, publishAttemptGrade, regenerateFeedback } from "../../../api/services/grading.service";
+import { AnswerGradingCard, gradingAnchorId } from "../attempt/answer-grading-card";
+import { GradingFeedbackPanel } from "../attempt/feedback-panel";
+import { formatPoints, GRADE_COPY } from "../../entities/grade-attempt-copy";
 import {
   canPublish,
   hasErrors,
@@ -37,18 +33,21 @@ import {
   passState,
   toGradeAnswerBody,
   validateDraft,
-} from "../entities/grading-attempt.entity";
-import type { GradeDraft, GradeDraftErrors, GradingAttempt, GradingItem } from "../entities/grading-attempt.entity";
-import { getGradingErrorMessage } from "../entities/grading-error-messages";
-import { buildGradingEvaluationUrl, GRADING_URL } from "../entities/grading-urls";
-import { useGradingAttempt } from "../hooks/use-grading-attempt";
-import { useGradingFeedback } from "../hooks/use-grading-feedback";
-import { useGradingMutation } from "../hooks/use-grading-mutation";
-import { useUnsavedGradesGuard } from "../hooks/use-unsaved-grades-guard";
-import styles from "../../UI/grade-attempt.module.css";
+} from "../../entities/grading-attempt.entity";
+import type { GradeDraft, GradeDraftErrors, GradingAttempt, GradingItem } from "../../entities/grading-attempt.entity";
+import { getGradingErrorMessage } from "../../entities/grading-error-messages";
+import { useGradingAttempt } from "../../hooks/use-grading-attempt";
+import { useGradingFeedback } from "../../hooks/use-grading-feedback";
+import { useGradingMutation } from "../../hooks/use-grading-mutation";
+import { useUnsavedGradesGuard } from "../../hooks/use-unsaved-grades-guard";
+import styles from "../../../UI/grade-attempt.module.css";
 
-export type GradeAttemptPageProps = {
+export type AttemptReviewPaneProps = {
   attemptId: string
+  // Name or email of the student, from the attempts list (the attempt itself only carries the id).
+  studentLabel?: string | null | undefined
+  // Reports whether there are unsaved grades, so the screen can ask before switching attempts.
+  onDirtyChange?: ((dirty: boolean) => void) | undefined
 };
 
 // The backend 422 codes of a grade map to the field they are about.
@@ -119,7 +118,7 @@ function QuestionNavigator({ items }: { items: readonly GradingItem[] }) {
   );
 }
 
-export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
+export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: AttemptReviewPaneProps) {
   const toast = useToast();
   const { attempt, isLoading, error, reload, refetch } = useGradingAttempt(attemptId);
   const feedback = useGradingFeedback(attemptId);
@@ -133,6 +132,7 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
   // Saved answers whose fresh values could not be read back; their drafts stay until a reload succeeds.
   const [staleSaved, setStaleSaved] = useState<string[]>([]);
   const [reloadingStale, setReloadingStale] = useState(false);
+  const [regenerateError, setRegenerateError] = useState<string | null>(null);
 
   const items = useMemo(() => attempt?.items ?? [], [attempt]);
   const dirtyItems = useMemo(
@@ -148,6 +148,14 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
   const readOnly = attempt?.legacy ?? false;
 
   useUnsavedGradesGuard(dirtyCount > 0, GRADE_COPY.unsavedPrompt);
+
+  useEffect(() => {
+    onDirtyChange?.(dirtyCount > 0);
+  }, [dirtyCount, onDirtyChange]);
+
+  useEffect(() => () => {
+    onDirtyChange?.(false);
+  }, [onDirtyChange]);
 
   const dropDrafts = (questionIds: readonly string[]) => {
     setDrafts((current) => {
@@ -272,6 +280,7 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
 
   const regenerate = async() => {
     setRegenerating(true);
+    setRegenerateError(null);
 
     const outcome = await run(() => regenerateFeedback(attemptId));
 
@@ -280,7 +289,12 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
     if (outcome.status === "success") {
       toast.info(GRADE_COPY.regenerated);
     } else if (outcome.status === "error") {
-      toast.error(outcome.message);
+      // 409 (a generation is already running) and 429 (too many regenerations) stay visible in the panel.
+      if (outcome.httpStatus === 409 || outcome.httpStatus === 429) {
+        setRegenerateError(outcome.message);
+      } else {
+        toast.error(outcome.message);
+      }
     }
   };
 
@@ -289,14 +303,6 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
 
   const actions = (
     <div className={cx(styles.headerActions)}>
-      <Button component={Link} href={GRADING_URL} startIcon={<ArrowBackIcon />}>
-        {GRADE_COPY.backToQueue}
-      </Button>
-      {attempt ? (
-        <Button component={Link} href={buildGradingEvaluationUrl(attempt.evaluationId)}>
-          {GRADE_COPY.viewResults}
-        </Button>
-      ) : null}
       {attempt ? (
         <>
           <AsyncButton variant="contained" disabled={dirtyCount === 0 || busy || readOnly} loading={saving} onClick={save}>
@@ -335,6 +341,10 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
 
     return (
       <div className={cx(styles.content)}>
+        <div className={cx(styles.paneHeader)}>
+          <h2 className={cx(styles.paneTitle)}>{GRADE_COPY.paneTitle(studentLabel ?? attempt.studentId, attempt.attemptNumber)}</h2>
+          {actions}
+        </div>
         <AttemptSummary attempt={attempt} />
         {staleSaved.length > 0 ? (
           <Alert
@@ -387,6 +397,7 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
           positions={positions}
           canRegenerate={attempt.status === "GRADED" && !attempt.legacy && !busy}
           regenerating={regenerating}
+          regenerateError={regenerateError}
           onRegenerate={regenerate}
           onReload={() => void feedback.reload().catch(() => undefined)}
         />
@@ -395,15 +406,7 @@ export function GradeAttemptPage({ attemptId }: GradeAttemptPageProps) {
   };
 
   return (
-    <div className={cx(styles.page)}>
-      <Head>
-        <title>{GRADE_COPY.documentTitle(attempt?.evaluationTitle ?? GRADE_COPY.fallbackTitle)}</title>
-      </Head>
-      <PageHeader
-        title={attempt?.evaluationTitle ?? GRADE_COPY.fallbackTitle}
-        subtitle={attempt ? GRADE_COPY.subtitle(attempt.attemptNumber, attempt.studentId) : undefined}
-        actions={actions}
-      />
+    <div className={cx(styles.pane)}>
       {renderBody()}
       <ConfirmDialog
         open={confirmPublish}

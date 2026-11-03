@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: EvaluationResultsPage tests
-* Descripción: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount. v1.2 (closure B1): fixtures carry the stats groupId and the dashboard passingGrade, riskThresholds and moduleSummary.
-* Versión: 1.2
+* Funcionalidad: EvaluationResultsBody tests
+* Descripción: v2.0 (Bloque 3, W7): the statistics and groups tests render the "estadisticas" section and the bulk publish tests the "publicacion" section of the body of the unified grading screen; the back link moved to the screen. Before: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount. v1.2 (closure B1): fixtures carry the stats groupId and the dashboard passingGrade, riskThresholds and moduleSummary. v1.3 (Bloque 3): the back link opens the Calificar tab of the staff hub.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,8 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EvaluationAnalyticsDTO, EvaluationAssignmentDTO, GroupDashboardDTO } from "../../api/dtos/grading.dto";
-import { EvaluationResultsPage, RESULTS_COPY, STATS_REFRESH_DELAY_MS } from "./evaluation-results.page";
+import { EvaluationResultsBody, RESULTS_COPY, STATS_REFRESH_DELAY_MS } from "./evaluation-results.page";
+import type { ResultsSection } from "./evaluation-results.page";
 import { apiUrl, envelope, renderGradingPage } from "./grading-test-helpers";
 
 vi.setConfig({ testTimeout: 20_000 });
@@ -147,12 +148,18 @@ afterAll(() => {
   server.close();
 });
 
+let section: ResultsSection = "estadisticas";
+
 function renderPage() {
-  return renderGradingPage(<EvaluationResultsPage evaluationId="ev-1" />);
+  return renderGradingPage(<EvaluationResultsBody evaluationId="ev-1" section={section} />);
 }
 
 async function loaded() {
-  await screen.findByRole("heading", { name: "Parcial de ventilación" });
+  if (section === "estadisticas") {
+    await screen.findByText(new RegExp(`${RESULTS_COPY.kpiScope}|${RESULTS_COPY.emptyTitle}`));
+  } else {
+    await screen.findByRole("button", { name: RESULTS_COPY.publish });
+  }
 }
 
 function kpi(label: string): string | null {
@@ -164,7 +171,11 @@ function kpi(label: string): string | null {
 const groupSelect = () => screen.getByLabelText(RESULTS_COPY.group);
 const publishButton = () => screen.getByRole("button", { name: RESULTS_COPY.publish });
 
-describe("EvaluationResultsPage — statistics", () => {
+describe("EvaluationResultsBody — statistics", () => {
+  beforeEach(() => {
+    section = "estadisticas";
+  });
+
   it("formats the API statistics in es-CO", async() => {
     renderPage();
     await loaded();
@@ -215,11 +226,15 @@ describe("EvaluationResultsPage — statistics", () => {
     expect(screen.getByText(RESULTS_COPY.emptyTitle)).toBeInTheDocument();
     expect(screen.queryByLabelText(RESULTS_COPY.kpiLabel)).not.toBeInTheDocument();
     expect(screen.queryByTestId("bar-chart")).not.toBeInTheDocument();
-    expect(publishButton()).toBeDisabled();
+    expect(screen.queryByRole("button", { name: RESULTS_COPY.publish })).not.toBeInTheDocument();
   });
 });
 
-describe("EvaluationResultsPage — groups and students", () => {
+describe("EvaluationResultsBody — groups and students", () => {
+  beforeEach(() => {
+    section = "estadisticas";
+  });
+
   it("explains the per-student gap and lists the published grades of the chosen group", async() => {
     renderPage();
     await loaded();
@@ -244,7 +259,11 @@ describe("EvaluationResultsPage — groups and students", () => {
   });
 });
 
-describe("EvaluationResultsPage — bulk publish", () => {
+describe("EvaluationResultsBody — bulk publish", () => {
+  beforeEach(() => {
+    section = "publicacion";
+  });
+
   it("confirms with the scope only for every group and posts only the evaluation", async() => {
     renderPage();
     await loaded();
@@ -335,10 +354,4 @@ describe("EvaluationResultsPage — bulk publish", () => {
     expect(clearTimeoutSpy).toHaveBeenCalledWith(pendingTimer);
   });
 
-  it("links back to the grading queue", async() => {
-    renderPage();
-    await loaded();
-
-    expect(screen.getByRole("link", { name: RESULTS_COPY.backToQueue })).toHaveAttribute("href", "/grading");
-  });
 });

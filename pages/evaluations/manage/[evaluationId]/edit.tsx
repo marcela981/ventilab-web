@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Edit evaluation route
-* Descripción: Thin route for /evaluations/manage/[evaluationId]/edit: reads the evaluation id from the router and composes the teacher layout (staff only: teachers and admins) with the EvaluationBuilderPage of the evaluation-authoring feature (GET /api/evaluations/{id} plus the builder mutations). Renders nothing until the id is available. Depends on next/router, @features/evaluation-authoring and @shared/layouts/teacher-layout.
-* Versión: 1.0
+* Descripción: Thin route for /evaluations/manage/[evaluationId]/edit: reads the evaluation id from the router and composes the teacher layout (staff only: teachers and admins) with the EvaluationBuilderPage of the evaluation-authoring feature (GET /api/evaluations/{id} plus the builder mutations). Renders nothing until the id is available. Depends on next/router, @features/evaluation-authoring and @shared/layouts/teacher-layout. v1.1 (Bloque 3): imports the feature entry point instead of the barrel (smaller route chunk).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { useRouter } from "next/router";
-import { EvaluationBuilderPage } from "@features/evaluation-authoring";
+import { EvaluationBuilderPage } from "@features/evaluation-authoring/builder.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withTeacherLayout } from "@shared/layouts/teacher-layout";

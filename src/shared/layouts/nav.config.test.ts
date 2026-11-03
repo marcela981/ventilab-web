@@ -1,8 +1,8 @@
 /*
 * Funcionalidad: Navigation config tests
 * Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. v1.7 (T11 simulation): only teachers and admins get "Casos clínicos" (/simulator/cases), which wins over /simulator as the active item on the case editor pages. v1.8 (T13 simulation): the legacy /simulador is "Ventilador real", so students see exactly one "Simulador" (/simulator). Depends on vitest and the session route table. v1.9 (T12 ventilator-lab): the legacy /simulador
-  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page. v1.10 (O5 operation): final navigation per role (student starts at /me with Mis notas and Mis calificaciones and no admin items; teacher starts at /teacher and sees Estado del sistema but no admin-only item; admin sees everything, the Administración section contiguous at the end), no legacy /dashboard or /panel* items, the notificationsUnread badge on Notificaciones. v1.11 (W1 Bloque 1): short side menu in exact order per role (Simulador /simulador, Enseñanza, Evaluación; staff add the Panel docente section; admins add the Administración section); the student space, assistant, notifications and profile are out of it; Simulador carries the device indicator and stays active on the session and lab pages (activePrefixes, Next patterns and concrete paths) while Casos clínicos wins on the case editor; only Calificar keeps a badge.
-* Versión: 1.11
+  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page. v1.10 (O5 operation): final navigation per role (student starts at /me with Mis notas and Mis calificaciones and no admin items; teacher starts at /teacher and sees Estado del sistema but no admin-only item; admin sees everything, the Administración section contiguous at the end), no legacy /dashboard or /panel* items, the notificationsUnread badge on Notificaciones. v1.11 (W1 Bloque 1): short side menu in exact order per role (Simulador /simulador, Enseñanza, Evaluación; staff add the Panel docente section; admins add the Administración section); the student space, assistant, notifications and profile are out of it; Simulador carries the device indicator and stays active on the session and lab pages (activePrefixes, Next patterns and concrete paths) while Casos clínicos wins on the case editor; only Calificar keeps a badge. v1.12 (Bloque 3): single Evaluación entry with the gradingPending badge, active on the grading screens.
+* Versión: 1.12
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,9 +59,7 @@ describe("getNavItems (W1 short menu)", () => {
       ["Resumen", STAFF_SECTION],
       ["Grupos", STAFF_SECTION],
       ["Contenido", STAFF_SECTION],
-      ["Gestionar evaluaciones", STAFF_SECTION],
       ["Casos clínicos", STAFF_SECTION],
-      ["Calificar", STAFF_SECTION],
       ["Estado del sistema", STAFF_SECTION],
     ]);
   });
@@ -74,9 +72,7 @@ describe("getNavItems (W1 short menu)", () => {
       ["Resumen", "/teacher", STAFF_SECTION],
       ["Grupos", "/groups", STAFF_SECTION],
       ["Contenido", "/content", STAFF_SECTION],
-      ["Gestionar evaluaciones", "/evaluations/manage", STAFF_SECTION],
       ["Casos clínicos", "/simulator/cases", STAFF_SECTION],
-      ["Calificar", "/grading", STAFF_SECTION],
       ["Estado del sistema", "/admin/status", STAFF_SECTION],
       ["Usuarios", "/admin/users", ADMIN_SECTION],
       ["Configuración", "/admin/settings", ADMIN_SECTION],
@@ -144,9 +140,10 @@ describe("findActiveHref", () => {
 
   it("prefers the longest matching route", () => {
     expect(findActiveHref(admin, "/teacher/students/[userId]")).toBe("/teacher");
-    expect(findActiveHref(admin, "/evaluations/manage/new")).toBe("/evaluations/manage");
+    expect(findActiveHref(admin, "/evaluations/manage/new")).toBe("/evaluations");
     expect(findActiveHref(admin, "/evaluations/[evaluationId]")).toBe("/evaluations");
-    expect(findActiveHref(admin, "/grading/attempts/[attemptId]")).toBe("/grading");
+    expect(findActiveHref(admin, "/grading/attempts/[attemptId]")).toBe("/evaluations");
+    expect(findActiveHref(admin, "/grading/evaluations/e1")).toBe("/evaluations");
     expect(findActiveHref(getNavItems("STUDENT"), "/learn/modules/m1")).toBe("/learn");
   });
 
@@ -163,9 +160,9 @@ describe("findActiveHref", () => {
 });
 
 describe("navigation badges", () => {
-  it("only Calificar carries a badge (gradingPending); notifications live in the bell", () => {
+  it("only Evaluación carries a badge (gradingPending, fed for staff only); notifications live in the bell", () => {
     expect(NAV_ITEMS.filter((item) => item.badgeKey !== undefined).map((item) => [item.href, item.badgeKey])).toEqual([
-      ["/grading", "gradingPending"],
+      ["/evaluations", "gradingPending"],
     ]);
   });
 });

@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Fake ventilator usage
-* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs.
-* Versión: 1.3
+* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -98,7 +98,9 @@ OPENAI_BASE_URL=http://127.0.0.1:4910/v1 OPENAI_API_KEY=local node dist/main
 | `--port <n>` | 4910 (`FAKE_LLM_PORT`) | Port on 127.0.0.1. |
 | `--chunk-delay <ms>` | 120 | Pause between streamed deltas (keeps "Detener" visible while it streams). |
 
-What it answers: a streamed request gets a fixed Spanish markdown answer ("Respuesta de prueba (proveedor falso de
+What it answers: a grade feedback prompt (it asks for `{"overall": …, "perQuestion": …}`) gets a parseable grade
+feedback whose overall text says "proveedor falso de E2E" (so the evaluation result shows LLM feedback, not the
+deterministic fallback); otherwise a streamed request gets a fixed Spanish markdown answer ("Respuesta de prueba (proveedor falso de
 E2E)…") in deltas of 24 characters, then a usage chunk and `[DONE]`; a full or JSON-format request gets
 `{ onTopic: true, summary, keyConcepts, gaps, suggestions }`, which satisfies the topic check and the notes analysis.
 The model reported is `fake-llm-e2e`.
@@ -112,3 +114,15 @@ E2E_CAPTURES=1 ... e2e/bloque2/capturas.spec.ts   # screenshots to docs/bloque2/
 
 Each scenario registers a brand-new student (`e2e-b2-*@ventylab.test`), so the specs run again without resetting the
 database; the TutorAI spec reads `/api/admin/ai-ratings/stats` as `superadmin@ventylab.demo` (`E2E_ADMIN_EMAIL`).
+
+Block 3 E2E (evaluations; same stack, fake LLM running for the AI feedback of the quiz result):
+
+```bash
+E2E_BASE_URL=http://localhost:3000 E2E_API_URL=http://localhost:4000 npx playwright test --project=e2e e2e/bloque3
+E2E_CAPTURES=1 ... e2e/bloque3/capturas.spec.ts   # screenshots to docs/bloque3/capturas/
+```
+
+Each scenario creates a brand-new STUDENT group of `ana.torres@ventylab.demo` with brand-new students and its own
+evaluations through the API (closed and archived at the end), so it runs again without resetting the database. The
+exam scenario waits for its one-minute timer in real time. The image step of the builder scenario runs only when
+`GET /api/system/status` reports file storage `up` (Supabase configured); otherwise it is skipped with an annotation.

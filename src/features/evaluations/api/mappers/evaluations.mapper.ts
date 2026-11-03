@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers
-* Descripción: Pure DTO → entity mappers of the student evaluations feature: my evaluations (items without an evaluation summary are dropped, attempts sorted by number, the result only when the attempt is published and the API sent its grade), my grades, the attempt start and the attempt detail (scenarios by order, questions by position, options by order; isCorrect, feedback, explanation, rubric and earnedScore are copied only when the backend sends them, that is, once published). Descriptions, prompts and scenario contents become RichText: a non-empty string is text, a Tiptap document object is a doc. Depends on the evaluations DTOs and entities. v1.1 (E2): toSaveAnswerBody, the PUT body of one answer by question type (choices send selectedOptionIds, OPEN_TEXT sends textAnswer, SIMULATION sends simulationSessionId when there is one). v1.2 (E3): toAttemptFeedback, the AI feedback of a published attempt (overall and per-question items with status and source).
-* Versión: 1.2
+* Descripción: Pure DTO → entity mappers of the student evaluations feature: my evaluations (items without an evaluation summary are dropped, attempts sorted by number, the result only when the attempt is published and the API sent its grade), my grades, the attempt start and the attempt detail (scenarios by order, questions by position, options by order; isCorrect, feedback, explanation, rubric and earnedScore are copied only when the backend sends them, that is, once published). Descriptions, prompts and scenario contents become RichText: a non-empty string is text, a Tiptap document object is a doc. Depends on the evaluations DTOs and entities. v1.1 (E2): toSaveAnswerBody, the PUT body of one answer by question type (choices send selectedOptionIds, OPEN_TEXT sends textAnswer, SIMULATION sends simulationSessionId when there is one). v1.2 (E3): toAttemptFeedback, the AI feedback of a published attempt (overall and per-question items with status and source). v1.3 (Bloque 3): my evaluations carry attemptsAllowed and the curriculum placement (moduleId, levelId, levelTitle, levelOrder, track); questions carry the WORKSHOP hint (blank → null) and the revealed correction (toAnswerReveal, shared with the check response); the attempt detail carries partialClosedScore; feedback items carry the caller's own rating (myRating).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,6 +11,7 @@
 
 import type { AttemptFeedback, FeedbackItem } from "../../application/entities/attempt-feedback";
 import type {
+  AnswerReveal,
   AttemptAnswer,
   AttemptDetail,
   AttemptOption,
@@ -26,12 +27,14 @@ import type {
   RichText,
 } from "../../application/entities/evaluation.entity";
 import type {
+  CheckEvaluationAnswerResponseDTO,
   EvaluationMediaDTO,
   MyEvaluationAttemptDTO,
   MyEvaluationDTO,
   MyEvaluationGradeDTO,
   SaveEvaluationAnswerDTO,
   StudentAnswerDTO,
+  StudentAnswerRevealDTO,
   StudentAttemptDetailDTO,
   StudentAttemptStartDTO,
   StudentGradeFeedbackDTO,
@@ -104,6 +107,12 @@ export function toMyEvaluation(dto: MyEvaluationDTO): MyEvaluation | null {
     startsAt: dto.startsAt,
     endsAt: dto.endsAt,
     canStart: dto.canStart,
+    attemptsAllowed: dto.attemptsAllowed,
+    moduleId: evaluation.moduleId,
+    levelId: evaluation.levelId,
+    levelTitle: evaluation.levelTitle,
+    levelOrder: evaluation.levelOrder,
+    track: evaluation.track,
     attempts: dto.attempts.map(toAttemptSummary).sort((a, b) => a.attemptNumber - b.attemptNumber),
   };
 }
@@ -175,6 +184,10 @@ function toAnswer(dto: StudentAnswerDTO | null): AttemptAnswer | null {
   };
 }
 
+export function toAnswerReveal(dto: StudentAnswerRevealDTO | CheckEvaluationAnswerResponseDTO): AnswerReveal {
+  return { isCorrect: dto.isCorrect, correctOptionIds: [...dto.correctOptionIds], explanation: dto.explanation?.trim() ? dto.explanation : null };
+}
+
 function toQuestion(dto: StudentQuestionDTO): AttemptQuestion {
   const question: AttemptQuestion = {
     id: dto.id,
@@ -187,6 +200,8 @@ function toQuestion(dto: StudentQuestionDTO): AttemptQuestion {
     clinicalCaseId: dto.clinicalCaseId,
     options: dto.options.map(toOption).sort((a, b) => a.order - b.order),
     answer: toAnswer(dto.answer),
+    hint: dto.hint?.trim() ? dto.hint : null,
+    reveal: dto.reveal ? toAnswerReveal(dto.reveal) : null,
   };
 
   if (dto.earnedScore !== undefined) {
@@ -228,6 +243,7 @@ export function toAttemptDetail(dto: StudentAttemptDetailDTO): AttemptDetail {
     scenarios: dto.scenarios.map(toScenario).sort((a, b) => a.order - b.order),
     questions: dto.questions.map(toQuestion).sort((a, b) => a.position - b.position),
     result: toAttemptResult(dto),
+    partialClosedScore: dto.partialClosedScore ? { correct: dto.partialClosedScore.correct, total: dto.partialClosedScore.total } : null,
   };
 }
 
@@ -244,7 +260,14 @@ export function toSaveAnswerBody(type: QuestionType, answer: AttemptAnswer): Sav
 }
 
 function toFeedbackItem(dto: StudentGradeFeedbackItemDTO): FeedbackItem {
-  return { id: dto.id, questionId: dto.questionId, status: dto.status, source: dto.source, content: dto.content };
+  return {
+    id: dto.id,
+    questionId: dto.questionId,
+    status: dto.status,
+    source: dto.source,
+    content: dto.content,
+    myRating: dto.myRating ? { helpful: dto.myRating.helpful, comment: dto.myRating.comment ?? "" } : null,
+  };
 }
 
 export function toAttemptFeedback(dto: StudentGradeFeedbackDTO): AttemptFeedback {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notification deep links
-* Descripción: The only rule that turns a notification into the route it opens, an exhaustive switch on the typed notification (`type` narrows its `data`, so the ids are read without casts): RESERVATION_PREEMPTED / RESERVATION_CANCELLED → /lab/reservations, EVALUATION_ACTIVATED → /evaluations/[evaluationId], GRADE_PUBLISHED / FEEDBACK_READY → the attempt result /evaluations/[evaluationId]/attempts/[attemptId]/result, ROLE_CHANGED → /profile, VENTILATOR_OFFLINE → the Conexión tab of the simulator workspace (/simulador?tab=conexion, v1.2 W1). A notification whose `data` is null, or a type the client does not know yet, gives null (no navigation). The evaluations and lab routes mirror the route constants of those features (EVALUATIONS_URL/buildAttemptResultUrl, LAB_URL/LAB_RESERVATIONS_URL; a parity test compares them) because importing those feature barrels would pull their pages into the chunk of the bell. Ids are URI-encoded. Depends on the notification entities (types only). v1.1 (B2 closure): typed by the discriminated union of the contract; the defensive id reads of an untyped `data` record are gone. v1.2 (W1 Bloque 1): LAB_URL follows ventilator-lab (/simulador?tab=conexion); the reservations page stays /lab/reservations.
-* Versión: 1.2
+* Descripción: The only rule that turns a notification into the route it opens, an exhaustive switch on the typed notification (`type` narrows its `data`, so the ids are read without casts): RESERVATION_PREEMPTED / RESERVATION_CANCELLED → /lab/reservations, EVALUATION_ACTIVATED → /evaluations/[evaluationId], GRADE_PUBLISHED / FEEDBACK_READY → the attempt result /evaluations/[evaluationId]/attempts/[attemptId]/result, ROLE_CHANGED → /profile, VENTILATOR_OFFLINE → the Conexión tab of the simulator workspace (/simulador?tab=conexion, v1.2 W1). A notification whose `data` is null, or a type the client does not know yet, gives null (no navigation). The evaluations and lab routes mirror the route constants of those features (EVALUATIONS_URL/buildAttemptResultUrl, LAB_URL/LAB_RESERVATIONS_URL; a parity test compares them) because importing those feature barrels would pull their pages into the chunk of the bell. Ids are URI-encoded. Depends on the notification entities (types only). v1.1 (B2 closure): typed by the discriminated union of the contract; the defensive id reads of an untyped `data` record are gone. v1.2 (W1 Bloque 1): LAB_URL follows ventilator-lab (/simulador?tab=conexion); the reservations page stays /lab/reservations. v1.3 (Bloque 3): ATTEMPT_RESET (Bloque 3) opens the intro of the evaluation, where the extra attempt can be started.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,7 @@ export const NOTIFICATION_TYPES: readonly NotificationType[] = [
   "EVALUATION_ACTIVATED",
   "GRADE_PUBLISHED",
   "FEEDBACK_READY",
+  "ATTEMPT_RESET",
   "ROLE_CHANGED",
   "VENTILATOR_OFFLINE",
 ];
@@ -49,6 +50,9 @@ export function resolveNotificationLink(notification: NotificationLinkInput): st
     case "GRADE_PUBLISHED":
     case "FEEDBACK_READY":
       return notification.data ? attemptResultUrl(notification.data.evaluationId, notification.data.attemptId) : null;
+    case "ATTEMPT_RESET":
+      // The intro of the evaluation offers the extra attempt.
+      return notification.data ? `${EVALUATIONS_URL}/${segment(notification.data.evaluationId)}` : null;
     case "ROLE_CHANGED":
       return PROFILE_URL;
     case "VENTILATOR_OFFLINE":

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder mapper
-* Descripción: Maps the EvaluationDetailDTO of `GET /api/evaluations/{id}` to the BuilderEvaluation of the builder: scenarios and questions sorted by order, options sorted by order, media normalized, the description kept as text or Tiptap document (blank text becomes null), prompts and scenario contents kept as Tiptap documents (a non-object falls back to an empty document) and the readiness issues with their details. Also maps the metadata create body and update changes to their request DTOs (the generated schema types a Tiptap description as an empty record, so the document is passed through as the backend accepts it). Depends on the authoring DTOs and the builder entities.
-* Versión: 1.0
+* Descripción: Maps the EvaluationDetailDTO of `GET /api/evaluations/{id}` to the BuilderEvaluation of the builder: scenarios and questions sorted by order, options sorted by order, media normalized, the description kept as text or Tiptap document (blank text becomes null), prompts and scenario contents kept as Tiptap documents (a non-object falls back to an empty document) and the readiness issues with their details. Also maps the metadata create body and update changes to their request DTOs (the generated schema types a Tiptap description as an empty record, so the document is passed through as the backend accepts it). Depends on the authoring DTOs and the builder entities. v1.1 (Bloque 3): questions carry the hint.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,6 +68,7 @@ function toQuestion(dto: EvaluationQuestionDTO): BuilderQuestion {
     prompt: toDoc(dto.prompt),
     points: dto.points,
     explanation: dto.explanation,
+    hint: dto.hint ?? null,
     mediaIds: dto.mediaIds,
     media: dto.media.map(toBuilderMedia),
     clinicalCaseId: dto.clinicalCaseId,

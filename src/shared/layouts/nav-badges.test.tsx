@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Navigation badges tests
-* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted. v1.2 (B4): the accessible name of a badged nav item carries a differentiated, singular/plural count ("Notificaciones, 3 sin leer", "Calificar, 2 pendientes por calificar"), nothing at 0; navBadgeText is shared with the notifications bell. v1.3 (W1 Bloque 1): "Notificaciones" left the side menu (the bell keeps the unread count), so only "Calificar" shows a badge there; a fed unread count adds no navigation item.
-* Versión: 1.3
+* Descripción: Verifies the nav-badges registry (a setter stores a positive count, zero or null clears it, setters are no-ops without a provider) and its rendering in the AppShell: the "Calificar" item of a teacher shows the gradingPending count as a badge with screen-reader text, and shows nothing at 0. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the nav-badges registry. v1.1 (G1 review W2): badges are visible only while an AppShell (badge host) is mounted. v1.2 (B4): the accessible name of a badged nav item carries a differentiated, singular/plural count ("Notificaciones, 3 sin leer", "Calificar, 2 pendientes por calificar"), nothing at 0; navBadgeText is shared with the notifications bell. v1.3 (W1 Bloque 1): "Notificaciones" left the side menu (the bell keeps the unread count), so only "Calificar" shows a badge there; a fed unread count adds no navigation item. v1.4 (Bloque 3): the gradingPending badge sits on the single "Evaluación" item.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -124,23 +124,23 @@ function desktopNavigation() {
 }
 
 describe("AppShell navigation badges", () => {
-  it("shows the pending count on Calificar with screen-reader text", () => {
+  it("shows the pending count on Evaluación with screen-reader text", () => {
     renderShell(5);
 
-    const link = within(desktopNavigation()).getByRole("link", { name: /Calificar/ });
+    const link = within(desktopNavigation()).getByRole("link", { name: /Evaluación/ });
 
-    expect(link).toHaveAccessibleName("Calificar, 5 pendientes por calificar");
+    expect(link).toHaveAccessibleName("Evaluación, 5 pendientes por calificar");
     expect(within(link).getByText("5")).toHaveAttribute("aria-hidden", "true");
   });
 
   it("names each badge count differently, singular and plural", () => {
     const { unmount } = renderShell(1, 1);
 
-    expect(within(desktopNavigation()).getByRole("link", { name: "Calificar, 1 pendiente por calificar" })).toBeInTheDocument();
+    expect(within(desktopNavigation()).getByRole("link", { name: "Evaluación, 1 pendiente por calificar" })).toBeInTheDocument();
     unmount();
 
     renderShell(2, 3);
-    expect(within(desktopNavigation()).getByRole("link", { name: "Calificar, 2 pendientes por calificar" })).toBeInTheDocument();
+    expect(within(desktopNavigation()).getByRole("link", { name: "Evaluación, 2 pendientes por calificar" })).toBeInTheDocument();
     expect(within(desktopNavigation()).queryByRole("link", { name: /Notificaciones/ })).not.toBeInTheDocument();
   });
 
@@ -153,9 +153,9 @@ describe("AppShell navigation badges", () => {
   it("shows no badge at zero", () => {
     renderShell(0);
 
-    const link = within(desktopNavigation()).getByRole("link", { name: /Calificar/ });
+    const link = within(desktopNavigation()).getByRole("link", { name: /Evaluación/ });
 
-    expect(link).toHaveAccessibleName("Calificar");
+    expect(link).toHaveAccessibleName("Evaluación");
     expect(within(link).queryByText(/pendiente/)).not.toBeInTheDocument();
   });
 });

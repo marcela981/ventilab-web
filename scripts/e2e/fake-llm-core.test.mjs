@@ -15,6 +15,7 @@ import {
   completionPayload,
   DEFAULT_CHUNK_DELAY_MS,
   DEFAULT_PORT,
+  GRADE_FEEDBACK_ANSWER,
   JSON_ANSWER,
   parseArgs,
   replyFor,
@@ -41,6 +42,13 @@ describe("replies", () => {
     expect(replyFor({ stream: true })).toBe(STREAM_ANSWER);
     expect(JSON.parse(replyFor({ stream: false }))).toEqual(JSON_ANSWER);
     expect(JSON.parse(replyFor({ stream: true, response_format: { type: "json_object" } }))).toEqual(JSON_ANSWER);
+  });
+
+  it("answers a grade feedback prompt with the overall and perQuestion JSON", () => {
+    const body = { messages: [{ role: "user", content: "FORMATO DE RESPUESTA (JSON):\n{\"overall\": \"string\", \"perQuestion\": []}" }] };
+
+    expect(JSON.parse(replyFor(body))).toEqual(GRADE_FEEDBACK_ANSWER);
+    expect(JSON.parse(replyFor({ ...body, stream: true }))).toEqual(GRADE_FEEDBACK_ANSWER);
   });
 
   it("builds a chat.completion payload with usage", () => {

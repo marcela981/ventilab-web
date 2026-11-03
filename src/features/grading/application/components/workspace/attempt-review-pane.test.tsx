@@ -1,7 +1,7 @@
 /*
-* Funcionalidad: GradeAttemptPage tests
-* Descripción: Page tests of /grading/attempts/[attemptId] through MSW: the header (status, publication, passing grade from the API, grade with pass/fail from `passed`), the correct answer and the server rubric breakdown of a SIMULATION answer; overriding an automatic score without a comment shows the client error on the comment field and sends nothing, with a comment the PUT carries {manualScore, comment}; a score out of range is rejected on the client; the backend 422 codes land on their fields (manual_score_invalid on the score, grade_override_comment_required on the comment); a failed save keeps that draft while the saved one is refreshed from the server; "Publicar" is disabled until the attempt is GRADED and posts only after confirmation; "Regenerar retroalimentación IA" turns the feedback PENDING and it becomes READY through the spaced polling. Depends on vitest, Testing Library, msw, the grading page, copy, entities, error messages and test helpers. v1.1 (G2 review W1/W2/S3/S4): changing the score of a commented answer starts an empty comment, shows the previous one read-only and requires a new one; a comment-only edit of an automatic score shows the override hint; a failed read of the attempt after a successful save keeps the drafts and shows the reload alert until a reload succeeds; "Volver a cargar" after the polling stopped restarts it; the results link. The FEEDBACK_READY socket test is gone (staff never receive it).
-* Versión: 1.1
+* Funcionalidad: AttemptReviewPane tests
+* Descripción: v2.0 (Bloque 3, W7): tests of the review pane of the unified grading screen (former grade-attempt page): the pane title carries the student and attempt number, a 409 or 429 on "Regenerar" stays visible in the feedback panel. Before: page tests of /grading/attempts/[attemptId] through MSW: the header (status, publication, passing grade from the API, grade with pass/fail from `passed`), the correct answer and the server rubric breakdown of a SIMULATION answer; overriding an automatic score without a comment shows the client error on the comment field and sends nothing, with a comment the PUT carries {manualScore, comment}; a score out of range is rejected on the client; the backend 422 codes land on their fields (manual_score_invalid on the score, grade_override_comment_required on the comment); a failed save keeps that draft while the saved one is refreshed from the server; "Publicar" is disabled until the attempt is GRADED and posts only after confirmation; "Regenerar retroalimentación IA" turns the feedback PENDING and it becomes READY through the spaced polling. Depends on vitest, Testing Library, msw, the grading page, copy, entities, error messages and test helpers. v1.1 (G2 review W1/W2/S3/S4): changing the score of a commented answer starts an empty comment, shows the previous one read-only and requires a new one; a comment-only edit of an automatic score shows the override hint; a failed read of the attempt after a successful save keeps the drafts and shows the reload alert until a reload succeeds; "Volver a cargar" after the polling stopped restarts it; the results link. The FEEDBACK_READY socket test is gone (staff never receive it).
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,11 +13,11 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GradeFeedbackDTO, GradingAttemptDTO } from "../../api/dtos/grading.dto";
-import { FEEDBACK_STATUS_LABELS, GRADE_COPY } from "../entities/grade-attempt-copy";
-import { GRADE_DRAFT_ERRORS } from "../entities/grading-attempt.entity";
-import { GRADING_ERROR_MESSAGES } from "../entities/grading-error-messages";
-import { GradeAttemptPage } from "./grade-attempt.page";
+import type { GradeFeedbackDTO, GradingAttemptDTO } from "../../../api/dtos/grading.dto";
+import { FEEDBACK_STATUS_LABELS, GRADE_COPY } from "../../entities/grade-attempt-copy";
+import { GRADE_DRAFT_ERRORS } from "../../entities/grading-attempt.entity";
+import { GRADING_ERROR_MESSAGES } from "../../entities/grading-error-messages";
+import { AttemptReviewPane } from "./attempt-review-pane";
 import {
   apiUrl,
   envelope,
@@ -29,7 +29,7 @@ import {
   gradingOptionDto,
   gradingQuestionDto,
   renderGradingPage,
-} from "./grading-test-helpers";
+} from "../../pages/grading-test-helpers";
 
 vi.setConfig({ testTimeout: 20_000 });
 
@@ -145,7 +145,7 @@ afterAll(() => {
 });
 
 function renderPage() {
-  return renderGradingPage(<GradeAttemptPage attemptId="at1" />);
+  return renderGradingPage(<AttemptReviewPane attemptId="at1" studentLabel="Ana Gómez" />);
 }
 
 const card = (position: number) => screen.getByRole("article", { name: new RegExp(`^Pregunta ${position} `) });
@@ -168,13 +168,12 @@ function markGraded() {
   };
 }
 
-describe("GradeAttemptPage — layout", () => {
+describe("AttemptReviewPane — layout", () => {
   it("shows the header, the correct answer and the server rubric breakdown", async() => {
     renderPage();
     await loaded();
 
-    expect(screen.getByRole("heading", { level: 1, name: "Parcial de ventilación" })).toBeInTheDocument();
-    expect(screen.getByText(GRADE_COPY.subtitle(2, "st-1"))).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: GRADE_COPY.paneTitle("Ana Gómez", 2) })).toBeInTheDocument();
     expect(screen.getByText("Pendiente de calificación")).toBeInTheDocument();
     expect(screen.getByText(GRADE_COPY.unpublished)).toBeInTheDocument();
     expect(screen.getByText(GRADE_COPY.passingGrade("3,0"))).toBeInTheDocument();
@@ -209,7 +208,7 @@ describe("GradeAttemptPage — layout", () => {
   });
 });
 
-describe("GradeAttemptPage — grading", () => {
+describe("AttemptReviewPane — grading", () => {
   it("requires a comment to override an automatic score and sends nothing without it", async() => {
     renderPage();
     await loaded();
@@ -292,7 +291,7 @@ describe("GradeAttemptPage — grading", () => {
   });
 });
 
-describe("GradeAttemptPage — review fixes", () => {
+describe("AttemptReviewPane — review fixes", () => {
   it("starts an empty override comment, shows the previous one and requires a new one", async() => {
     attempt = {
       ...attempt,
@@ -353,15 +352,9 @@ describe("GradeAttemptPage — review fixes", () => {
     expect(screen.queryByText(GRADE_COPY.dirty(1))).not.toBeInTheDocument();
   });
 
-  it("links to the results page of the evaluation", async() => {
-    renderPage();
-    await loaded();
-
-    expect(screen.getByRole("link", { name: GRADE_COPY.viewResults })).toHaveAttribute("href", "/grading/evaluations/ev-1");
-  });
 });
 
-describe("GradeAttemptPage — publish", () => {
+describe("AttemptReviewPane — publish", () => {
   it("is disabled until the attempt is GRADED", async() => {
     renderPage();
     await loaded();
@@ -391,7 +384,7 @@ describe("GradeAttemptPage — publish", () => {
   });
 });
 
-describe("GradeAttemptPage — AI feedback", () => {
+describe("AttemptReviewPane — AI feedback", () => {
   it("regenerates and follows the PENDING feedback to READY by polling", async() => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     markGraded();
@@ -441,5 +434,26 @@ describe("GradeAttemptPage — AI feedback", () => {
 
     expect(screen.getByRole("button", { name: GRADE_COPY.regenerate })).toBeDisabled();
     expect(screen.getByText(GRADE_COPY.regenerateNeedsGraded)).toBeInTheDocument();
+  });
+});
+
+describe("AttemptReviewPane — regeneration refused", () => {
+  it.each([
+    ["evaluation.grade_feedback_generation_in_progress", 409],
+    ["common.too_many_requests", 429],
+  ])("keeps the %s refusal visible in the feedback panel", async(code, status) => {
+    markGraded();
+    server.use(http.post(apiUrl("/api/evaluation-grading/attempts/:attemptId/feedback/regenerate"), () => errorResponse(code, status)));
+    renderPage();
+    await loaded();
+
+    fireEvent.click(await screen.findByRole("button", { name: GRADE_COPY.regenerate }));
+
+    const alert = await screen.findByRole("alert");
+
+    expect(alert.textContent).not.toBe("");
+    if (status === 409) {
+      expect(alert).toHaveTextContent(GRADING_ERROR_MESSAGES["evaluation.grade_feedback_generation_in_progress"]);
+    }
   });
 });

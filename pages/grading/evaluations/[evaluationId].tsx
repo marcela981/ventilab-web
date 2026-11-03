@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation results route
-* Descripción: Thin route for /grading/evaluations/[evaluationId]: composes the teacher layout (RequireRole TEACHER/ADMIN + AppShell, which waits for router.isReady) with the lazy EvaluationResultsPage of the grading feature for the evaluationId of the URL. Depends on next/router, @features/grading and @shared/layouts/teacher-layout.
-* Versión: 1.0
+* Descripción: Thin route for /grading/evaluations/[evaluationId]: composes the teacher layout (RequireRole TEACHER/ADMIN + AppShell, which waits for router.isReady) with the lazy EvaluationResultsPage of the grading feature for the evaluationId of the URL. Depends on next/router, @features/grading and @shared/layouts/teacher-layout. v1.1 (Bloque 3): imports the feature entry point instead of the barrel (smaller route chunk). v1.2 (Bloque 3): renders the unified grading screen (EvaluationGradingPage: Revisar, Estadísticas, Publicación masiva).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,18 +10,18 @@
 */
 
 import { useRouter } from "next/router";
-import { EvaluationResultsPage } from "@features/grading";
+import { EvaluationGradingPage } from "@features/grading/workspace.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withTeacherLayout } from "@shared/layouts/teacher-layout";
 
-const EvaluationResultsRoute: NextPageWithLayout = () => {
+const EvaluationGradingRoute: NextPageWithLayout = () => {
   const { query } = useRouter();
   const evaluationId = typeof query.evaluationId === "string" ? query.evaluationId : null;
 
-  return evaluationId ? <EvaluationResultsPage evaluationId={evaluationId} /> : null;
+  return evaluationId ? <EvaluationGradingPage key={evaluationId} evaluationId={evaluationId} /> : null;
 };
 
-EvaluationResultsRoute.getLayout = withTeacherLayout;
+EvaluationGradingRoute.getLayout = withTeacherLayout;
 
-export default EvaluationResultsRoute;
+export default EvaluationGradingRoute;
