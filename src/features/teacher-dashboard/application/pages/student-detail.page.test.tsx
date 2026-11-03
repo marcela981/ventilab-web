@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail page tests
-* Descripción: /teacher/students/[userId] with msw: header from `GET /api/users/students/{id}`, progress tree from `GET /api/progress/users/{userId}/summary` in curriculum order with the curriculum titles, published grades from `GET /api/evaluation-grading/students/{userId}/grades` linked to their attempt, the student's pending attempts from the queue filtered by `studentId` and paged with the API pagination, simulation sessions from `GET /api/simulation/sessions/history?userId` with the case title and replay links, the truncated flag and "Cargar anteriores" requesting the previous timeline window; the grades do not depend on ?groupId; a 403 of the student shows the no-access state; neither notes nor AI conversations are requested (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): grades, pending attempts and sessions come from the staff endpoints (no group dashboard row, no 50-row group queue scan and its warning, no sessions from the timeline). Depends on vitest, msw, Testing Library and the teacher dashboard test helpers. v1.3 (S8): fixtures carry the regenerated block 1 contract fields (session patient null). v1.4 (W1 Bloque 4): the back link returns to the Grupo tab of /teacher (?tab=grupo&groupId=).
-* Versión: 1.4
+* Descripción: /teacher/students/[userId] with msw. Header: name, email, initials avatar, student code and active groups from the directory row (`GET /api/admin/students?search=<email>`), overall progress and the cards Módulos completados, Evaluaciones aprobadas x/y (hidden without published grades) and Sesiones de simulador, never "Tiempo de estudio"; the header reads start in parallel (the profile answers only after summary, grades and sessions were requested). Tabs (?tab=): Módulos (progress tree in curriculum order), Evaluaciones (published grades linked to their attempt, pending attempts paged from the queue filtered by `studentId`), Simulador (sessions with result and replay; "Grabaciones del equipo real" only when the recordings list is non-empty), Actividad (truncated flag, "Cargar anteriores", date range validation), Gamificación (XP, level, streak, achievements); a panel requests its data only on its first visit. Back link: /teacher/students with ?from=directory, otherwise the dashboard. 403 shows the no-access state, 404 the not-found state. Privacy: across every tab, no request for notes or AI conversations is made and none is rendered (unhandled requests fail). v1.1 (O3 review): the possibly-incomplete note of the pending attempts. v1.2 (closure B2): staff endpoints for grades, pending attempts and sessions. v1.3 (S8): regenerated block 1 contract fields. v1.4 (W1 Bloque 4): the back link returns to the Grupo tab. v2.0 (W4 Bloque 4): tabs, header facts and cards, recordings, gamification, directory back link, 404 and privacy. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,9 +13,16 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AchievementsDTO, DirectoryStudentDTO, GamificationStatsDTO, TelemetryRecordingSummaryDTO } from "../../api/dtos/student-detail.dto";
 import type { SimulationSessionDTO, StudentGradeDTO } from "../../api/dtos/teacher-dashboard.dto";
-import { STUDENT_ACTIVITY_COPY } from "../components/student-activity";
-import { STUDENT_GRADES_COPY } from "../components/student-grades";
+import { STUDENT_ACTIVITY_COPY } from "../components/detail/student-activity";
+import { STUDENT_PANELS_COPY } from "../components/detail/student-detail-panels";
+import { STUDENT_HEADER_COPY } from "../components/detail/student-detail-header";
+import { STUDENT_GAMIFICATION_COPY } from "../components/detail/student-gamification";
+import { STUDENT_GRADES_COPY } from "../components/detail/student-grades";
+import { STUDENT_SESSIONS_COPY } from "../components/detail/student-sessions";
+import { TEAM_RECORDINGS_COPY } from "../components/detail/team-recordings";
+import { STUDENT_DETAIL_TAB_LABELS, STUDENT_DETAIL_TABS } from "../entities/student-detail.entity";
 import {
   apiUrl,
   envelope,
@@ -34,7 +41,7 @@ const router = vi.hoisted(() => ({
   asPath: "/teacher/students/u1",
   isReady: true,
   query: {} as Record<string, string>,
-  replace: () => Promise.resolve(true),
+  replace: vi.fn(() => Promise.resolve(true)),
   push: () => Promise.resolve(true),
   prefetch: () => Promise.resolve(),
   events: { on: () => undefined, off: () => undefined, emit: () => undefined },
@@ -45,10 +52,14 @@ vi.mock("next/router", () => ({ useRouter: () => router }));
 vi.setConfig({ testTimeout: 20_000 });
 
 const server = setupServer();
+let requestedPaths: string[];
 let timelineQueries: Array<{ from: string, to: string }>;
 let queueQueries: URLSearchParams[];
 let sessionQueries: URLSearchParams[];
+let directoryQueries: URLSearchParams[];
 let studentStatus: number;
+let grades: StudentGradeDTO[];
+let recordings: TelemetryRecordingSummaryDTO[];
 
 function gradeDto(attemptId: string, title: string, overrides: Partial<StudentGradeDTO> = {}): StudentGradeDTO {
   return {
@@ -91,26 +102,95 @@ function sessionDto(id: string, caseTitle: string | null, overrides: Partial<Sim
   };
 }
 
+function directoryRowDto(id: string, overrides: Partial<DirectoryStudentDTO> = {}): DirectoryStudentDTO {
+  return {
+    canView: true,
+    completedModules: 1,
+    email: `${id}@ventylab.demo`,
+    groupName: "Grupo A",
+    groups: [{ id: "g1", name: "Grupo A" }, { id: "g2", name: "Grupo B" }],
+    id,
+    lastActivity: null,
+    name: "Ana Gómez",
+    overallProgress: 40,
+    studentCode: "202312345",
+    totalModules: 2,
+    ...overrides,
+  };
+}
+
+const gamificationDto: GamificationStatsDTO = {
+  level: 3,
+  longestStreak: 9,
+  nextLevelXp: 1500,
+  streakDays: 4,
+  xpIntoLevel: 255,
+  xpToday: 55,
+  xpTotal: 1255,
+};
+
+const achievementsDto: AchievementsDTO = {
+  totalUnlocked: 1,
+  achievements: [{
+    code: "FIRST_LESSON",
+    description: "Completó su primera lección",
+    icon: "🎓",
+    id: "ach-1",
+    title: "Primer paso",
+    unlockedAt: "2026-10-01T15:00:00.000Z",
+    xpReward: 50,
+  }],
+};
+
+function recordingDto(reservationId: string): TelemetryRecordingSummaryDTO {
+  return {
+    chunkCount: 12,
+    endsAt: "2026-10-30T14:30:00.000Z",
+    groupId: "g1",
+    holderType: "GROUP",
+    reservationId,
+    sampleRateHz: 20,
+    startsAt: "2026-10-30T14:00:00.000Z",
+    status: "COMPLETED",
+  };
+}
+
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
+  server.events.on("request:start", ({ request }) => {
+    requestedPaths.push(new URL(request.url).pathname);
+  });
 });
 
 beforeEach(() => {
+  requestedPaths = [];
   timelineQueries = [];
   queueQueries = [];
   sessionQueries = [];
+  directoryQueries = [];
   studentStatus = 200;
+  grades = [
+    gradeDto("at-9", "Parcial de PEEP"),
+    gradeDto("at-8", "Quiz de volúmenes", { evaluationId: "ev-2", passed: false, grade: 2.4, moduleTitle: null }),
+  ];
+  recordings = [];
   router.query = { userId: "u1", groupId: "g1" };
+  router.replace.mockClear();
   server.use(
     http.get(apiUrl("/api/users/students/:id"), ({ params }) => (studentStatus === 200
       ? HttpResponse.json(envelope(studentDto(String(params.id), "Ana Gómez")))
-      : errorResponse("forbidden", studentStatus))),
+      : errorResponse(studentStatus === 403 ? "groups.student_out_of_scope" : "users.not_found", studentStatus))),
+    http.get(apiUrl("/api/admin/students"), ({ request }) => {
+      directoryQueries.push(new URL(request.url).searchParams);
+
+      return HttpResponse.json(envelope([directoryRowDto("u10", { email: "ju.u1@ventylab.demo", studentCode: "999" }), directoryRowDto("u1")], { total: 2, pages: 1, page: 1, limit: 100 }));
+    }),
     http.get(apiUrl("/api/progress/users/:userId/summary"), () => HttpResponse.json(envelope(summaryDto()))),
+    http.get(apiUrl("/api/progress/users/:userId/gamification"), () => HttpResponse.json(envelope(gamificationDto))),
+    http.get(apiUrl("/api/progress/users/:userId/achievements"), () => HttpResponse.json(envelope(achievementsDto))),
+    http.get(apiUrl("/api/ventilator/telemetry/recordings"), () => HttpResponse.json(envelope(recordings))),
     http.get(apiUrl("/api/curriculum/tree"), () => HttpResponse.json(envelope(treeDto()))),
-    http.get(apiUrl("/api/evaluation-grading/students/:userId/grades"), () => HttpResponse.json(envelope([
-      gradeDto("at-9", "Parcial de PEEP"),
-      gradeDto("at-8", "Quiz de volúmenes", { passed: false, grade: 2.4, moduleTitle: null }),
-    ]))),
+    http.get(apiUrl("/api/evaluation-grading/students/:userId/grades"), () => HttpResponse.json(envelope(grades))),
     http.get(apiUrl("/api/evaluation-grading/queue"), ({ request }) => {
       const params = new URL(request.url).searchParams;
       const page = Number(params.get("page") ?? "1");
@@ -123,11 +203,12 @@ beforeEach(() => {
       ));
     }),
     http.get(apiUrl("/api/simulation/sessions/history"), ({ request }) => {
-      const params = new URL(request.url).searchParams;
+      sessionQueries.push(new URL(request.url).searchParams);
 
-      sessionQueries.push(params);
-
-      return HttpResponse.json(envelope([sessionDto("ss-1", "SDRA moderado"), sessionDto("ss-2", null, { score: null, mode: "EXAM" })], { total: 2, pages: 1, page: 1, limit: 10 }));
+      return HttpResponse.json(envelope(
+        [sessionDto("ss-1", "SDRA moderado"), sessionDto("ss-2", null, { score: null, mode: "EXAM" })],
+        { total: 7, pages: 1, page: 1, limit: 10 },
+      ));
     }),
     http.get(apiUrl("/api/analytics/students/:userId/timeline"), ({ request }) => {
       const params = new URL(request.url).searchParams;
@@ -159,37 +240,135 @@ afterAll(() => {
   server.close();
 });
 
-function section(name: string): HTMLElement {
+function region(name: string): HTMLElement {
   return screen.getByRole("region", { name });
 }
 
-describe("StudentDetailPage", () => {
-  it("shows the header, the progress tree in curriculum order and the student's published grades", async() => {
-    renderTeacherDashboard(<StudentDetailPage userId="u1" />);
+function renderDetail(tab?: string, userId = "u1") {
+  router.query = tab ? { ...router.query, tab } : router.query;
+
+  return renderTeacherDashboard(<StudentDetailPage userId={userId} />);
+}
+
+describe("StudentDetailPage header", () => {
+  it("shows the profile, code, groups, overall progress and the summary cards without study time", async() => {
+    renderDetail();
 
     expect(await screen.findByRole("heading", { name: "Ana Gómez" })).toBeInTheDocument();
     expect(screen.getByText("u1@ventylab.demo")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: STUDENT_DETAIL_COPY.back })).toHaveAttribute("href", "/teacher?tab=grupo&groupId=g1");
+    expect(screen.getByText("AG")).toBeInTheDocument();
+    expect(await screen.findByText(STUDENT_HEADER_COPY.code("202312345"))).toBeInTheDocument();
 
-    const progress = section(STUDENT_DETAIL_COPY.progressTitle);
+    const groups = screen.getByRole("list", { name: STUDENT_HEADER_COPY.groupsLabel });
+
+    expect(within(groups).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["Grupo A", "Grupo B"]);
+    expect(directoryQueries[0]?.get("search")).toBe("u1@ventylab.demo");
+    expect(screen.getByText("40 %")).toBeInTheDocument();
+
+    const cards = screen.getByRole("list", { name: STUDENT_HEADER_COPY.cardsLabel });
+
+    expect(await within(cards).findByText(STUDENT_HEADER_COPY.evaluations)).toBeInTheDocument();
+    expect(within(cards).getByText(STUDENT_HEADER_COPY.modules).nextSibling).toHaveTextContent("1/2");
+    expect(within(cards).getByText(STUDENT_HEADER_COPY.evaluations).nextSibling).toHaveTextContent("1/2");
+    expect(await within(cards).findByText(STUDENT_HEADER_COPY.sessions)).toBeInTheDocument();
+    expect(within(cards).getByText(STUDENT_HEADER_COPY.sessions).nextSibling).toHaveTextContent("7");
+    expect(screen.queryByText(/Tiempo de estudio/)).not.toBeInTheDocument();
+  });
+
+  it("hides the evaluations card when the student has no published grade", async() => {
+    grades = [];
+    renderDetail();
+
+    const cards = await screen.findByRole("list", { name: STUDENT_HEADER_COPY.cardsLabel });
+
+    expect(await within(cards).findByText(STUDENT_HEADER_COPY.sessions)).toBeInTheDocument();
+    await waitFor(() => expect(requestedPaths).toContain("/api/evaluation-grading/students/u1/grades"));
+    expect(within(cards).queryByText(STUDENT_HEADER_COPY.evaluations)).not.toBeInTheDocument();
+  });
+
+  it("requests the header reads in parallel, before the profile answers", async() => {
+    const parallel = ["/api/progress/users/u1/summary", "/api/evaluation-grading/students/u1/grades", "/api/simulation/sessions/history", "/api/curriculum/tree"];
+
+    server.use(http.get(apiUrl("/api/users/students/:id"), async() => {
+      await waitFor(() => expect(requestedPaths).toEqual(expect.arrayContaining(parallel)));
+
+      return HttpResponse.json(envelope(studentDto("u1", "Ana Gómez")));
+    }));
+    renderDetail();
+
+    expect(await screen.findByRole("heading", { name: "Ana Gómez" })).toBeInTheDocument();
+  });
+
+  it("returns to the group panel, the dashboard or the directory depending on where it was opened", async() => {
+    const { unmount } = renderDetail();
+
+    expect(await screen.findByRole("link", { name: STUDENT_DETAIL_COPY.backToGroup })).toHaveAttribute("href", "/teacher?tab=grupo&groupId=g1");
+    unmount();
+
+    router.query = { userId: "u1" };
+    const second = renderDetail();
+
+    expect(await screen.findByRole("link", { name: STUDENT_DETAIL_COPY.backToDashboard })).toHaveAttribute("href", "/teacher");
+    second.unmount();
+
+    router.query = { userId: "u1", from: "directory" };
+    renderDetail();
+
+    expect(await screen.findByRole("link", { name: STUDENT_DETAIL_COPY.backToDirectory })).toHaveAttribute("href", "/teacher/students");
+  });
+
+  it("shows the no-access state when the student is outside the caller's groups", async() => {
+    studentStatus = 403;
+    renderDetail(undefined, "u9");
+
+    expect(await screen.findByText(STUDENT_DETAIL_COPY.forbiddenTitle)).toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+  });
+
+  it("shows the not-found state when the student does not exist", async() => {
+    studentStatus = 404;
+    renderDetail(undefined, "u9");
+
+    expect(await screen.findByText(STUDENT_DETAIL_COPY.notFoundTitle)).toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
+  });
+});
+
+describe("StudentDetailPage tabs", () => {
+  it("opens Módulos by default with the progress tree and loads no other tab's data", async() => {
+    renderDetail();
+
+    const tabs = await screen.findByRole("tablist");
+
+    expect(within(tabs).getAllByRole("tab").map((tab) => tab.textContent)).toEqual(STUDENT_DETAIL_TABS.map((tab) => STUDENT_DETAIL_TAB_LABELS[tab]));
+    expect(within(tabs).getByRole("tab", { name: STUDENT_DETAIL_TAB_LABELS.modulos })).toHaveAttribute("aria-selected", "true");
+
+    const progress = await screen.findByRole("region", { name: STUDENT_PANELS_COPY.progressTitle });
 
     await within(progress).findByText("Fisiología");
     const titles = within(progress).getAllByText(/Fundamentos|Nivel básico|Fisiología|Modos ventilatorios/).map((node) => node.textContent);
 
     expect(titles).toEqual(["Fundamentos", "Nivel básico", "Fisiología", "Modos ventilatorios"]);
+    expect(requestedPaths.filter((path) => /timeline|gamification|achievements|recordings|queue/.test(path))).toEqual([]);
 
-    const grades = section(STUDENT_DETAIL_COPY.gradesTitle);
+    fireEvent.click(within(tabs).getByRole("tab", { name: STUDENT_DETAIL_TAB_LABELS.gamificacion }));
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: router.pathname, query: expect.objectContaining({ tab: "gamificacion" }) },
+      undefined,
+      { shallow: true },
+    );
+  });
+
+  it("Evaluaciones lists the published grades and pages the pending attempts", async() => {
+    renderDetail("evaluaciones");
+
+    const grades = await screen.findByRole("region", { name: STUDENT_PANELS_COPY.gradesTitle });
 
     expect(await within(grades).findByRole("link", { name: "Parcial de PEEP" })).toHaveAttribute("href", "/grading/attempts/at-9");
     expect(within(grades).getByText(STUDENT_GRADES_COPY.module("Fisiología"))).toBeInTheDocument();
     expect(within(grades).getByRole("link", { name: "Quiz de volúmenes" })).toHaveAttribute("href", "/grading/attempts/at-8");
     expect(within(grades).getByText(STUDENT_GRADES_COPY.failed)).toBeInTheDocument();
-  });
-
-  it("lists the pending attempts of the student from the filtered queue and pages them", async() => {
-    renderTeacherDashboard(<StudentDetailPage userId="u1" />);
-
-    const grades = await screen.findByRole("region", { name: STUDENT_DETAIL_COPY.gradesTitle });
 
     expect(await within(grades).findByText("Taller de curvas")).toBeInTheDocument();
     expect(within(grades).getByRole("link", { name: STUDENT_GRADES_COPY.grade })).toHaveAttribute("href", "/grading/attempts/at-1");
@@ -204,19 +383,38 @@ describe("StudentDetailPage", () => {
     expect(queueQueries.at(-1)?.get("page")).toBe("2");
   });
 
-  it("lists the simulation sessions with their case and replay links, and pages the timeline backwards", async() => {
-    renderTeacherDashboard(<StudentDetailPage userId="u1" />);
+  it("Simulador lists the sessions with result and replay and hides the recordings when there are none", async() => {
+    renderDetail("simulador");
 
-    const sessions = await screen.findByRole("region", { name: STUDENT_ACTIVITY_COPY.sessionsTitle });
+    const sessions = await screen.findByRole("region", { name: STUDENT_SESSIONS_COPY.title });
 
     expect(await within(sessions).findByText("SDRA moderado")).toBeInTheDocument();
-    expect(within(sessions).getByText(STUDENT_ACTIVITY_COPY.unknownCase)).toBeInTheDocument();
+    expect(within(sessions).getByText(STUDENT_SESSIONS_COPY.unknownCase)).toBeInTheDocument();
     expect(within(sessions).getByText("Puntaje 88")).toBeInTheDocument();
-    expect(within(sessions).getAllByRole("link", { name: STUDENT_ACTIVITY_COPY.replay }).map((link) => link.getAttribute("href")))
+    expect(within(sessions).getAllByRole("link", { name: STUDENT_SESSIONS_COPY.replay }).map((link) => link.getAttribute("href")))
       .toEqual(["/simulator/sessions/ss-1/replay", "/simulator/sessions/ss-2/replay"]);
     expect(sessionQueries[0]?.get("userId")).toBe("u1");
+    // The header card and the tab share the first page request.
+    expect(sessionQueries).toHaveLength(1);
 
-    const timeline = section(STUDENT_ACTIVITY_COPY.timelineTitle);
+    await waitFor(() => expect(requestedPaths).toContain("/api/ventilator/telemetry/recordings"));
+    expect(screen.queryByRole("region", { name: TEAM_RECORDINGS_COPY.title })).not.toBeInTheDocument();
+  });
+
+  it("Simulador shows the real ventilator recordings when the student has some", async() => {
+    recordings = [recordingDto("res-1")];
+    renderDetail("simulador");
+
+    const section = await screen.findByRole("region", { name: TEAM_RECORDINGS_COPY.title });
+
+    expect(within(section).getByText(TEAM_RECORDINGS_COPY.holder.GROUP)).toBeInTheDocument();
+    expect(within(section).getByRole("link", { name: TEAM_RECORDINGS_COPY.play })).toHaveAttribute("href", "/lab/recordings/res-1");
+  });
+
+  it("Actividad shows the timeline and pages it backwards", async() => {
+    renderDetail("actividad");
+
+    const timeline = await screen.findByRole("region", { name: STUDENT_ACTIVITY_COPY.timelineTitle });
 
     expect(await within(timeline).findByText(STUDENT_ACTIVITY_COPY.truncated)).toBeInTheDocument();
     expect(within(timeline).getByText("Nota 4,1")).toBeInTheDocument();
@@ -231,8 +429,8 @@ describe("StudentDetailPage", () => {
     expect(await within(timeline).findByText(STUDENT_ACTIVITY_COPY.noEntries)).toBeInTheDocument();
   });
 
-  it("validates the date range before requesting it", async() => {
-    renderTeacherDashboard(<StudentDetailPage userId="u1" />);
+  it("Actividad validates the date range before requesting it", async() => {
+    renderDetail("actividad");
     await screen.findByRole("region", { name: STUDENT_ACTIVITY_COPY.timelineTitle });
 
     fireEvent.change(screen.getByLabelText(STUDENT_ACTIVITY_COPY.from), { target: { value: "2026-10-10" } });
@@ -247,21 +445,43 @@ describe("StudentDetailPage", () => {
     await waitFor(() => expect(timelineQueries.at(-1)).toEqual({ from: "2026-10-10T05:00:00.000Z", to: "2026-10-13T05:00:00.000Z" }));
   });
 
-  it("shows the grades without a group in the URL", async() => {
-    router.query = { userId: "u1" };
-    renderTeacherDashboard(<StudentDetailPage userId="u1" />);
+  it("Gamificación shows XP, level, streak and the achievements read-only", async() => {
+    renderDetail("gamificacion");
 
-    const grades = await screen.findByRole("region", { name: STUDENT_DETAIL_COPY.gradesTitle });
+    const stats = await screen.findByRole("region", { name: STUDENT_GAMIFICATION_COPY.statsTitle });
 
-    expect(await within(grades).findByRole("link", { name: "Parcial de PEEP" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: STUDENT_DETAIL_COPY.back })).toHaveAttribute("href", "/teacher");
+    expect(await within(stats).findByText(STUDENT_GAMIFICATION_COPY.level(3))).toBeInTheDocument();
+    expect(within(stats).getByText(STUDENT_GAMIFICATION_COPY.xp(1255))).toBeInTheDocument();
+    expect(within(stats).getByText(STUDENT_GAMIFICATION_COPY.xp(55))).toBeInTheDocument();
+    expect(within(stats).getByText(STUDENT_GAMIFICATION_COPY.streakValue(4))).toBeInTheDocument();
+    expect(within(stats).getByText(STUDENT_GAMIFICATION_COPY.longestStreak(9))).toBeInTheDocument();
+    expect(within(stats).getByRole("progressbar", { name: STUDENT_GAMIFICATION_COPY.levelAria(51) })).toBeInTheDocument();
+
+    const achievements = region(STUDENT_GAMIFICATION_COPY.achievementsFallbackTitle);
+
+    expect(await within(achievements).findByText("Primer paso")).toBeInTheDocument();
+    expect(within(achievements).getByRole("heading", { name: STUDENT_GAMIFICATION_COPY.achievementsTitle(1) })).toBeInTheDocument();
+    expect(within(achievements).queryByRole("button")).not.toBeInTheDocument();
   });
 
-  it("shows the no-access state when the student is outside the caller's groups", async() => {
-    studentStatus = 403;
-    renderTeacherDashboard(<StudentDetailPage userId="u9" />);
+  it("Gamificación shows the no-achievements empty state", async() => {
+    server.use(http.get(apiUrl("/api/progress/users/:userId/achievements"), () => HttpResponse.json(envelope({ totalUnlocked: 0, achievements: [] }))));
+    renderDetail("gamificacion");
 
-    expect(await screen.findByText(STUDENT_DETAIL_COPY.forbiddenTitle)).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: STUDENT_DETAIL_COPY.gradesTitle })).not.toBeInTheDocument();
+    expect(await screen.findByText(STUDENT_GAMIFICATION_COPY.achievementsEmptyTitle)).toBeInTheDocument();
+  });
+});
+
+describe("StudentDetailPage privacy", () => {
+  it.each(STUDENT_DETAIL_TABS)("never requests nor renders personal notes or AI conversations (%s)", async(tab) => {
+    renderDetail(tab);
+
+    await screen.findByRole("tablist");
+    // Every read of the tab answered: no skeleton left (header and panel).
+    await waitFor(() => expect(screen.queryAllByRole("status", { busy: true })).toEqual([]));
+
+    expect(requestedPaths.length).toBeGreaterThan(0);
+    expect(requestedPaths.filter((path) => /note|chat|conversation|assistant|\/api\/ai\b/i.test(path))).toEqual([]);
+    expect(screen.queryByText(/notas personales|mis notas|conversaci[oó]n|chat/i)).not.toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentDetailPage
-* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN): header from `GET /api/users/students/{id}` (name, email, last access; a 403 or 404 becomes a no-access / not-found state), the progress tree from `GET /api/progress/users/{userId}/summary` labelled with the curriculum titles, the grades (published grades of `GET /api/evaluation-grading/students/{userId}/grades` and attempts waiting for review of the queue filtered by the student, linked to grading), and the activity (simulation sessions of `GET /api/simulation/sessions/history?userId` with replay links and the windowed timeline of `GET /api/analytics/students/{userId}/timeline`). ?groupId only drives the back link to the group panel. The student's personal notes and AI conversations are never read. Depends on MUI, next/head, next/link, next/router, the design-system states, the teacher dashboard hooks, components, entities, routes and CSS Module. v1.1 (closure B2): the grades no longer depend on the group the page was opened from.
-* Versión: 1.1
+* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the directory row, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); only the directory lookup waits for the profile email. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,45 +9,88 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import Alert from "@mui/material/Alert";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton, ListSkeleton } from "@shared/design-system/components/skeleton";
 import { toApiError } from "@shared/api-client/api-error";
 import { cx } from "@shared/lib/class-names";
-import { formatDateTime } from "@shared/lib/format";
-import { StudentActivity } from "../components/student-activity";
-import { StudentGrades } from "../components/student-grades";
-import { StudentProgressTree } from "../components/student-progress-tree";
-import { buildTeacherDashboardUrl } from "../config/teacher-dashboard.routes";
+import { KeptMountedTabPanels, lazyPanel } from "@shared/lib/kept-mounted-tab-panels";
+import type { LazyPanel } from "@shared/lib/kept-mounted-tab-panels";
+import { useUrlTab } from "@shared/lib/use-url-tab";
+import { StudentDetailContext } from "../components/detail/student-detail-context";
+import type { StudentDetailContextValue } from "../components/detail/student-detail-context";
+import { StudentDetailHeader } from "../components/detail/student-detail-header";
+import { StudentDetailTabs } from "../components/detail/student-detail-tabs";
+import {
+  buildStudentDetailBackUrl,
+  studentDetailBackOf,
+  studentDetailPanelId,
+  studentDetailTabId,
+} from "../config/student-detail.routes";
+import type { StudentDetailBack } from "../config/student-detail.routes";
+import {
+  completedModules,
+  DEFAULT_STUDENT_DETAIL_TAB,
+  passedEvaluations,
+  STUDENT_DETAIL_TABS,
+} from "../entities/student-detail.entity";
+import type { StudentDetailTab } from "../entities/student-detail.entity";
 import { getTeacherDashboardErrorMessage } from "../entities/teacher-dashboard-error-messages";
 import { useCurriculumTitles } from "../hooks/use-curriculum-titles";
 import { useStudentDetail } from "../hooks/use-student-detail";
+import { useStudentGrades } from "../hooks/use-student-grades";
+import { useStudentSessions } from "../hooks/use-student-sessions";
+import detailStyles from "../../UI/student-detail.module.css";
 import styles from "../../UI/teacher-dashboard.module.css";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const STUDENT_DETAIL_COPY = {
   documentTitle: (name: string) => `${name} | Panel docente | VentyLab`,
   fallbackTitle: "Detalle del estudiante",
-  back: "Volver al panel del grupo",
-  lastAccess: (date: string) => `Último acceso: ${date}`,
-  neverAccessed: "Sin accesos registrados",
+  backToDirectory: "Volver a la lista",
+  backToGroup: "Volver al panel del grupo",
+  backToDashboard: "Volver al panel",
   loading: "Cargando el estudiante…",
-  loadingProgress: "Cargando el progreso…",
   forbiddenTitle: "No tienes acceso a este estudiante",
   forbiddenDescription: "Solo puedes ver a los estudiantes de los grupos que creaste o supervisas.",
   notFoundTitle: "El estudiante no existe",
   errorTitle: "No se pudo cargar el estudiante",
-  progressTitle: "Progreso",
-  gradesTitle: "Calificaciones",
-  activityTitle: "Simulación y actividad",
+  loadingPanel: {
+    modulos: "Cargando los módulos…",
+    evaluaciones: "Cargando las evaluaciones…",
+    simulador: "Cargando el simulador…",
+    actividad: "Cargando la actividad…",
+    gamificacion: "Cargando la gamificación…",
+  } satisfies Record<StudentDetailTab, string>,
 } as const;
 
-function readGroupId(value: string | string[] | undefined): string | null {
+const loadPanels = () => import("../components/detail/student-detail-panels");
+
+// One chunk for the five panels; each panel mounts (and requests its data) on the first visit of its tab.
+const TAB_PANELS: Record<StudentDetailTab, LazyPanel> = {
+  modulos: lazyPanel(() => loadPanels().then((module) => module.ModulesPanel)),
+  evaluaciones: lazyPanel(() => loadPanels().then((module) => module.EvaluationsPanel)),
+  simulador: lazyPanel(() => loadPanels().then((module) => module.SimulatorPanel)),
+  actividad: lazyPanel(() => loadPanels().then((module) => module.ActivityPanel)),
+  gamificacion: lazyPanel(() => loadPanels().then((module) => module.GamificationPanel)),
+};
+
+const panelFallback = (tab: StudentDetailTab) => <ListSkeleton rows={3} label={STUDENT_DETAIL_COPY.loadingPanel[tab]} />;
+
+function readQueryValue(value: string | string[] | undefined): string | null {
   return typeof value === "string" && value.trim() ? value : null;
+}
+
+function backLabel(back: StudentDetailBack, groupId: string | null): string {
+  if (back === "directory") {
+    return STUDENT_DETAIL_COPY.backToDirectory;
+  }
+
+  return groupId ? STUDENT_DETAIL_COPY.backToGroup : STUDENT_DETAIL_COPY.backToDashboard;
 }
 
 export type StudentDetailPageProps = {
@@ -56,11 +99,23 @@ export type StudentDetailPageProps = {
 
 export function StudentDetailPage({ userId }: StudentDetailPageProps) {
   const router = useRouter();
-  const groupId = readGroupId(router.query.groupId);
-  const { student, studentLoading, studentError, summary, summaryLoading, summaryError, reload } = useStudentDetail(userId);
+  const groupId = readQueryValue(router.query.groupId);
+  const back = studentDetailBackOf(router.query.from);
+  const { student, studentLoading, studentError, summary, summaryLoading, summaryError, directory, reload } = useStudentDetail(userId);
   const titles = useCurriculumTitles();
+  const { grades } = useStudentGrades(userId);
+  const { total: sessionsTotal } = useStudentSessions(userId, 1);
+  const { tab, selectTab } = useUrlTab(STUDENT_DETAIL_TABS, DEFAULT_STUDENT_DETAIL_TAB);
+  const modules = useMemo(() => (summary ? completedModules(summary) : null), [summary]);
+  const evaluations = useMemo(() => (grades ? passedEvaluations(grades) : null), [grades]);
+  const context = useMemo<StudentDetailContextValue>(
+    () => ({ userId, titles, summary, summaryLoading, summaryError }),
+    [userId, titles, summary, summaryLoading, summaryError],
+  );
   const name = student ? (student.name?.trim() ? student.name : student.email) : STUDENT_DETAIL_COPY.fallbackTitle;
-  const backLink = <Link href={buildTeacherDashboardUrl(groupId)} className={cx(styles.link)}>{STUDENT_DETAIL_COPY.back}</Link>;
+  const backLink = (
+    <Link href={buildStudentDetailBackUrl(back, groupId)} className={cx(styles.link)}>{backLabel(back, groupId)}</Link>
+  );
 
   const renderBlocked = () => {
     const status = toApiError(studentError).status;
@@ -86,22 +141,26 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
     }
 
     return (
-      <>
-        <section aria-label={STUDENT_DETAIL_COPY.progressTitle} className={cx(styles.card)}>
-          <h2 className={cx(styles.sectionTitle)}>{STUDENT_DETAIL_COPY.progressTitle}</h2>
-          {summary ? <StudentProgressTree summary={summary} titles={titles} /> : null}
-          {!summary && summaryLoading ? <ListSkeleton rows={4} label={STUDENT_DETAIL_COPY.loadingProgress} /> : null}
-          {!summary && summaryError ? <Alert severity="error">{getTeacherDashboardErrorMessage(summaryError)}</Alert> : null}
-        </section>
-        <section aria-label={STUDENT_DETAIL_COPY.gradesTitle} className={cx(styles.card)}>
-          <h2 className={cx(styles.sectionTitle)}>{STUDENT_DETAIL_COPY.gradesTitle}</h2>
-          <StudentGrades userId={userId} />
-        </section>
-        <section aria-label={STUDENT_DETAIL_COPY.activityTitle} className={cx(styles.card)}>
-          <h2 className={cx(styles.sectionTitle)}>{STUDENT_DETAIL_COPY.activityTitle}</h2>
-          <StudentActivity userId={userId} />
-        </section>
-      </>
+      <StudentDetailContext.Provider value={context}>
+        <StudentDetailHeader
+          student={student}
+          directory={directory}
+          overallProgress={summary ? summary.overall.percentage : null}
+          modules={modules}
+          evaluations={evaluations}
+          sessions={sessionsTotal}
+        />
+        {tab !== null ? <StudentDetailTabs active={tab} onSelect={selectTab} /> : null}
+        <KeptMountedTabPanels
+          tabs={STUDENT_DETAIL_TABS}
+          active={tab}
+          panels={TAB_PANELS}
+          fallback={panelFallback}
+          panelId={studentDetailPanelId}
+          tabId={studentDetailTabId}
+          panelClassName={cx(detailStyles.panel)}
+        />
+      </StudentDetailContext.Provider>
     );
   };
 
@@ -110,16 +169,7 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
       <Head>
         <title>{STUDENT_DETAIL_COPY.documentTitle(name)}</title>
       </Head>
-      <PageHeader
-        title={name}
-        subtitle={student ? (
-          <span className={cx(styles.header)}>
-            <span>{student.email}</span>
-            <span>{student.lastAccess ? STUDENT_DETAIL_COPY.lastAccess(formatDateTime(student.lastAccess)) : STUDENT_DETAIL_COPY.neverAccessed}</span>
-          </span>
-        ) : null}
-        actions={backLink}
-      />
+      <PageHeader title={name} actions={backLink} />
       <div className={cx(styles.content)}>{renderContent()}</div>
     </div>
   );

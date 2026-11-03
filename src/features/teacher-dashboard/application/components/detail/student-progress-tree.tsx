@@ -12,10 +12,10 @@
 import LinearProgress from "@mui/material/LinearProgress";
 import { useMemo } from "react";
 import { cx } from "@shared/lib/class-names";
-import { buildProgressTree } from "../entities/curriculum-titles.entity";
-import type { CurriculumTitles, LearningSummary, ProgressValues } from "../entities/curriculum-titles.entity";
-import { formatPercent } from "../entities/teacher-dashboard-labels";
-import styles from "../../UI/teacher-dashboard.module.css";
+import { buildProgressTree } from "../../entities/curriculum-titles.entity";
+import type { CurriculumTitles, LearningSummary, ProgressValues } from "../../entities/curriculum-titles.entity";
+import { formatPercent } from "../../entities/teacher-dashboard-labels";
+import styles from "../../../UI/teacher-dashboard.module.css";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const PROGRESS_TREE_COPY = {

@@ -16,12 +16,12 @@ import { useState } from "react";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { formatDate, formatDateTime, formatGrade } from "@shared/lib/format";
-import { buildGradingAttemptUrl } from "../config/teacher-dashboard.routes";
-import { getTeacherDashboardErrorMessage } from "../entities/teacher-dashboard-error-messages";
-import { MISSING } from "../entities/teacher-dashboard-labels";
-import { useStudentGrades } from "../hooks/use-student-grades";
-import { useStudentPendingAttempts } from "../hooks/use-student-pending-attempts";
-import styles from "../../UI/teacher-dashboard.module.css";
+import { buildGradingAttemptUrl } from "../../config/teacher-dashboard.routes";
+import { getTeacherDashboardErrorMessage } from "../../entities/teacher-dashboard-error-messages";
+import { MISSING } from "../../entities/teacher-dashboard-labels";
+import { useStudentGrades } from "../../hooks/use-student-grades";
+import { useStudentPendingAttempts } from "../../hooks/use-student-pending-attempts";
+import styles from "../../../UI/teacher-dashboard.module.css";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const STUDENT_GRADES_COPY = {
