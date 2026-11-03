@@ -1,8 +1,9 @@
 /*
 * Funcionalidad: Create reservation mapper
-* Descripción: Maps the booking request of the dialog to the CreateReservationDTO body (the caller is sent without userId; the end is the start plus the duration; the purpose is trimmed and omitted when empty; confirmPreempt only when the preemption flow sets it), parses the conflict details of a 409 (data `{ preemptable, conflicts[] }`; null when malformed) and builds the holder options from the backend lists: the active student groups a student leads (GET /api/groups/mine memberships with memberRole LEADER), the active groups of GET /api/groups for staff, and a user of GET /api/users for admins. Labels are the names the backend returns (the email of a user without name). v1.1 (T2 review fix): a teacher is offered only the student groups of GET /api/groups that the teacher did not create: the backend scopes that list to groups the teacher created OR supervises and accepts only supervised ones (canReserveFor), and no endpoint readable by a teacher says whether a created group is also supervised (backend gap), so only the groups certainly supervised are offered. v1.1 (T4): leaderGroupIds, every group the caller leads (cancel permission). Depends on the lab DTOs and the create reservation entities.
+* Descripción: Maps the booking request of the dialog to the CreateReservationDTO body (the caller is sent without userId; the end is the start plus the duration; the purpose is trimmed and omitted when empty; confirmPreempt only when the preemption flow sets it), parses the conflict details of a 409 (data `{ preemptable, conflicts[] }`; null when malformed) and builds the holder options from the backend lists: the active student groups a student leads (GET /api/groups/mine memberships with memberRole LEADER), the active groups of GET /api/groups for staff, and a user of GET /api/users for admins. Labels are the names the backend returns (the email of a user without name). v1.1 (T4): leaderGroupIds, every group the caller leads (cancel permission). Depends on the lab DTOs and the create reservation entities.
 *   v1.2 (W7, Bloque 1): a request without start is an immediate reservation: the body carries durationMinutes (15/30/45/60) and no startsAt/endsAt (the backend starts it now).
-* Versión: 1.2
+*   v1.3 (W6, Bloque 4): the backend now accepts a teacher booking for every student group they created OR supervise (canReserveFor with managesGroup), so managedGroupOptions offers every active group of the scoped list; the v1.1 created-group filter is gone.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -108,14 +109,11 @@ export function ledGroupOptions(myGroups: MyGroupsDTO): HolderOption[] {
 }
 
 /**
- * Active groups of the staff groups list (already scoped by the backend to the caller). With `teacherId`, only the
- * groups that teacher did not create: those are in the teacher's scope only through supervision, the one relation
- * the backend accepts to book for a group.
+ * Active groups of the staff groups list, already scoped by the backend to the caller (a teacher: the student groups
+ * they created or supervise, every one of which they may book for).
  */
-export function managedGroupOptions(groups: readonly GroupDTO[], teacherId: string | null = null): HolderOption[] {
-  return groups
-    .filter((group) => group.isActive && (teacherId === null || group.createdBy !== teacherId))
-    .map((group) => groupOption(group.id, group.name));
+export function managedGroupOptions(groups: readonly GroupDTO[]): HolderOption[] {
+  return groups.filter((group) => group.isActive).map((group) => groupOption(group.id, group.name));
 }
 
 /** Every group the caller leads (backend isGroupLeader), whatever its type or state. */

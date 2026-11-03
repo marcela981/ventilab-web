@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: useHolderOptions / useUserHolderSearch
-* Descripción: Reservation holders the caller may choose, by role, mirroring the backend reservation policy: everyone books for themselves; a STUDENT also for the active student groups they lead (GET /api/groups/mine, memberRole LEADER); a TEACHER for the active student groups of GET /api/groups that the teacher did not create (v1.1, T2 review fix: the list holds the groups the teacher created OR supervises, the backend accepts only supervised ones, and a teacher cannot read whether a created group is also supervised; the backend 403 is still shown); an ADMIN for any active group and any user, searched with useUserHolderSearch (GET /api/users, at least two characters). A failed groups read keeps the caller option and reports the error. Depends on the session, the api-client query hook, the holders service and the create reservation mapper and entities.
-* Versión: 1.1
+* Descripción: Reservation holders the caller may choose, by role, mirroring the backend reservation policy: everyone books for themselves; a STUDENT also for the active student groups they lead (GET /api/groups/mine, memberRole LEADER); a TEACHER for the active student groups of GET /api/groups (the groups the teacher created or supervises; the backend 403 is still shown); an ADMIN for any active group and any user, searched with useUserHolderSearch (GET /api/users, at least two characters). A failed groups read keeps the caller option and reports the error. Depends on the session, the api-client query hook, the holders service and the create reservation mapper and entities.
+*   v1.2 (W6, Bloque 4): a TEACHER is offered every active student group of GET /api/groups, the groups they created or supervise, because the backend now accepts both (canReserveFor with managesGroup). In a group reservation the group leader operates the ventilator (Bloque 1).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,7 +37,7 @@ export type HolderOptions = {
 };
 
 export function useHolderOptions(enabled = true): HolderOptions {
-  const { role, user, hasPermission } = useSession();
+  const { role, hasPermission } = useSession();
   const isStudent = role === "STUDENT";
   const isStaff = role === "TEACHER" || role === "ADMIN";
   const readLed = enabled && isStudent && hasPermission(MY_GROUPS_PERMISSION);
@@ -49,8 +50,8 @@ export function useHolderOptions(enabled = true): HolderOptions {
       return ledGroupOptions(led.data.data);
     }
 
-    return managed.data ? managedGroupOptions(managed.data.data, role === "TEACHER" ? user?.id ?? null : null) : [];
-  }, [led.data, managed.data, role, user?.id]);
+    return managed.data ? managedGroupOptions(managed.data.data) : [];
+  }, [led.data, managed.data]);
 
   return {
     groups,

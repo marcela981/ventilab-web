@@ -2,7 +2,8 @@
 * Funcionalidad: Reservation calendar and booking hooks tests
 * Descripción: useHolderOptions by role (a student gets only the student groups they lead from /api/groups/mine; a teacher the active student groups of /api/groups; an admin every active group and the user search; a failed read keeps no groups and reports the error), useUserHolderSearch (nothing below two characters, then the users search), useReservationsCalendar (range query, revalidated by ventilator:availability through useReservationsRealtime) and useCreateReservation (request body, calendar and mine revalidated after the data-null 201, a 409 with its parsed conflict, other failures without conflict). v1.1 (T2 review fix): a teacher is offered only the groups of the list the teacher did not create (certainly supervised), and the calendar never returns the previous range's data while another range loads or fails. v1.2 (T4 review fix S3): useCancelReservation resolves before the revalidations finish. Depends on vitest, msw, Testing Library and the lab test helpers.
 *   v1.3 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
-* Versión: 1.3
+*   v1.4 (W6, Bloque 4): a teacher is offered every active group of the list, created or supervised (supersedes the v1.1 created-group filter).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -78,15 +79,16 @@ describe("useHolderOptions", () => {
     expect(requests).toEqual(["GET /api/groups/mine"]);
   });
 
-  it("offers a teacher only the student groups of the list that the teacher supervises (not the ones the teacher created)", async() => {
+  it("offers a teacher every active student group of the list: the ones they supervise and the ones they created", async() => {
     server.use(http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([
-      groupDto("g1", "Grupo A", { createdBy: "other-teacher" }),
+      groupDto("g1", "Grupo supervisado", { createdBy: "other-teacher" }),
       groupDto("g2", "Grupo creado", { createdBy: "teacher-1" }),
+      groupDto("g3", "Grupo inactivo", { createdBy: "teacher-1", isActive: false }),
     ]))));
 
     const { result } = renderLabHook(() => useHolderOptions(), { role: "TEACHER", permissions: ["groups:read", "users:list"] });
 
-    await waitFor(() => expect(result.current.groups.map(({ label }) => label)).toEqual(["Grupo A"]));
+    await waitFor(() => expect(result.current.groups.map(({ label }) => label)).toEqual(["Grupo supervisado", "Grupo creado"]));
     expect(result.current.canPickUser).toBe(false);
     expect(requests).toEqual(["GET /api/groups?isActive=true&type=STUDENT"]);
   });
