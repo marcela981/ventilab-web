@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminUsersPage
-* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email, student code or exact id, on the server), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move. v1.3 (closure B2): the student code column and "Editar código" (`PATCH /api/users/{id}/student-code`, 409 → "Código ya en uso" under the field); the superadmin row is locked from `UserDTO.isSuperadmin`. v1.4 (B4): renderPagination names its parameter currentPagination (it receives the pagination object, not a page number).
-* Versión: 1.4
+* Descripción: Page /admin/users (ADMIN): paginated users of `GET /api/users` with search (name, email, student code or exact id, on the server), role, group (`GET /api/groups`) and account status filters, all kept in the URL (?page&search&role&groupId&isActive, shareable). "Cambiar rol" opens the role dialog with the warning of its effects (`PATCH /api/users/{id}/role`); "Desactivar"/"Activar" asks for confirmation (`PATCH /api/users/{id}/status`). A backend 403 on a superadmin shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." in the dialog or as a toast; the admin's own row is disabled because the backend refuses changes to one's own account. Depends on MUI, next/head, next/router, React, the design-system components, the session, the admin console hooks, components, entities and CSS Module. v1.1 (O4a review): a new filter or page never shows the previous rows (no keepPreviousData, loading state instead); an error is shown whenever the request fails; a page beyond the last one (old URL) is moved to the last page. v1.2 (review): an empty page with total > 0 never sticks on the loading skeleton: only a page beyond the last one waits for the clamp; an in-range empty page (rows removed meanwhile, or pages out of sync) shows the empty-page state with the pagination visible so the admin can move. v1.3 (closure B2): the student code column and "Editar código" (`PATCH /api/users/{id}/student-code`, 409 → "Código ya en uso" under the field); the superadmin row is locked from `UserDTO.isSuperadmin`. v1.4 (B4): renderPagination names its parameter currentPagination (it receives the pagination object, not a page number). v1.5 (B4, DISENO_BLOQUE4 §2.7): the page becomes "Administración de Usuarios" with the URL tabs ?tab=usuarios|profesores (default usuarios, shared useUrlTab and KeptMountedTabPanels, so a visited panel keeps its state): "Gestión de roles" is the users table above (UsersRolesPanel, behaviour unchanged; its filter writes keep the tab and the teachers search) and "Profesores" the lazy TeachersPanel (`GET /api/admin/teachers`).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,7 +22,11 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { cx } from "@shared/lib/class-names";
+import { KeptMountedTabPanels, lazyPanel } from "@shared/lib/kept-mounted-tab-panels";
+import type { LazyPanel } from "@shared/lib/kept-mounted-tab-panels";
+import { useUrlTab } from "@shared/lib/use-url-tab";
 import { useSession } from "@shared/session/use-session";
+import { adminUsersPanelId, adminUsersTabId, AdminUsersTabs } from "../components/admin-users-tabs";
 import { RoleChangeDialog } from "../components/role-change-dialog";
 import { StudentCodeDialog } from "../components/student-code-dialog";
 import { UsersFilters } from "../components/users-filters";
@@ -30,8 +34,15 @@ import { UsersTable } from "../components/users-table";
 import { ROLE_LABELS } from "../config/admin-console.config";
 import type { UserRole } from "../config/admin-console.config";
 import { getAdminConsoleErrorMessage } from "../entities/admin-console-error-messages";
-import { hasUserFilters, NO_USER_FILTERS, readUserFilters, toUserFiltersQuery } from "../entities/admin-users.entity";
-import type { AdminUserFilters, AdminUserRow } from "../entities/admin-users.entity";
+import {
+  ADMIN_USERS_TABS,
+  DEFAULT_ADMIN_USERS_TAB,
+  hasUserFilters,
+  NO_USER_FILTERS,
+  readUserFilters,
+  withUserFiltersQuery,
+} from "../entities/admin-users.entity";
+import type { AdminUserFilters, AdminUserRow, AdminUsersTab } from "../entities/admin-users.entity";
 import { useAdminGroups } from "../hooks/use-admin-groups";
 import { useAdminUserActions } from "../hooks/use-admin-user-actions";
 import { useAdminUsers } from "../hooks/use-admin-users";
@@ -40,8 +51,12 @@ import styles from "../../UI/admin-users.module.css";
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const ADMIN_USERS_COPY = {
   documentTitle: "Usuarios | VentyLab",
-  title: "Usuarios",
-  subtitle: "Busca cuentas, cambia su rol y activa o desactiva su acceso.",
+  title: "Administración de Usuarios",
+  subtitle: "Busca cuentas, cambia su rol, activa o desactiva su acceso y consulta los grupos de los profesores.",
+  loadingPanel: {
+    usuarios: "Cargando usuarios…",
+    profesores: "Cargando profesores…",
+  } satisfies Record<AdminUsersTab, string>,
   searchNote: "La búsqueda cubre nombre, correo, código de estudiante e ID.",
   loading: "Cargando usuarios…",
   loadErrorTitle: "No se pudieron cargar los usuarios",
@@ -76,7 +91,8 @@ function nameOf(row: AdminUserRow): string {
   return row.name?.trim() || row.email;
 }
 
-export function AdminUsersPage() {
+/** "Gestión de roles" tab: the users table with its URL filters and actions (behaviour unchanged by the tabs). */
+export function UsersRolesPanel() {
   const router = useRouter();
   const toast = useToast();
   const { user: sessionUser } = useSession();
@@ -92,14 +108,14 @@ export function AdminUsersPage() {
   const { rows, pagination } = users;
 
   const setFilters = (next: AdminUserFilters) => {
-    void router.replace({ pathname: router.pathname, query: toUserFiltersQuery(next) }, undefined, { shallow: true });
+    void router.replace({ pathname: router.pathname, query: withUserFiltersQuery(router.query, next) }, undefined, { shallow: true });
   };
 
   useEffect(() => {
     // A page beyond the last one (shared URL, deleted users): show the last page instead of an empty list.
     if (rows && rows.length === 0 && pagination && pagination.total > 0 && filters.page > pagination.pages) {
       void router.replace(
-        { pathname: router.pathname, query: toUserFiltersQuery({ ...filters, page: Math.max(1, pagination.pages) }) },
+        { pathname: router.pathname, query: withUserFiltersQuery(router.query, { ...filters, page: Math.max(1, pagination.pages) }) },
         undefined,
         { shallow: true },
       );
@@ -213,11 +229,7 @@ export function AdminUsersPage() {
   const deactivating = statusTarget?.isActive ?? false;
 
   return (
-    <div className={cx(styles.page)}>
-      <Head>
-        <title>{ADMIN_USERS_COPY.documentTitle}</title>
-      </Head>
-      <PageHeader title={ADMIN_USERS_COPY.title} subtitle={ADMIN_USERS_COPY.subtitle} />
+    <>
       <div className={cx(styles.content)}>
         <UsersFilters value={filters} groups={groups} groupsFailed={groupsError !== null} onChange={setFilters} />
         <p className={cx(styles.note)}>{ADMIN_USERS_COPY.searchNote}</p>
@@ -235,6 +247,35 @@ export function AdminUsersPage() {
         isPending={statusPending}
         onConfirm={() => void confirmStatus()}
         onCancel={() => setStatusTarget(null)}
+      />
+    </>
+  );
+}
+
+const TAB_PANELS: Record<AdminUsersTab, LazyPanel> = {
+  usuarios: lazyPanel(() => Promise.resolve(UsersRolesPanel)),
+  profesores: lazyPanel(() => import("../components/teachers-panel").then((module) => module.TeachersPanel)),
+};
+
+const panelFallback = (tab: AdminUsersTab) => <ListSkeleton rows={5} label={ADMIN_USERS_COPY.loadingPanel[tab]} />;
+
+export function AdminUsersPage() {
+  const { tab, selectTab } = useUrlTab(ADMIN_USERS_TABS, DEFAULT_ADMIN_USERS_TAB);
+
+  return (
+    <div className={cx(styles.page)}>
+      <Head>
+        <title>{ADMIN_USERS_COPY.documentTitle}</title>
+      </Head>
+      <PageHeader title={ADMIN_USERS_COPY.title} subtitle={ADMIN_USERS_COPY.subtitle} />
+      {tab !== null ? <AdminUsersTabs active={tab} onSelect={selectTab} /> : null}
+      <KeptMountedTabPanels
+        tabs={ADMIN_USERS_TABS}
+        active={tab}
+        panels={TAB_PANELS}
+        fallback={panelFallback}
+        panelId={adminUsersPanelId}
+        tabId={adminUsersTabId}
       />
     </div>
   );

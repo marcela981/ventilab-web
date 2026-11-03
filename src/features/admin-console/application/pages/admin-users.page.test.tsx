@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users page tests
-* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending. v1.2 (review): an in-range empty page (total > 0) shows the empty-page state with the pagination instead of a stuck skeleton. v1.3 (closure B2): the superadmin flag of the API locks the role and status actions (badge and reason), the student code column and the search note, "Editar código" validates on the client and sends `PATCH /api/users/{id}/student-code`, and a 409 shows "Código ya en uso" under the field.
-* Versión: 1.3
+* Descripción: /admin/users with msw: the rows of `GET /api/users` with the URL filters sent as the query and a filter change written back to the URL; the own account keeps its actions disabled with the reason; the role dialog shows the warning of its effects and sends `PATCH /api/users/{id}/role`; a superadmin 403 shows "Esta cuenta está protegida (superadministrador) y no se puede modificar." inside the dialog; deactivating asks for confirmation before `PATCH /api/users/{id}/status` and a superadmin 403 there becomes an error toast. Depends on vitest, msw, Testing Library and the admin console test helpers. v1.1 (O4a review): with the app keepPreviousData default a role filter change shows the loading state instead of the previous rows and a 500 shows the error; a page beyond the last one moves to the last page; Escape does not close the role dialog while its PATCH is pending. v1.2 (review): an in-range empty page (total > 0) shows the empty-page state with the pagination instead of a stuck skeleton. v1.3 (closure B2): the superadmin flag of the API locks the role and status actions (badge and reason), the student code column and the search note, "Editar código" validates on the client and sends `PATCH /api/users/{id}/student-code`, and a 409 shows "Código ya en uso" under the field. v1.4 (B4): "Editar código" is disabled on the superadmin row; the tabs ?tab=usuarios|profesores (default Gestión de roles without requesting the teachers, tab writes keep the filters and filter writes keep the tab), the Profesores table (julio columns, aria-sort, groups and distinct students from `GET /api/admin/teachers`), its URL search with the empty result and a 403.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,10 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AdminTeacherDTO } from "../../api/dtos/admin-console.dto";
 import { STUDENT_CODE_DIALOG_COPY } from "../components/student-code-dialog";
+import { TEACHERS_PANEL_COPY } from "../components/teachers-panel";
+import { TEACHERS_TABLE_COPY } from "../components/teachers-table";
 import { USERS_TABLE_COPY } from "../components/users-table";
 import { SUPERADMIN_PROTECTED_MESSAGE } from "../entities/admin-console-error-messages";
 import { ROLE_CHANGE_EFFECTS, STUDENT_CODE_COPY } from "../entities/admin-users.entity";
@@ -46,6 +49,22 @@ let releaseList: (() => void) | null;
 let holdList: boolean;
 let releaseMutation: (() => void) | null;
 let holdMutation: boolean;
+let teacherQueries: (string | null)[];
+let teachersStatus: number;
+
+function teacherDto(id: string, name: string | null, groups: { id: string, name: string }[], studentCount: number, role = "TEACHER"): AdminTeacherDTO {
+  return {
+    createdAt: "2026-01-15T10:00:00.000Z",
+    email: `${id}@ventylab.demo`,
+    groups,
+    groupsCreated: groups.length,
+    id,
+    image: null,
+    name,
+    role,
+    studentCount,
+  };
+}
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -62,6 +81,8 @@ beforeEach(() => {
   holdList = false;
   releaseMutation = null;
   holdMutation = false;
+  teacherQueries = [];
+  teachersStatus = 200;
   router.query = {};
   router.replace.mockClear();
   server.use(
@@ -91,6 +112,20 @@ beforeEach(() => {
       ], { total: listTotal, pages: 1, page: 1, limit: 20 }));
     }),
     http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([groupDto("g1", "Grupo A")]))),
+    http.get(apiUrl("/api/admin/teachers"), ({ request }) => {
+      const search = new URL(request.url).searchParams.get("search");
+
+      teacherQueries.push(search);
+
+      if (teachersStatus !== 200) {
+        return errorResponse("auth.forbidden", teachersStatus);
+      }
+
+      return HttpResponse.json(envelope(search === "nadie" ? [] : [
+        teacherDto("t1", "Luis Gómez", [{ id: "g1", name: "Grupo A" }, { id: "g2", name: "Grupo B" }], 25),
+        teacherDto("t2", null, [], 0, "ADMIN"),
+      ]));
+    }),
     http.patch(apiUrl("/api/users/:id/:field"), async({ params, request }) => {
       mutations.push({ path: `${String(params.id)}/${String(params.field)}`, body: await request.json() });
 
@@ -352,5 +387,92 @@ describe("AdminUsersPage", () => {
 
     expect(await within(dialog).findByText(STUDENT_CODE_COPY.inUse)).toBeInTheDocument();
     expect(input).toHaveAttribute("aria-invalid", "true");
+  });
+});
+
+describe("AdminUsersPage tabs", () => {
+  it("opens on Gestión de roles, never requests the teachers and writes the tab to the URL keeping the filters", async() => {
+    router.query = { search: "ana" };
+    renderAdminConsole(<AdminUsersPage />);
+
+    expect(await screen.findByText("Ana Gómez")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: ADMIN_USERS_COPY.title })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Gestión de roles" })).toHaveAttribute("aria-selected", "true");
+    expect(teacherQueries).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Profesores" }));
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: "/admin/users", query: { search: "ana", tab: "profesores" } },
+      undefined,
+      { shallow: true },
+    );
+  });
+
+  it("keeps the tab when a user filter changes", async() => {
+    router.query = { tab: "usuarios" };
+    renderAdminConsole(<AdminUsersPage />);
+    await screen.findByText("Ana Gómez");
+
+    fireEvent.change(screen.getByLabelText("Rol"), { target: { value: "TEACHER" } });
+
+    expect(router.replace).toHaveBeenCalledWith(
+      { pathname: "/admin/users", query: { tab: "usuarios", role: "TEACHER" } },
+      undefined,
+      { shallow: true },
+    );
+  });
+
+  it("lists the teachers with their groups and distinct students", async() => {
+    router.query = { tab: "profesores" };
+    renderAdminConsole(<AdminUsersPage />);
+
+    const table = await screen.findByRole("table", { name: TEACHERS_TABLE_COPY.caption });
+    const headers = within(table).getAllByRole("columnheader").map((header) => header.textContent);
+
+    expect(headers).toEqual(["Profesor", "Correo", "Rol", "Grupos asignados", "Estudiantes"]);
+    expect(within(table).getByRole("columnheader", { name: "Profesor" })).toHaveAttribute("aria-sort", "ascending");
+
+    const luis = within(table).getByRole("rowheader", { name: "Luis Gómez" }).closest("tr") as HTMLElement;
+
+    expect(within(luis).getByText("t1@ventylab.demo")).toBeInTheDocument();
+    expect(within(luis).getByText("Docente")).toBeInTheDocument();
+    expect(within(luis).getByText("Grupo A, Grupo B")).toBeInTheDocument();
+    expect(within(luis).getByText("25")).toBeInTheDocument();
+
+    const admin = within(table).getByRole("rowheader", { name: TEACHERS_TABLE_COPY.noName }).closest("tr") as HTMLElement;
+
+    expect(within(admin).getByText("Administrador")).toBeInTheDocument();
+    expect(within(admin).getByText(TEACHERS_TABLE_COPY.noGroups)).toBeInTheDocument();
+    expect(teacherQueries).toEqual([null]);
+    expect(screen.getByRole("tabpanel", { name: "Profesores" })).toBeVisible();
+  });
+
+  it("sends the teachers search from the URL, writes a new one and offers to clear an empty result", async() => {
+    router.query = { tab: "profesores", teacherSearch: "nadie" };
+    renderAdminConsole(<AdminUsersPage />);
+
+    expect(await screen.findByText(TEACHERS_PANEL_COPY.noMatchTitle)).toBeInTheDocument();
+    expect(teacherQueries).toEqual(["nadie"]);
+
+    fireEvent.click(screen.getByRole("button", { name: TEACHERS_PANEL_COPY.clearSearch }));
+    expect(router.replace).toHaveBeenLastCalledWith({ pathname: "/admin/users", query: { tab: "profesores" } }, undefined, { shallow: true });
+
+    fireEvent.change(screen.getByLabelText(TEACHERS_PANEL_COPY.search), { target: { value: " luis " } });
+    fireEvent.click(screen.getByRole("button", { name: TEACHERS_PANEL_COPY.searchAction }));
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: "/admin/users", query: { tab: "profesores", teacherSearch: "luis" } },
+      undefined,
+      { shallow: true },
+    );
+  });
+
+  it("shows the permission error of a 403 on the teachers", async() => {
+    teachersStatus = 403;
+    router.query = { tab: "profesores" };
+    renderAdminConsole(<AdminUsersPage />);
+
+    expect(await screen.findByText(TEACHERS_PANEL_COPY.loadErrorTitle)).toBeInTheDocument();
+    expect(screen.getByText("No tienes permiso para realizar esta acción.")).toBeInTheDocument();
   });
 });

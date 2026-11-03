@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users entity
-* Descripción: Pure model of /admin/users: the filters kept in the URL (page, search, role, groupId, isActive) read from and written to the router query, the `GET /api/users` query they produce (name sort, page size), the user row and group option shapes, the effects of a role change as the backend applies them (leaving STUDENT removes the student groups, becoming STUDENT removes the teacher groups, the refresh tokens are revoked and a ROLE_CHANGED notification is sent) and the self-account guard (the backend refuses to change one's own role or status). No dependencies besides the admin console config. v1.1 (closure B2): the row carries `studentCode` and `isSuperadmin` from the API; lockedReason (superadmin first, then own account) and the student code rule of the backend (parseStudentCode: empty clears it, 1–32 letters, digits or hyphens) with its Spanish messages.
-* Versión: 1.1
+* Descripción: Pure model of /admin/users: the filters kept in the URL (page, search, role, groupId, isActive) read from and written to the router query, the `GET /api/users` query they produce (name sort, page size), the user row and group option shapes, the effects of a role change as the backend applies them (leaving STUDENT removes the student groups, becoming STUDENT removes the teacher groups, the refresh tokens are revoked and a ROLE_CHANGED notification is sent) and the self-account guard (the backend refuses to change one's own role or status). No dependencies besides the admin console config. v1.1 (closure B2): the row carries `studentCode` and `isSuperadmin` from the API; lockedReason (superadmin first, then own account) and the student code rule of the backend (parseStudentCode: empty clears it, 1–32 letters, digits or hyphens) with its Spanish messages. v1.2 (B4): the tabs of /admin/users (?tab=usuarios|profesores, default usuarios, labels "Gestión de roles" and "Profesores") and withUserFiltersQuery, which writes the user filters while keeping the other query keys (tab, teachers search).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -122,6 +122,39 @@ export function toUserFiltersQuery(filters: AdminUserFilters): Record<string, st
 
   return query;
 }
+
+const USER_FILTER_KEYS: readonly string[] = ["page", "search", "role", "groupId", "isActive"];
+
+/** The defined keys of a router query except `dropped`, so one tab can rewrite its own keys and keep the others. */
+export function queryWithout(query: Readonly<Record<string, QueryValue>>, dropped: readonly string[]): Record<string, string | string[]> {
+  const kept: Record<string, string | string[]> = {};
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && !dropped.includes(key)) {
+      kept[key] = value;
+    }
+  }
+
+  return kept;
+}
+
+/** The router query with the user filters replaced by `filters`; other keys (the tab, the teachers search) are kept. */
+export function withUserFiltersQuery(
+  query: Readonly<Record<string, QueryValue>>,
+  filters: AdminUserFilters,
+): Record<string, string | string[]> {
+  return { ...queryWithout(query, USER_FILTER_KEYS), ...toUserFiltersQuery(filters) };
+}
+
+export const ADMIN_USERS_TABS = ["usuarios", "profesores"] as const;
+export type AdminUsersTab = (typeof ADMIN_USERS_TABS)[number];
+export const DEFAULT_ADMIN_USERS_TAB: AdminUsersTab = "usuarios";
+
+// TODO(i18n): move to an admin-console namespace in src/i18n.
+export const ADMIN_USERS_TAB_LABELS: Readonly<Record<AdminUsersTab, string>> = {
+  usuarios: "Gestión de roles",
+  profesores: "Profesores",
+};
 
 export function hasUserFilters(filters: AdminUserFilters): boolean {
   return Boolean(filters.search || filters.role || filters.groupId || filters.isActive);
