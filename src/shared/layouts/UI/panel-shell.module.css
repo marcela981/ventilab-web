@@ -1,0 +1,214 @@
+/*
+* Funcionalidad: PanelShell styles
+* Descripción: Layout of the staff panel: permanent side menu from the md breakpoint (900px, MUI default) of 16.25rem that collapses to 4.5rem (the July 260/72 px), with a width transition; a temporary drawer and a header menu button below md; the panel title, the collapse toggle, the scrollable item list and the "Volver a la plataforma" footer; sticky header with the user's name, email and role chip (name and email hidden on narrow screens; the user menu still has them), main content region and a skip link visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  --panel-drawer-width: 16.25rem;
+  --panel-drawer-collapsed-width: 4.5rem;
+  --panel-current-width: var(--panel-drawer-width);
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--vl-color-bg);
+  color: var(--vl-color-text);
+}
+
+.rootCollapsed {
+  --panel-current-width: var(--panel-drawer-collapsed-width);
+}
+
+.skipLink {
+  position: absolute;
+  top: var(--vl-space-2);
+  left: var(--vl-space-2);
+  z-index: var(--vl-z-tooltip);
+  padding: var(--vl-space-2) var(--vl-space-4);
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-color-surface);
+  color: var(--vl-color-link);
+  font: var(--mui-font-button);
+  box-shadow: var(--vl-shadow-3);
+  transform: translateY(-200%);
+}
+
+.skipLink:focus {
+  transform: none;
+}
+
+.desktopNav {
+  display: none;
+}
+
+.drawerPaper {
+  width: var(--panel-current-width);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  transition: width var(--vl-duration-short) var(--vl-ease-sharp);
+}
+
+.mobilePaper {
+  width: var(--panel-drawer-width);
+  box-sizing: border-box;
+}
+
+.navigation {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.navHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  min-height: var(--vl-space-8);
+  padding: 0 var(--vl-space-2) 0 var(--vl-space-4);
+}
+
+.navHeaderIcon {
+  color: var(--vl-color-primary);
+}
+
+.navTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--vl-color-link);
+  font: var(--mui-font-h6);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggle {
+  flex-shrink: 0;
+}
+
+.navItems {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.back {
+  flex-grow: 0;
+}
+
+.backLabel {
+  min-width: 0;
+}
+
+/* Collapsed: only the toggle and the icons stay on screen; the texts stay the accessible names. */
+.collapsed .navHeader {
+  justify-content: center;
+  padding: 0;
+}
+
+.collapsed .navHeaderIcon,
+.collapsed .navTitle,
+.collapsed .backLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.column {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.header {
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.toolbar {
+  gap: var(--vl-space-2);
+}
+
+.menuButton {
+  display: inline-flex;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+}
+
+.identity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  min-width: 0;
+}
+
+.identityText {
+  display: none;
+  flex-direction: column;
+  min-width: 0;
+  text-align: end;
+}
+
+.identityName {
+  overflow: hidden;
+  font: var(--mui-font-subtitle2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identityEmail {
+  overflow: hidden;
+  color: var(--vl-color-text-muted);
+  font: var(--mui-font-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--vl-space-5) var(--vl-space-4);
+}
+
+.main:focus {
+  outline: none;
+}
+
+@media (min-width: 600px) {
+  .identityText {
+    display: flex;
+  }
+}
+
+@media (min-width: 900px) {
+  .desktopNav {
+    display: block;
+    width: var(--panel-current-width);
+    flex-shrink: 0;
+    transition: width var(--vl-duration-short) var(--vl-ease-sharp);
+  }
+
+  .menuButton {
+    display: none;
+  }
+
+  .main {
+    padding: var(--vl-space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawerPaper,
+  .desktopNav {
+    transition: none;
+  }
+}
