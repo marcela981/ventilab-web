@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell styles
-* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only. v1.1 (G1 grading): visuallyHidden keeps the screen-reader text of a navigation badge count. v1.2 (T12 ventilator-lab): navIndicator / navIndicatorDot, the small status of a navigation item (success dot when online, muted otherwise; the text carries the meaning, never the colour alone). v1.3 (T12 review fix W1): generic tones of the nav-indicators registry: positive (success dot), negative (warning dot), neutral (muted dot). v1.4 (O5 operation): navSection, the subheader of a navigation section. v1.5 (review): the navSection comment cites this file's own version (v1.4), not v1.7. v1.6 (B4): visuallyHidden removed (the badge count is now in the item's accessible name).
-* Versión: 1.6
+* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only. v1.1 (G1 grading): visuallyHidden keeps the screen-reader text of a navigation badge count. v1.2 (T12 ventilator-lab): navIndicator / navIndicatorDot, the small status of a navigation item (success dot when online, muted otherwise; the text carries the meaning, never the colour alone). v1.3 (T12 review fix W1): generic tones of the nav-indicators registry: positive (success dot), negative (warning dot), neutral (muted dot). v1.4 (O5 operation): navSection, the subheader of a navigation section. v1.5 (review): the navSection comment cites this file's own version (v1.4), not v1.7. v1.6 (B4): visuallyHidden removed (the badge count is now in the item's accessible name). v1.7 (W1 Bloque 4): the navigation list styles (navIndicator, navIndicatorDot, navSection) and the header control styles (realtime, userInfo) moved to nav-list.module.css and shell-controls.module.css.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,13 +83,7 @@
   flex: 1;
 }
 
-.realtime {
-  display: inline-flex;
-}
 
-.userInfo {
-  padding: var(--vl-space-2) var(--vl-space-4);
-}
 
 .main {
   flex: 1;
@@ -117,32 +111,3 @@
   }
 }
 
-.navIndicator {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--vl-space-1);
-  margin-inline-start: var(--vl-space-1);
-  font: var(--mui-font-caption);
-  color: var(--vl-color-text-muted);
-  white-space: nowrap;
-}
-
-.navIndicatorDot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--vl-color-text-disabled);
-}
-
-.navIndicator[data-indicator-tone="positive"] .navIndicatorDot {
-  background: var(--vl-color-success);
-}
-
-.navIndicator[data-indicator-tone="negative"] .navIndicatorDot {
-  background: var(--vl-color-warning);
-}
-
-/* v1.4 (O5 operation): subheader of a navigation section (e.g. "Administración"). */
-.navSection {
-  line-height: var(--vl-space-8);
-}

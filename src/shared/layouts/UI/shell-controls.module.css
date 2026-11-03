@@ -1,0 +1,18 @@
+/*
+* Funcionalidad: Shell header controls styles
+* Descripción: Styles of the header controls shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the realtime status chip wrapper and the user block at the top of the user menu. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.realtime {
+  display: inline-flex;
+}
+
+.userInfo {
+  padding: var(--vl-space-2) var(--vl-space-4);
+}
