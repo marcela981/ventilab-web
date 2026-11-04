@@ -8,7 +8,8 @@
 *   with retry. Depends on vitest, Testing Library, msw and the case editor test helpers.
 *   v1.1 (T12): the row test run in a dialog and the delete with the 409 → archive alternative.
 *   v1.2: no status action in the unfiltered list (hint instead); the status tests filter by "Borrador" first.
-* Versión: 1.2
+*   v1.3 (ajustes D1): the cases are cards (article per case, list "Casos clínicos", status as a term), 12 per page.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,7 +67,7 @@ function listHandler(seen: Seen, total = 2) {
 async function filterByDraft(): Promise<void> {
   await screen.findByText("Caso c1a");
   fireEvent.change(screen.getByLabelText("Estado"), { target: { value: "DRAFT" } });
-  await screen.findByRole("columnheader", { name: "Estado" });
+  await screen.findAllByText("Estado", { selector: "dt" });
 }
 
 describe("CaseListPage", () => {
@@ -77,11 +78,11 @@ describe("CaseListPage", () => {
     renderWithProviders(<CaseListPage />);
 
     expect(await screen.findByText("Caso c1a")).toBeInTheDocument();
-    expect(screen.queryByRole("columnheader", { name: "Estado" })).not.toBeInTheDocument();
+    expect(screen.queryAllByText("Estado", { selector: "dt" })).toHaveLength(0);
     expect(screen.getByText(/La validación por experto no se puede filtrar ni mostrar/)).toBeInTheDocument();
     // The status of a row is unknown here: no publish/archive, a hint to filter instead.
     expect(screen.getByText(/Filtra por estado para publicar o archivar/)).toBeInTheDocument();
-    expect(within((screen.getByText("Caso c1a")).closest("tr") as HTMLElement).queryByRole("button", { name: "Publicar" })).not.toBeInTheDocument();
+    expect(within((screen.getByText("Caso c1a")).closest("article") as HTMLElement).queryByRole("button", { name: "Publicar" })).not.toBeInTheDocument();
     expect(seen[0]?.get("status")).toBeNull();
     expect(seen[0]?.get("sortOrder")).toBe("desc");
 
@@ -97,7 +98,7 @@ describe("CaseListPage", () => {
       expect(last?.get("difficulty")).toBe("ADVANCED");
       expect(last?.get("page")).toBe("1");
     });
-    expect(await screen.findByRole("columnheader", { name: "Estado" })).toBeInTheDocument();
+    expect(await screen.findAllByText("Estado", { selector: "dt" })).toHaveLength(2);
     expect(screen.getAllByText("Borrador").length).toBeGreaterThan(0);
   });
 
@@ -126,7 +127,7 @@ describe("CaseListPage", () => {
     );
     renderWithProviders(<CaseListPage />);
 
-    const row = (await screen.findByText("Caso c1a")).closest("tr") as HTMLElement;
+    const row = (await screen.findByText("Caso c1a")).closest("article") as HTMLElement;
 
     fireEvent.click(within(row).getByRole("button", { name: "Duplicar" }));
 
@@ -151,7 +152,7 @@ describe("CaseListPage", () => {
     renderWithProviders(<CaseListPage />);
     await filterByDraft();
 
-    const row = (await screen.findByText("Caso c1a")).closest("tr") as HTMLElement;
+    const row = (await screen.findByText("Caso c1a")).closest("article") as HTMLElement;
 
     fireEvent.click(within(row).getByRole("button", { name: "Archivar" }));
 
@@ -166,7 +167,7 @@ describe("CaseListPage", () => {
 
     // The list is revalidated after the change: read the row again.
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    fireEvent.click(within((await screen.findByText("Caso c1a")).closest("tr") as HTMLElement).getByRole("button", { name: "Publicar" }));
+    fireEvent.click(within((await screen.findByText("Caso c1a")).closest("article") as HTMLElement).getByRole("button", { name: "Publicar" }));
     fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Publicar" }));
 
     await waitFor(() => expect(patches.at(-1)).toEqual({ id: "c1a", status: "PUBLISHED" }));
@@ -186,7 +187,7 @@ describe("CaseListPage", () => {
     renderWithProviders(<CaseListPage />);
     await filterByDraft();
 
-    const row = (await screen.findByText("Caso c1b")).closest("tr") as HTMLElement;
+    const row = (await screen.findByText("Caso c1b")).closest("article") as HTMLElement;
 
     fireEvent.click(within(row).getByRole("button", { name: "Publicar" }));
     fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "Cancelar" }));

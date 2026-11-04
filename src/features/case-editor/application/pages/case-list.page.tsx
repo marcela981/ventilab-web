@@ -14,7 +14,9 @@
 *   v1.2 (review of 50ed812): "Publicar"/"Archivar" appear only while the list is filtered by one status (the summary
 *   has no status, BACKEND GAP); the unfiltered list says to filter by status to publish or archive. The delete flow
 *   receives the row status when known (an archived case in use is not offered "Archivar").
-* Versión: 1.2
+*   v1.3 (ajustes D1): the cases are a responsive card grid (one article per case with its pathology, difficulty,
+*   status when known and the same actions), 12 per page, with no table or horizontal scroll from 375 to 1920 px.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -79,11 +81,10 @@ export const CASE_LIST_COPY = {
   noMatchTitle: "Ningún caso coincide con los filtros",
   noMatchDescription: "Cambia el estado, la patología o la dificultad.",
   clearFilters: "Limpiar filtros",
-  caseColumn: "Caso",
-  pathologyColumn: "Patología",
-  difficultyColumn: "Dificultad",
-  statusColumn: "Estado",
-  actionsColumn: "Acciones",
+  listLabel: "Casos clínicos",
+  pathologyTerm: "Patología",
+  difficultyTerm: "Dificultad",
+  statusTerm: "Estado",
   edit: "Editar",
   duplicate: "Duplicar",
   publish: "Publicar",
@@ -99,7 +100,7 @@ export const CASE_LIST_COPY = {
   cancel: "Cancelar",
   published: (title: string) => `«${title}» se publicó.`,
   archived: (title: string) => `«${title}» se archivó.`,
-  rowsPerPage: "Filas por página:",
+  rowsPerPage: "Casos por página:",
 } as const;
 
 const NATIVE_SELECT = { select: { native: true }, inputLabel: { shrink: true } } as const;
@@ -167,7 +168,7 @@ function CaseListFiltersBar({ value, onChange }: FiltersProps) {
   );
 }
 
-type TableProps = {
+type GridProps = {
   rows: readonly CaseListRow[]
   showStatus: boolean
   busy: boolean
@@ -177,51 +178,49 @@ type TableProps = {
   onDelete: (row: CaseListRow) => void
 };
 
-function CasesTable({ rows, showStatus, busy, onDuplicate, onStatus, onTestRun, onDelete }: TableProps) {
+function CasesGrid({ rows, showStatus, busy, onDuplicate, onStatus, onTestRun, onDelete }: GridProps) {
   return (
-    <div className={cx(styles.tableContainer)}>
-      <table className={cx(styles.table)}>
-        <thead>
-          <tr>
-            <th scope="col">{CASE_LIST_COPY.caseColumn}</th>
-            <th scope="col">{CASE_LIST_COPY.pathologyColumn}</th>
-            <th scope="col">{CASE_LIST_COPY.difficultyColumn}</th>
-            {showStatus ? <th scope="col">{CASE_LIST_COPY.statusColumn}</th> : null}
-            <th scope="col">{CASE_LIST_COPY.actionsColumn}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id}>
-              <th scope="row">
-                <span className={cx(styles.caseTitle)}>{row.title}</span>
-                <span className={cx(styles.secondary)}>{row.mainDiagnosis}</span>
-              </th>
-              <td>{labelOf(PATHOLOGY_LABELS, row.pathology)}</td>
-              <td>{labelOf(DIFFICULTY_LABELS, row.difficulty)}</td>
-              {showStatus ? (
-                <td>
-                  {row.status ? <span className={cx(styles.statusBadge)} data-status={row.status}>{STATUS_LABELS[row.status]}</span> : "—"}
-                </td>
-              ) : null}
-              <td>
-                <div className={cx(styles.rowActions)} role="group" aria-label={CASE_LIST_COPY.actionsFor(row.title)}>
-                  <Button size="small" component={Link} href={buildCaseEditUrl(row.id)}>{CASE_LIST_COPY.edit}</Button>
-                  <Button size="small" disabled={busy} onClick={() => onDuplicate(row)}>{CASE_LIST_COPY.duplicate}</Button>
-                  {statusActionsFor(row.status).map((action) => (
-                    <Button key={action} size="small" disabled={busy} onClick={() => onStatus(row, action)}>
-                      {ACTION_COPY[action].label}
-                    </Button>
-                  ))}
-                  <Button size="small" onClick={() => onTestRun(row)}>{CASE_LIST_COPY.testRun}</Button>
-                  <Button size="small" color="error" disabled={busy} onClick={() => onDelete(row)}>{CASE_LIST_COPY.remove}</Button>
+    <ul className={cx(styles.grid)} aria-label={CASE_LIST_COPY.listLabel}>
+      {rows.map((row) => {
+        const titleId = `case-card-${row.id}`;
+
+        return (
+          <li key={row.id} className={cx(styles.gridItem)}>
+            <article className={cx(styles.card)} aria-labelledby={titleId}>
+              <h2 id={titleId} className={cx(styles.caseTitle)}>{row.title}</h2>
+              {row.mainDiagnosis ? <p className={cx(styles.secondary)}>{row.mainDiagnosis}</p> : null}
+              <dl className={cx(styles.facts)}>
+                <div>
+                  <dt>{CASE_LIST_COPY.pathologyTerm}</dt>
+                  <dd>{labelOf(PATHOLOGY_LABELS, row.pathology)}</dd>
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                <div>
+                  <dt>{CASE_LIST_COPY.difficultyTerm}</dt>
+                  <dd>{labelOf(DIFFICULTY_LABELS, row.difficulty)}</dd>
+                </div>
+                {showStatus ? (
+                  <div>
+                    <dt>{CASE_LIST_COPY.statusTerm}</dt>
+                    <dd>{row.status ? <span className={cx(styles.statusBadge)} data-status={row.status}>{STATUS_LABELS[row.status]}</span> : "—"}</dd>
+                  </div>
+                ) : null}
+              </dl>
+              <div className={cx(styles.cardActions)} role="group" aria-label={CASE_LIST_COPY.actionsFor(row.title)}>
+                <Button size="small" component={Link} href={buildCaseEditUrl(row.id)}>{CASE_LIST_COPY.edit}</Button>
+                <Button size="small" disabled={busy} onClick={() => onDuplicate(row)}>{CASE_LIST_COPY.duplicate}</Button>
+                {statusActionsFor(row.status).map((action) => (
+                  <Button key={action} size="small" disabled={busy} onClick={() => onStatus(row, action)}>
+                    {ACTION_COPY[action].label}
+                  </Button>
+                ))}
+                <Button size="small" onClick={() => onTestRun(row)}>{CASE_LIST_COPY.testRun}</Button>
+                <Button size="small" color="error" disabled={busy} onClick={() => onDelete(row)}>{CASE_LIST_COPY.remove}</Button>
+              </div>
+            </article>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 
@@ -296,7 +295,7 @@ export function CaseListPage() {
           />
         ) : (
           <div className={cx(styles.results)}>
-            <CasesTable
+            <CasesGrid
               rows={rows}
               showStatus={list.filters.status !== ""}
               busy={pending}
