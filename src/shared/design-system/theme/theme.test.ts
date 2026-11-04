@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab MUI theme tests
-* Descripción: Verifies the cssVariables theme keeps the official light identity: CSS variables enabled, primary.main, shape radius, custom palette keys, the CSS variables tokens.css relies on, and the legacy color helpers. next/font is mocked because it only runs inside the Next compiler. Depends on vitest. v1.1 (Bloque 5): the July dark scheme is the default (selector [data-mui-color-scheme]), the light scheme keeps its values with the AA fix of the secondary text, and both draw navy text on the primary (D2).
-* Versión: 1.1
+* Descripción: Verifies the cssVariables theme keeps the official light identity: CSS variables enabled, primary.main, shape radius, custom palette keys, the CSS variables tokens.css relies on, and the legacy color helpers. next/font is mocked because it only runs inside the Next compiler. Depends on vitest. v1.1 (Bloque 5): the July dark scheme is the default (selector [data-mui-color-scheme]), the light scheme keeps its values with the AA fix of the secondary text, and both draw navy text on the primary (D2). v1.2 (Bloque 5): the declared font weights are only the loaded ones (light = 400, D3).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,6 +89,13 @@ describe("design-system theme", () => {
 
   it("uses the self-hosted Roboto stack", () => {
     expect(theme.typography.fontFamily).toBe("'Roboto', 'Roboto Fallback', \"Helvetica\", \"Arial\", sans-serif");
+  });
+
+  it("only declares Roboto weights that roboto.ts loads (light maps to 400, D3)", () => {
+    expect(theme.typography.fontWeightLight).toBe(400);
+    expect(theme.typography.fontWeightRegular).toBe(400);
+    expect(theme.typography.fontWeightMedium).toBe(500);
+    expect(theme.typography.fontWeightBold).toBe(700);
   });
 });
 

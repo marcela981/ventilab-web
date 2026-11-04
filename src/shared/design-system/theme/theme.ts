@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab MUI theme
-* Descripción: VentyLab identity as an MUI v7 theme with cssVariables enabled, so CSS Modules can read var(--mui-palette-*), var(--mui-shadows-*), var(--mui-font-*) and friends. Reproduces the previous src/theme/theme.js values (palette incl. custom keys, typography, spacing, shape, breakpoints, transitions, shadows, component overrides) and wires the self-hosted Roboto. Depends on @mui/material, ./palette and ./roboto. v1.1 (Bloque 5): adds colorSchemes.dark (the July dark skin, darkColors of ./palette) as the default color scheme (D1), selected by the [data-mui-color-scheme] attribute on <html> (the dark scheme also owns :root); the light scheme is kept with its AA fixes and no visible selector. Both schemes come from one palette builder; primary.contrastText is navy (D2). Typography, the Card border, the LinearProgress track and the Tooltip read the active scheme through the MUI CSS variables (or applyStyles) instead of light literals.
-* Versión: 1.1
+* Descripción: VentyLab identity as an MUI v7 theme with cssVariables enabled, so CSS Modules can read var(--mui-palette-*), var(--mui-shadows-*), var(--mui-font-*) and friends. Reproduces the previous src/theme/theme.js values (palette incl. custom keys, typography, spacing, shape, breakpoints, transitions, shadows, component overrides) and wires the self-hosted Roboto. Depends on @mui/material, ./palette and ./roboto. v1.1 (Bloque 5): adds colorSchemes.dark (the July dark skin, darkColors of ./palette) as the default color scheme (D1), selected by the [data-mui-color-scheme] attribute on <html> (the dark scheme also owns :root); the light scheme is kept with its AA fixes and no visible selector. Both schemes come from one palette builder; primary.contrastText is navy (D2). Typography, the Card border, the LinearProgress track and the Tooltip read the active scheme through the MUI CSS variables (or applyStyles) instead of light literals. v1.2 (Bloque 5): fontWeightLight is 400, a weight roboto.ts actually loads (300 was declared but never downloaded, so the browser synthesized it; D3).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -132,7 +132,8 @@ export const theme = createTheme({
 
   typography: {
     fontFamily,
-    fontWeightLight: 300,
+    // Roboto 300 is not downloaded (roboto.ts loads 400/500/600/700): light maps to regular (D3).
+    fontWeightLight: 400,
     fontWeightRegular: 400,
     fontWeightMedium: 500,
     fontWeightBold: 700,
