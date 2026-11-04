@@ -4070,57 +4070,6 @@
         ],
         "type": "object"
       },
-      "CheckEvaluationAnswerDTO": {
-        "properties": {
-          "selectedOptionIds": {
-            "description": "Selected option IDs to check (choice questions)",
-            "example": [
-              "cm5option01"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "selectedOptionIds"
-        ],
-        "type": "object"
-      },
-      "CheckEvaluationAnswerResponseDTO": {
-        "properties": {
-          "correctOptionIds": {
-            "description": "Correct option IDs",
-            "example": [
-              "cm5option01"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "explanation": {
-            "description": "Teacher explanation",
-            "example": "PEEP keeps the alveoli open",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "isCorrect": {
-            "description": "Whether the selected options are exactly the correct ones",
-            "example": true,
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "isCorrect",
-          "correctOptionIds",
-          "explanation"
-        ],
-        "type": "object"
-      },
       "ClinicalCaseAttemptsDTO": {
         "properties": {
           "attempts": {
@@ -9709,55 +9658,6 @@
         ],
         "type": "object"
       },
-      "GradedQuestionDTO": {
-        "properties": {
-          "correctOptionId": {
-            "description": "Correct option identifier",
-            "example": "q1-a",
-            "type": "string"
-          },
-          "explanation": {
-            "description": "Question explanation",
-            "example": "PEEP keeps the alveoli open",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "feedback": {
-            "description": "Feedback of the selected option",
-            "example": "Review the definition of PEEP",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "isCorrect": {
-            "description": "Whether the selected option is correct",
-            "example": false,
-            "type": "boolean"
-          },
-          "questionId": {
-            "description": "Question identifier",
-            "example": "q1",
-            "type": "string"
-          },
-          "selectedOptionId": {
-            "description": "Option selected by the user, empty when unanswered",
-            "example": "q1-b",
-            "type": "string"
-          }
-        },
-        "required": [
-          "questionId",
-          "selectedOptionId",
-          "correctOptionId",
-          "isCorrect",
-          "explanation",
-          "feedback"
-        ],
-        "type": "object"
-      },
       "GradingAnswerDTO": {
         "properties": {
           "answerId": {
@@ -9885,6 +9785,15 @@
             },
             "type": "array"
           },
+          "answersReleasedAt": {
+            "description": "When the correct answers, explanations and AI feedback were released to the student",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "assignmentId": {
             "description": "Assignment ID (null for legacy attempts)",
             "example": "cm5assignment01",
@@ -9927,7 +9836,7 @@
             ]
           },
           "gradePublishedAt": {
-            "description": "When the grade was published to the student",
+            "description": "When the grade was released to the student",
             "example": null,
             "format": "date-time",
             "type": [
@@ -10043,6 +9952,7 @@
           "passed",
           "passingGrade",
           "gradePublishedAt",
+          "answersReleasedAt",
           "legacy",
           "scenarios",
           "questions",
@@ -10052,6 +9962,15 @@
       },
       "GradingAttemptListItemDTO": {
         "properties": {
+          "answersReleasedAt": {
+            "description": "When the answers and AI feedback were released (null while unreleased)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "assignmentId": {
             "description": "Assignment ID",
             "example": "cm5assignment01",
@@ -10084,7 +10003,7 @@
             ]
           },
           "gradePublishedAt": {
-            "description": "When the grade was published (null while unpublished)",
+            "description": "When the grade was released (null while unreleased)",
             "example": "2026-10-06T09:00:00.000Z",
             "format": "date-time",
             "type": [
@@ -10170,6 +10089,7 @@
           "maxScore",
           "grade",
           "gradePublishedAt",
+          "answersReleasedAt",
           "isLate"
         ],
         "type": "object"
@@ -14936,6 +14856,11 @@
       },
       "MyEvaluationAttemptDTO": {
         "properties": {
+          "answersReleased": {
+            "description": "Whether the teacher released the correct answers and the AI feedback",
+            "example": false,
+            "type": "boolean"
+          },
           "attemptNumber": {
             "description": "Attempt number",
             "example": 1,
@@ -14971,7 +14896,7 @@
             "type": "boolean"
           },
           "published": {
-            "description": "Whether the grade is published",
+            "description": "Whether the teacher released the grade",
             "example": true,
             "type": "boolean"
           },
@@ -15014,7 +14939,8 @@
           "startedAt",
           "submittedAt",
           "deadlineAt",
-          "published"
+          "published",
+          "answersReleased"
         ],
         "type": "object"
       },
@@ -17092,25 +17018,6 @@
         ],
         "type": "object"
       },
-      "PartialClosedScoreDTO": {
-        "properties": {
-          "correct": {
-            "description": "Closed (choice) questions answered correctly",
-            "example": 3,
-            "type": "number"
-          },
-          "total": {
-            "description": "Closed (choice) questions in the evaluation",
-            "example": 4,
-            "type": "number"
-          }
-        },
-        "required": [
-          "correct",
-          "total"
-        ],
-        "type": "object"
-      },
       "PatientDTO": {
         "properties": {
           "arterialBloodGas": {
@@ -18055,9 +17962,18 @@
       "PublishAttemptGradeResponseDTO": {
         "properties": {
           "alreadyPublished": {
-            "description": "Whether it was already published (nothing changed)",
+            "description": "Whether everything requested was already released (nothing changed)",
             "example": false,
             "type": "boolean"
+          },
+          "answersReleasedAt": {
+            "description": "When the answers, explanations and AI feedback were released; null while only the grade is released",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "attemptId": {
             "description": "Attempt ID",
@@ -18074,6 +17990,7 @@
         "required": [
           "attemptId",
           "publishedAt",
+          "answersReleasedAt",
           "alreadyPublished"
         ],
         "type": "object"
@@ -18089,6 +18006,16 @@
             "description": "Only attempts of this STUDENT group",
             "example": "cm5group01",
             "type": "string"
+          },
+          "scope": {
+            "default": "GRADE_AND_ANSWERS",
+            "description": "What the student gets: GRADE (score, grade and passed only) or GRADE_AND_ANSWERS (also the correct answers, explanations, rubrics, per-question points and AI feedback)",
+            "enum": [
+              "GRADE",
+              "GRADE_AND_ANSWERS"
+            ],
+            "example": "GRADE",
+            "type": "string"
           }
         },
         "required": [
@@ -18099,7 +18026,7 @@
       "PublishGradesResponseDTO": {
         "properties": {
           "publishedCount": {
-            "description": "Number of grades published by this call",
+            "description": "Number of attempts whose release changed with this call (grade published and/or answers released)",
             "example": 12,
             "type": "number"
           }
@@ -18224,41 +18151,15 @@
             "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
             "type": "string"
           },
-          "correctAnswers": {
-            "description": "Number of correct answers",
-            "example": 4,
-            "type": "number"
-          },
-          "gradedQuestions": {
-            "description": "Per-question grading",
-            "items": {
-              "$ref": "#/components/schemas/GradedQuestionDTO"
-            },
-            "type": "array"
-          },
-          "passed": {
-            "description": "Whether the attempt reached the passing score",
-            "example": true,
-            "type": "boolean"
-          },
-          "score": {
-            "description": "Score from 0 to 100",
-            "example": 80,
-            "type": "number"
-          },
           "totalQuestions": {
-            "description": "Number of questions in the quiz",
+            "description": "Number of questions in the quiz (the score and the corrections are released by the teacher)",
             "example": 5,
             "type": "number"
           }
         },
         "required": [
           "attemptId",
-          "score",
-          "passed",
-          "totalQuestions",
-          "correctAnswers",
-          "gradedQuestions"
+          "totalQuestions"
         ],
         "type": "object"
       },
@@ -18776,6 +18677,21 @@
           "email",
           "password"
         ],
+        "type": "object"
+      },
+      "ReleaseAttemptResultsDTO": {
+        "properties": {
+          "scope": {
+            "default": "GRADE_AND_ANSWERS",
+            "description": "What the student gets: GRADE (score, grade and passed only) or GRADE_AND_ANSWERS (also the correct answers, explanations, rubrics, per-question points and AI feedback)",
+            "enum": [
+              "GRADE",
+              "GRADE_AND_ANSWERS"
+            ],
+            "example": "GRADE",
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "RenameAiConversationDTO": {
@@ -21892,46 +21808,6 @@
         ],
         "type": "object"
       },
-      "StudentAnswerRevealDTO": {
-        "properties": {
-          "correctOptionIds": {
-            "description": "Correct option IDs",
-            "example": [
-              "cm5option01"
-            ],
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "explanation": {
-            "description": "Teacher explanation",
-            "example": "PEEP keeps the alveoli open",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "isCorrect": {
-            "description": "Whether the checked answer is correct",
-            "example": false,
-            "type": "boolean"
-          },
-          "revealedAt": {
-            "description": "When the answer was checked (it is locked since then)",
-            "example": "2026-10-06T08:05:00.000Z",
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "revealedAt",
-          "isCorrect",
-          "correctOptionIds",
-          "explanation"
-        ],
-        "type": "object"
-      },
       "StudentAssignmentCheckDTO": {
         "properties": {
           "isAssigned": {
@@ -21959,6 +21835,11 @@
       },
       "StudentAttemptDetailDTO": {
         "properties": {
+          "answersReleased": {
+            "description": "Whether the teacher released the correct answers, explanations, rubrics, per-question points and AI feedback",
+            "example": false,
+            "type": "boolean"
+          },
           "assignmentId": {
             "description": "Assignment ID",
             "example": "cm5assignment01",
@@ -22004,28 +21885,13 @@
             "example": 10,
             "type": "number"
           },
-          "partialClosedScore": {
-            "anyOf": [
-              {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/PartialClosedScoreDTO"
-                  }
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Correct closed questions while open questions wait for the teacher (PENDING_REVIEW QUIZ or WORKSHOP attempts only; null otherwise)"
-          },
           "passed": {
             "description": "Whether the grade reaches the passing grade (published only)",
             "example": true,
             "type": "boolean"
           },
           "published": {
-            "description": "Whether the grade is published (scores and correct answers are only included then)",
+            "description": "Whether the teacher released the grade (score, grade and passed are only included then)",
             "example": false,
             "type": "boolean"
           },
@@ -22091,7 +21957,7 @@
           "deadlineAt",
           "serverNow",
           "published",
-          "partialClosedScore",
+          "answersReleased",
           "evaluation",
           "scenarios",
           "questions"
@@ -22841,7 +22707,7 @@
             "type": "string"
           },
           "feedback": {
-            "description": "Option feedback (only once the grade is published)",
+            "description": "Option feedback (only once the teacher releases the answers)",
             "example": "Correct",
             "type": [
               "string",
@@ -22854,7 +22720,7 @@
             "type": "string"
           },
           "isCorrect": {
-            "description": "Whether the option is correct (only once the grade is published)",
+            "description": "Whether the option is correct (only once the teacher releases the answers)",
             "example": true,
             "type": "boolean"
           },
@@ -22983,7 +22849,7 @@
             ]
           },
           "earnedScore": {
-            "description": "Points earned (only once the grade is published; null while pending)",
+            "description": "Points earned (only once the teacher releases the answers; null while pending)",
             "example": 1,
             "type": [
               "number",
@@ -22991,7 +22857,7 @@
             ]
           },
           "explanation": {
-            "description": "Teacher explanation (only once the grade is published)",
+            "description": "Teacher explanation (only once the teacher releases the answers)",
             "type": [
               "string",
               "null"
@@ -23038,23 +22904,8 @@
             "description": "Question prompt (Tiptap document)",
             "type": "object"
           },
-          "reveal": {
-            "anyOf": [
-              {
-                "allOf": [
-                  {
-                    "$ref": "#/components/schemas/StudentAnswerRevealDTO"
-                  }
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Correction of an answer the student checked for immediate feedback (QUIZ and WORKSHOP); null when the answer was not checked"
-          },
           "rubric": {
-            "description": "Rubric (only once the grade is published)",
+            "description": "Rubric (only once the teacher releases the answers)",
             "type": [
               "object",
               "null"
@@ -23092,8 +22943,7 @@
           "clinicalCaseId",
           "options",
           "answer",
-          "hint",
-          "reveal"
+          "hint"
         ],
         "type": "object"
       },
@@ -42243,7 +42093,7 @@
     },
     "/api/evaluation-grading/attempts/{attemptId}/publish": {
       "post": {
-        "description": "Publishes the grade of a GRADED attempt and notifies the student with grade:published; idempotent (an already published grade keeps its date)\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "description": "Releases to the student the grade of a GRADED attempt (scope GRADE) or the grade with the correct answers, explanations, rubrics, per-question points and AI feedback (scope GRADE_AND_ANSWERS, the default); notifies grade:published when the grade is released; idempotent (what was already released keeps its date). Until then the student only sees the attempt as submitted\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
         "operationId": "publishAttempt",
         "parameters": [
           {
@@ -42255,6 +42105,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseAttemptResultsDTO"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -42279,7 +42139,7 @@
                 }
               }
             },
-            "description": "Grade published successfully"
+            "description": "Results released successfully"
           },
           "400": {
             "content": {
@@ -42294,7 +42154,7 @@
                 }
               }
             },
-            "description": "Validation error or malformed request"
+            "description": "Validation error"
           },
           "401": {
             "content": {
@@ -42392,7 +42252,7 @@
             "JWT-auth": []
           }
         ],
-        "summary": "Publish attempt grade",
+        "summary": "Release attempt results",
         "tags": [
           "Evaluation grading"
         ],
@@ -42404,7 +42264,7 @@
     },
     "/api/evaluation-grading/publish": {
       "post": {
-        "description": "Publishes every GRADED unpublished attempt of the evaluation (optionally one group) within the caller's scope and notifies each student; returns how many were published\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
+        "description": "Releases the results of every GRADED attempt of the evaluation (optionally one group) within the caller's scope: the grade only (scope GRADE) or the grade with the answers and AI feedback (scope GRADE_AND_ANSWERS, the default); attempts still in progress or pending review are left out; returns how many attempts changed\n\n**Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.",
         "operationId": "publishEvaluation",
         "parameters": [],
         "requestBody": {
@@ -42539,7 +42399,7 @@
             "JWT-auth": []
           }
         ],
-        "summary": "Publish evaluation grades",
+        "summary": "Release evaluation results",
         "tags": [
           "Evaluation grading"
         ],
@@ -57228,200 +57088,6 @@
           }
         ],
         "summary": "Get my evaluations",
-        "tags": [
-          "Student evaluations"
-        ],
-        "x-min-role": "STUDENT",
-        "x-required-permissions": [
-          "evaluations:attempt"
-        ]
-      }
-    },
-    "/api/my-evaluations/attempts/{attemptId}/answers/{questionId}/check": {
-      "post": {
-        "description": "Immediate feedback (QUIZ and WORKSHOP choice questions): saves the selected options of the own attempt in progress, reveals whether they are correct with the correct options and the explanation, and locks the answer (a later save or check answers 409); the score is still computed only at submission\n\n**Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.",
-        "operationId": "checkAnswer",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "attemptId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "questionId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CheckEvaluationAnswerDTO"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "allOf": [
-                    {
-                      "$ref": "#/components/schemas/APIResponseEnvelope"
-                    },
-                    {
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/CheckEvaluationAnswerResponseDTO"
-                        }
-                      },
-                      "required": [
-                        "data"
-                      ],
-                      "type": "object"
-                    }
-                  ]
-                }
-              }
-            },
-            "description": "Answer checked successfully"
-          },
-          "400": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "ValidationError": {
-                    "$ref": "#/components/examples/ValidationError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Validation error"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "UnauthorizedError": {
-                    "$ref": "#/components/examples/UnauthorizedError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "ForbiddenError": {
-                    "$ref": "#/components/examples/ForbiddenError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "The caller lacks the required permission or is not allowed to act on this resource"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "NotFoundError": {
-                    "$ref": "#/components/examples/NotFoundError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Attempt or question not found"
-          },
-          "409": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "ConflictError": {
-                    "$ref": "#/components/examples/ConflictError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "The attempt is closed, read-only or past its deadline, or the answer was already checked"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "UnprocessableError": {
-                    "$ref": "#/components/examples/UnprocessableError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "EXAM evaluation, non-choice question, or options that do not match the question"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "TooManyRequestsError": {
-                    "$ref": "#/components/examples/TooManyRequestsError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "examples": {
-                  "InternalServerError": {
-                    "$ref": "#/components/examples/InternalServerError"
-                  }
-                },
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unexpected server error"
-          }
-        },
-        "security": [
-          {
-            "JWT-auth": []
-          }
-        ],
-        "summary": "Check evaluation answer",
         "tags": [
           "Student evaluations"
         ],
