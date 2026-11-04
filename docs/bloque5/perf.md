@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Rendimiento antes/después del Bloque 5 (identidad de julio)
-* Descripción: Medición del Monitoreo de /simulador (disposición clásica frente a la de julio), de /learn y de /teacher con 500 estudiantes, antes (master b248ab4) y después (feat/bloque5-identidad 5131946), seguidas en la misma máquina, con el mismo stack y los mismos datos: fps de repintado por canvas, fps de requestAnimationFrame, commits de React por segundo, long tasks, frames > 50 ms, hilo principal, tiempos al contenido y first load JS. Todos los números salen de los JSON de docs/bloque5/perf/. v0.1 (Bloque 5, W5-3): primera versión.
-* Versión: 0.1
+* Descripción: Medición del Monitoreo de /simulador (disposición clásica frente a la de julio), de /learn y de /teacher con 500 estudiantes, antes (master b248ab4) y después (feat/bloque5-identidad 5131946), seguidas en la misma máquina, con el mismo stack y los mismos datos: fps de repintado por canvas, fps de requestAnimationFrame, commits de React por segundo, long tasks, frames > 50 ms, hilo principal, tiempos al contenido y first load JS. Todos los números salen de los JSON de docs/bloque5/perf/. v0.1 (Bloque 5, W5-3): primera versión. v0.2 (Bloque 5, corrección de rendimiento): sección "Después de la corrección" (perfilado con trazas de CDP, causas confirmadas, dos commits perf y la nueva medición, label `fixed`) y criterios actualizados.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -194,11 +194,13 @@ Inicio. Es una hipótesis: no se perfiló con el panel Performance.
 | 0 long tasks (/simulador) | **Cumple**: 0 en los 14 escenarios de "después" |
 | Frames > 50 ms ≤ antes | **Cumple**: 0 en todos; antes 1–2 en los de CPU ×4 |
 | El arrastre de tarjetas no re-renderiza la consola | **Cumple**: +3 commits por movimiento, máx 4/s, 0 long tasks; controlador estable |
-| /learn sin long tasks nuevas | **No cumple en la pestaña Inicio**: +1 long task (~100 ms) en todas las rondas. Frío, caliente, Mi Progreso y Currículo sin long tasks nuevas |
+| /learn sin long tasks nuevas | W5-3: **no cumplía en la pestaña Inicio** (+1 long task de ~100 ms). **Después de la corrección: cumple** (Inicio 2 a 1920 y 1 a 1280, como antes; ver abajo) |
 | /learn first load ≤ antes + 5 KB gz | **Cumple**: +4,7 KB (compartido +0,6) |
-| /teacher 500, long task máx ≤ 534 ms | **No cumple para el docente** (593 y 608 ms; antes 492). Admin 506 y 527 |
+| /teacher 500, long task máx ≤ 534 ms | W5-3: **no cumplía para el docente** (593 y 608 ms). **Después de la corrección: cumple** (docente 317, admin 322; ver abajo) |
 
-## Propuestas (no aplicadas)
+## Propuestas (W5-3)
+
+Aplicadas o descartadas en "Después de la corrección".
 
 1. **Perfilar `/teacher?groupId=<500>` y la pestaña Inicio con el panel Performance** (CPU ×4) y comparar contra `b248ab4`
    para confirmar el costo de emotion/MUI con los dos esquemas.
@@ -207,6 +209,83 @@ Inicio. Es una hipótesis: no se perfiló con el panel Performance.
    overrides globales. Eso divide por dos las variables y la serialización.
 3. Para el grupo de 500, sin tocar el tema: **diferir el gráfico del grupo** (`startTransition` o montarlo tras el primer
    frame de la tabla) para partir la long task en dos.
+
+## Después de la corrección
+
+Medido el 2026-11-04 (08:00–08:45) sobre `feat/bloque5-identidad` **`9fdcbbb`**, label `fixed`, con la misma máquina, el
+mismo stack, la misma base y las mismas sondas. Datos: `fixed-teacher.json`, `fixed-<W>x<H>-learn.json`,
+`fixed-1920x1080-live-x1.json`, `fixed-1920x1080-live-x1-cpu4.json`, y las dos repeticiones de control
+`recheck-before-teacher.json` (b248ab4) y `recheck-after-teacher.json` (HEAD antes de corregir).
+
+### Perfilado: la hipótesis del tema no se confirma
+
+Se grabaron trazas de CDP (`devtools.timeline` + perfil de CPU de V8, CPU ×4) de las dos pantallas, contra un build de
+`b248ab4` (worktree aparte) y contra el de la rama. Para atribuir el tiempo a funciones de origen se hizo un build temporal con
+`productionBrowserSourceMaps` (no commiteado).
+
+- **El tema no es la causa.** MUI 7.3.7 casi no usa `applyStyles` en sus componentes (3 archivos de `@mui/material`; el resto lee
+  `theme.vars`), y el tema de la rama solo lo usa en `LinearProgress`. Las declaraciones `--*` duplicadas viven en una sola hoja
+  global. El tema no se tocó: D1, D5/D9 y la isla clara del login quedan como estaban.
+- **/teacher, grupo de 500: no era una regresión del bloque.** Repetida hoy con la sonda, seguida, `b248ab4` da **585 ms**
+  (588, 599, 585, 498, 526) y la rama sin corregir **571 ms** (660, 521, 571, 652, 502). Las dos superan 534 ms; el 492 de W5-3
+  fue una corrida favorable. La long task es un solo render de React al llegar los datos del grupo: la tabla (25 filas de
+  componentes MUI), el selector de estudiante con 500 opciones y las gráficas. Unos 100 ms de ella son emotion (serializar e
+  insertar estilos de esos componentes) y el resto es React montándolos.
+- **/learn, pestaña Inicio: causa confirmada.** La long task nueva es la **evaluación de los módulos de
+  `/simulator/sessions/[sessionId]/result`**, que el `<Link>` de Inicio precarga al quedar visible (Next ejecuta el chunk de la
+  página precargada). Esa página importaba valores de configuración del barril `@shared/ventilator-console`
+  (`sim-console-adapter`, `settings-binding`, `frame-binding`); como el paquete no declara `sideEffects: false`, el barril evalúa
+  toda la consola, que en el bloque creció con la consola de julio (tarjetas, cajones, logos con `next/image`). JS propio de la
+  ruta: 347 KB (antes) → 447 KB (rama) → **299 KB** (corregido). Evaluación en la traza: 55 ms → 89 ms → por debajo de 50 ms.
+
+### Correcciones
+
+| Commit | Cambio |
+|---|---|
+| `9450174` perf(sim-engine): import the console config from a light entry, not the console barrel | nueva entrada `@shared/ventilator-console/config.entry` (solo constantes de configuración); los tres módulos de arriba la usan en lugar del barril |
+| `9fdcbbb` perf(teacher-dashboard): render the group rows and charts in a deferred pass | `TeacherDashboardPage` pinta filas, fecha de generación y gráficas desde `useDeferredValue(dashboard)` (comprobada contra el grupo elegido): React las renderiza en un pase interrumpible por trozos; mientras tanto sigue el esqueleto "Cargando el panel del grupo…" |
+
+Diferir solo las gráficas (primer intento) bajó a 554 ms: no alcanzaba.
+
+### /teacher con 500 estudiantes (1920×1080, CPU ×4)
+
+| Rol | Pantalla | Long task máx frío: W5-3 antes → W5-3 después → **corregido** | Rondas (corregido) | Contenido frío / caliente (corregido) |
+|---|---|---|---|---|
+| Docente | Grupo de 500 | 492 → 593 (608) → **317 ms** | 298, 329, 317, 380, 313 | 4106 / 2568 ms |
+| Admin | Grupo de 500 | 519 → 506 (527) → **322 ms** | 322, 326, 323, 317, 320 | 4137 / 2752 ms |
+| Docente | General | 280 → 266 → 286 ms | 283, 286, 299, 314, 267 | 3113 / 1757 ms |
+| Admin | General | 287 → 296 → 282 ms | 291, 280, 310, 247, 282 | 3044 / 1788 ms |
+
+**Costo:** el pase diferido cede el hilo y llega más tarde a las filas. Contenido del grupo, docente: frío 3780 → 4106 ms (+9 %)
+y caliente 2226 → 2568 ms (+15 %) frente a la rama sin corregir en la misma sesión; admin 4137 / 2752 ms. Las long tasks totales
+hasta +3 s bajan (3471 → 2568 ms, docente).
+
+### /learn (CPU ×4, mediana de 5 rondas)
+
+| Viewport | Medición | Antes → W5-3 → **corregido** (ms) | Long tasks (n / máx) antes → W5-3 → **corregido** |
+|---|---|---|---|
+| 1920 | Pestaña Inicio | 360 → 412 → **413** | 2 / 98 → 3 / 102 → **2 / 108** |
+| 1280 | Pestaña Inicio | 371 → 399 → **393** | 1 / 94 → 3 / 104 → **1 / 98** |
+| 1920 | Carga en frío | 2220 → 2287 → 2621 | 10 / 288 → 11 / 283 → 11 / 325 |
+| 1920 | Carga en caliente | 802 → 919 → 983 | 4 / 140 → 4 / 155 → 5 / 165 |
+| 1280 | Carga en frío | 2170 → 2237 → 2346 | 10 / 282 → 10 / 279 → 11 / 286 |
+| 1280 | Carga en caliente | 815 → 924 → 925 | 3 / 148 → 3 / 158 → 4 / 162 |
+
+Rondas de Inicio (n / máx), corregido: 1920 `2/106 2/98 2/113 2/108 2/115`; 1280 `1/98 1/98 1/107 1/98 1/103`. Mi Progreso y
+Currículo siguen sin long tasks. Las cargas completas no se tocaron con estas correcciones y tienen la varianza de memoria de la
+máquina (la de 1920 en frío sube 334 ms con el mismo número de long tasks); no entran en el criterio.
+
+### /simulador (1920×1080): sin regresión
+
+| Escenario | Curvas fps W5-3 → corregido | rAF fps | Frames > 50 ms (máx ms) | Commits/s (máx) | Long tasks | Hilo principal ms/s (script) |
+|---|---|---|---|---|---|---|
+| En vivo ×1 | 59,41 → **59,10** | 59,98 | 0 (17,4) | 1,00 (1) | **0** | 70,9 (19,3) → 60,4 (17,0) |
+| En vivo ×1, CPU ×4 | 59,69 → **59,73** | 59,95 | 0 (50,0) | 1,00 (1) | **0** | 213,9 (61,4) → 225,9 (63,2) |
+
+### Comprobación visual
+
+Capturas a 1280×720 del login (tarjeta clara), /simulador, /learn y /teacher (General y grupo de 500) después de las
+correcciones, comparadas con `docs/bloque5/capturas/`: sin diferencias (el tema no cambió).
 
 ## Comandos exactos
 
