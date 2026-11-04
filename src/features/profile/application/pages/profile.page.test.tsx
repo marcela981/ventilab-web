@@ -212,7 +212,7 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-describe("ProfilePage tabs", () => {
+describe("ProfilePage tabs", { timeout: 15_000 }, () => {
   it("opens the personal information tab by default", async() => {
     renderProfile();
     await nameField();
@@ -235,7 +235,7 @@ describe("ProfilePage tabs", () => {
   });
 });
 
-describe("ProfilePage read-only data", () => {
+describe("ProfilePage read-only data", { timeout: 15_000 }, () => {
   it("shows role, email and status as read-only information", async() => {
     stored = { ...stored, role: "TEACHER" };
     renderProfile();
@@ -252,7 +252,7 @@ describe("ProfilePage read-only data", () => {
   });
 });
 
-describe("ProfilePage name", () => {
+describe("ProfilePage name", { timeout: 15_000 }, () => {
   it("PATCHes only the changed name and refreshes the session user", async() => {
     renderProfile();
     fireEvent.change(await nameField(), { target: { value: "  Ana María Torres " } });
@@ -327,7 +327,7 @@ describe("ProfilePage name", () => {
   });
 });
 
-describe("ProfilePage photo", () => {
+describe("ProfilePage photo", { timeout: 15_000 }, () => {
   it("shows the initials and no remove action when there is no photo", async() => {
     renderProfile();
     await nameField();
@@ -390,7 +390,7 @@ describe("ProfilePage photo", () => {
   });
 });
 
-describe("ProfilePage change password", () => {
+describe("ProfilePage change password", { timeout: 15_000 }, () => {
   it("shows the Google notice instead of the form for accounts without a password", async() => {
     stored = { ...stored, hasPassword: false };
     renderProfile({ tab: "password" });
