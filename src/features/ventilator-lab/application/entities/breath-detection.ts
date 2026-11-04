@@ -22,8 +22,10 @@
 *   is dropped after candidateMaxMs); the plateau is read on the baseline of its inspiration. The gap limit is a few
 *   sample periods (200 ms ≈ 4–10 periods at the 20–50 Hz device rates) and a gap also drops the previous breaths, so
 *   the metrics are null until a breath without a gap is complete. PEEP is null when the breath has no end-expiratory
-*   sample (no fallback value). Depends only on the console sample type.
-* Versión: 1.1
+*   sample (no fallback value). Depends only on the console sample type. v1.2 (Bloque 5, C4): per breath also the
+*   time-weighted mean pressure (Pmedia, over the whole breath) and the flow extremes (highest inspiratory flow and
+*   most negative expiratory flow, as measured, without the baseline correction), reported for the last breath.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -91,6 +93,11 @@ export type DetectedBreath = {
   peep: number | null
   exhaledTidalVolume: number
   plateauPressure: number | null
+  /** Time-weighted mean pressure of the breath. */
+  meanPressure: number
+  /** Highest and most negative flow of the breath (L/min). */
+  peakInspiratoryFlow: number
+  peakExpiratoryFlow: number
 };
 
 export type BreathMetrics = {
@@ -105,6 +112,10 @@ export type BreathMetrics = {
   ieRatio: number | null
   /** L/min. */
   minuteVolume: number | null
+  meanPressure: number | null
+  /** L/min; the expiratory one is negative. */
+  peakInspiratoryFlow: number | null
+  peakExpiratoryFlow: number | null
 };
 
 export const EMPTY_BREATH_METRICS: BreathMetrics = {
@@ -116,6 +127,9 @@ export const EMPTY_BREATH_METRICS: BreathMetrics = {
   respiratoryRate: null,
   ieRatio: null,
   minuteVolume: null,
+  meanPressure: null,
+  peakInspiratoryFlow: null,
+  peakExpiratoryFlow: null,
 };
 
 /** Breaths averaged for RR. */
@@ -206,7 +220,27 @@ function measureBreath(
     peep: endExpiratory.length > 0 ? mean(endExpiratory) : null,
     exhaledTidalVolume: endInspiratoryVolume - endExpiratoryVolume,
     plateauPressure: plateauOf(inspiration, expirationStart.tMs, baseline, options),
+    meanPressure: timeWeightedMeanPressure(samples),
+    peakInspiratoryFlow: Math.max(...breath.map((sample) => sample.flow)),
+    peakExpiratoryFlow: Math.min(...breath.map((sample) => sample.flow)),
   };
+}
+
+/** Mean pressure weighted by the time each sample holds until the next one (the last sample closes the breath). */
+function timeWeightedMeanPressure(samples: readonly ConsoleSample[]): number {
+  const durationMs = samples[samples.length - 1]!.tMs - samples[0]!.tMs;
+
+  if (durationMs <= 0) {
+    return mean(samples.map((sample) => sample.pressure));
+  }
+
+  let area = 0;
+
+  for (let index = 0; index < samples.length - 1; index += 1) {
+    area += samples[index]!.pressure * (samples[index + 1]!.tMs - samples[index]!.tMs);
+  }
+
+  return area / durationMs;
 }
 
 export function createBreathDetector(overrides: Partial<BreathDetectionOptions> = {}): BreathDetector {
@@ -423,5 +457,8 @@ export function computeBreathMetrics(breaths: readonly DetectedBreath[], latestM
     respiratoryRate,
     ieRatio: last.inspiratoryTimeMs / last.expiratoryTimeMs,
     minuteVolume: (last.exhaledTidalVolume * respiratoryRate) / 1000,
+    meanPressure: last.meanPressure,
+    peakInspiratoryFlow: last.peakInspiratoryFlow,
+    peakExpiratoryFlow: last.peakExpiratoryFlow,
   };
 }

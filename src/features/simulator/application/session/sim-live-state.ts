@@ -5,8 +5,10 @@
 *   trends) folded from the worker batches, and the console adapter snapshot built from it plus the applied settings,
 *   the stable frame source, the control permission and the stable confirm callback. The caller publishes the
 *   snapshots through the console external store (`reuseUnchangedSlices` keeps the identity of unchanged slices).
-*   Depends on the sim-engine console binding and the ventilator-console contract.
-* Versión: 0.1
+*   Depends on the sim-engine console binding and the ventilator-console contract. v0.2 (Bloque 5, C4): the live
+*   state also folds the waveform samples into the flow extremes of the last breath (foldCycleFlow), published with
+*   the mean airway pressure as the July card metrics.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +20,8 @@ import type { EngineMetrics, EngineTargets, SimBatch, VentilatorSettings } from 
 import {
   appendTrends,
   buildConsoleLimits,
+  foldCycleFlow,
+  INITIAL_CYCLE_FLOW,
   MODE_OPTIONS,
   rangesFromTargets,
   toConsoleAlarms,
@@ -25,7 +29,7 @@ import {
   toConsoleSettings,
   toPatientValues,
 } from "@shared/sim-engine/console-binding";
-import type { PatientTrends } from "@shared/sim-engine/console-binding";
+import type { CycleFlow, PatientTrends } from "@shared/sim-engine/console-binding";
 import type { ConsoleAlarm, ConsoleConfirmation, ConsoleFrameSource, VentilatorConsoleAdapter } from "@shared/ventilator-console";
 
 export type SimLiveState = {
@@ -34,16 +38,25 @@ export type SimLiveState = {
   metrics: EngineMetrics | null
   alarms: readonly ConsoleAlarm[]
   trends: PatientTrends
+  /** v0.2: flow extremes of the last completed breath, from the waveform samples. */
+  cycleFlow: CycleFlow
 };
 
 export function initialLiveState(simTimeMs: number): SimLiveState {
-  return { simTimeMs, metrics: null, alarms: [], trends: {} };
+  return { simTimeMs, metrics: null, alarms: [], trends: {}, cycleFlow: INITIAL_CYCLE_FLOW };
 }
 
-/** Folds one worker batch: the time always moves; metrics, alarms and trends only change with a metrics snapshot. */
-export function ingestBatch(state: SimLiveState, batch: Pick<SimBatch, "simTimeMs" | "metrics" | "alarms">): SimLiveState {
+type LiveBatch = Pick<SimBatch, "simTimeMs" | "metrics" | "alarms"> & Partial<Pick<SimBatch, "samples">>;
+
+/**
+ * Folds one worker batch: the time always moves and the samples feed the breath flow extremes; metrics, alarms and
+ * trends only change with a metrics snapshot.
+ */
+export function ingestBatch(state: SimLiveState, batch: LiveBatch): SimLiveState {
+  const cycleFlow = foldCycleFlow(state.cycleFlow, batch.samples ?? [], batch.metrics?.lastCycle ?? null);
+
   if (!batch.metrics) {
-    return { ...state, simTimeMs: batch.simTimeMs };
+    return { ...state, simTimeMs: batch.simTimeMs, cycleFlow };
   }
 
   return {
@@ -51,6 +64,7 @@ export function ingestBatch(state: SimLiveState, batch: Pick<SimBatch, "simTimeM
     metrics: batch.metrics,
     alarms: toConsoleAlarms(batch.alarms, batch.simTimeMs, state.alarms),
     trends: appendTrends(state.trends, toPatientValues(batch.metrics)),
+    cycleFlow,
   };
 }
 
@@ -73,7 +87,7 @@ export function buildSimConsoleAdapter({ frames, applied, live, canControl, onCo
     frames,
     settings: { current: values, applied: values },
     mode: { current: applied.mode, options: MODE_OPTIONS },
-    metrics: toConsoleMetrics(live.metrics, applied),
+    metrics: toConsoleMetrics(live.metrics, applied, live.cycleFlow),
     patient: { values: toPatientValues(live.metrics), trends: live.trends },
     alarms: live.alarms,
     permissions: { canControl },

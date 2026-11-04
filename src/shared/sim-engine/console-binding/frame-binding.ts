@@ -9,7 +9,9 @@
 *   the simulator feature (sim-console-adapter, sim-console.config ALARM_LABELS and the use-sim-session frame hub),
 *   which re-exports it, so the case editor preview shows exactly the console the student sees. Pure (the frame hub
 *   only keeps its listeners). Depends on the sim-engine types, the settings binding and the ventilator-console API.
-* Versión: 1.0
+*   v1.1 (Bloque 5, C4): the metrics add the mean airway pressure of the engine cycle (`meanPressure`) and, when the
+*   caller folds them (cycle-flow.ts), the flow extremes of the last breath (`peakInspiratoryFlow`, `peakExpiratoryFlow`).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,7 +85,9 @@ export function createConsoleFrameHub(sourceId: string): ConsoleFrameHub {
   };
 }
 
-export function toConsoleMetrics(metrics: EngineMetrics | null, settings: VentilatorSettings): ConsoleMetrics {
+export type CycleFlowExtremes = { peakInspiratoryFlow: number | null, peakExpiratoryFlow: number | null };
+
+export function toConsoleMetrics(metrics: EngineMetrics | null, settings: VentilatorSettings, flow?: CycleFlowExtremes): ConsoleMetrics {
   const cycle = metrics?.lastCycle ?? null;
 
   return {
@@ -100,6 +104,9 @@ export function toConsoleMetrics(metrics: EngineMetrics | null, settings: Ventil
     ieRatio: cycle && cycle.ieRatio > 0 ? cycle.ieRatio : null,
     fio2: tidy(settings.fio2 * 100),
     mechanicalPower: cycle?.mechanicalPowerJPerMin ?? null,
+    meanPressure: cycle?.meanAirwayPressureCmH2O ?? null,
+    peakInspiratoryFlow: flow?.peakInspiratoryFlow ?? null,
+    peakExpiratoryFlow: flow?.peakExpiratoryFlow ?? null,
   };
 }
 
