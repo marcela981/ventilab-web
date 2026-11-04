@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator performance measurement
-* Descripción: Runs the simulator for a fixed window per scenario and records the in-page probe (rAF fps, curve paint fps per canvas, React commits per second, long tasks, heap) plus the Chrome main-thread time from the CDP Performance domain. Scenarios: live ×1, live ×1 with CPU throttling ×4, live at the highest speed the UI offers (×4), and replay ×8 with and without throttling (the replay loops when it reaches the end). Each scenario writes <PERF_OUT_DIR>/<PERF_LABEL>-<scenario>.json. Parameters (environment): PERF_FLOW (legacy), PERF_LABEL (baseline), PERF_DURATION_S (60), PERF_WARMUP_S (5), PERF_CASE_TITLE, PERF_SCENARIOS (comma list), PERF_REPLAY_SOURCE_S (30), PERF_REPLAY_SESSION_ID (an ended session to replay instead of the last live one), PERF_OUT_DIR (docs/bloque1/perf). Depends on @playwright/test, the perf probe and the simulator flows. v0.2 (W12, Bloque 1): a live scenario faster than the flow's `maxLiveMultiplier` is skipped (reported as not reachable, never estimated), and the session recorded for the replay runs at the fastest live speed the flow allows; the CDP counters and the commit hash come from perf-support.ts.
-* Versión: 0.2
+* Descripción: Runs the simulator for a fixed window per scenario and records the in-page probe (rAF fps, curve paint fps per canvas, React commits per second, long tasks, heap) plus the Chrome main-thread time from the CDP Performance domain. Scenarios: live ×1, live ×1 with CPU throttling ×4, live at the highest speed the UI offers (×4), and replay ×8 with and without throttling (the replay loops when it reaches the end). Each scenario writes <PERF_OUT_DIR>/<PERF_LABEL>-<scenario>.json. Parameters (environment): PERF_FLOW (legacy), PERF_LABEL (baseline), PERF_DURATION_S (60), PERF_WARMUP_S (5), PERF_CASE_TITLE, PERF_SCENARIOS (comma list), PERF_REPLAY_SOURCE_S (30), PERF_REPLAY_SESSION_ID (an ended session to replay instead of the last live one), PERF_OUT_DIR (docs/bloque1/perf). Depends on @playwright/test, the perf probe and the simulator flows. v0.2 (W12, Bloque 1): a live scenario faster than the flow's `maxLiveMultiplier` is skipped (reported as not reachable, never estimated), and the session recorded for the replay runs at the fastest live speed the flow allows; the CDP counters and the commit hash come from perf-support.ts. v0.3 (Bloque 5): PERF_VIEWPORT (e.g. 1280x720; default the perf project's 1920x1080) and three live ×1 scenarios with an interaction: live-x1-ai-drawer (the "Asesoría IA" panel open before the window), live-x1-adjust (the value cards in "Ajustar" with 10 keyboard moves during the window) and live-x1-loop (the P-V loop on, two canvases). A scenario whose control is absent from the UI (e.g. "Ajustar" before the July layout) ends its session and is skipped with the reason; the interactions live in perf-scenarios.ts.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { type Page, test } from "@playwright/test";
 import { installPerfProbe, type PerfProbeSnapshot, type PerfProbeWindow } from "./perf-probe";
+import { parseViewport, SCENARIO_INTERACTIONS } from "./perf-scenarios";
 import { currentCommit, MAIN_THREAD_UNIT, mainThreadPerSecond, readCdpMetrics } from "./perf-support";
 import { getSimFlow } from "./sim-flows";
 
@@ -25,6 +26,9 @@ const SCENARIOS: readonly Scenario[] = [
   { id: "live-x4", kind: "live", multiplier: 4, cpuRate: 1 },
   { id: "replay-x8", kind: "replay", multiplier: 8, cpuRate: 1 },
   { id: "replay-x8-cpu4", kind: "replay", multiplier: 8, cpuRate: 4 },
+  { id: "live-x1-ai-drawer", kind: "live", multiplier: 1, cpuRate: 1 },
+  { id: "live-x1-adjust", kind: "live", multiplier: 1, cpuRate: 1 },
+  { id: "live-x1-loop", kind: "live", multiplier: 1, cpuRate: 1 },
 ];
 
 const FLOW = getSimFlow(process.env.PERF_FLOW ?? "legacy");
@@ -35,6 +39,15 @@ const REPLAY_SOURCE_S = Number(process.env.PERF_REPLAY_SOURCE_S ?? 30);
 const CASE_TITLE = process.env.PERF_CASE_TITLE ?? "Pulmón normal: postoperatorio inmediato";
 const OUT_DIR = process.env.PERF_OUT_DIR ?? "docs/bloque1/perf";
 const SELECTED = process.env.PERF_SCENARIOS?.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
+const VIEWPORT = parseViewport(process.env.PERF_VIEWPORT);
+
+// A non-default viewport is part of the file name, so the 1280 and 1920 runs of one label never overwrite each other.
+const VIEWPORT_SUFFIX = VIEWPORT === null ? "" : `-${VIEWPORT.width}x${VIEWPORT.height}`;
+
+if (VIEWPORT !== null) {
+  test.use({ viewport: VIEWPORT });
+}
+
 async function workerSizes(page: Page, urls: readonly string[]): Promise<{ url: string, rawKb: number, gzipKb: number }[]> {
   const sizes: { url: string, rawKb: number, gzipKb: number }[] = [];
 
@@ -73,9 +86,19 @@ for (const scenario of SCENARIOS) {
     await cdp.send("Performance.enable");
 
     let liveSessionId: string | undefined;
+    const interaction = SCENARIO_INTERACTIONS[scenario.id];
 
     if (scenario.kind === "live") {
       liveSessionId = (await FLOW.startLiveSession(page, { caseTitle: CASE_TITLE, timeMultiplier: scenario.multiplier })).sessionId;
+
+      // A control the current UI does not have yet: end the session (it can still feed a replay) and skip with the reason.
+      const absent = interaction ? await interaction.prepare(page) : null;
+
+      if (absent !== null) {
+        await FLOW.endLiveSession(page);
+        endedSessionId = liveSessionId;
+        test.skip(true, absent);
+      }
     } else {
       if (endedSessionId === undefined) {
         const source = await FLOW.startLiveSession(page, { caseTitle: CASE_TITLE, timeMultiplier: Math.min(4, FLOW.maxLiveMultiplier) });
@@ -94,14 +117,20 @@ for (const scenario of SCENARIOS) {
     const before = await readCdpMetrics(cdp);
     const deadline = Date.now() + DURATION_S * 1000;
     let replayRestarts = 0;
+    let elapsedS = 0;
 
     while (Date.now() < deadline) {
       await page.waitForTimeout(Math.min(1000, Math.max(0, deadline - Date.now())));
+      elapsedS += 1;
 
       if (scenario.kind === "replay" && (await FLOW.keepReplayPlaying(page))) {
         replayRestarts += 1;
       }
+
+      await interaction?.tick?.(page, elapsedS, DURATION_S);
     }
+
+    await interaction?.finish?.(page);
 
     const probe = await page.evaluate(() => (window as PerfProbeWindow).__perfProbe?.snapshot() ?? null) as PerfProbeSnapshot | null;
     const after = await readCdpMetrics(cdp);
@@ -141,6 +170,6 @@ for (const scenario of SCENARIOS) {
     };
 
     mkdirSync(OUT_DIR, { recursive: true });
-    writeFileSync(join(OUT_DIR, `${LABEL}-${scenario.id}.json`), `${JSON.stringify(result, null, 2)}\n`);
+    writeFileSync(join(OUT_DIR, `${LABEL}${VIEWPORT_SUFFIX}-${scenario.id}.json`), `${JSON.stringify(result, null, 2)}\n`);
   });
 }
