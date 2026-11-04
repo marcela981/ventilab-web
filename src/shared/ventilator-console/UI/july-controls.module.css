@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console controls styles
-* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" stays on one line.
-* Versión: 0.2
+* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" stays on one line. vX.x (Bloque 5, Ola 4): "Más modos" wraps its mode list onto a second line in a narrow column instead of cutting it ("Más modos (PSV, CPAP, SI..."); the button text and name are unchanged.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,17 +104,20 @@
   cursor: pointer;
 }
 
+/* The mode list moves under "Más modos" (with the arrow at the end) when the column is narrow; nothing is cut. */
 .moreModes {
+  flex-wrap: wrap;
   align-self: flex-start;
   max-width: 100%;
+  padding-block: var(--vl-space-1);
+  text-align: left;
   white-space: nowrap;
 }
 
 .moreModesList {
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
   color: var(--vl-console-text-muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .moreModes[data-active="true"] {
