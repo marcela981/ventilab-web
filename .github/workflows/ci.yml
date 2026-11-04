@@ -126,10 +126,13 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ventylab
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ventylab
       JWT_SECRET: ci-e2e-access-secret-not-for-production-0001
+      JWT_EXPIRES_IN: 15m
       JWT_REFRESH_SECRET: ci-e2e-refresh-secret-not-for-production-0002
+      JWT_REFRESH_EXPIRES_IN: 7d
       SUPERADMIN_EMAIL: superadmin@ventylab.demo
       CORS_ORIGIN: http://localhost:3000
       FRONTEND_URL: http://localhost:3000
+      PRODUCTION_URL: https://ventylab.vercel.app
       THROTTLE_TTL: "60000"
       THROTTLE_LIMIT: "100"
       SWAGGER_ALLOWED_IPS: "*"
