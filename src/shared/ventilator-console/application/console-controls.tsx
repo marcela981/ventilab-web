@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls
-* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. v1.3: optional `onPendingChange(pending)` reports when unconfirmed edits appear or go away (also false on unmount with pending edits), so a host such as the case editor can count them as unsaved. v1.4 (generic, optional): `settings.inFlight` tags a parameter whose confirmed change the source has not applied yet ("Enviando", "Esperando confirmación del equipo", "Rechazado") while the control keeps showing the applied value, and blocks re-editing it while sending/awaiting; a parameter the source does not report shows "—" (no invented value); v1.5: such a parameter cannot be adjusted at all (+/-, wheel and every key disabled) until the source reports it, so CONFIRMAR never sends a value derived from the limit minimum; `readOnlyReason` is shown under the controls and describes every disabled control (aria-describedby). Depends on React, MUI icons, the controls reducer, the controls config and the controls styles. v1.6 (generic, optional): `pendingResetKey` — when it changes the unconfirmed edits are dropped without emitting anything.
-* Versión: 1.6
+* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. v1.3: optional `onPendingChange(pending)` reports when unconfirmed edits appear or go away (also false on unmount with pending edits), so a host such as the case editor can count them as unsaved. v1.4 (generic, optional): `settings.inFlight` tags a parameter whose confirmed change the source has not applied yet ("Enviando", "Esperando confirmación del equipo", "Rechazado") while the control keeps showing the applied value, and blocks re-editing it while sending/awaiting; a parameter the source does not report shows "—" (no invented value); v1.5: such a parameter cannot be adjusted at all (+/-, wheel and every key disabled) until the source reports it, so CONFIRMAR never sends a value derived from the limit minimum; `readOnlyReason` is shown under the controls and describes every disabled control (aria-describedby). Depends on React, MUI icons, the controls reducer, the controls config and the controls styles. v1.6 (generic, optional): `pendingResetKey` — when it changes the unconfirmed edits are dropped without emitting anything. v1.7 (Bloque 5, C1): the edits live in a per-console pending store (console-pending-store.ts, same reducer) instead of a local useReducer; an optional `pendingStore` shares it with other zones of the console, otherwise the component owns one. Behaviour unchanged.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,21 +11,23 @@
 
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { useEffect, useId, useReducer, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import type { KeyboardEvent } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_PARAMETERS, getParametersForMode, MODE_PARAMETERS } from "./config/console-controls.config";
 import type { ConsoleParameterDefinition, ModeParameterTable } from "./config/console-controls.config";
+import { buildConfirmation, keyToAdjustment, pendingModeOf, hasStepGrid, stepDecimals } from "./console-controls.reducer";
+import type { Adjustment } from "./console-controls.reducer";
 import {
-  buildConfirmation,
-  controlsReducer,
-  INITIAL_CONTROLS_STATE,
-  keyToAdjustment,
-  pendingModeOf,
-  hasStepGrid,
-  stepDecimals,
-} from "./console-controls.reducer";
-import type { Adjustment, ControlsAction } from "./console-controls.reducer";
+  adjustPending,
+  confirmationCount,
+  selectPendingMode,
+  selectPendingState,
+  usePendingControlsStore,
+  usePendingLifecycle,
+} from "./console-pending-store";
+import type { PendingControlsStore } from "./console-pending-store";
+import { useStoreSelector } from "./console-store";
 import type {
   ConsoleConfirmation,
   ConsoleInFlight,
@@ -90,6 +92,8 @@ export type ConsoleControlsProps = {
   /** Labels per parameter id; defaults to the console definitions. */
   parameters?: Readonly<Record<string, ConsoleParameterDefinition>>
   applicability?: ModeParameterTable
+  /** v1.7: the per-console pending store shared with other zones; omitted, the component owns one. */
+  pendingStore?: PendingControlsStore | undefined
   className?: string
 };
 
@@ -249,78 +253,27 @@ export function ConsoleControls({
   pendingResetKey,
   parameters = CONSOLE_PARAMETERS,
   applicability = MODE_PARAMETERS,
+  pendingStore,
   className,
 }: ConsoleControlsProps) {
-  const [state, dispatch] = useReducer(controlsReducer, INITIAL_CONTROLS_STATE);
+  const pendingControls = usePendingControlsStore(pendingStore);
+  const state = useStoreSelector(pendingControls, selectPendingState);
   const pendingMode = pendingModeOf(state, mode.current);
   const effectiveMode = pendingMode ?? mode.current;
   const visible = getParametersForMode(effectiveMode, limits, applicability);
   const confirmation = buildConfirmation(state, settings.applied, mode.current);
-  const pendingCount = confirmation === null ? 0 : confirmation.changes.length + (confirmation.mode === null ? 0 : 1);
-  const hasPending = pendingCount > 0;
-  const onPendingChangeRef = useRef(onPendingChange);
+  const pendingCount = confirmationCount(confirmation);
   const reasonId = useId();
   const describedBy = readOnly && readOnlyReason ? reasonId : undefined;
-  const reportedPendingRef = useRef(false);
 
-  useEffect(() => {
-    onPendingChangeRef.current = onPendingChange;
-  });
-
-  // Report only transitions, so a consumer can mirror the pending state without re-render loops.
-  useEffect(() => {
-    if (reportedPendingRef.current !== hasPending) {
-      reportedPendingRef.current = hasPending;
-      onPendingChangeRef.current?.(hasPending);
-    }
-  }, [hasPending]);
-
-  // Unmounting drops the pending edits: tell the consumer once.
-  useEffect(() => () => {
-    if (reportedPendingRef.current) {
-      reportedPendingRef.current = false;
-      onPendingChangeRef.current?.(false);
-    }
-  }, []);
-
-  // v1.6: a new reset key drops the unconfirmed edits (the first render only records it).
-  const resetKeyRef = useRef(pendingResetKey);
-
-  useEffect(() => {
-    if (resetKeyRef.current !== pendingResetKey) {
-      resetKeyRef.current = pendingResetKey;
-      dispatch({ type: "reset" });
-    }
-  }, [pendingResetKey]);
+  // Pending transitions (also false on unmount) and the v1.6 reset key.
+  usePendingLifecycle(pendingControls, { hasPending: pendingCount > 0, onPendingChange, pendingResetKey });
 
   // No reported value means no base: such a parameter cannot be adjusted (no invented starting value).
-  const baseOf = (parameter: string): number | undefined => settings.applied[parameter] ?? settings.current[parameter];
-
-  const run = (action: ControlsAction) => {
-    if (readOnly) {
-      return;
-    }
-
-    const next = controlsReducer(state, action);
-    dispatch(action);
-
-    if ((action.type === "adjust" || action.type === "setValue") && onProposeChange) {
-      onProposeChange({ parameter: action.parameter, value: next.pendingValues[action.parameter] ?? action.base });
-    }
-  };
-
   const adjust = (parameter: string, limit: ParameterLimit, adjustment: Adjustment) => {
-    const base = baseOf(parameter);
-
-    if (base === undefined) {
-      return;
+    if (!readOnly) {
+      adjustPending(pendingControls, { parameter, limit, adjustment, settings, onProposeChange });
     }
-
-    run(
-      adjustment.kind === "steps"
-        ? { type: "adjust", parameter, steps: adjustment.steps, base, limit }
-        : { type: "setValue", parameter, value: adjustment.value, base, limit },
-    );
   };
 
   const confirm = () => {
@@ -329,7 +282,7 @@ export function ConsoleControls({
     }
 
     onConfirm(confirmation);
-    dispatch({ type: "reset" });
+    pendingControls.dispatch({ type: "reset" });
   };
 
   const cancel = () => {
@@ -337,7 +290,7 @@ export function ConsoleControls({
       return;
     }
 
-    dispatch({ type: "reset" });
+    pendingControls.dispatch({ type: "reset" });
     onCancel?.();
   };
 
@@ -361,14 +314,11 @@ export function ConsoleControls({
             data-pending={pendingMode === option.id}
             disabled={readOnly}
             aria-describedby={describedBy}
-            onClick={() =>
-              run({
-                type: "selectMode",
-                mode: option.id,
-                appliedMode: mode.current,
-                applicable: getParametersForMode(option.id, limits, applicability),
-              })
-            }
+            onClick={() => {
+              if (!readOnly) {
+                selectPendingMode(pendingControls, option.id, mode, limits, applicability);
+              }
+            }}
           >
             {option.label}
             {pendingMode === option.id ? <span className={cx(styles.pendingTag)}>{CONTROLS_COPY.pending}</span> : null}
@@ -408,7 +358,7 @@ export function ConsoleControls({
                   disabled={readOnly}
                   describedBy={describedBy}
                   onAdjust={(adjustment) => adjust(parameter, limit, adjustment)}
-                  onSelect={() => dispatch({ type: "select", parameter })}
+                  onSelect={() => pendingControls.dispatch({ type: "select", parameter })}
                 />
               );
             })}
