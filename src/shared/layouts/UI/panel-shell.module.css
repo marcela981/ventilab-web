@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PanelShell styles
-* Descripción: Layout of the staff panel: permanent side menu from the md breakpoint (900px, MUI default) of 16.25rem that collapses to 4.5rem (the July 260/72 px), with a width transition; a temporary drawer and a header menu button below md; the panel title, the collapse toggle, the scrollable item list and the "Volver a la plataforma" footer; sticky header with the user's name, email and role chip (name and email hidden on narrow screens; the user menu still has them), main content region and a skip link visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property. Tokens only.
-* Versión: 1.0
+* Descripción: Layout of the staff panel: permanent side menu from the md breakpoint (900px, MUI default) of 16.25rem that collapses to 4.5rem (the July 260/72 px), with a width transition; a temporary drawer and a header menu button below md; the panel title, the collapse toggle, the scrollable item list and the "Volver a la plataforma" footer; sticky header with the user's name, email and role chip (name and email hidden on narrow screens; the user menu still has them), main content region and a skip link visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property. Tokens only. v1.1 (Bloque 5, §5.2): July panel skin: flat indigo sidebar (--vl-panel-sidebar-bg, light indigo text, accent header icon, white 12% dividers), the identity block under the header, the tools row and the rounded "Volver a la plataforma" block above the "VentyLab Admin" version line; no desktop top bar (the thin bar only below 900px); the main region paints the navy panel gradient (--vl-panel-content-bg). Collapsed: the toggle, the avatar, the icons, the tools in a column and the back icon. Selectors that override MUI properties carry one class more than MUI's.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,8 +10,8 @@
 */
 
 .root {
-  --panel-drawer-width: 16.25rem;
-  --panel-drawer-collapsed-width: 4.5rem;
+  --panel-drawer-width: var(--vl-panel-sidebar-width);
+  --panel-drawer-collapsed-width: var(--vl-panel-sidebar-width-collapsed);
   --panel-current-width: var(--panel-drawer-width);
 
   display: flex;
@@ -58,52 +58,109 @@
   box-sizing: border-box;
 }
 
-.navigation {
+/* The indigo sidebar fills the drawer paper (its MUI background stays underneath, unseen). */
+.sidebar {
+  --vl-color-border: var(--vl-glass-border);
+
   display: flex;
   min-height: 100%;
   flex-direction: column;
+  background: var(--vl-panel-sidebar-bg);
+  color: var(--vl-panel-sidebar-text);
 }
 
 .navHeader {
   display: flex;
+  min-height: var(--vl-sidebar-header-height);
+  flex-shrink: 0;
   align-items: center;
   gap: var(--vl-space-2);
-  min-height: var(--vl-space-8);
   padding: 0 var(--vl-space-2) 0 var(--vl-space-4);
+  border-bottom: 1px solid var(--vl-color-border);
 }
 
 .navHeaderIcon {
-  color: var(--vl-color-primary);
+  color: var(--vl-panel-accent);
 }
 
 .navTitle {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: var(--vl-color-link);
+  color: var(--vl-panel-sidebar-text);
   font: var(--mui-font-h6);
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.toggle {
+.navHeader .toggle {
   flex-shrink: 0;
+  color: var(--vl-panel-item-active-icon);
+}
+
+.navigation {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
 }
 
 .navItems {
   flex: 1;
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
-.back {
+.tools {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-7);
+  padding: var(--vl-space-2) var(--vl-space-4);
+  border-top: 1px solid var(--vl-color-border);
+  color: var(--vl-panel-sidebar-text);
+}
+
+.tools :is(button) {
+  color: inherit;
+}
+
+.navigation .back {
   flex-grow: 0;
+  gap: var(--vl-space-5);
+  margin: var(--vl-space-2) var(--vl-space-4);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border-radius: var(--vl-radius-xl);
+  background: var(--vl-glass-bg-hover);
+  color: var(--vl-glass-accent-cyan-text);
+}
+
+.navigation .back:hover {
+  background: var(--vl-glass-border);
+}
+
+.navigation .backIcon {
+  min-width: 0;
+  color: var(--vl-color-primary);
 }
 
 .backLabel {
   min-width: 0;
 }
 
-/* Collapsed: only the toggle and the icons stay on screen; the texts stay the accessible names. */
+.version {
+  margin: 0;
+  padding: var(--vl-space-1) 0 var(--vl-space-4);
+  color: var(--vl-panel-sidebar-faint);
+  font: var(--mui-font-caption);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Collapsed: only the toggle, the avatar, the icons and the tools stay on screen; the texts stay the accessible names. */
 .collapsed .navHeader {
   justify-content: center;
   padding: 0;
@@ -120,6 +177,18 @@
   white-space: nowrap;
 }
 
+.collapsed .tools {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  padding: var(--vl-space-2) 0;
+}
+
+.collapsed .navigation .back {
+  justify-content: center;
+  margin: var(--vl-space-2);
+  padding: var(--vl-space-3) 0;
+}
+
 .column {
   display: flex;
   min-width: 0;
@@ -127,7 +196,7 @@
   flex-direction: column;
 }
 
-.header {
+.mobileBar {
   border-bottom: 1px solid var(--vl-color-border);
 }
 
@@ -135,58 +204,20 @@
   gap: var(--vl-space-2);
 }
 
-.menuButton {
-  display: inline-flex;
-}
-
 .title {
   flex: 1;
   min-width: 0;
-}
-
-.identity {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--vl-space-2);
-  min-width: 0;
-}
-
-.identityText {
-  display: none;
-  flex-direction: column;
-  min-width: 0;
-  text-align: end;
-}
-
-.identityName {
-  overflow: hidden;
-  font: var(--mui-font-subtitle2);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.identityEmail {
-  overflow: hidden;
-  color: var(--vl-color-text-muted);
-  font: var(--mui-font-caption);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .main {
   flex: 1;
   min-width: 0;
   padding: var(--vl-space-5) var(--vl-space-4);
+  background: var(--vl-panel-content-bg);
 }
 
 .main:focus {
   outline: none;
-}
-
-@media (min-width: 600px) {
-  .identityText {
-    display: flex;
-  }
 }
 
 @media (min-width: 900px) {
@@ -197,7 +228,8 @@
     transition: width var(--vl-duration-short) var(--vl-ease-sharp);
   }
 
-  .menuButton {
+  /* One class more than the AppBar display. */
+  .column .mobileBar {
     display: none;
   }
 

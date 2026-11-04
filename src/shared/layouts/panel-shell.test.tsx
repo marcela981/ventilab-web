@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PanelShell tests
-* Descripción: Verifies the staff panel chrome: the "Navegación del panel" landmark with the role's items and aria-current on the active one, the header with the user's name, email and role chip, the "Volver a la plataforma" link to /simulador, the collapse toggle (aria-expanded, labels kept as accessible names, state persisted in localStorage and restored, storage failures tolerated), the skip link, the user menu, the grading badge in the Evaluaciones accessible name, the device indicator on Laboratorio, the registration as nav-badge and indicator host and the error boundary that keeps the panel. Depends on vitest, Testing Library and the session and layouts contexts. v1.2 (Bloque 5): the storage key constant comes from use-collapsed-preference.ts.
-* Versión: 1.2
+* Descripción: Verifies the staff panel chrome: the "Navegación del panel" landmark with the role's items and aria-current on the active one, the header with the user's name, email and role chip, the "Volver a la plataforma" link to /simulador, the collapse toggle (aria-expanded, labels kept as accessible names, state persisted in localStorage and restored, storage failures tolerated), the skip link, the user menu, the grading badge in the Evaluaciones accessible name, the device indicator on Laboratorio, the registration as nav-badge and indicator host and the error boundary that keeps the panel. Depends on vitest, Testing Library and the session and layouts contexts. v1.2 (Bloque 5): the storage key constant comes from use-collapsed-preference.ts. v1.3 (Bloque 5, §5.2): the identity moved from the top bar to the sidebar block (name + role chip linked to /profile, "Opciones" menu with the email, sign-out and the panel surface on its portal); the root scopes data-surface="panel"; the version line "VentyLab Admin v0.1.0"; collapsed, the back link keeps its name, the identity is the avatar button and the version hides; the mobile bar has no user controls.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -120,32 +120,50 @@ describe("PanelShell navigation", () => {
   });
 });
 
-describe("PanelShell header", () => {
-  it("shows the user's name, email and role chip", () => {
+describe("PanelShell identity and chrome (Bloque 5)", () => {
+  it("shows the user's name and role chip in the sidebar identity block, linked to the profile", () => {
     renderPanel("TEACHER");
 
-    const header = screen.getByRole("banner");
+    const identity = screen.getByRole("link", { name: /Ana Torres/ });
 
-    expect(within(header).getByText("Panel docente")).toBeInTheDocument();
-    expect(within(header).getByText("Ana Torres")).toBeInTheDocument();
-    expect(within(header).getByText("ana@ventylab.demo")).toBeInTheDocument();
-    expect(within(header).getByText("Docente")).toBeInTheDocument();
+    expect(identity).toHaveAttribute("href", "/profile");
+    expect(identity).toHaveTextContent("Docente");
+    expect(screen.getAllByText("Panel docente")).toHaveLength(2);
   });
 
   it("labels an admin as Administrador", () => {
     renderPanel("ADMIN");
 
-    expect(within(screen.getByRole("banner")).getByText("Administrador")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Ana Torres/ })).toHaveTextContent("Administrador");
   });
 
-  it("signs out from the user menu", () => {
+  it("signs out from the Opciones menu, which shows the email and carries the panel surface", () => {
     const value = sessionValue("TEACHER");
 
     renderPanel("TEACHER", null, value);
-    fireEvent.click(screen.getByRole("button", { name: "Abrir menú de usuario" }));
+    fireEvent.click(screen.getByRole("button", { name: "Opciones" }));
+
+    const menu = screen.getByRole("menu");
+
+    expect(within(menu).getByText("ana@ventylab.demo")).toBeInTheDocument();
+    expect(menu.closest("[data-surface='panel']")).not.toBeNull();
     fireEvent.click(screen.getByRole("menuitem", { name: /Cerrar sesión/ }));
 
     expect(value.signOut).toHaveBeenCalledTimes(1);
+  });
+
+  it("scopes the panel surface and shows the admin version line", () => {
+    renderPanel("TEACHER");
+
+    expect(screen.getByRole("main").closest("[data-surface='panel']")).not.toBeNull();
+    expect(screen.getByText("VentyLab Admin v0.1.0")).toBeInTheDocument();
+  });
+
+  it("has no top bar user controls: the mobile bar only opens the menu", () => {
+    renderPanel("TEACHER");
+
+    expect(within(screen.getByRole("banner")).getAllByRole("button").map((button) => button.getAttribute("aria-label")))
+      .toEqual(["Abrir menú del panel"]);
   });
 });
 
@@ -163,6 +181,9 @@ describe("PanelShell collapse", () => {
     expect(expand).toHaveAttribute("aria-expanded", "false");
     expect(expand).toHaveAttribute("aria-controls", panelNav().id);
     expect(within(panelNav()).getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+    expect(within(panelNav()).getByRole("link", { name: "Volver a la plataforma" })).toHaveAttribute("href", "/simulador");
+    expect(screen.getByRole("button", { name: "Opciones de Ana Torres" })).toBeInTheDocument();
+    expect(screen.queryByText("VentyLab Admin v0.1.0")).not.toBeInTheDocument();
     expect(window.localStorage.getItem(PANEL_COLLAPSED_STORAGE_KEY)).toBe("1");
 
     fireEvent.click(expand);
