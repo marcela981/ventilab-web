@@ -10,8 +10,9 @@
 *   editor shows exactly the controls the student sees. Lives in sim-engine because the ventilator console must stay
 *   engine-agnostic (it may not import sim-engine) while sim-engine may import the console. Not exported from the
 *   sim-engine barrel (deep import `@shared/sim-engine/console-binding`), so the barrel stays free of console code.
-*   Depends on the sim-engine vendored limits and the ventilator-console public API.
-* Versión: 1.0
+*   Depends on the sim-engine vendored limits and the ventilator-console public API. v1.1 (Bloque 5, perf): the console
+*   values come from the light `@shared/ventilator-console/config.entry` (the barrel evaluated the whole console).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +20,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { CONSOLE_PARAMETER_IDS, MODE_PARAMETERS } from "@shared/ventilator-console";
+import { CONSOLE_PARAMETER_IDS, MODE_PARAMETERS } from "@shared/ventilator-console/config.entry";
 import type {
   ConsoleConfirmation,
   ConsoleLimits,

@@ -15,7 +15,9 @@
 *   confirmation → changes) moved to `@shared/sim-engine/console-binding` and is re-exported here unchanged.
 *   v1.3 (T12): the engine output mapping (samples, metrics, vitals, trends, alarms, target ranges) moved there too
 *   and is re-exported here unchanged, for the case editor local preview.
-* Versión: 1.3
+*   v1.4 (Bloque 5, perf): the console values come from the light `@shared/ventilator-console/config.entry` (the barrel
+*   evaluated the whole console into the session result page).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,7 +40,7 @@ import type {
   TargetStatusValue,
   VentilatorSettings,
 } from "@shared/sim-engine";
-import { CONSOLE_PARAMETER_IDS, CONSOLE_PARAMETERS } from "@shared/ventilator-console";
+import { CONSOLE_PARAMETER_IDS, CONSOLE_PARAMETERS } from "@shared/ventilator-console/config.entry";
 import { OBJECTIVE_DEFINITIONS, PARAMETER_SETTINGS, SEX_LABELS } from "../config/sim-console.config";
 import type { ClientSessionEvent } from "../entities/sim-session.entity";
 

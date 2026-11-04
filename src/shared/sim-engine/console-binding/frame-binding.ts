@@ -11,7 +11,9 @@
 *   only keeps its listeners). Depends on the sim-engine types, the settings binding and the ventilator-console API.
 *   v1.1 (Bloque 5, C4): the metrics add the mean airway pressure of the engine cycle (`meanPressure`) and, when the
 *   caller folds them (cycle-flow.ts), the flow extremes of the last breath (`peakInspiratoryFlow`, `peakExpiratoryFlow`).
-* Versión: 1.1
+*   v1.2 (Bloque 5, perf): the console values come from the light `@shared/ventilator-console/config.entry` (the barrel
+*   evaluated the whole console).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,7 +21,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { PATIENT_TREND_POINTS, resolveAlarmPriority } from "@shared/ventilator-console";
+import { PATIENT_TREND_POINTS, resolveAlarmPriority } from "@shared/ventilator-console/config.entry";
 import type {
   ConsoleAlarm,
   ConsoleAlarmPriority,
