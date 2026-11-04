@@ -54,7 +54,6 @@ export function usePendingControlsStore(external?: PendingControlsStore): Pendin
 }
 
 export const selectPendingState = (state: ControlsState): ControlsState => state;
-export const selectSelectedParameter = (state: ControlsState): string | null => state.selected;
 export const selectRawPendingMode = (state: ControlsState): string | null => state.pendingMode;
 
 const pendingValueSelectors = new Map<string, (state: ControlsState) => number | undefined>();

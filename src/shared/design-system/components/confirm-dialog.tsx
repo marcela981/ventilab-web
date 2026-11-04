@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConfirmDialog
-* Descripción: Confirmation dialog for destructive or irreversible actions (MUI Dialog): title, optional description, confirm/cancel labels, error color when destructive and a pending state that disables both actions and shows a spinner. Closing through the backdrop or Escape is ignored while pending. Depends on MUI Dialog components and Button.
-* Versión: 1.0
+* Descripción: Confirmation dialog for destructive or irreversible actions (MUI Dialog): title, optional description, confirm/cancel labels, error color when destructive and a pending state that disables both actions and shows a spinner. Closing through the backdrop or Escape is ignored while pending. Depends on MUI Dialog components and Button. v1.1 (Bloque 5): optional `autoFocusConfirm` puts the initial focus on the confirm action, so Enter confirms (the ventilator command summary).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,6 +27,8 @@ export type ConfirmDialogProps = {
   cancelLabel?: string
   destructive?: boolean
   isPending?: boolean
+  /** Initial focus on the confirm action (Enter confirms); default: the dialog itself. */
+  autoFocusConfirm?: boolean
   onConfirm: () => void
   onCancel: () => void
 };
@@ -39,6 +41,7 @@ export function ConfirmDialog({
   cancelLabel = "Cancelar",
   destructive = false,
   isPending = false,
+  autoFocusConfirm = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
@@ -76,6 +79,7 @@ export function ConfirmDialog({
           onClick={onConfirm}
           disabled={isPending}
           startIcon={pendingIcon}
+          autoFocus={autoFocusConfirm}
         >
           {confirmLabel}
         </Button>

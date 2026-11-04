@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls styles
-* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token).
-* Versión: 1.1
+* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token). v1.2 (Bloque 5, C2): the compact July field (`data-layout="july"`): label on its own line, value and unit, smaller stepper and range.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -204,4 +204,46 @@
   color: var(--vl-console-out-of-range);
   border-style: solid;
   border-color: var(--vl-console-out-of-range);
+}
+
+/* July layout field (input row and right column): label line, value + unit, compact stepper. */
+.parameter[data-layout="july"] {
+  gap: 0 var(--vl-space-1);
+  padding: var(--vl-space-1) var(--vl-space-2) var(--vl-space-1) var(--vl-space-3);
+  background: var(--vl-console-surface);
+}
+
+.parameter[data-layout="july"] .value {
+  flex-wrap: wrap;
+  gap: 0 var(--vl-space-1);
+}
+
+.parameter[data-layout="july"] .label {
+  flex: 1 1 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parameter[data-layout="july"] .number {
+  font: var(--mui-font-h6);
+  font-weight: 700;
+}
+
+.parameter[data-layout="july"] .stepper {
+  align-self: end;
+}
+
+.parameter[data-layout="july"] .step {
+  min-width: calc(var(--vl-space-5) + var(--vl-space-1) / 2);
+  min-height: calc(var(--vl-space-5) + var(--vl-space-1) / 2);
+}
+
+.parameter[data-layout="july"] .meta {
+  gap: 0 var(--vl-space-1);
+  font-size: 0.625rem;
+}
+
+.parameter[data-layout="july"] .range {
+  margin-left: 0;
 }

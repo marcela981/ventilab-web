@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ConsoleControls
-* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. v1.3: optional `onPendingChange(pending)` reports when unconfirmed edits appear or go away (also false on unmount with pending edits), so a host such as the case editor can count them as unsaved. v1.4 (generic, optional): `settings.inFlight` tags a parameter whose confirmed change the source has not applied yet ("Enviando", "Esperando confirmación del equipo", "Rechazado") while the control keeps showing the applied value, and blocks re-editing it while sending/awaiting; a parameter the source does not report shows "—" (no invented value); v1.5: such a parameter cannot be adjusted at all (+/-, wheel and every key disabled) until the source reports it, so CONFIRMAR never sends a value derived from the limit minimum; `readOnlyReason` is shown under the controls and describes every disabled control (aria-describedby). Depends on React, MUI icons, the controls reducer, the controls config and the controls styles. v1.6 (generic, optional): `pendingResetKey` — when it changes the unconfirmed edits are dropped without emitting anything. v1.7 (Bloque 5, C1): the edits live in a per-console pending store (console-pending-store.ts, same reducer) instead of a local useReducer; an optional `pendingStore` shares it with other zones of the console, otherwise the component owns one. Behaviour unchanged.
-* Versión: 1.7
+* Descripción: Mode selector and parameter controls of the generic ventilator console, in the real-device pattern. The modes come from the adapter options; each mode shows only its applicable parameters (console table, filtered by the injected limits). Select a parameter, then adjust it with the +/- buttons, the mouse wheel over the selected value (a zero vertical delta is ignored) or the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max); the value and a mode change stay PENDING (pending token + "Pendiente" text) until CONFIRMAR (or "Aplicar" in the configure variant) emits the diff once through onConfirm; CANCELAR or Escape revert and emit nothing. Pending edits only call the optional onProposeChange. Limits are shown and enforced from the `limits` prop only. A pending value or mode the source has already applied stops being pending, so the tags and the emitted diff always agree. Read-only disables everything and shows the values. v1.2: a parameter without a valid step grid (zero, negative or non-finite step) disables +/-, the wheel and the step keys. v1.3: optional `onPendingChange(pending)` reports when unconfirmed edits appear or go away (also false on unmount with pending edits), so a host such as the case editor can count them as unsaved. v1.4 (generic, optional): `settings.inFlight` tags a parameter whose confirmed change the source has not applied yet ("Enviando", "Esperando confirmación del equipo", "Rechazado") while the control keeps showing the applied value, and blocks re-editing it while sending/awaiting; a parameter the source does not report shows "—" (no invented value); v1.5: such a parameter cannot be adjusted at all (+/-, wheel and every key disabled) until the source reports it, so CONFIRMAR never sends a value derived from the limit minimum; `readOnlyReason` is shown under the controls and describes every disabled control (aria-describedby). Depends on React, MUI icons, the controls reducer, the controls config and the controls styles. v1.6 (generic, optional): `pendingResetKey` — when it changes the unconfirmed edits are dropped without emitting anything. v1.7 (Bloque 5, C1): the edits live in a per-console pending store (console-pending-store.ts, same reducer) instead of a local useReducer; an optional `pendingStore` shares it with other zones of the console, otherwise the component owns one. Behaviour unchanged. v1.8 (Bloque 5, C2): the parameter control moved to parameter-control.tsx (unchanged; inFlightText is re-exported from there).
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,14 +9,12 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { useEffect, useId, useRef } from "react";
+import { useId } from "react";
 import type { KeyboardEvent } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_PARAMETERS, getParametersForMode, MODE_PARAMETERS } from "./config/console-controls.config";
 import type { ConsoleParameterDefinition, ModeParameterTable } from "./config/console-controls.config";
-import { buildConfirmation, keyToAdjustment, pendingModeOf, hasStepGrid, stepDecimals } from "./console-controls.reducer";
+import { buildConfirmation, pendingModeOf } from "./console-controls.reducer";
 import type { Adjustment } from "./console-controls.reducer";
 import {
   adjustPending,
@@ -28,9 +26,9 @@ import {
 } from "./console-pending-store";
 import type { PendingControlsStore } from "./console-pending-store";
 import { useStoreSelector } from "./console-store";
+import { ParameterControl } from "./parameter-control";
 import type {
   ConsoleConfirmation,
-  ConsoleInFlight,
   ConsoleLimits,
   ConsoleMode,
   ConsoleParameterChange,
@@ -38,6 +36,8 @@ import type {
   ParameterLimit,
 } from "./ventilator-console.entity";
 import styles from "../UI/console-controls.module.css";
+
+export { inFlightText } from "./parameter-control";
 
 /** `live`: a running ventilator applies the change. `configure`: the case editor sets initial values; no engine runs. */
 export type ConsoleVariant = "live" | "configure";
@@ -67,13 +67,6 @@ export const CONTROLS_COPY = {
   },
 } as const;
 
-/** Tag text of a change in flight, with the source reason when there is one. */
-export function inFlightText(flight: ConsoleInFlight): string {
-  const label = CONTROLS_COPY.inFlight[flight.status];
-
-  return flight.message ? `${label}: ${flight.message}` : label;
-}
-
 export type ConsoleControlsProps = {
   settings: ConsoleSettings
   mode: ConsoleMode
@@ -96,148 +89,6 @@ export type ConsoleControlsProps = {
   pendingStore?: PendingControlsStore | undefined
   className?: string
 };
-
-function formatValue(value: number, limit: ParameterLimit): string {
-  return value.toFixed(stepDecimals(limit.step));
-}
-
-type ParameterControlProps = {
-  id: string
-  definition: ConsoleParameterDefinition
-  limit: ParameterLimit
-  /** `null`: the source reports no value and nothing is pending. */
-  value: number | null
-  applied: number | undefined
-  pending: boolean
-  inFlight: ConsoleInFlight | undefined
-  selected: boolean
-  disabled: boolean
-  describedBy: string | undefined
-  onAdjust: (adjustment: Adjustment) => void
-  onSelect: () => void
-};
-
-/** A change being sent or awaiting the source cannot be edited again until it resolves. */
-function blocksEditing(flight: ConsoleInFlight | undefined): boolean {
-  return flight !== undefined && flight.status !== "rejected";
-}
-
-function ParameterControl({
-  id,
-  definition,
-  limit,
-  value: shown,
-  applied,
-  pending,
-  inFlight,
-  selected,
-  disabled: readOnly,
-  describedBy,
-  onAdjust,
-  onSelect,
-}: ParameterControlProps) {
-  const valueRef = useRef<HTMLDivElement>(null);
-  const disabled = readOnly || blocksEditing(inFlight);
-  const known = shown !== null;
-  const value = shown ?? limit.min;
-  const formatted = known ? formatValue(value, limit) : CONTROLS_COPY.unknownValue;
-  // Without a valid step grid +/-, the wheel and the step keys have nothing to step by. Without a reported value
-  // there is no base either: stepping from the limit minimum would propose a value the source never reported.
-  const stepping = known && hasStepGrid(limit.step);
-
-  // React registers wheel listeners as passive, so a native one is needed to keep the page from scrolling.
-  useEffect(() => {
-    const node = valueRef.current;
-
-    // Only a selected control captures the wheel, so scrolling past an unselected one still scrolls the page.
-    if (node === null || disabled || !selected || !stepping) {
-      return undefined;
-    }
-
-    const onWheel = (event: WheelEvent) => {
-      if (event.deltaY === 0) {
-        return;
-      }
-
-      event.preventDefault();
-      onAdjust({ kind: "steps", steps: event.deltaY < 0 ? 1 : -1 });
-    };
-    node.addEventListener("wheel", onWheel, { passive: false });
-
-    return () => node.removeEventListener("wheel", onWheel);
-  }, [disabled, selected, stepping, onAdjust]);
-
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const adjustment = known ? keyToAdjustment(event.key, limit) : null;
-
-    if (adjustment !== null && !disabled) {
-      event.preventDefault();
-      onAdjust(adjustment);
-    }
-  };
-
-  return (
-    <li
-      className={cx(styles.parameter)}
-      data-pending={pending}
-      data-selected={selected}
-      data-parameter={id}
-      data-in-flight={inFlight?.status}
-    >
-      <div
-        ref={valueRef}
-        className={cx(styles.value)}
-        role="spinbutton"
-        tabIndex={disabled ? -1 : 0}
-        aria-label={definition.description}
-        aria-valuenow={known ? value : undefined}
-        aria-valuemin={limit.min}
-        aria-valuemax={limit.max}
-        aria-valuetext={known ? `${formatted} ${limit.unit}`.trim() : CONTROLS_COPY.unknownValueText}
-        aria-readonly={disabled}
-        aria-disabled={disabled}
-        aria-describedby={describedBy}
-        onKeyDown={onKeyDown}
-        onClick={disabled ? undefined : onSelect}
-        onFocus={disabled ? undefined : onSelect}
-      >
-        <span className={cx(styles.label)}>{definition.label}</span>
-        <span className={cx(styles.number)}>{formatted}</span>
-        <span className={cx(styles.unit)}>{limit.unit}</span>
-      </div>
-      <div className={cx(styles.stepper)}>
-        <button
-          type="button"
-          className={cx(styles.step)}
-          aria-label={CONTROLS_COPY.decrease(definition.label)}
-          aria-describedby={describedBy}
-          disabled={disabled || !stepping || value <= limit.min}
-          onClick={() => onAdjust({ kind: "steps", steps: -1 })}
-        >
-          <RemoveIcon aria-hidden />
-        </button>
-        <button
-          type="button"
-          className={cx(styles.step)}
-          aria-label={CONTROLS_COPY.increase(definition.label)}
-          aria-describedby={describedBy}
-          disabled={disabled || !stepping || value >= limit.max}
-          onClick={() => onAdjust({ kind: "steps", steps: 1 })}
-        >
-          <AddIcon aria-hidden />
-        </button>
-      </div>
-      <p className={cx(styles.meta)}>
-        {pending ? <span className={cx(styles.pendingTag)}>{CONTROLS_COPY.pending}</span> : null}
-        {inFlight ? (
-          <span className={cx(styles.inFlightTag)} data-status={inFlight.status}>{inFlightText(inFlight)}</span>
-        ) : null}
-        {pending && applied !== undefined ? <span>{CONTROLS_COPY.applied(formatValue(applied, limit))}</span> : null}
-        <span className={cx(styles.range)}>{CONTROLS_COPY.range(limit)}</span>
-      </p>
-    </li>
-  );
-}
 
 export function ConsoleControls({
   settings,
