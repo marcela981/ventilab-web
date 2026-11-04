@@ -4,7 +4,8 @@
 *   edge over the dark console (full width on narrow screens, 28rem from 600 px), a header with the close button, the
 *   scrollable list of answers and the current stream, and the question form with its counter and actions. Design
 *   tokens (--vl-color-*, --vl-space-*, --vl-radius-*, --vl-shadow-*, --vl-z-*) only; no hex or rgb values.
-* Versión: 1.0
+*   v1.1 (Bloque 5, C6): 380 px (23.75rem) from 600 px, like the other July console drawers (D26).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,7 +31,7 @@
 
 @media (min-width: 600px) {
   .panel {
-    width: 28rem;
+    width: 23.75rem;
   }
 }
 
@@ -101,4 +102,8 @@
   display: flex;
   gap: var(--vl-space-2);
   margin-left: auto;
+}
+
+.panel:focus {
+  outline: none;
 }

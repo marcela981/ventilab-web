@@ -5,7 +5,8 @@
 *   simulated clock at whole-second resolution (one re-render per displayed second, not per snapshot); LiveCasePanel
 *   rebuilds the live objectives only when the engine target statuses change; SessionAssistSlot renders a host assist
 *   slot with the current simulated time. Depends on React, the session store hook and the simulator components.
-* Versión: 0.1
+*   v0.2 (Bloque 5, C6): LiveCasePanel is the "Caso clínico" strip button and drawer, with an optional extra block.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,13 +44,15 @@ export type LiveCasePanelProps = {
   store: SimSessionStore
   caseId: string
   engineCase: EngineCase
+  /** v0.2: extra content of the case drawer (the own patient of the workspace). */
+  extra?: ReactNode
 };
 
-export const LiveCasePanel = memo(function LiveCasePanel({ store, caseId, engineCase }: LiveCasePanelProps) {
+export const LiveCasePanel = memo(function LiveCasePanel({ store, caseId, engineCase, extra }: LiveCasePanelProps) {
   const statuses = useSimSessionSlice(store, selectTargets, sameData);
   const objectives = useMemo(() => buildObjectives(engineCase.targets, statuses), [engineCase.targets, statuses]);
 
-  return <CasePanel caseId={caseId} engineCase={engineCase} objectives={objectives} />;
+  return <CasePanel caseId={caseId} engineCase={engineCase} objectives={objectives} extra={extra} />;
 });
 
 export type SessionAssistSlotProps = {

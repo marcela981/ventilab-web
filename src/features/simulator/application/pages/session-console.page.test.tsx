@@ -202,6 +202,8 @@ describe("SessionConsolePage", () => {
     });
     expect(sentOfType(worker, "start")).toHaveLength(1);
     expect(fetchReplay).not.toHaveBeenCalled();
+    // July layout (Bloque 5, C6): the clinical case lives in a drawer opened from the session strip.
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar caso clínico" }));
     expect(await screen.findByText("SDRA moderado")).toBeInTheDocument();
     expect(screen.getByText("Peso predicho (PBW)").nextElementSibling).toHaveTextContent("70.6 kg");
     expect(screen.getByText("en tiempo real")).toBeInTheDocument();

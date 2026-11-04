@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console controls styles
-* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version.
-* Versión: 0.1
+* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" stays on one line.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -107,6 +107,7 @@
 .moreModes {
   align-self: flex-start;
   max-width: 100%;
+  white-space: nowrap;
 }
 
 .moreModesList {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console controls
-* Descripción: The ventilator controls of the July layout, spread over the console zones and sharing the per-console pending store (console-pending-store.ts): the input row above the curves (FiO2 | Volumen (VCV) / PIP (PCV) / Presión de soporte | PEEP, each with its range validation, i.e. the same clamp/snap of the controls reducer), the VOL CTRL / PRES CTRL mode toggle with an optional assist slot to its right and a discreet "Más modos" menu (menuitemradio) for the other adapter modes (D20 option A; the mode stays pending until Confirmar), the timing block (Insp/Esp slider that sets Ti from the cycle, read-only I:E and Te, inspiratory time and pause, and the expiratory pause disabled with "No disponible en este simulador", D21), the rate block (spinbutton + slider) and "Más parámetros" with every other applicable parameter (open while one of them is pending). No new engine parameter (no I:E, no expiratory pause, no "Q Max", D22). Each piece is a memo zone that reads only its slices of the adapter store and of the pending store, so an edit re-renders the touched control, never the metrics or the curves; the handlers read the snapshots at event time. Every interactive element carries `data-console-control` for the console Enter/Esc handler (july-confirm.tsx). v0.1 (Bloque 5, C2): first version. Depends on React, MUI (Menu), the console stores, the controls config, the placement config, the timing math and the July styles.
-* Versión: 0.1
+* Descripción: The ventilator controls of the July layout, spread over the console zones and sharing the per-console pending store (console-pending-store.ts): the input row above the curves (FiO2 | Volumen (VCV) / PIP (PCV) / Presión de soporte | PEEP, each with its range validation, i.e. the same clamp/snap of the controls reducer), the VOL CTRL / PRES CTRL mode toggle with an optional assist slot to its right and a discreet "Más modos" menu (menuitemradio) for the other adapter modes (D20 option A; the mode stays pending until Confirmar), the timing block (Insp/Esp slider that sets Ti from the cycle, read-only I:E and Te, inspiratory time and pause, and the expiratory pause disabled with "No disponible en este simulador", D21), the rate block (spinbutton + slider) and "Más parámetros" with every other applicable parameter (open while one of them is pending). No new engine parameter (no I:E, no expiratory pause, no "Q Max", D22). Each piece is a memo zone that reads only its slices of the adapter store and of the pending store, so an edit re-renders the touched control, never the metrics or the curves; the handlers read the snapshots at event time. Every interactive element carries `data-console-control` for the console Enter/Esc handler (july-confirm.tsx). v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" lists the short mode names on one line ("Más modos (PSV, CPAP, SIMV)", "Más modos PSV"), as mockup 05. Depends on React, MUI (Menu), the console stores, the controls config, the placement config, the timing math and the July styles.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -201,6 +201,11 @@ type JulyModeToggleProps = JulyZoneProps & {
   assist?: ReactNode
 };
 
+/** "PSV — Presión de soporte" → "PSV": the short name the "Más modos" button lists (the menu keeps the full label). */
+function shortModeLabel(option: { id: string, label: string }): string {
+  return option.label.split(" — ")[0]?.trim() || option.id;
+}
+
 /** VOL CTRL / PRES CTRL (+ assist slot) and the "Más modos" menu; the selected mode stays pending until Confirmar. */
 export const JulyModeToggle = memo(function JulyModeToggle({ store, pending, readOnly, describedBy, applicability, assist }: JulyModeToggleProps) {
   const { mode, pendingMode, effective } = useEffectiveMode(store, pending);
@@ -264,7 +269,7 @@ export const JulyModeToggle = memo(function JulyModeToggle({ store, pending, rea
           >
             {JULY_CONTROLS_COPY.moreModes}
             <span className={cx(styles.moreModesList)}>
-              {effectiveExtra ? effectiveExtra.label : `(${extras.map((option) => option.label).join(", ")})`}
+              {effectiveExtra ? shortModeLabel(effectiveExtra) : `(${extras.map(shortModeLabel).join(", ")})`}
             </span>
             <ArrowDropDownIcon fontSize="small" aria-hidden />
           </button>

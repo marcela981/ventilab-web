@@ -12,7 +12,8 @@
 *   v0.3 (W7, Bloque 1): the CONNECTED lab is built with createLabConnectionValue (the value grew with W7) and the live
 *   lab connection controller is mocked idle (no session or socket providers here).
 *   v0.4 (W11, Bloque 1): no mock of the simulator catalog entry point (removed with the temporary panels).
-* Versión: 0.4
+*   v0.5 (Bloque 5, C6): a signed-in student session (the July value cards preference is per user).
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +30,8 @@ import { SWRConfig } from "swr";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { SessionPatient } from "@features/simulator/session.entry";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
+import { SessionContext } from "@shared/session/session-context";
+import type { SessionContextValue } from "@shared/session/session-context";
 import type { SimBatch, SimCommand } from "@shared/sim-engine";
 import { ALARM_LIMITS_COPY, ALARMS_COPY } from "@shared/ventilator-console";
 import { SimulatorWorkspacePage } from "../../pages/simulator-workspace.page";
@@ -94,8 +97,28 @@ const PATIENT: SessionPatient = {
   },
 };
 
+const STUDENT = { id: "student-1", email: "student@ventylab.demo", name: "Estudiante", image: null, role: "STUDENT" as const };
+
+const SESSION: SessionContextValue = {
+  status: "authenticated",
+  user: STUDENT,
+  role: "STUDENT",
+  permissions: [],
+  error: null,
+  hasRole: (...roles) => roles.includes("STUDENT"),
+  hasPermission: () => false,
+  establishSession: () => Promise.resolve(STUDENT),
+  signOut: () => Promise.resolve(),
+  reloadSession: () => Promise.resolve(STUDENT),
+  handleRoleChanged: () => Promise.resolve(false),
+};
+
 function Swr({ children }: { children: ReactNode }) {
-  return <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>{children}</SWRConfig>;
+  return (
+    <SessionContext.Provider value={SESSION}>
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, shouldRetryOnError: false }}>{children}</SWRConfig>
+    </SessionContext.Provider>
+  );
 }
 
 type RenderOptions = {
@@ -194,6 +217,9 @@ describe("MonitoringPanel", () => {
     expect(screen.queryByRole("button", { name: ALARMS_COPY.limits })).not.toBeInTheDocument();
     expect(screen.queryByText(ALARM_LIMITS_COPY.title)).not.toBeInTheDocument();
 
+    // July layout: the patient status in the left column, the full own patient card in the case drawer.
+    expect(screen.getByRole("status", { name: "Paciente activo" })).toHaveTextContent("Paciente: María José");
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar caso clínico" }));
     const patient = screen.getByRole("region", { name: "Paciente: María José" });
 
     expect(within(patient).getByText("Neumonía")).toBeInTheDocument();

@@ -3,8 +3,10 @@
 * Descripción: CSS Module of the Monitoreo tab of /simulador (W6, Bloque 1): the dark console surface of the panel,
 *   the header row with the Digital/Real selector and the status chip (Sin señal, Simulando, Conectado (Físico); text
 *   plus a colored dot, never color alone), the guide states with their shortcuts, the own patient card, and the
-*   result dialog actions. Console and design-system tokens only.
-* Versión: 0.1
+*   result dialog actions. Console and design-system tokens only. v0.2 (Bloque 5, C6): the panel sets the height of
+*   the July console (--vl-monitor-height: viewport minus the shell padding, the panel padding, its header and the
+*   bottom tabs).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +15,8 @@
 */
 
 .panel {
+  --vl-monitor-height: calc(100dvh - var(--vl-space-6) * 2 - var(--vl-space-3) * 4 - var(--vl-space-8) * 1.5);
+
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-3);

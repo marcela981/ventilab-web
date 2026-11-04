@@ -13,7 +13,9 @@
 *   entities, and the panel CSS Module. v1.1 (review of bc8a596): a request that fails before the stream starts gives
 *   the typed question back to the field.
 *   v1.2 (W6, Bloque 4): the rating carries the SIMULATOR_ASSIST surface (thesis analytics by surface).
-* Versión: 1.2
+*   v1.3 (Bloque 5, C6): a console drawer of 380 px that takes the focus when it opens; Escape inside the panel closes it (a dialog inside it closes
+*   first: MUI stops that Escape).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,8 +29,8 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
-import { useEffect, useId, useState } from "react";
-import type { FormEvent } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import {
   AI_ERROR_CODES,
   COMPOSER_COPY,
@@ -94,6 +96,7 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
   const [confirming, setConfirming] = useState(false);
   const titleId = useId();
   const counterId = useId();
+  const panelRef = useRef<HTMLElement | null>(null);
   const isStreaming = stream.status === "streaming";
   const showCounter = isNearLimit(question.length, ASSIST_QUESTION_MAX_LENGTH);
   const done = stream.status === "done" && isAssistDone(stream.done) ? stream.done : null;
@@ -134,11 +137,23 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
     }
   };
 
+  // The drawer takes the focus when it opens (Escape then closes it; the launcher gets the focus back).
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
+
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onClose();
+    }
+  };
+
   const showCurrent = stream.status !== "idle" && !recorded;
   const error = stream.status === "error" && stream.error ? stream.error : null;
 
   return (
-    <aside id={id} className={cx(styles.panel)} aria-labelledby={titleId}>
+    <aside ref={panelRef} id={id} className={cx(styles.panel)} aria-labelledby={titleId} tabIndex={-1} onKeyDown={onKeyDown}>
       <header className={cx(styles.header)}>
         <h2 id={titleId} className={cx(styles.title)}>{ASSIST_PANEL_COPY.title}</h2>
         <IconButton aria-label={ASSIST_PANEL_COPY.close} onClick={onClose} size="small">

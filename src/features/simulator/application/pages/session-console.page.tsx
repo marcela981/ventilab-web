@@ -44,7 +44,9 @@
 *   v2.1 (W6, Bloque 1): the session view (phase notices, session bar, console, case panel, end and divergence
 *   dialogs) moved unchanged to SessionMonitor, which the /simulador Monitoreo tab reuses; this page keeps the EXAM and
 *   direct-link host: SimSessionHost, the heading with the mode tag, the document title and the EXAM focus mode.
-* Versión: 2.1
+*   v2.2 (Bloque 5, C6): passes the route's value cards preference (`cards`) to the July SessionMonitor; the page sets
+*   the height of the July console (--vl-monitor-height).
+* Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,16 +68,16 @@ export { examReturnUrlOf } from "../components/sim-session-host";
 export { SESSION_PAGE_COPY } from "../components/session-monitor";
 export type { AssistSlotContext } from "../components/session-monitor";
 
-export type SessionConsolePageProps = Pick<SessionMonitorProps, "renderAssist" | "assistancePolicy"> & {
+export type SessionConsolePageProps = Pick<SessionMonitorProps, "renderAssist" | "assistancePolicy" | "cards"> & {
   sessionId: string
   /** Replaces the navigation to the result after a successful end (T9: return to the exam). */
   onEnded?: ((sessionId: string) => void | Promise<void>) | undefined
   deps?: SimSessionHostDeps | undefined
 };
 
-type SessionConsoleViewProps = Pick<SessionConsolePageProps, "renderAssist" | "assistancePolicy">;
+type SessionConsoleViewProps = Pick<SessionConsolePageProps, "renderAssist" | "assistancePolicy" | "cards">;
 
-function SessionConsoleView({ renderAssist, assistancePolicy }: SessionConsoleViewProps) {
+function SessionConsoleView({ renderAssist, assistancePolicy, cards }: SessionConsoleViewProps) {
   const host = useSimSessionHost();
   const { mode } = host;
 
@@ -90,15 +92,15 @@ function SessionConsoleView({ renderAssist, assistancePolicy }: SessionConsoleVi
         <h1 className={cx(styles.sessionTitle)}>{SESSION_PAGE_COPY.title}</h1>
         {mode ? <span className={cx(styles.modeTag)} data-mode={mode}>{simulationModeLabel(mode)}</span> : null}
       </header>
-      <SessionMonitor host={host} renderAssist={renderAssist} assistancePolicy={assistancePolicy} />
+      <SessionMonitor host={host} renderAssist={renderAssist} assistancePolicy={assistancePolicy} cards={cards} />
     </div>
   );
 }
 
-export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, onEnded, deps }: SessionConsolePageProps) {
+export function SessionConsolePage({ sessionId, renderAssist, assistancePolicy, cards, onEnded, deps }: SessionConsolePageProps) {
   return (
     <SimSessionHost sessionId={sessionId} onEnded={onEnded} deps={deps}>
-      <SessionConsoleView renderAssist={renderAssist} assistancePolicy={assistancePolicy} />
+      <SessionConsoleView renderAssist={renderAssist} assistancePolicy={assistancePolicy} cards={cards} />
     </SimSessionHost>
   );
 }

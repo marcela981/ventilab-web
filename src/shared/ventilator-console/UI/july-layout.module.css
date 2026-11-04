@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console layout styles
-* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed).
-* Versión: 0.2
+* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed). v0.3 (Bloque 5, C6): smaller logos below a 1100 px console.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,6 +49,15 @@
   .grid {
     grid-template-columns: 15rem minmax(0, 1fr) 14.375rem;
     gap: var(--vl-space-2);
+  }
+
+  /* 1280: smaller logos leave the height to the value cards. */
+  .logoVentyLab {
+    height: calc(var(--vl-space-8) * 0.625);
+  }
+
+  .logoUnivalle {
+    width: 9rem;
   }
 }
 

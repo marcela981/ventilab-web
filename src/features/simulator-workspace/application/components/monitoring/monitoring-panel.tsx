@@ -13,7 +13,9 @@
 *   the workspace session and lab connection, the monitor components and the monitoring styles.
 *   v0.3 (W10, Bloque 1): the real view is the lazy real monitor while CONNECTED; once real mode was opened it stays
 *   mounted (hidden in digital mode), so its console edits, recording state and latency survive mode switches.
-* Versión: 0.3
+*   v0.4 (Bloque 5, C6): the digital SessionMonitor is the July layout (the own patient goes into the case drawer) and
+*   receives the signed-in user's value cards preference (useMonitorCardsPref).
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,7 +27,9 @@ import { useState } from "react";
 import { SessionMonitor } from "@features/simulator/session.entry";
 import type { SimSessionHostValue } from "@features/simulator/session.entry";
 import { cx } from "@shared/lib/class-names";
+import { useSession } from "@shared/session/use-session";
 import { deriveMonitorStatus } from "../../entities/monitor-status.entity";
+import { useMonitorCardsPref } from "../../hooks/use-monitor-cards-pref";
 import type { MonitorMode } from "../../entities/monitor-status.entity";
 import { useLabConnection } from "../lab-connection-provider";
 import { useWorkspaceSession } from "../workspace-session-provider";
@@ -43,10 +47,12 @@ export const MONITORING_PANEL_COPY = {
 
 function DigitalMonitor({ host }: { host: SimSessionHostValue }) {
   const patient = host.running?.boot.record.patient ?? null;
+  const { user } = useSession();
+  const cards = useMonitorCardsPref(user?.id);
 
   return (
     <div className={cx(styles.console)}>
-      <SessionMonitor host={host} aside={patient ? <PatientInfo patient={patient} /> : null} />
+      <SessionMonitor host={host} aside={patient ? <PatientInfo patient={patient} /> : null} cards={cards} />
     </div>
   );
 }
