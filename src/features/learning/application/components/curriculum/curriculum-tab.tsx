@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: CurriculumTab
-* Descripción: Currículo panel of the /learn workspace (W3, Bloque 2). v0.2 (W4, Bloque 2; DISENO_BLOQUE2 §2.4, §2.5, §2.13 and §7b decisions 2 and 3): ONE load of the curriculum tree and the progress summary (2 parallel SWR requests; no per-module request) split in the client into the three July accordions (VentyLab, Prerequisitos with the "Opcional" badge, Mecánica respiratoria open by default; one open at a time) with their level steppers and module cards. `?section=` opens the accordion it resolves to (accordion key, track, level id, section id or slug; see the curriculum view selectors) and the level anchor of the URL is scrolled into view; a later toggle wins until the URL changes again. Arrow up/down, Home and End move between the accordion triggers. Skeleton while the tree loads, error with retry (both requests); a failed progress read only warns (with retry) and the cards fall back to the tree completion. Staff: preview notice, no locks, drafts with "Borrador" and the floating "Modo edición" toggle that shows "Editar en el CMS" links. Lazy loaded by the workspace (lazyPanel). Depends on next/router, MUI, the design-system states, the learning hooks, entities, edit mode store and components, and the curriculum CSS Module. v0.3 (Bloque 3): students get "Quiz del módulo" on each open module card (extraAction composed here: /evaluations?moduleId=). v0.4 (Bloque 3, Ola 4): the link only shows on modules with at least one evaluation for the student, derived from ONE `GET /api/my-evaluations` (useEvaluatedModuleIds of the @features/evaluations module-evaluations entry; no request per card and none for staff); while that read is pending or failed no card shows it.
-* Versión: 0.4
+* Descripción: Currículo panel of the /learn workspace (W3, Bloque 2). v0.2 (W4, Bloque 2; DISENO_BLOQUE2 §2.4, §2.5, §2.13 and §7b decisions 2 and 3): ONE load of the curriculum tree and the progress summary (2 parallel SWR requests; no per-module request) split in the client into the three July accordions (VentyLab, Prerequisitos with the "Opcional" badge, Mecánica respiratoria open by default; one open at a time) with their level steppers and module cards. `?section=` opens the accordion it resolves to (accordion key, track, level id, section id or slug; see the curriculum view selectors) and the level anchor of the URL is scrolled into view; a later toggle wins until the URL changes again. Arrow up/down, Home and End move between the accordion triggers. Skeleton while the tree loads, error with retry (both requests); a failed progress read only warns (with retry) and the cards fall back to the tree completion. Staff: preview notice, no locks, drafts with "Borrador" and the floating "Modo edición" toggle that shows "Editar en el CMS" links. Lazy loaded by the workspace (lazyPanel). Depends on next/router, MUI, the design-system states, the learning hooks, entities, edit mode store and components, and the curriculum CSS Module. v0.3 (Bloque 3): students get "Quiz del módulo" on each open module card (extraAction composed here: /evaluations?moduleId=). v0.4 (Bloque 3, Ola 4): the link only shows on modules with at least one evaluation for the student, derived from ONE `GET /api/my-evaluations` (useEvaluatedModuleIds of the @features/evaluations module-evaluations entry; no request per card and none for staff); while that read is pending or failed no card shows it. v0.5 (Bloque 5): passes the accordion key to each accordion (data-section, section icon color) and marks the Prerequisitos stepper so its levels take the prerequisite tone.
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -178,6 +178,7 @@ export function CurriculumTab() {
           <CurriculumAccordion
             key={key}
             id={accordionId(key)}
+            section={key}
             title={CURRICULUM_TAB_COPY.sections[key]}
             icon={ACCORDION_ICONS[key]}
             badge={key === "prerrequisitos" ? CURRICULUM_TAB_COPY.optional : undefined}
@@ -192,6 +193,7 @@ export function CurriculumTab() {
                 isStaff={isStaff}
                 editMode={isStaff && editMode}
                 moduleAction={isStaff ? undefined : moduleAction}
+                prerequisite={key === "prerrequisitos"}
               />
             ) : (
               <p className={cx(styles.muted)}>{CURRICULUM_TAB_COPY.empty[key]}</p>
