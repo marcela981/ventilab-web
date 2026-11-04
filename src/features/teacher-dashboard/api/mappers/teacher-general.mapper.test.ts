@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher general tab mapper and entities tests
-* Descripción: Unit tests of the General tab of /teacher: toPlatformStatCards keeps the julio order and destinations and drops cards without a finite value; toRecentStudents uses the email when the name is blank and clamps the progress; greetingFor follows the Bogotá hour (UTC-5) and progressTone the julio thresholds. Depends on vitest, the teacher general mapper and entities and the students directory DTOs.
-* Versión: 1.1
+* Descripción: Unit tests of the General tab of /teacher: toPlatformStatCards keeps the julio order and destinations and drops cards without a finite value; toRecentStudents uses the email when the name is blank, clamps the progress and (v1.2) treats a missing canView of the older server contract as false; greetingFor follows the Bogotá hour (UTC-5) and progressTone the julio thresholds. Depends on vitest, the teacher general mapper and entities and the students directory DTOs.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -57,6 +57,16 @@ describe("toRecentStudents", () => {
       { id: "u1", name: "ana@ventylab.demo", progress: 100, canView: false },
       { id: "u2", name: "Bruno", progress: 0, canView: true },
     ]);
+  });
+
+
+  it("treats a row of the older contract without canView as not viewable", () => {
+    const legacy: Record<string, unknown> = { ...studentRow({ id: "u3" }) };
+    delete legacy.canView;
+    delete legacy.groups;
+    delete legacy.studentCode;
+
+    expect(toRecentStudents([legacy as unknown as AdminStudentListItemDTO])).toEqual([{ id: "u3", name: "Ana Gómez", progress: 40, canView: false }]);
   });
 });
 
