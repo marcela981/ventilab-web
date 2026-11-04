@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Runtime performance of the staff panel screens
-* Descripción: Measures, as the teacher (ana.torres) and as the admin (superadmin) and with CPU throttling ×PERF_CPU_RATE (4) through CDP, the staff screens that exist before Bloque 4 on a production build: /teacher (dashboard of the default group), /teacher?groupId=<load group> (the student list of a PERF_STUDENT_COUNT-student group, the closest thing to a student directory today), /teacher/students/[userId] (student detail), /groups, /profile and, for the admin only, /admin/users. For every navigation it records with the CDP Network domain the requests until the first useful content (API calls and JS chunks, network or HTTP cache) and the request depth (sequential waves: a request belongs to wave 1 + the highest wave among the requests of the same set that had finished before it started), the time from the navigation start to the first useful content measured in the page with a MutationObserver, the long tasks > 50 ms until that moment and until PERF_SETTLE_MS later, every request fired in the settle window and the number of rendered rows of the main list. Cold = new browser context (empty HTTP cache, saved session); warm = second full visit of the same URL in that context. Runs one discarded warm-up round per screen, then PERF_RUNS rounds, and writes <PERF_OUT_DIR>/<PERF_LABEL>-teacher.json with every run, the medians and the first-load JavaScript of each route read from the build output (scripts/perf/bundle-sizes.mjs over .next). The load group and student come from ventylab-server scripts/load/seed-load-data.ts run with LOAD_STUDENT_COUNT=PERF_STUDENT_COUNT (500): their ids are deterministic (same derivation as that seed), and PERF_GROUP_ID / PERF_STUDENT_ID override them. The admin session is signed in once through the form and saved to e2e/.auth/admin.json (reused while younger than E2E_AUTH_MAX_AGE_H); the teacher session comes from the setup project. Depends on @playwright/test, Node and the perf support helpers.
-* Versión: 0.1
+* Descripción: Measures, as the teacher (ana.torres) and as the admin (superadmin) and with CPU throttling ×PERF_CPU_RATE (4) through CDP, the staff screens that exist before Bloque 4 on a production build: /teacher (dashboard of the default group), /teacher?groupId=<load group> (the student list of a PERF_STUDENT_COUNT-student group, the closest thing to a student directory today), /teacher/students/[userId] (student detail), /groups, /profile and, for the admin only, /admin/users. For every navigation it records with the CDP Network domain the requests until the first useful content (API calls and JS chunks, network or HTTP cache) and the request depth (sequential waves: a request belongs to wave 1 + the highest wave among the requests of the same set that had finished before it started), the time from the navigation start to the first useful content measured in the page with a MutationObserver, the long tasks > 50 ms until that moment and until PERF_SETTLE_MS later, every request fired in the settle window and the number of rendered rows of the main list. Cold = new browser context (empty HTTP cache, saved session); warm = second full visit of the same URL in that context. Runs one discarded warm-up round per screen, then PERF_RUNS rounds, and writes <PERF_OUT_DIR>/<PERF_LABEL>-teacher.json with every run, the medians and the first-load JavaScript of each route read from the build output (scripts/perf/bundle-sizes.mjs over .next). The load group and student come from ventylab-server scripts/load/seed-load-data.ts run with LOAD_STUDENT_COUNT=PERF_STUDENT_COUNT (500): their ids are deterministic (same derivation as that seed), and PERF_GROUP_ID / PERF_STUDENT_ID override them. v0.2 (Ola 4 Bloque 4, "después"): the Bloque 4 screens are added (/teacher General tab: first recent student link; /teacher/students directory: rows of the paginated directory table; /teacher/lab: reservations calendar; /admin/users?tab=profesores: rows of the teachers table) and the pre-Block 4 ids keep their content definitions on the URL that now shows them: teacher-dashboard is /teacher?tab=grupo (the group dashboard became the "Por grupo" tab) and the student detail content is its "Progreso por nivel y módulo" section (Módulos tab, the old "Progreso" section). A screen may name the API path of its list (dataApi): its long tasks that start after that response finished (afterData, until the settle window ends) are the ones caused by rendering the data, not by booting the page. The admin session is signed in once through the form and saved to e2e/.auth/admin.json (reused while younger than E2E_AUTH_MAX_AGE_H); the teacher session comes from the setup project. Depends on @playwright/test, Node and the perf support helpers.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,29 +58,48 @@ const DASHBOARD_ROWS = "table[aria-label=\"Estudiantes\"] > tbody > tr[data-risk
 // Before Bloque 4 a TEACHER only reaches students linked through TeacherStudent (403 for group students): the error alert counts as the
 // first useful content so the teacher run measures what the teacher sees today; `blocked` tells both outcomes apart. The shell keeps
 // its own role=alert elements, so the alert only counts with the forbidden title.
-const DETAIL_CONTENT = "section[aria-label=\"Progreso\"], [role=\"alert\"]";
+const DETAIL_CONTENT = "section[aria-label=\"Progreso por nivel y módulo\"], [role=\"alert\"]";
 const DETAIL_TEXT = "Progreso|No tienes acceso";
 const BLOCKED_TEXT = "No tienes acceso";
 const USERS_CONTENT = "table:has(> caption) > tbody > tr";
 const GROUPS_CONTENT = "table[aria-label=\"Grupos\"] > tbody > tr";
 const PROFILE_CONTENT = "form[aria-labelledby] input";
+// Bloque 4 screens.
+const GENERAL_CONTENT = "a[href^=\"/teacher/students/\"]";
+const DIRECTORY_CONTENT = "table[aria-label=\"Directorio de estudiantes\"] > tbody > tr";
+const LAB_CONTENT = "table[aria-label=\"Calendario de reservas del ventilador\"]";
+const TEACHERS_CONTENT = "table:has(> caption) > tbody > tr";
 
 type Role = "teacher" | "admin";
 
-type ScreenId = "teacher-dashboard" | "teacher-dashboard-load-group" | "student-detail" | "admin-users" | "groups" | "profile";
+type ScreenId =
+  | "teacher-general"
+  | "teacher-dashboard"
+  | "teacher-dashboard-load-group"
+  | "students-directory"
+  | "student-detail"
+  | "teacher-lab"
+  | "admin-users"
+  | "admin-teachers"
+  | "groups"
+  | "profile";
 
-type Screen = { id: ScreenId, route: string, url: string, selector: string, text?: string, rows?: string, roles: readonly Role[] };
+type Screen = { id: ScreenId, route: string, url: string, selector: string, text?: string, rows?: string, dataApi?: string, roles: readonly Role[] };
 
 const SCREENS: readonly Screen[] = [
-  { id: "teacher-dashboard", route: "/teacher", url: "/teacher", selector: DASHBOARD_CONTENT, rows: DASHBOARD_ROWS, roles: ["teacher", "admin"] },
-  { id: "teacher-dashboard-load-group", route: "/teacher", url: `/teacher?groupId=${GROUP_ID}`, selector: DASHBOARD_CONTENT, rows: DASHBOARD_ROWS, roles: ["teacher", "admin"] },
+  { id: "teacher-general", route: "/teacher", url: "/teacher", selector: GENERAL_CONTENT, dataApi: "/api/admin/students", roles: ["teacher", "admin"] },
+  { id: "teacher-dashboard", route: "/teacher", url: "/teacher?tab=grupo", selector: DASHBOARD_CONTENT, rows: DASHBOARD_ROWS, dataApi: "/dashboard", roles: ["teacher", "admin"] },
+  { id: "teacher-dashboard-load-group", route: "/teacher", url: `/teacher?groupId=${GROUP_ID}`, selector: DASHBOARD_CONTENT, rows: DASHBOARD_ROWS, dataApi: "/dashboard", roles: ["teacher", "admin"] },
+  { id: "students-directory", route: "/teacher/students", url: "/teacher/students", selector: DIRECTORY_CONTENT, rows: DIRECTORY_CONTENT, dataApi: "/api/admin/students", roles: ["teacher", "admin"] },
   { id: "student-detail", route: "/teacher/students/[userId]", url: `/teacher/students/${STUDENT_ID}?groupId=${GROUP_ID}`, selector: DETAIL_CONTENT, text: DETAIL_TEXT, roles: ["teacher", "admin"] },
+  { id: "teacher-lab", route: "/teacher/lab", url: "/teacher/lab", selector: LAB_CONTENT, roles: ["teacher", "admin"] },
   { id: "admin-users", route: "/admin/users", url: "/admin/users", selector: USERS_CONTENT, rows: USERS_CONTENT, roles: ["admin"] },
+  { id: "admin-teachers", route: "/admin/users", url: "/admin/users?tab=profesores", selector: TEACHERS_CONTENT, rows: TEACHERS_CONTENT, dataApi: "/api/admin/teachers", roles: ["admin"] },
   { id: "groups", route: "/groups", url: "/groups", selector: GROUPS_CONTENT, rows: GROUPS_CONTENT, roles: ["teacher", "admin"] },
   { id: "profile", route: "/profile", url: "/profile", selector: PROFILE_CONTENT, roles: ["teacher", "admin"] },
 ];
 
-// Bloque 4 routes (DISENO_BLOQUE4 §2): reported by the bundle reader as missing until they exist.
+// Bloque 4 routes (DISENO_BLOQUE4 §2) not measured as a screen route above.
 const BLOCK4_ROUTES = ["/teacher/students", "/teacher/lab"] as const;
 
 type NetRequest = {
@@ -276,7 +295,7 @@ type NavigationResult = {
     apiErrors: string[]
   }
   settle: { apiAfterContent: string[], chunksAfterContent: number }
-  longTasks: { untilContent: TaskSummary, untilSettle: TaskSummary }
+  longTasks: { untilContent: TaskSummary, untilSettle: TaskSummary, afterData: TaskSummary | null }
 };
 
 function summarizeTasks(tasks: readonly LongTask[], from: number, to: number): TaskSummary {
@@ -299,7 +318,20 @@ async function readMarks(page: Page): Promise<InPageMarks> {
   });
 }
 
-function buildResult(requests: readonly NetRequest[], marks: InPageMarks, rows: number | null, blocked: boolean): NavigationResult {
+/** Page time (performance.now) when the last response of the screen's data API finished, or null without one. */
+function dataEndPerf(requests: readonly NetRequest[], marks: InPageMarks, dataApi: string | undefined): number | null {
+  if (!dataApi) {
+    return null;
+  }
+
+  const ends = requests
+    .filter((request) => request.kind === "api" && request.endMs !== null && new URL(request.url).pathname.includes(dataApi))
+    .map((request) => (request.endMs ?? 0) - marks.timeOrigin);
+
+  return ends.length > 0 ? Math.max(...ends) : null;
+}
+
+function buildResult(requests: readonly NetRequest[], marks: InPageMarks, rows: number | null, blocked: boolean, dataApi?: string): NavigationResult {
   const contentPerf = marks.marks.content;
   const contentEpoch = contentPerf === undefined ? Number.POSITIVE_INFINITY : marks.timeOrigin + contentPerf;
   const before = requests.filter((request) => request.startMs <= contentEpoch);
@@ -330,6 +362,12 @@ function buildResult(requests: readonly NetRequest[], marks: InPageMarks, rows: 
     longTasks: {
       untilContent: summarizeTasks(marks.longTasks, 0, contentPerf ?? Number.POSITIVE_INFINITY),
       untilSettle: summarizeTasks(marks.longTasks, 0, settleEnd),
+      afterData: (() => {
+        const dataEnd = dataEndPerf(requests, marks, dataApi);
+
+        // A task in progress when the data arrived (it started before) also counts: it may be the one that renders it.
+        return dataEnd === null ? null : summarizeTasks(marks.longTasks.filter((task) => task.start + task.duration >= dataEnd), dataEnd - 10_000, settleEnd);
+      })(),
     },
   };
 }
@@ -367,7 +405,7 @@ async function visit(page: Page, net: ReturnType<typeof recordNetwork>, screen: 
   const rows = screen.rows ? await page.locator(screen.rows).count() : null;
   const blocked = await page.getByRole("alert").filter({ hasText: BLOCKED_TEXT }).count() > 0;
 
-  return buildResult(net.requests, marks, rows, blocked);
+  return buildResult(net.requests, marks, rows, blocked, screen.dataApi);
 }
 
 type RoundResult = { cold: NavigationResult, warm: NavigationResult };
@@ -415,6 +453,8 @@ function medians(results: readonly NavigationResult[]): Record<string, number | 
     longTasksUntilSettle: median(results.map((result) => result.longTasks.untilSettle.count)),
     longTasksMsUntilSettle: median(results.map((result) => result.longTasks.untilSettle.totalMs)),
     longTaskMaxMs: median(results.map((result) => result.longTasks.untilSettle.maxMs)),
+    longTasksAfterData: median(results.map((result) => result.longTasks.afterData?.count)),
+    longTaskMaxAfterDataMs: median(results.map((result) => result.longTasks.afterData?.maxMs)),
   };
 }
 
@@ -518,6 +558,7 @@ test("teacher panel · runtime baseline (CPU throttled)", async ({ browser }) =>
         depthWithChunks: "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound",
         warm: "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
         session: "each round writes the context storage state back to the role file, so cold visits start with a fresh access token (the warm-up round absorbs the first refresh)",
+        afterData: "long tasks > 50 ms still running or started after the last response of the screen's data API (dataApi) finished, until the settle window ends: the rendering of the list, not the boot of the page",
         firstLoad: "scripts/perf/bundle-sizes.mjs over .next/build-manifest.json: shared (_app + main + polyfills) + route files, gzip level default",
       },
     },
