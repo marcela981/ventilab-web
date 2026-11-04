@@ -1,0 +1,132 @@
+/*
+* Funcionalidad: SidebarUserCard styles
+* Descripción: July user card (SidebarUserCard.jsx:165-278): a rounded raised card with the role-coloured avatar (48px, 40px collapsed, thin white ring), the name with ellipsis and the solid role chip (student green, teacher blue, admin red, AA-adjusted, D15), and the "Opciones" button; collapsed, only the avatar button centred. The "panel" variant is the July panel identity block: no card background, muted name, chip below. The avatar and the avatar button override MUI properties, so their selectors carry one class more than MUI's. Tokens only. v1.0 (Bloque 5): new.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  margin: var(--vl-space-2) var(--vl-space-4);
+  padding: var(--vl-space-3) var(--vl-space-1) var(--vl-space-3) var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-xl);
+  background: var(--vl-user-card-bg);
+  color: var(--vl-sidebar-text);
+}
+
+.identity {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: var(--vl-space-3);
+  border-radius: var(--vl-radius-md);
+  color: inherit;
+  text-decoration: none;
+}
+
+.identity:hover .name {
+  text-decoration: underline;
+}
+
+.identityText {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font: var(--mui-font-subtitle2);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roleChip {
+  padding: 1px var(--vl-space-2);
+  border-radius: var(--vl-radius-pill);
+  background: var(--vl-role-student);
+  color: var(--vl-on-role);
+  font: var(--mui-font-caption);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.roleChip[data-role="teacher"],
+.card .avatar[data-role="teacher"] {
+  background: var(--vl-role-teacher);
+}
+
+.roleChip[data-role="admin"],
+.card .avatar[data-role="admin"] {
+  background: var(--vl-role-admin);
+}
+
+/* One class more than .MuiAvatar-root.MuiAvatar-colorDefault. */
+.card .avatar {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border: 2px solid var(--vl-glass-border);
+  background: var(--vl-role-student);
+  color: var(--vl-on-role);
+  font: var(--mui-font-subtitle1);
+  font-weight: 700;
+}
+
+.card .options {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+/* Collapsed: only the avatar button, centred in the rail. */
+.collapsed {
+  justify-content: center;
+  margin: var(--vl-space-2) auto var(--vl-space-4);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.collapsed .avatarButton {
+  padding: var(--vl-space-1);
+}
+
+.collapsed .avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  font: var(--mui-font-body1);
+  font-weight: 700;
+}
+
+/* Staff panel identity block (July PanelSidebar.jsx:190-206). */
+.card[data-variant="panel"]:not(.collapsed) {
+  margin: 0;
+  padding: var(--vl-space-3) var(--vl-space-2) var(--vl-space-3) var(--vl-space-4);
+  border: 0;
+  border-bottom: 1px solid var(--vl-color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--vl-panel-sidebar-text);
+}
+
+.card[data-variant="panel"] .name {
+  color: var(--vl-panel-sidebar-muted);
+  font: var(--mui-font-body2);
+}
+
+.card[data-variant="panel"].collapsed {
+  margin: var(--vl-space-2) auto;
+}

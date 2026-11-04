@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: User menu config tests
-* Descripción: The user menu links by role in exact order (students: Mi resumen, Mis notas, Mis calificaciones, Mi grupo, Perfil; teachers and admins: Perfil; nothing without a role) and every link is a route of the route table its roles can reach. Depends on vitest and the session route table. v0.2 (Bloque 5, D7): "Mi resumen" uses SpaceDashboard, so it no longer shares the Dashboard icon of "Simulador Virtual".
-* Versión: 0.2
+* Descripción: The user menu links by role in exact order (students: Mi resumen, Mis notas, Mis calificaciones, Mi grupo, Perfil; teachers and admins: Perfil; nothing without a role) and every link is a route of the route table its roles can reach. Depends on vitest and the session route table. v0.2 (Bloque 5, D7): "Mi resumen" uses SpaceDashboard, so it no longer shares the Dashboard icon of "Simulador Virtual". v0.3 (Bloque 5, D12): students get "Perfil" first.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,13 +38,13 @@ describe("getUserMenuItems", () => {
     expect(USER_MENU_ITEMS.some((item) => item.icon === DashboardIcon)).toBe(false);
   });
 
-  it("gives students their space, their group and the profile, in order", () => {
+  it("gives students the profile first, then their space and their group, in order (D12)", () => {
     expect(getUserMenuItems("STUDENT").map((item) => [item.label, item.href])).toEqual([
+      ["Perfil", "/profile"],
       ["Mi resumen", "/me"],
       ["Mis notas", "/me/notes"],
       ["Mis calificaciones", "/me/grades"],
       ["Mi grupo", "/my-group"],
-      ["Perfil", "/profile"],
     ]);
   });
 
