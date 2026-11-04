@@ -5,7 +5,10 @@
 *   and high alarm tokens), the "Opera: <nombre>" line, and the "Equipo sin datos" and reconnection notices. Console
 *   and design-system tokens only. v0.2 (W6-fix, Bloque 1): the monitor declares the `vl-console` inline-size
 *   container, so the shared console lays out by the width it really gets (curves never collapse at 1280 px).
-* Versión: 0.2
+*   v0.3 (Bloque 5, C8): July layout: the Real strip (one wrapping line: title, Equipo and Latencia inline, the operator
+*   control, Grabar sesión and REC at the end) with its notices, the "Reserva activa" status of the left column and the
+*   definite height of the July monitor (--vl-monitor-height of the panel) from 1024 × 700 px.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,13 +24,6 @@
   container: vl-console / inline-size;
 }
 
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--vl-space-3);
-}
 
 .title {
   margin: 0;
@@ -35,12 +31,6 @@
   color: var(--vl-console-text);
 }
 
-.indicators {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--vl-space-4);
-}
 
 .indicator {
   display: flex;
@@ -118,4 +108,73 @@
   background: var(--vl-console-pending-bg);
   border: 1px solid var(--vl-console-pending);
   border-radius: var(--vl-radius-md);
+}
+
+/* ---- July layout (Bloque 5, C8) ---- */
+@media (min-width: 1024px) and (min-height: 700px) {
+  .monitor[data-layout="july"] {
+    min-height: var(--vl-monitor-height, calc(100dvh - var(--vl-space-8) * 2));
+  }
+}
+
+.stripZone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-4);
+  min-height: calc(var(--vl-space-8) - var(--vl-space-3));
+  padding: var(--vl-space-1) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.strip .latency {
+  font: var(--mui-font-body2);
+}
+
+.stripEnd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2) var(--vl-space-3);
+  margin-left: auto;
+}
+
+.reservation {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+  min-width: 0;
+  margin: 0;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--mui-palette-success-main);
+  border-radius: var(--vl-radius-md);
+}
+
+.reservationIcon {
+  flex: none;
+  color: var(--mui-palette-success-main);
+}
+
+.reservationText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

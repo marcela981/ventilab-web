@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lab live console styles
-* Descripción: Styles of /lab/live: the access screens (busy, nothing reserved) on the regular surface, and the full-width dark console session (header with the reservation window and countdown, device and latency indicators, connection banners) with the --vl-console-* tokens like the simulator console page. Latency levels: success / medium alarm / high alarm theme colors. Theme CSS variables only. v1.1 (T7): the operator control bar (banner by control kind, actions). v1.2 (T9): the control loss notice inside the bar and the revoked modal text (reason, next holder). v1.3 (T10): the recording bar (toggle, hint, error) and the REC mark of the console header (blinking dot, still with reduced motion). v1.4 (W11, Bloque 1): the /lab/live page is gone; only the styles of the pieces the real monitor of /simulador reuses remain (connection banner, operator control bar, revoked modal text, recording bar and REC mark).
-* Versión: 1.4
+* Descripción: Styles of /lab/live: the access screens (busy, nothing reserved) on the regular surface, and the full-width dark console session (header with the reservation window and countdown, device and latency indicators, connection banners) with the --vl-console-* tokens like the simulator console page. Latency levels: success / medium alarm / high alarm theme colors. Theme CSS variables only. v1.1 (T7): the operator control bar (banner by control kind, actions). v1.2 (T9): the control loss notice inside the bar and the revoked modal text (reason, next holder). v1.3 (T10): the recording bar (toggle, hint, error) and the REC mark of the console header (blinking dot, still with reduced motion). v1.4 (W11, Bloque 1): the /lab/live page is gone; only the styles of the pieces the real monitor of /simulador reuses remain (connection banner, operator control bar, revoked modal text, recording bar and REC mark). v1.5 (Bloque 5, C8): `data-compact` operator control bar and recording bar for the one-line July Real strip (no frame, the recording hint only for screen readers and as the button tooltip).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -163,4 +163,26 @@
   .recDot {
     animation: none;
   }
+}
+
+/* ---- Compact bars of the July Real strip (Bloque 5, C8) ---- */
+.controlBar[data-compact="true"],
+.recordingBar[data-compact="true"] {
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+.controlBar[data-compact="true"] .controlBanner {
+  font: var(--mui-font-body2);
+  font-weight: 600;
+}
+
+.recordingBar[data-compact="true"] .recordingHint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

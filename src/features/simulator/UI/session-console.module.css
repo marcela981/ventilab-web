@@ -16,7 +16,7 @@
 *   v2.0 (Bloque 5, C6): July layout. The case panel is a console drawer (its side column, collapsed body and wide
 *   screen rules are gone); the session strip (compact bar above the columns), the round "Asesoría IA" icon button
 *   next to the mode toggle, the patient status of the left column, and the definite height of the July console area
-*   (--vl-monitor-height, set by the host) from 1024 × 700 px.
+*   (--vl-monitor-height, set by the host) from 1024 × 700 px; v2.0 also takes the minimum height of the July console (C8).
 * Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -359,10 +359,10 @@
 
 /* ---- July layout (Bloque 5, C6) ---- */
 
-/* The console fills a definite height (the July root is height: 100%); the host sets --vl-monitor-height. */
+/* The July console fills at least this height (it grows instead of clipping the curves); the host sets --vl-monitor-height. */
 @media (min-width: 1024px) and (min-height: 700px) {
   .consoleArea[data-layout="july"] {
-    height: var(--vl-monitor-height, calc(100dvh - var(--vl-space-8) * 2));
+    min-height: var(--vl-monitor-height, calc(100dvh - var(--vl-space-8) * 2));
   }
 }
 

@@ -225,13 +225,13 @@
 
 @container vl-monitor (max-width: 1099.98px) {
   .julyToolbar {
-    gap: calc(var(--vl-space-1) + 2px);
+    gap: var(--vl-space-1);
   }
 
   .julyToolbar .toggle,
   .julyToolbar .freeze {
     min-height: calc(var(--vl-space-5) + 2px);
-    padding: 0 var(--vl-space-2);
+    padding: 0 calc(var(--vl-space-1) * 1.5);
   }
 
   .windowLabel,

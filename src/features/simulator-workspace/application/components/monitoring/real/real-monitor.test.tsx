@@ -9,7 +9,9 @@
 *   render (the adapter publishes at most every 250 ms). Depends on vitest, Testing Library, msw, SWR, the session and
 *   realtime contexts and the workspace test helpers. v0.2 (W11, Bloque 1): no mock of the removed catalog entry point. v0.3 (integration): a
 *   telemetry heartbeat every 500 ms keeps the source live while a test asserts (one batch went stale under load).
-* Versión: 0.3
+*   v0.4 (Bloque 5, C8): the July real console: the mode selector and "Reserva activa" in the left column, the chip in
+*   the curves zone, "Comandos recientes" collapsed, and Confirmar opening the summary instead of sending (D19).
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -227,6 +229,21 @@ describe("RealMonitor", () => {
     expect(screen.getByRole("button", { name: "Grabar sesión" })).toBeEnabled();
     expect(screen.getByTestId("real-monitor-latency")).toBeInTheDocument();
     expect(screen.getByTestId("real-monitor-operator")).toHaveTextContent("Controlas el equipo");
+
+    // July layout (C8): left column, chip in the curves, collapsed commands, the summary before any command.
+    const values = screen.getByRole("region", { name: "Valores" });
+
+    expect(within(values).getByRole("group", { name: "Modo del monitor" })).toBeInTheDocument();
+    expect(within(values).getByRole("status", { name: "Reserva activa" })).toHaveTextContent("Reserva activa · Ana Gómez");
+    expect(within(screen.getByRole("region", { name: "Curvas" })).getByRole("status", { name: "Estado de la señal" })).toBe(chip());
+    expect(screen.getByRole("button", { name: /^Comandos recientes/ })).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
+    const summary = await screen.findByRole("dialog", { name: "Revisar los cambios antes de enviarlos" });
+
+    expect(within(summary).getByRole("button", { name: "Enviar al ventilador" })).toBeInTheDocument();
+    fireEvent.click(within(summary).getByRole("button", { name: "Volver" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Revisar los cambios antes de enviarlos" })).not.toBeInTheDocument());
 
     const limits = openLimits();
 

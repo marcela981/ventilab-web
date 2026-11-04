@@ -11,7 +11,8 @@
 *   timeout / released by staff / lost), with the new operator's name only as the backend returned it, the read-only
 *   line, the hint to take the control again only when the backend allows it, and a dismiss button. Depends on MUI,
 *   the design-system confirm dialog, the control and revocation entities and the live page styles.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C8): `compact` (the July Real strip): the bar without its frame.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,9 +37,11 @@ export type OperatorControlBarProps = {
   onTakeover: () => Promise<void>
   onRelease: () => Promise<void>
   onDismissLoss: () => void
+  /** v1.2: one-line variant without a frame (the July Real strip). */
+  compact?: boolean
 };
 
-export function OperatorControlBar({ view, operatorName, onTake, onTakeover, onRelease, onDismissLoss }: OperatorControlBarProps) {
+export function OperatorControlBar({ view, operatorName, onTake, onTakeover, onRelease, onDismissLoss, compact = false }: OperatorControlBarProps) {
   const [confirming, setConfirming] = useState(false);
   const banner = controlBanner(view.state, operatorName);
   const actions = controlActions(view.state);
@@ -58,7 +61,7 @@ export function OperatorControlBar({ view, operatorName, onTake, onTakeover, onR
   };
 
   return (
-    <div className={cx(styles.controlBar)} data-control={banner.kind}>
+    <div className={cx(styles.controlBar)} data-control={banner.kind} data-compact={compact}>
       <p className={cx(styles.controlBanner)} role="status" data-testid="lab-live-control-banner">{banner.text}</p>
       <div className={cx(styles.controlActions)}>
         {actions.take ? (

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console layout styles
-* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed). v0.3 (Bloque 5, C6): smaller logos below a 1100 px console.
-* Versión: 0.3
+* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed). v0.3 (Bloque 5, C6): smaller logos below a 1100 px console. v0.4 (Bloque 5, C8): the root is a growing flex item (the host is a flex column with a min-height): the centre (input row, alarms, curves ≥ 360 px, footer) sizes the row, the side columns are size-contained and scroll inside it, so with banners or a short host the page scrolls instead of clipping the curves.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,10 +12,9 @@
 .root {
   container: vl-monitor / inline-size;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: var(--vl-space-2);
-  height: 100%;
-  min-height: 0;
   min-width: 0;
   color: var(--vl-console-text);
   background: var(--vl-console-bg);
@@ -38,7 +37,6 @@
 
 .grid {
   flex: 1 1 auto;
-  min-height: 0;
   display: grid;
   grid-template-columns: 16.25rem minmax(0, 1fr) 15.625rem;
   grid-template-areas: "left centre right";
@@ -58,6 +56,12 @@
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--vl-scrollbar-thumb) transparent;
+}
+
+.left,
+.right {
+  /* Their content never sizes the row: the centre (curves ≥ 360 px) does, and they scroll inside it. */
+  contain: size;
 }
 
 .left {
@@ -246,21 +250,18 @@
 
 /* Short screens: the page scrolls, the columns grow with their content. */
 @media (max-height: 699.98px) {
-  .root {
-    height: auto;
-  }
-
   .column {
     overflow: visible;
+  }
+
+  .left,
+  .right {
+    contain: none;
   }
 }
 
 /* Small screens: the columns stack (curves first) under the notice. */
 @media (max-width: 1023.98px) {
-  .root {
-    height: auto;
-  }
-
   .notice {
     display: block;
   }
@@ -275,5 +276,10 @@
 
   .column {
     overflow: visible;
+  }
+
+  .left,
+  .right {
+    contain: none;
   }
 }
