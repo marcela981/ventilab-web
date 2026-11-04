@@ -1,0 +1,105 @@
+{
+  "meta": {
+    "note": "Ad hoc checks of W5-3 (scratch scripts, not committed): Chromium 156 headless, CPU x4 (CDP), 1920x1080, teacher ana.torres. 'groupBreakdown': cold loads of /teacher?groupId=<group of 500> (first of 4 discarded), CDP Performance totals until content + 3 s, DOM size, CSS rules and custom-property declarations in document.styleSheets, top 3 long tasks. 'blur': /teacher General, 10 s of wheel scrolling over the content after content + 3 s, blur-on = as built, blur-off = '*{backdrop-filter:none!important}' added after the content (backdropElements counts the elements whose computed backdrop-filter is not none).",
+    "before": "b248ab4",
+    "after": "5131946",
+    "measuredAt": "2026-11-04"
+  },
+  "groupBreakdown": {
+    "unit": "ms of main-thread time from navigation to content + 3 s",
+    "before": [
+      { "script": 2027, "style": 188, "layout": 429, "task": 4742, "styleCount": 51, "layoutCount": 19, "nodes": 906, "rules": 771, "customPropDecls": 354, "topLongTasks": [421, 313, 278] },
+      { "script": 1709, "style": 205, "layout": 376, "task": 4436, "styleCount": 49, "layoutCount": 19, "nodes": 906, "rules": 774, "customPropDecls": 354, "topLongTasks": [353, 336, 282] },
+      { "script": 2186, "style": 186, "layout": 383, "task": 4886, "styleCount": 52, "layoutCount": 20, "nodes": 906, "rules": 771, "customPropDecls": 354, "topLongTasks": [451, 317, 294] }
+    ],
+    "after": [
+      { "script": 2184, "style": 222, "layout": 409, "task": 5031, "styleCount": 53, "layoutCount": 20, "nodes": 917, "rules": 804, "customPropDecls": 702, "topLongTasks": [453, 324, 252] },
+      { "script": 2132, "style": 234, "layout": 412, "task": 4861, "styleCount": 52, "layoutCount": 20, "nodes": 917, "rules": 804, "customPropDecls": 702, "topLongTasks": [427, 309, 303] },
+      { "script": 2111, "style": 186, "layout": 353, "task": 4894, "styleCount": 49, "layoutCount": 20, "nodes": 917, "rules": 804, "customPropDecls": 702, "topLongTasks": [443, 330, 287] }
+    ]
+  },
+  "blur": {
+    "blur-on": [
+      {
+        "frames": 641,
+        "fps": 60,
+        "over50": 0,
+        "maxFrame": 17.3,
+        "p95": 16.8,
+        "longTasks": 0,
+        "ltMax": 0,
+        "scrolled": 19,
+        "taskMsPerS": 82.9,
+        "contentMs": 3024,
+        "backdropElements": 7
+      },
+      {
+        "frames": 647,
+        "fps": 60,
+        "over50": 0,
+        "maxFrame": 16.8,
+        "p95": 16.8,
+        "longTasks": 0,
+        "ltMax": 0,
+        "scrolled": 19,
+        "taskMsPerS": 80.6,
+        "contentMs": 3081,
+        "backdropElements": 7
+      },
+      {
+        "frames": 647,
+        "fps": 59.9,
+        "over50": 0,
+        "maxFrame": 32.9,
+        "p95": 16.8,
+        "longTasks": 0,
+        "ltMax": 0,
+        "scrolled": 19,
+        "taskMsPerS": 65.2,
+        "contentMs": 3373,
+        "backdropElements": 7
+      }
+    ],
+    "blur-off": [
+      {
+        "frames": 648,
+        "fps": 60,
+        "over50": 0,
+        "maxFrame": 17,
+        "p95": 16.8,
+        "longTasks": 0,
+        "ltMax": 0,
+        "scrolled": 19,
+        "taskMsPerS": 92.2,
+        "contentMs": 3182,
+        "backdropElements": 0
+      },
+      {
+        "frames": 647,
+        "fps": 60,
+        "over50": 0,
+        "maxFrame": 17.2,
+        "p95": 16.8,
+        "longTasks": 0,
+        "ltMax": 0,
+        "scrolled": 19,
+        "taskMsPerS": 76.8,
+        "contentMs": 3407,
+        "backdropElements": 0
+      },
+      {
+        "frames": 646,
+        "fps": 60,
+        "over50": 0,
+        "maxFrame": 16.9,
+        "p95": 16.8,
+        "longTasks": 0,
+        "ltMax": 0,
+        "scrolled": 19,
+        "taskMsPerS": 65,
+        "contentMs": 3222,
+        "backdropElements": 0
+      }
+    ]
+  }
+}

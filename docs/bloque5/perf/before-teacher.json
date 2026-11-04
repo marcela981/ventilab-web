@@ -1,0 +1,2123 @@
+{
+  "meta": {
+    "label": "before",
+    "runs": 5,
+    "warmupRoundsDiscarded": 1,
+    "cpuThrottlingRate": 4,
+    "settleMs": 3000,
+    "network": "localhost, no network throttling",
+    "roles": [
+      {
+        "role": "teacher",
+        "email": "ana.torres@ventylab.demo",
+        "storageState": "e2e/.auth/teacher.json"
+      },
+      {
+        "role": "admin",
+        "email": "superadmin@ventylab.demo",
+        "storageState": "e2e/.auth/admin.json"
+      }
+    ],
+    "loadStudentCount": 500,
+    "loadGroupId": "baf96a72-0c7f-563a-a88c-d27edc4995b7",
+    "loadStudentId": "4cffcd8d-7e9d-5d9c-9b43-5265bc5ae6c4",
+    "webCommit": "b248ab4",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-11-04T10:18:47.517Z",
+    "definitions": {
+      "contentMs": "page performance.now() at the first visible match of the content selector (MutationObserver); 0 = navigation start",
+      "rows": "rendered rows of the main list (rows selector) at the end of the settle window",
+      "blocked": "a role=alert with \"No tienes acceso\" is shown at the end of the settle window (student detail: the 403 error state instead of the student); blockedRuns counts them",
+      "apiDepth": "sequential waves among API requests until the content: wave = 1 + highest wave of the API requests that had finished before it started",
+      "depthWithChunks": "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound",
+      "warm": "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
+      "session": "each round writes the context storage state back to the role file, so cold visits start with a fresh access token (the warm-up round absorbs the first refresh)",
+      "afterData": "long tasks > 50 ms still running or started after the last response of the screen's data API (dataApi) finished, until the settle window ends: the rendering of the list, not the boot of the page",
+      "firstLoad": "scripts/perf/bundle-sizes.mjs over .next/build-manifest.json: shared (_app + main + polyfills) + route files, gzip level default"
+    }
+  },
+  "bundles": {
+    "measuredAt": "2026-11-04T10:18:47.437Z",
+    "shared": {
+      "gzipKb": 204.4,
+      "rawKb": 622.8
+    },
+    "routes": [
+      {
+        "route": "/teacher",
+        "present": true,
+        "pageOnlyGzipKb": 46.8,
+        "pageOnlyRawKb": 139.4,
+        "firstLoadGzipKb": 251.2,
+        "firstLoadRawKb": 762.2
+      },
+      {
+        "route": "/teacher/students",
+        "present": true,
+        "pageOnlyGzipKb": 46.8,
+        "pageOnlyRawKb": 139.4,
+        "firstLoadGzipKb": 251.2,
+        "firstLoadRawKb": 762.2
+      },
+      {
+        "route": "/teacher/students/[userId]",
+        "present": true,
+        "pageOnlyGzipKb": 46.8,
+        "pageOnlyRawKb": 139.5,
+        "firstLoadGzipKb": 251.3,
+        "firstLoadRawKb": 762.3
+      },
+      {
+        "route": "/teacher/lab",
+        "present": true,
+        "pageOnlyGzipKb": 120.9,
+        "pageOnlyRawKb": 350.2,
+        "firstLoadGzipKb": 325.3,
+        "firstLoadRawKb": 973
+      },
+      {
+        "route": "/admin/users",
+        "present": true,
+        "pageOnlyGzipKb": 47,
+        "pageOnlyRawKb": 140.6,
+        "firstLoadGzipKb": 251.4,
+        "firstLoadRawKb": 763.4
+      },
+      {
+        "route": "/groups",
+        "present": true,
+        "pageOnlyGzipKb": 71.8,
+        "pageOnlyRawKb": 209.2,
+        "firstLoadGzipKb": 276.2,
+        "firstLoadRawKb": 832
+      },
+      {
+        "route": "/profile",
+        "present": true,
+        "pageOnlyGzipKb": 90.2,
+        "pageOnlyRawKb": 268.9,
+        "firstLoadGzipKb": 294.6,
+        "firstLoadRawKb": 891.7
+      },
+      {
+        "route": "/teacher/students",
+        "present": true,
+        "pageOnlyGzipKb": 46.8,
+        "pageOnlyRawKb": 139.4,
+        "firstLoadGzipKb": 251.2,
+        "firstLoadRawKb": 762.2
+      },
+      {
+        "route": "/teacher/lab",
+        "present": true,
+        "pageOnlyGzipKb": 120.9,
+        "pageOnlyRawKb": 350.2,
+        "firstLoadGzipKb": 325.3,
+        "firstLoadRawKb": 973
+      }
+    ]
+  },
+  "screens": {
+    "teacher": {
+      "teacher-general": {
+        "route": "/teacher",
+        "url": "/teacher",
+        "contentSelector": "a[href^=\"/teacher/students/\"]",
+        "rowsSelector": null,
+        "median": {
+          "cold": {
+            "contentMs": 2924,
+            "rows": null,
+            "blockedRuns": 0,
+            "api": 6,
+            "apiDepth": 3,
+            "chunksNetwork": 61,
+            "chunksFromCache": 18,
+            "depthWithChunks": 31,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 14,
+            "longTasksMsUntilContent": 1739,
+            "longTasksUntilSettle": 14,
+            "longTasksMsUntilSettle": 1739,
+            "longTaskMaxMs": 280,
+            "longTasksAfterData": 1,
+            "longTaskMaxAfterDataMs": 83
+          },
+          "warm": {
+            "contentMs": 1463,
+            "rows": null,
+            "blockedRuns": 0,
+            "api": 6,
+            "apiDepth": 3,
+            "chunksNetwork": 0,
+            "chunksFromCache": 66,
+            "depthWithChunks": 4,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 6,
+            "longTasksMsUntilContent": 486,
+            "longTasksUntilSettle": 6,
+            "longTasksMsUntilSettle": 486,
+            "longTaskMaxMs": 157,
+            "longTasksAfterData": 1,
+            "longTaskMaxAfterDataMs": 51
+          }
+        },
+        "runs": [
+          {
+            "cold": {
+              "contentMs": 2932,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 61,
+                "chunksFromCache": 18,
+                "depthWithChunks": 29,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 15,
+                  "totalMs": 1726,
+                  "maxMs": 261
+                },
+                "untilSettle": {
+                  "count": 15,
+                  "totalMs": 1726,
+                  "maxMs": 261
+                },
+                "afterData": {
+                  "count": 3,
+                  "totalMs": 266,
+                  "maxMs": 143
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1422,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 79,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 473,
+                  "maxMs": 150
+                },
+                "untilSettle": {
+                  "count": 6,
+                  "totalMs": 473,
+                  "maxMs": 150
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 63,
+                  "maxMs": 63
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2777,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 61,
+                "chunksFromCache": 18,
+                "depthWithChunks": 31,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1672,
+                  "maxMs": 277
+                },
+                "untilSettle": {
+                  "count": 14,
+                  "totalMs": 1672,
+                  "maxMs": 277
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 83,
+                  "maxMs": 83
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1480,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 62,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 37
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 537,
+                  "maxMs": 199
+                },
+                "untilSettle": {
+                  "count": 6,
+                  "totalMs": 537,
+                  "maxMs": 199
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 51,
+                  "maxMs": 51
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2895,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 61,
+                "chunksFromCache": 18,
+                "depthWithChunks": 31,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1760,
+                  "maxMs": 287
+                },
+                "untilSettle": {
+                  "count": 14,
+                  "totalMs": 1760,
+                  "maxMs": 287
+                },
+                "afterData": {
+                  "count": 2,
+                  "totalMs": 198,
+                  "maxMs": 147
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1317,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 67,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 32
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 5,
+                  "totalMs": 391,
+                  "maxMs": 129
+                },
+                "untilSettle": {
+                  "count": 5,
+                  "totalMs": 391,
+                  "maxMs": 129
+                },
+                "afterData": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2937,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 61,
+                "chunksFromCache": 18,
+                "depthWithChunks": 31,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1772,
+                  "maxMs": 307
+                },
+                "untilSettle": {
+                  "count": 14,
+                  "totalMs": 1772,
+                  "maxMs": 307
+                },
+                "afterData": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1463,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 66,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 33
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 486,
+                  "maxMs": 157
+                },
+                "untilSettle": {
+                  "count": 6,
+                  "totalMs": 486,
+                  "maxMs": 157
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 54,
+                  "maxMs": 54
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2924,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 61,
+                "chunksFromCache": 18,
+                "depthWithChunks": 30,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 20
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1739,
+                  "maxMs": 280
+                },
+                "untilSettle": {
+                  "count": 14,
+                  "totalMs": 1739,
+                  "maxMs": 280
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 65,
+                  "maxMs": 65
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1483,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 62,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc&myGroups=true"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 37
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 599,
+                  "maxMs": 204
+                },
+                "untilSettle": {
+                  "count": 6,
+                  "totalMs": 599,
+                  "maxMs": 204
+                },
+                "afterData": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          }
+        ]
+      },
+      "teacher-dashboard-load-group": {
+        "route": "/teacher",
+        "url": "/teacher?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+        "contentSelector": "section[aria-label=\"Estudiantes\"]",
+        "rowsSelector": "table[aria-label=\"Estudiantes\"] > tbody > tr[data-risk]",
+        "median": {
+          "cold": {
+            "contentMs": 3431,
+            "rows": 25,
+            "blockedRuns": 0,
+            "api": 10,
+            "apiDepth": 3,
+            "chunksNetwork": 65,
+            "chunksFromCache": 18,
+            "depthWithChunks": 32,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 14,
+            "longTasksMsUntilContent": 2121,
+            "longTasksUntilSettle": 19,
+            "longTasksMsUntilSettle": 2930,
+            "longTaskMaxMs": 492,
+            "longTasksAfterData": 6,
+            "longTaskMaxAfterDataMs": 492
+          },
+          "warm": {
+            "contentMs": 1911,
+            "rows": 25,
+            "blockedRuns": 0,
+            "api": 11,
+            "apiDepth": 4,
+            "chunksNetwork": 0,
+            "chunksFromCache": 83,
+            "depthWithChunks": 5,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 6,
+            "longTasksMsUntilContent": 746,
+            "longTasksUntilSettle": 11,
+            "longTasksMsUntilSettle": 1345,
+            "longTaskMaxMs": 351,
+            "longTasksAfterData": 6,
+            "longTaskMaxAfterDataMs": 351
+          }
+        },
+        "runs": [
+          {
+            "cold": {
+              "contentMs": 3540,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 3,
+                "chunksNetwork": 65,
+                "chunksFromCache": 18,
+                "depthWithChunks": 31,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:15:29.097Z&to=2026-12-04T10:15:29.097Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 22
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 16,
+                  "totalMs": 2297,
+                  "maxMs": 522
+                },
+                "untilSettle": {
+                  "count": 22,
+                  "totalMs": 3126,
+                  "maxMs": 522
+                },
+                "afterData": {
+                  "count": 8,
+                  "totalMs": 1403,
+                  "maxMs": 522
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1727,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 70,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:15:34.258Z&to=2026-12-04T10:15:34.258Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 35
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 7,
+                  "totalMs": 851,
+                  "maxMs": 334
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1475,
+                  "maxMs": 334
+                },
+                "afterData": {
+                  "count": 7,
+                  "totalMs": 1057,
+                  "maxMs": 334
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3431,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 3,
+                "chunksNetwork": 65,
+                "chunksFromCache": 18,
+                "depthWithChunks": 34,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:15:41.136Z&to=2026-12-04T10:15:41.136Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 22
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 13,
+                  "totalMs": 2078,
+                  "maxMs": 503
+                },
+                "untilSettle": {
+                  "count": 17,
+                  "totalMs": 2719,
+                  "maxMs": 503
+                },
+                "afterData": {
+                  "count": 6,
+                  "totalMs": 1198,
+                  "maxMs": 503
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1828,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 4,
+                "chunksNetwork": 0,
+                "chunksFromCache": 75,
+                "depthWithChunks": 5,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:15:46.486Z&to=2026-12-04T10:15:46.486Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 30
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 746,
+                  "maxMs": 355
+                },
+                "untilSettle": {
+                  "count": 11,
+                  "totalMs": 1335,
+                  "maxMs": 355
+                },
+                "afterData": {
+                  "count": 6,
+                  "totalMs": 944,
+                  "maxMs": 355
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3264,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 3,
+                "chunksNetwork": 65,
+                "chunksFromCache": 9,
+                "depthWithChunks": 34,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:15:53.302Z&to=2026-12-04T10:15:53.302Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 31
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 2139,
+                  "maxMs": 492
+                },
+                "untilSettle": {
+                  "count": 20,
+                  "totalMs": 2991,
+                  "maxMs": 492
+                },
+                "afterData": {
+                  "count": 7,
+                  "totalMs": 1344,
+                  "maxMs": 492
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1911,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 4,
+                "chunksNetwork": 0,
+                "chunksFromCache": 83,
+                "depthWithChunks": 5,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:15:58.432Z&to=2026-12-04T10:15:58.432Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 22
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 5,
+                  "totalMs": 727,
+                  "maxMs": 341
+                },
+                "untilSettle": {
+                  "count": 10,
+                  "totalMs": 1345,
+                  "maxMs": 341
+                },
+                "afterData": {
+                  "count": 6,
+                  "totalMs": 959,
+                  "maxMs": 341
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3257,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 3,
+                "chunksNetwork": 65,
+                "chunksFromCache": 9,
+                "depthWithChunks": 32,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:16:05.312Z&to=2026-12-04T10:16:05.312Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 31
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 2094,
+                  "maxMs": 491
+                },
+                "untilSettle": {
+                  "count": 19,
+                  "totalMs": 2930,
+                  "maxMs": 491
+                },
+                "afterData": {
+                  "count": 6,
+                  "totalMs": 1327,
+                  "maxMs": 491
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1930,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 4,
+                "chunksNetwork": 0,
+                "chunksFromCache": 83,
+                "depthWithChunks": 5,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:16:10.430Z&to=2026-12-04T10:16:10.430Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 22
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 5,
+                  "totalMs": 722,
+                  "maxMs": 351
+                },
+                "untilSettle": {
+                  "count": 10,
+                  "totalMs": 1301,
+                  "maxMs": 351
+                },
+                "afterData": {
+                  "count": 6,
+                  "totalMs": 930,
+                  "maxMs": 351
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3532,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 4,
+                "chunksNetwork": 65,
+                "chunksFromCache": 18,
+                "depthWithChunks": 29,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:16:17.089Z&to=2026-12-04T10:16:17.089Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 22
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 16,
+                  "totalMs": 2121,
+                  "maxMs": 479
+                },
+                "untilSettle": {
+                  "count": 17,
+                  "totalMs": 2398,
+                  "maxMs": 479
+                },
+                "afterData": {
+                  "count": 4,
+                  "totalMs": 941,
+                  "maxMs": 479
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 2043,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 5,
+                "chunksNetwork": 0,
+                "chunksFromCache": 98,
+                "depthWithChunks": 6,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:16:22.761Z&to=2026-12-04T10:16:22.761Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 7
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 845,
+                  "maxMs": 369
+                },
+                "untilSettle": {
+                  "count": 11,
+                  "totalMs": 1428,
+                  "maxMs": 369
+                },
+                "afterData": {
+                  "count": 7,
+                  "totalMs": 1013,
+                  "maxMs": 369
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "admin": {
+      "teacher-general": {
+        "route": "/teacher",
+        "url": "/teacher",
+        "contentSelector": "a[href^=\"/teacher/students/\"]",
+        "rowsSelector": null,
+        "median": {
+          "cold": {
+            "contentMs": 2959,
+            "rows": null,
+            "blockedRuns": 0,
+            "api": 6,
+            "apiDepth": 3,
+            "chunksNetwork": 62,
+            "chunksFromCache": 6,
+            "depthWithChunks": 30,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 14,
+            "longTasksMsUntilContent": 1845,
+            "longTasksUntilSettle": 15,
+            "longTasksMsUntilSettle": 1863,
+            "longTaskMaxMs": 287,
+            "longTasksAfterData": 3,
+            "longTaskMaxAfterDataMs": 143
+          },
+          "warm": {
+            "contentMs": 1463,
+            "rows": null,
+            "blockedRuns": 0,
+            "api": 6,
+            "apiDepth": 3,
+            "chunksNetwork": 0,
+            "chunksFromCache": 64,
+            "depthWithChunks": 4,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 6,
+            "longTasksMsUntilContent": 574,
+            "longTasksUntilSettle": 6,
+            "longTasksMsUntilSettle": 574,
+            "longTaskMaxMs": 189,
+            "longTasksAfterData": 1,
+            "longTaskMaxAfterDataMs": 73
+          }
+        },
+        "runs": [
+          {
+            "cold": {
+              "contentMs": 2969,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 62,
+                "chunksFromCache": 5,
+                "depthWithChunks": 29,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 34
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1849,
+                  "maxMs": 320
+                },
+                "untilSettle": {
+                  "count": 15,
+                  "totalMs": 1933,
+                  "maxMs": 320
+                },
+                "afterData": {
+                  "count": 3,
+                  "totalMs": 325,
+                  "maxMs": 174
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1538,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 68,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 33
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 574,
+                  "maxMs": 195
+                },
+                "untilSettle": {
+                  "count": 6,
+                  "totalMs": 574,
+                  "maxMs": 195
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 104,
+                  "maxMs": 104
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2838,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 62,
+                "chunksFromCache": 18,
+                "depthWithChunks": 29,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 21
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 15,
+                  "totalMs": 1845,
+                  "maxMs": 311
+                },
+                "untilSettle": {
+                  "count": 15,
+                  "totalMs": 1845,
+                  "maxMs": 311
+                },
+                "afterData": {
+                  "count": 2,
+                  "totalMs": 167,
+                  "maxMs": 104
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1378,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 64,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 37
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 7,
+                  "totalMs": 577,
+                  "maxMs": 189
+                },
+                "untilSettle": {
+                  "count": 7,
+                  "totalMs": 577,
+                  "maxMs": 189
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 73,
+                  "maxMs": 73
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2972,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 62,
+                "chunksFromCache": 18,
+                "depthWithChunks": 32,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 21
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1843,
+                  "maxMs": 274
+                },
+                "untilSettle": {
+                  "count": 14,
+                  "totalMs": 1843,
+                  "maxMs": 274
+                },
+                "afterData": {
+                  "count": 2,
+                  "totalMs": 255,
+                  "maxMs": 143
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1463,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 68,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 33
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 5,
+                  "totalMs": 467,
+                  "maxMs": 181
+                },
+                "untilSettle": {
+                  "count": 5,
+                  "totalMs": 467,
+                  "maxMs": 181
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 86,
+                  "maxMs": 86
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2959,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 62,
+                "chunksFromCache": 2,
+                "depthWithChunks": 30,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 37
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1860,
+                  "maxMs": 252
+                },
+                "untilSettle": {
+                  "count": 15,
+                  "totalMs": 1938,
+                  "maxMs": 252
+                },
+                "afterData": {
+                  "count": 3,
+                  "totalMs": 299,
+                  "maxMs": 154
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1339,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 64,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 37
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 527,
+                  "maxMs": 198
+                },
+                "untilSettle": {
+                  "count": 6,
+                  "totalMs": 527,
+                  "maxMs": 198
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 63,
+                  "maxMs": 63
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 2855,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 62,
+                "chunksFromCache": 6,
+                "depthWithChunks": 30,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 33
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 14,
+                  "totalMs": 1791,
+                  "maxMs": 287
+                },
+                "untilSettle": {
+                  "count": 15,
+                  "totalMs": 1863,
+                  "maxMs": 287
+                },
+                "afterData": {
+                  "count": 3,
+                  "totalMs": 278,
+                  "maxMs": 136
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1551,
+              "rows": null,
+              "blocked": false,
+              "untilContent": {
+                "api": 6,
+                "apiDepth": 3,
+                "chunksNetwork": 0,
+                "chunksFromCache": 63,
+                "depthWithChunks": 4,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/admin/statistics",
+                  "GET /api/admin/students?page=1&limit=5&sortBy=lastActivity&sortOrder=desc"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 38
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 8,
+                  "totalMs": 673,
+                  "maxMs": 186
+                },
+                "untilSettle": {
+                  "count": 8,
+                  "totalMs": 673,
+                  "maxMs": 186
+                },
+                "afterData": {
+                  "count": 1,
+                  "totalMs": 65,
+                  "maxMs": 65
+                }
+              }
+            }
+          }
+        ]
+      },
+      "teacher-dashboard-load-group": {
+        "route": "/teacher",
+        "url": "/teacher?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+        "contentSelector": "section[aria-label=\"Estudiantes\"]",
+        "rowsSelector": "table[aria-label=\"Estudiantes\"] > tbody > tr[data-risk]",
+        "median": {
+          "cold": {
+            "contentMs": 3532,
+            "rows": 25,
+            "blockedRuns": 0,
+            "api": 10,
+            "apiDepth": 4,
+            "chunksNetwork": 66,
+            "chunksFromCache": 18,
+            "depthWithChunks": 35,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 16,
+            "longTasksMsUntilContent": 2307,
+            "longTasksUntilSettle": 22,
+            "longTasksMsUntilSettle": 3187,
+            "longTaskMaxMs": 519,
+            "longTasksAfterData": 10,
+            "longTaskMaxAfterDataMs": 519
+          },
+          "warm": {
+            "contentMs": 1961,
+            "rows": 25,
+            "blockedRuns": 0,
+            "api": 11,
+            "apiDepth": 5,
+            "chunksNetwork": 0,
+            "chunksFromCache": 84,
+            "depthWithChunks": 6,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 7,
+            "longTasksMsUntilContent": 856,
+            "longTasksUntilSettle": 12,
+            "longTasksMsUntilSettle": 1487,
+            "longTaskMaxMs": 331,
+            "longTasksAfterData": 7,
+            "longTaskMaxAfterDataMs": 331
+          }
+        },
+        "runs": [
+          {
+            "cold": {
+              "contentMs": 3532,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 3,
+                "chunksNetwork": 66,
+                "chunksFromCache": 18,
+                "depthWithChunks": 34,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:17:48.407Z&to=2026-12-04T10:17:48.407Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 16,
+                  "totalMs": 2365,
+                  "maxMs": 521
+                },
+                "untilSettle": {
+                  "count": 23,
+                  "totalMs": 3498,
+                  "maxMs": 521
+                },
+                "afterData": {
+                  "count": 11,
+                  "totalMs": 1894,
+                  "maxMs": 521
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1974,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 5,
+                "chunksNetwork": 0,
+                "chunksFromCache": 84,
+                "depthWithChunks": 6,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:17:53.922Z&to=2026-12-04T10:17:53.922Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 7,
+                  "totalMs": 856,
+                  "maxMs": 335
+                },
+                "untilSettle": {
+                  "count": 13,
+                  "totalMs": 1473,
+                  "maxMs": 335
+                },
+                "afterData": {
+                  "count": 8,
+                  "totalMs": 1033,
+                  "maxMs": 335
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3579,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 4,
+                "chunksNetwork": 66,
+                "chunksFromCache": 9,
+                "depthWithChunks": 35,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:00.896Z&to=2026-12-04T10:18:00.896Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 32
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 17,
+                  "totalMs": 2435,
+                  "maxMs": 529
+                },
+                "untilSettle": {
+                  "count": 24,
+                  "totalMs": 3296,
+                  "maxMs": 529
+                },
+                "afterData": {
+                  "count": 11,
+                  "totalMs": 1619,
+                  "maxMs": 529
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1935,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 5,
+                "chunksNetwork": 0,
+                "chunksFromCache": 84,
+                "depthWithChunks": 6,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:06.207Z&to=2026-12-04T10:18:06.207Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 7,
+                  "totalMs": 828,
+                  "maxMs": 326
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1362,
+                  "maxMs": 326
+                },
+                "afterData": {
+                  "count": 7,
+                  "totalMs": 943,
+                  "maxMs": 326
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3354,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 4,
+                "chunksNetwork": 66,
+                "chunksFromCache": 10,
+                "depthWithChunks": 33,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:13.018Z&to=2026-12-04T10:18:13.018Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 31
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 16,
+                  "totalMs": 2307,
+                  "maxMs": 519
+                },
+                "untilSettle": {
+                  "count": 22,
+                  "totalMs": 3172,
+                  "maxMs": 519
+                },
+                "afterData": {
+                  "count": 10,
+                  "totalMs": 1641,
+                  "maxMs": 519
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1931,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 4,
+                "chunksNetwork": 0,
+                "chunksFromCache": 84,
+                "depthWithChunks": 5,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:18.392Z&to=2026-12-04T10:18:18.392Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 7,
+                  "totalMs": 831,
+                  "maxMs": 331
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1487,
+                  "maxMs": 331
+                },
+                "afterData": {
+                  "count": 7,
+                  "totalMs": 1063,
+                  "maxMs": 331
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3544,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 4,
+                "chunksNetwork": 66,
+                "chunksFromCache": 18,
+                "depthWithChunks": 35,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:25.338Z&to=2026-12-04T10:18:25.338Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 15,
+                  "totalMs": 2262,
+                  "maxMs": 443
+                },
+                "untilSettle": {
+                  "count": 20,
+                  "totalMs": 3187,
+                  "maxMs": 443
+                },
+                "afterData": {
+                  "count": 8,
+                  "totalMs": 1546,
+                  "maxMs": 443
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 2013,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 5,
+                "chunksNetwork": 0,
+                "chunksFromCache": 84,
+                "depthWithChunks": 6,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:30.712Z&to=2026-12-04T10:18:30.712Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 8,
+                  "totalMs": 951,
+                  "maxMs": 386
+                },
+                "untilSettle": {
+                  "count": 13,
+                  "totalMs": 1642,
+                  "maxMs": 386
+                },
+                "afterData": {
+                  "count": 7,
+                  "totalMs": 1162,
+                  "maxMs": 386
+                }
+              }
+            }
+          },
+          {
+            "cold": {
+              "contentMs": 3445,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 10,
+                "apiDepth": 5,
+                "chunksNetwork": 66,
+                "chunksFromCache": 18,
+                "depthWithChunks": 35,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:37.721Z&to=2026-12-04T10:18:37.721Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 23
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 16,
+                  "totalMs": 2053,
+                  "maxMs": 321
+                },
+                "untilSettle": {
+                  "count": 18,
+                  "totalMs": 2364,
+                  "maxMs": 321
+                },
+                "afterData": {
+                  "count": 5,
+                  "totalMs": 722,
+                  "maxMs": 256
+                }
+              }
+            },
+            "warm": {
+              "contentMs": 1961,
+              "rows": 25,
+              "blocked": false,
+              "untilContent": {
+                "api": 11,
+                "apiDepth": 5,
+                "chunksNetwork": 0,
+                "chunksFromCache": 89,
+                "depthWithChunks": 6,
+                "apiCalls": [
+                  "GET /api/auth/me",
+                  "GET /api/evaluation-grading/queue/count",
+                  "GET /api/notifications/unread-count",
+                  "GET /api/system/status",
+                  "GET /api/system/status",
+                  "GET /api/groups?type=STUDENT",
+                  "GET /api/analytics/groups/baf96a72-0c7f-563a-a88c-d27edc4995b7/dashboard",
+                  "GET /api/evaluation-grading/queue/count?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/evaluation-assignments?groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7&state=ACTIVE&limit=5&sortOrder=asc",
+                  "GET /api/reservations?from=2026-11-04T10:18:43.035Z&to=2026-12-04T10:18:43.035Z&groupId=baf96a72-0c7f-563a-a88c-d27edc4995b7",
+                  "GET /api/curriculum/tree"
+                ],
+                "apiErrors": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 18
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 6,
+                  "totalMs": 857,
+                  "maxMs": 309
+                },
+                "untilSettle": {
+                  "count": 12,
+                  "totalMs": 1511,
+                  "maxMs": 309
+                },
+                "afterData": {
+                  "count": 8,
+                  "totalMs": 1103,
+                  "maxMs": 309
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

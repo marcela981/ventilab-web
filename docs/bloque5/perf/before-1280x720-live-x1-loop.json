@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "label": "before",
+    "flow": "simulador",
+    "scenario": "live-x1-loop",
+    "kind": "live",
+    "multiplier": 1,
+    "cpuThrottlingRate": 1,
+    "durationS": 60,
+    "warmupS": 5,
+    "caseTitle": "Pulmón normal: postoperatorio inmediato",
+    "pageUrl": "/simulador",
+    "replayRestarts": null,
+    "webCommit": "b248ab4",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "measuredAt": "2026-11-04T10:09:48.662Z"
+  },
+  "probe": {
+    "windowMs": 60014,
+    "raf": {
+      "frames": 3600,
+      "fps": 59.99,
+      "p50FrameMs": 16.7,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 17.1,
+      "framesOver50Ms": 0
+    },
+    "longTasks": {
+      "count": 0,
+      "totalMs": 0,
+      "maxMs": 0,
+      "supported": true
+    },
+    "react": {
+      "hookAttached": true,
+      "bundleType": 0,
+      "commits": 60,
+      "commitsPerSecond": 1,
+      "maxCommitsInOneSecond": 1
+    },
+    "canvases": [
+      {
+        "label": "(sin etiqueta)",
+        "width": 580,
+        "height": 448,
+        "connected": false,
+        "paintFrames": 2,
+        "paintFps": 0.03,
+        "drawCalls": 26
+      },
+      {
+        "label": "Curvas de presión, flujo y volumen",
+        "width": 580,
+        "height": 448,
+        "connected": true,
+        "paintFrames": 3569,
+        "paintFps": 59.47,
+        "drawCalls": 17993
+      },
+      {
+        "label": "Bucle presión-volumen",
+        "width": 290,
+        "height": 256,
+        "connected": true,
+        "paintFrames": 2998,
+        "paintFps": 49.95,
+        "drawCalls": 29980
+      }
+    ],
+    "heapUsedMb": 13
+  },
+  "mainThreadPerSecond": {
+    "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
+    "TaskDuration": 87.88,
+    "ScriptDuration": 30.95,
+    "LayoutDuration": 1.25,
+    "RecalcStyleDuration": 0.34,
+    "LayoutCount": 1,
+    "RecalcStyleCount": 1.03
+  },
+  "workers": [
+    {
+      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
+      "rawKb": 27.6,
+      "gzipKb": 8.9
+    }
+  ]
+}

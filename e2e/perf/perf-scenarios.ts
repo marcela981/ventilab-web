@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Simulator perf scenario interactions
-* Descripción: What the simulator perf spec does on the page for the scenarios that measure an interaction, and the PERF_VIEWPORT parser. `prepare` runs once the live session is on screen and returns null when the scenario can run, or the reason to skip it when the control it needs is absent or disabled (e.g. "Ajustar" before the July value cards exist), so a scenario never fails on a UI that does not offer it yet; `tick` runs once per second of the measured window and `finish` after it (leaving the page as it was). live-x1-ai-drawer opens "Asesoría IA"; live-x1-adjust enters "Ajustar" and makes 10 keyboard moves spread over the window (drag handle "Mover <tarjeta>": Space, ArrowDown, Space; else the "Bajar <tarjeta>" button with Enter), then restores the default cards and leaves; live-x1-loop turns the P-V loop on (two canvases). v0.1 (Bloque 5): first version. Depends on @playwright/test.
-* Versión: 0.1
+* Descripción: What the simulator perf spec does on the page for the scenarios that measure an interaction, and the PERF_VIEWPORT parser. `prepare` runs once the live session is on screen and returns null when the scenario can run, or the reason to skip it when the control it needs is absent or disabled (e.g. "Ajustar" before the July value cards exist), so a scenario never fails on a UI that does not offer it yet; `tick` runs once per second of the measured window and `finish` after it (leaving the page as it was). live-x1-ai-drawer opens "Asesoría IA"; live-x1-adjust enters "Ajustar" and makes 10 keyboard moves spread over the window (drag handle "Mover <tarjeta>": Space, ArrowDown, Space; else the "Bajar <tarjeta>" button with Enter), then restores the default cards and leaves; live-x1-loop turns the P-V loop on (two canvases). v0.1 (Bloque 5): first version. v0.2 (Bloque 5, W5-3): live-x1-ai-drawer closes the panel from the keyboard (focus + Enter on "Asesoría IA"), since the open panel covers the button and intercepts a pointer click in both the classic and the July layouts. Depends on @playwright/test.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,8 +77,9 @@ export const SCENARIO_INTERACTIONS: Readonly<Record<string, ScenarioInteraction>
     async finish(page) {
       const open = page.getByRole("button", { name: "Asesoría IA", exact: true }).first();
 
+      // Keyboard, not a pointer click: the open panel covers the button and intercepts pointer events.
       if ((await open.getAttribute("aria-expanded")) === "true") {
-        await open.click();
+        await open.press("Enter");
       }
     },
   },

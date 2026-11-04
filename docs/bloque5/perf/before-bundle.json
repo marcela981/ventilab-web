@@ -1,0 +1,73 @@
+{
+  "measuredAt": "2026-11-04T09:47:49.150Z",
+  "shared": {
+    "gzipKb": 204.4,
+    "rawKb": 622.8
+  },
+  "routes": [
+    {
+      "route": "/learn",
+      "present": true,
+      "pageOnlyGzipKb": 71.7,
+      "pageOnlyRawKb": 208,
+      "firstLoadGzipKb": 276.2,
+      "firstLoadRawKb": 830.8
+    },
+    {
+      "route": "/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]",
+      "present": true,
+      "pageOnlyGzipKb": 83,
+      "pageOnlyRawKb": 243.2,
+      "firstLoadGzipKb": 287.5,
+      "firstLoadRawKb": 866
+    },
+    {
+      "route": "/me",
+      "present": true,
+      "pageOnlyGzipKb": 43.3,
+      "pageOnlyRawKb": 131,
+      "firstLoadGzipKb": 247.7,
+      "firstLoadRawKb": 753.8
+    },
+    {
+      "route": "/simulador",
+      "present": true,
+      "pageOnlyGzipKb": 47,
+      "pageOnlyRawKb": 141.5,
+      "firstLoadGzipKb": 251.4,
+      "firstLoadRawKb": 764.3
+    },
+    {
+      "route": "/teacher",
+      "present": true,
+      "pageOnlyGzipKb": 46.8,
+      "pageOnlyRawKb": 139.4,
+      "firstLoadGzipKb": 251.2,
+      "firstLoadRawKb": 762.2
+    },
+    {
+      "route": "/evaluations",
+      "present": true,
+      "pageOnlyGzipKb": 83.3,
+      "pageOnlyRawKb": 239.8,
+      "firstLoadGzipKb": 287.7,
+      "firstLoadRawKb": 862.6
+    },
+    {
+      "route": "/profile",
+      "present": true,
+      "pageOnlyGzipKb": 90.2,
+      "pageOnlyRawKb": 268.9,
+      "firstLoadGzipKb": 294.6,
+      "firstLoadRawKb": 891.7
+    },
+    {
+      "route": "/auth/login",
+      "present": true,
+      "pageOnlyGzipKb": 59.6,
+      "pageOnlyRawKb": 173.5,
+      "firstLoadGzipKb": 264.1,
+      "firstLoadRawKb": 796.3
+    }
+  ]
+}
