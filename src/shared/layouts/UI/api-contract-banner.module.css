@@ -1,0 +1,14 @@
+/*
+* Funcionalidad: ApiContractBanner styles
+* Descripción: Spacing of the API contract banner above the page content of the AppShell and the PanelShell; colors come from the MUI warning palette of the active scheme (no literals).
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.banner {
+  margin-bottom: var(--vl-space-4);
+}

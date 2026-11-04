@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SystemStatusPage tests
-* Descripción: /admin/status with msw and a fake socket: shows the global state, one card per component and the versions; a `system:status-changed` event turns a card DEGRADED at once; teachers get no probe buttons and no telemetry metrics request; an admin probe shows its result and a 429 explains the Retry-After wait. Depends on Testing Library, msw, vitest and the admin console page and test helpers.
-* Versión: 1.0
+* Descripción: /admin/status with msw and a fake socket: shows the global state, one card per component and the versions; a `system:status-changed` event turns a card DEGRADED at once; teachers get no probe buttons and no telemetry metrics request; an admin probe shows its result and a 429 explains the Retry-After wait. v1.1 (Ola 0 closure): admins see the server build line of `GET /api/version`; teachers never request it. Depends on Testing Library, msw, vitest and the admin console page and test helpers.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -62,6 +62,7 @@ function fullStatus(): SystemStatusDTO {
 const server = setupServer();
 let metricsRequests: number;
 let probeStatus: number;
+let versionRequests: number;
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: "error" });
@@ -70,7 +71,13 @@ beforeAll(() => {
 beforeEach(() => {
   metricsRequests = 0;
   probeStatus = 200;
+  versionRequests = 0;
   server.use(
+    http.get(apiUrl("/api/version"), () => {
+      versionRequests += 1;
+
+      return HttpResponse.json({ sha: "439d4291234abcd", builtAt: "not-a-date", contract: 1 });
+    }),
     http.get(apiUrl("/api/system/status"), () => HttpResponse.json(envelope(fullStatus()))),
     http.get(apiUrl("/api/ventilator/telemetry/metrics"), () => {
       metricsRequests += 1;
@@ -134,6 +141,7 @@ describe("SystemStatusPage", () => {
     expect(within(process).getByText("1 d 1 h 1 min")).toBeInTheDocument();
     expect(await screen.findByText(STATUS_COMPONENTS_COPY.telemetryTitle)).toBeInTheDocument();
     expect(screen.getByText("3,5 ms")).toBeInTheDocument();
+    expect(await within(overall).findByText("Compilación del servidor: 439d429 · not-a-date.")).toBeInTheDocument();
   });
 
   it("turns a card DEGRADED when system:status-changed arrives", async() => {
@@ -170,6 +178,7 @@ describe("SystemStatusPage", () => {
     expect(screen.queryByRole("button", { name: STATUS_COMPONENTS_COPY.probeAria("gemini") })).not.toBeInTheDocument();
     expect(screen.queryByText(STATUS_COMPONENTS_COPY.telemetryTitle)).not.toBeInTheDocument();
     expect(metricsRequests).toBe(0);
+    expect(versionRequests).toBe(0);
   });
 
   it("probes a provider and explains the rate limit wait", async() => {
