@@ -1,8 +1,8 @@
 /*
 * Funcionalidad: Navigation config tests
 * Descripción: Verifies that every nav item points to an existing route of routes.config that its roles can reach, that items are filtered by role, and that the active item is the longest matching route. v1.1 (T11a): students get /my-group, teachers and admins get /groups. v1.2 (T0 learning): every role gets /learn, only teachers and admins get /content. v1.3 (S0 evaluations): every role gets /evaluations, only teachers and admins get /evaluations/manage and /grading, the legacy /evaluation items are gone and /evaluations/manage wins over /evaluations as the active item. v1.4 (G1 grading): only "Calificar" names a badge key (gradingPending). v1.5 (A1 ai-chat): every role gets "Asistente IA" (/assistant), active on its conversation pages. v1.6 (T5 simulation): every role gets "Simulador" (/simulator), active on its session pages. v1.7 (T11 simulation): only teachers and admins get "Casos clínicos" (/simulator/cases), which wins over /simulator as the active item on the case editor pages. v1.8 (T13 simulation): the legacy /simulador is "Ventilador real", so students see exactly one "Simulador" (/simulator). Depends on vitest and the session route table. v1.9 (T12 ventilator-lab): the legacy /simulador
-  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page. v1.10 (O5 operation): final navigation per role (student starts at /me with Mis notas and Mis calificaciones and no admin items; teacher starts at /teacher and sees Estado del sistema but no admin-only item; admin sees everything, the Administración section contiguous at the end), no legacy /dashboard or /panel* items, the notificationsUnread badge on Notificaciones. v1.11 (W1 Bloque 1): short side menu in exact order per role (Simulador /simulador, Enseñanza, Evaluación; staff add the Panel docente section; admins add the Administración section); the student space, assistant, notifications and profile are out of it; Simulador carries the device indicator and stays active on the session and lab pages (activePrefixes, Next patterns and concrete paths) while Casos clínicos wins on the case editor; only Calificar keeps a badge. v1.12 (Bloque 3): single Evaluación entry with the gradingPending badge, active on the grading screens. v1.13 (W1 Bloque 4): staff get a single "Panel docente" item (/teacher) instead of the Panel docente and Administración sections (the panel has its own navigation, panel-nav.config); no section remains in the main menu. v1.14 (Bloque 5, D7): July labels "Simulador Virtual" and "Módulo de Enseñanza" (routes unchanged).
-* Versión: 1.14
+  "Ventilador real" item is replaced by "Laboratorio" (/lab, every role, device indicator), active on every lab page. v1.10 (O5 operation): final navigation per role (student starts at /me with Mis notas and Mis calificaciones and no admin items; teacher starts at /teacher and sees Estado del sistema but no admin-only item; admin sees everything, the Administración section contiguous at the end), no legacy /dashboard or /panel* items, the notificationsUnread badge on Notificaciones. v1.11 (W1 Bloque 1): short side menu in exact order per role (Simulador /simulador, Enseñanza, Evaluación; staff add the Panel docente section; admins add the Administración section); the student space, assistant, notifications and profile are out of it; Simulador carries the device indicator and stays active on the session and lab pages (activePrefixes, Next patterns and concrete paths) while Casos clínicos wins on the case editor; only Calificar keeps a badge. v1.12 (Bloque 3): single Evaluación entry with the gradingPending badge, active on the grading screens. v1.13 (W1 Bloque 4): staff get a single "Panel docente" item (/teacher) instead of the Panel docente and Administración sections (the panel has its own navigation, panel-nav.config); no section remains in the main menu. v1.14 (Bloque 5, D7): July labels "Simulador Virtual" and "Módulo de Enseñanza" (routes unchanged). v1.15 (Bloque 5): only "Panel docente" is `separated`.
+* Versión: 1.15
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,6 +39,12 @@ describe("NAV_ITEMS", () => {
         expect(findRoute(prefix), prefix).not.toBeNull();
       }
     }
+  });
+});
+
+describe("separated items (Bloque 5)", () => {
+  it("separates only the staff Panel docente item", () => {
+    expect(NAV_ITEMS.filter((item) => item.separated).map((item) => item.href)).toEqual(["/teacher"]);
   });
 });
 

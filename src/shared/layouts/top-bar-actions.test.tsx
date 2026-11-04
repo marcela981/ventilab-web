@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: Top bar actions slot tests
-* Descripción: Verifies that the AppShell renders the actions registered through TopBarActionsProvider inside its top bar (banner), before the user menu, and renders no extra action without a provider. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the top-bar-actions slot. v1.1 (Bloque 5, D10): the shell actions placement and surface hooks (top bar by default, sidebar and panel inside a provider) and the compact realtime indicator.
+* Descripción: Verifies that the AppShell renders the actions registered through TopBarActionsProvider inside its top bar (banner), before the user menu, and renders no extra action without a provider. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the top-bar-actions slot. v1.1 (Bloque 5, D10): the shell actions placement and surface hooks (top bar by default, sidebar and panel inside a provider) and the compact realtime indicator; the AppShell tests now cover the tools placement: the sidebar "Herramientas" group on desktop (matchMedia mocked) before the user card, the thin mobile bar below md, nothing extra without a provider.
 * Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -11,7 +11,7 @@
 
 import { render, screen, within } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import { RealtimeContext } from "@shared/realtime/realtime-context";
@@ -45,36 +45,81 @@ const SESSION: SessionContextValue = {
   handleRoleChanged: vi.fn(),
 };
 
-describe("AppShell top bar actions", () => {
-  it("renders the registered actions in the top bar before the user menu", () => {
-    render(
-      <SessionContext.Provider value={SESSION}>
-        <TopBarActionsProvider actions={<button type="button">Acción registrada</button>}>
-          <AppShell>
-            <p>Contenido</p>
-          </AppShell>
-        </TopBarActionsProvider>
-      </SessionContext.Provider>,
-    );
+function setDesktop(matches: boolean | null) {
+  if (matches === null) {
+    Reflect.deleteProperty(window, "matchMedia");
+
+    return;
+  }
+
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }),
+  });
+}
+
+function renderShell(withAction: boolean) {
+  const shell = (
+    <AppShell>
+      <p>Contenido</p>
+    </AppShell>
+  );
+
+  return render(
+    <SessionContext.Provider value={SESSION}>
+      {withAction ? <TopBarActionsProvider actions={<PlacementAction />}>{shell}</TopBarActionsProvider> : shell}
+    </SessionContext.Provider>,
+  );
+}
+
+// A registered action that reports the placement the shell gave it.
+function PlacementAction() {
+  return <button type="button">{`Acción en ${useShellActionsPlacement()}`}</button>;
+}
+
+afterEach(() => {
+  setDesktop(null);
+});
+
+describe("AppShell tools (Bloque 5, D10, D14)", () => {
+  it("puts the registered actions in the sidebar Herramientas group on desktop, with no top bar copy", () => {
+    setDesktop(true);
+    renderShell(true);
+
+    const tools = screen.getByRole("group", { name: "Herramientas" });
+    const card = screen.getByRole("button", { name: "Opciones" });
+
+    expect(within(tools).getByRole("button", { name: "Acción en sidebar" })).toBeInTheDocument();
+    expect(tools.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(screen.getByRole("banner")).queryByRole("button", { name: /Acción/ })).not.toBeInTheDocument();
+  });
+
+  it("puts them in the thin mobile bar below md, after the navigation button", () => {
+    setDesktop(false);
+    renderShell(true);
 
     const banner = screen.getByRole("banner");
-    const action = within(banner).getByRole("button", { name: "Acción registrada" });
-    const userMenu = within(banner).getByRole("button", { name: "Abrir menú de usuario" });
+    const buttons = within(banner).getAllByRole("button").map((button) => button.textContent || button.getAttribute("aria-label"));
 
-    expect(action.compareDocumentPosition(userMenu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(buttons).toEqual(["Abrir menú de navegación", "Acción en topbar"]);
+    expect(screen.queryByRole("group", { name: "Herramientas" })).not.toBeInTheDocument();
   });
 
   it("renders no extra action without a provider", () => {
-    render(
-      <SessionContext.Provider value={SESSION}>
-        <AppShell>
-          <p>Contenido</p>
-        </AppShell>
-      </SessionContext.Provider>,
-    );
+    renderShell(false);
 
     expect(within(screen.getByRole("banner")).getAllByRole("button").map((button) => button.getAttribute("aria-label")))
-      .toEqual(["Abrir menú de navegación", "Abrir menú de usuario"]);
+      .toEqual(["Abrir menú de navegación"]);
   });
 });
 

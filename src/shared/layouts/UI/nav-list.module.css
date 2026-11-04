@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NavList styles
-* Descripción: Styles of the navigation list shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the section subheader, the small status of an item (dot + text; positive = success dot, negative = warning dot, neutral = muted dot; the text carries the meaning, never the colour alone) and the collapsed variant, where the label and the indicator text are visually hidden (they stay the accessible name) and the icons are centred. Tokens only.
-* Versión: 1.0
+* Descripción: Styles of the navigation list shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the section subheader, the small status of an item (dot + text; positive = success dot, negative = warning dot, neutral = muted dot; the text carries the meaning, never the colour alone) and the collapsed variant, where the label and the indicator text are visually hidden (they stay the accessible name) and the icons are centred. Tokens only. v1.1 (Bloque 5, §5.1): the plain divider of a `separated` item and the July global sidebar skin (`data-variant="sidebar"`, Sidebar.jsx:167-202): 48px items shaped as a pill flat on the left edge, white 15% active background with a semibold label, 12px rounded squares when collapsed. Selectors that override MUI properties (padding, margin, radius, selected background) carry one class or attribute more than MUI's.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,4 +58,53 @@
   inset-block-start: var(--vl-space-2);
   inset-inline-end: var(--vl-space-2);
   margin: 0;
+}
+
+.divider {
+  margin: var(--vl-space-2) var(--vl-space-4);
+}
+
+/* === July global sidebar (data-variant="sidebar") === */
+.list[data-variant="sidebar"] {
+  padding: var(--vl-space-4) 0;
+}
+
+.list[data-variant="sidebar"] .item {
+  min-height: var(--vl-sidebar-item-height);
+  margin: var(--vl-space-1) var(--vl-space-2) var(--vl-space-1) 0;
+  padding: var(--vl-space-2) var(--vl-space-4) var(--vl-space-2) 1.25rem;
+  border-radius: var(--vl-radius-nav-item);
+  color: var(--vl-sidebar-text);
+}
+
+.list[data-variant="sidebar"] .item:hover {
+  background: var(--vl-color-hover);
+}
+
+.list[data-variant="sidebar"] .item[aria-current="page"],
+.list[data-variant="sidebar"] .item[aria-current="page"]:hover {
+  background: var(--vl-sidebar-item-active-bg);
+}
+
+.list[data-variant="sidebar"] .item[aria-current="page"] .label > * {
+  font-weight: 600;
+}
+
+.list[data-variant="sidebar"] .item :is(svg) {
+  color: var(--vl-sidebar-text);
+}
+
+.list[data-variant="sidebar"].collapsed .item {
+  justify-content: center;
+  margin: var(--vl-space-1) var(--vl-space-2);
+  padding: var(--vl-space-2);
+  border-radius: var(--vl-radius-lg);
+}
+
+.list[data-variant="sidebar"].collapsed .item > :first-child {
+  min-width: 0;
+}
+
+.list[data-variant="sidebar"].collapsed .divider {
+  margin: var(--vl-space-2);
 }
