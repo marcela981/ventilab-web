@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: TeacherDashboardPage
-* Descripción: Page /teacher (TEACHER, ADMIN): the caller's STUDENT groups (`GET /api/groups?type=STUDENT`) in a selector whose value lives in the URL (?groupId=, shareable; the first group by default), the summary cards of the group (attempts to grade, active evaluations, upcoming reservations), the students table of `GET /api/analytics/groups/{groupId}/dashboard` (sortable, filterable, risk highlight with legend, expandable progress) and the lazy charts (grade distribution of one evaluation from the API histogram, module progress of one student). "Exportar CSV" downloads `GET /api/analytics/groups/{groupId}/export.csv`. A 403 of the analytics (another teacher's group opened by URL) shows "No tienes acceso a este grupo". No grade, average or statistic is computed here; personal notes and AI conversations of the students are never read. v1.1 (O3 review): rows, error and loading branches and the CSV filename only use a dashboard whose groupId matches the selected group, so switching groups shows the loading or error state instead of the previous group. v1.2 (closure B2): the table receives the API passing grade and risk thresholds for its legend and the charts section the whole dashboard (group module aggregate, group-filtered stats). Depends on MUI, next/head, next/router, the design-system states and async button, the teacher dashboard hooks, components, entities and CSS Module.
-* Versión: 1.2
+* Descripción: Page /teacher (TEACHER, ADMIN): the caller's STUDENT groups (`GET /api/groups?type=STUDENT`) in a selector whose value lives in the URL (?groupId=, shareable; the first group by default), the summary cards of the group (attempts to grade, active evaluations, upcoming reservations), the students table of `GET /api/analytics/groups/{groupId}/dashboard` (sortable, filterable, risk highlight with legend, expandable progress) and the lazy charts (grade distribution of one evaluation from the API histogram, module progress of one student). "Exportar CSV" downloads `GET /api/analytics/groups/{groupId}/export.csv`. A 403 of the analytics (another teacher's group opened by URL) shows "No tienes acceso a este grupo". No grade, average or statistic is computed here; personal notes and AI conversations of the students are never read. v1.1 (O3 review): rows, error and loading branches and the CSV filename only use a dashboard whose groupId matches the selected group, so switching groups shows the loading or error state instead of the previous group. v1.2 (closure B2): the table receives the API passing grade and risk thresholds for its legend and the charts section the whole dashboard (group module aggregate, group-filtered stats). v1.3 (Bloque 5, perf): the rows, the generation date and the charts render from a deferred copy of the dashboard (useDeferredValue, still checked against the selected group), so when the data of a large group arrives (500 students: 25 table rows, a 500-option student selector, three chart cards) React renders them in an interruptible, time-sliced pass instead of one long task; the loading state stays until that pass commits. Depends on MUI, next/head, next/router, react, the design-system states and async button, the teacher dashboard hooks, components, entities and CSS Module.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { useDeferredValue } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
@@ -61,6 +62,10 @@ export function TeacherDashboardPage() {
   const { dashboard: loaded, isLoading, error, reload } = useGroupDashboard(groupId);
   // Only the dashboard of the selected group is shown: a previous group's data must never be rendered (SWR keepPreviousData).
   const dashboard = loaded && loaded.groupId === groupId ? loaded : null;
+  // The rows and charts render from a deferred copy: React renders them in an interruptible (time-sliced) pass instead of one long
+  // task when the data of a large group (500 students) arrives. The deferred copy also has to belong to the selected group.
+  const deferred = useDeferredValue(dashboard);
+  const shown = deferred && deferred.groupId === groupId ? deferred : null;
   const cards = useGroupCards(groupId);
   const titles = useCurriculumTitles();
   const { exporting, exportCsv } = useGroupExport();
@@ -92,20 +97,20 @@ export function TeacherDashboardPage() {
     return (
       <>
         <DashboardCards cards={cards} />
-        {dashboard ? (
+        {shown ? (
           <>
-            <p className={cx(styles.meta)}>{TEACHER_DASHBOARD_COPY.generatedAt(formatDateTime(dashboard.generatedAt))}</p>
+            <p className={cx(styles.meta)}>{TEACHER_DASHBOARD_COPY.generatedAt(formatDateTime(shown.generatedAt))}</p>
             <StudentsTable
-              rows={dashboard.students}
+              rows={shown.students}
               groupId={groupId}
               titles={titles}
-              passingGrade={dashboard.passingGrade}
-              thresholds={dashboard.riskThresholds}
+              passingGrade={shown.passingGrade}
+              thresholds={shown.riskThresholds}
             />
-            <DashboardChartsSection key={dashboard.groupId} dashboard={dashboard} titles={titles} />
+            <DashboardChartsSection key={shown.groupId} dashboard={shown} titles={titles} />
           </>
         ) : null}
-        {!dashboard && isLoading ? <ListSkeleton rows={5} label={TEACHER_DASHBOARD_COPY.loadingDashboard} /> : null}
+        {!shown && (isLoading || dashboard) ? <ListSkeleton rows={5} label={TEACHER_DASHBOARD_COPY.loadingDashboard} /> : null}
       </>
     );
   };
