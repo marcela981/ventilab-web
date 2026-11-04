@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space mapper tests
-* Descripción: The summary mapper copies every API value as is (progress, grades, evaluations, notes, conversations, sessions, reservations) and normalises missing lists and invalid unread counts; the grades mapper keeps grade, points and `passed`; the notes mappers build the notes page from the envelope pagination (or the list length without it) keeping the note labels, and the module analysis. Depends on vitest, the student space mappers and the test fixtures. v1.1 (B2 closure): section titles, grade attemptId and module, note module and titles, session case title; the lesson read mapping is gone. v1.2 (W8, Bloque 2): continueLearning is copied, or null when absent.
-* Versión: 1.2
+* Descripción: The summary mapper copies every API value as is (progress, grades, evaluations, notes, conversations, sessions, reservations) and normalises missing lists and invalid unread counts; the grades mapper keeps grade, points and `passed`; the notes mappers build the notes page from the envelope pagination (or the list length without it) keeping the note labels, and the module analysis. Depends on vitest, the student space mappers and the test fixtures. v1.1 (B2 closure): section titles, grade attemptId and module, note module and titles, session case title; the lesson read mapping is gone. v1.2 (W8, Bloque 2): continueLearning is copied, or null when absent. v1.3 (cierre IA): the module analysis maps source to isFallback (absent: false; DETERMINISTIC: true).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -150,6 +150,14 @@ describe("notes mappers", () => {
       gaps: [],
       suggestions: ["Repasa"],
       notesAnalyzed: 4,
+      isFallback: false,
     });
+  });
+
+  it("marks a deterministic module analysis as a fallback", () => {
+    const dto = { aiCallId: "call-2", summary: "Sin IA", keyConcepts: [], gaps: [], suggestions: [], lessonId: null, moduleId: "m1", model: "", notesAnalyzed: 2, scope: "module", source: "DETERMINISTIC" } as NotesAnalysisDTO;
+
+    expect(toModuleNotesAnalysis(dto).isFallback).toBe(true);
+    expect(toModuleNotesAnalysis({ ...dto, source: "LLM" }).isFallback).toBe(false);
   });
 });

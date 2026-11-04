@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NotesAnalysisSection
-* Descripción: "Analizar mis notas con IA" block of the notes panel: runs the AI analysis of the caller's notes of the lesson (useNotesAnalysis, slow timeout), shows its error (no notes, 429 with the wait, AI service unavailable or failing, network) and the result: summary, key concepts, gaps and suggestions, plus the shared "¿Te fue útil?" widget rating the analysis (targetType NOTES_ANALYSIS, targetId = the returned aiCallId; a fresh analysis has no rating yet). Depends on MUI, @shared/design-system (AsyncButton), @shared/ai-rating, useNotesAnalysis, the notes error messages and the notes CSS Module. v1.1 (L5/L6): list items are keyed by index + text (LLM output may repeat an item). v1.2 (W7, Bloque 2): the rating sends surface NOTES_ANALYSIS and scope LESSON (the analysis covers the lesson notes).
-* Versión: 1.2
+* Descripción: "Analizar mis notas con IA" block of the notes panel: runs the AI analysis of the caller's notes of the lesson (useNotesAnalysis, slow timeout), shows its error (no notes, 429 with the wait, AI service unavailable or failing, network) and the result: summary, key concepts, gaps and suggestions, plus the shared "¿Te fue útil?" widget rating the analysis (targetType NOTES_ANALYSIS, targetId = the returned aiCallId; a fresh analysis has no rating yet). Depends on MUI, @shared/design-system (AsyncButton), @shared/ai-rating, useNotesAnalysis, the notes error messages and the notes CSS Module. v1.1 (L5/L6): list items are keyed by index + text (LLM output may repeat an item). v1.2 (W7, Bloque 2): the rating sends surface NOTES_ANALYSIS and scope LESSON (the analysis covers the lesson notes). v1.3 (cierre IA): a rule-based analysis (isFallback, source DETERMINISTIC) shows the shared "Respuesta automática (IA no disponible)" label under the title and no rating widget.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import Alert from "@mui/material/Alert";
 import { useId } from "react";
+import { AiFallbackLabel } from "@shared/ai-conversation/application/fallback-label";
 import { AiRatingWidget } from "@shared/ai-rating";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { cx } from "@shared/lib/class-names";
@@ -62,11 +63,15 @@ export function NotesAnalysisSection({ lessonId, canAnalyze }: NotesAnalysisSect
       {analysis ? (
         <section aria-labelledby={titleId} className={cx(styles.analysisResult)}>
           <h3 id={titleId} className={cx(styles.sectionTitle)}>{COPY.title}</h3>
+          {analysis.isFallback ? <AiFallbackLabel /> : null}
           <p className={cx(styles.summary)}>{analysis.summary}</p>
           <AnalysisList title={COPY.keyConcepts} items={analysis.keyConcepts} />
           <AnalysisList title={COPY.gaps} items={analysis.gaps} />
           <AnalysisList title={COPY.suggestions} items={analysis.suggestions} />
-          <AiRatingWidget key={analysis.aiCallId} targetType="NOTES_ANALYSIS" targetId={analysis.aiCallId} initialRating={null} surface="NOTES_ANALYSIS" scope="LESSON" />
+          {/* Ratings measure the language model: the rule-based fallback analysis is not rated. */}
+          {analysis.isFallback ? null : (
+            <AiRatingWidget key={analysis.aiCallId} targetType="NOTES_ANALYSIS" targetId={analysis.aiCallId} initialRating={null} surface="NOTES_ANALYSIS" scope="LESSON" />
+          )}
         </section>
       ) : null}
     </div>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My notes mapper
-* Descripción: Maps one page of the caller's notes (NoteDTO[] plus the envelope pagination) to a NotesPage of learning Note entities and the module notes analysis (NotesAnalysisDTO) to the learning NotesAnalysis entity. Depends on the api-client types, the learning public types and the student space DTOs and entities. v1.1 (B1 closure): a note keeps the moduleId, lessonTitle and pageTitle labels of the API. v1.2 (B2 closure): the lesson read mapping (toNoteLessonInfo) is gone.
-* Versión: 1.2
+* Descripción: Maps one page of the caller's notes (NoteDTO[] plus the envelope pagination) to a NotesPage of learning Note entities and the module notes analysis (NotesAnalysisDTO) to the learning NotesAnalysis entity. Depends on the api-client types, the learning public types and the student space DTOs and entities. v1.1 (B1 closure): a note keeps the moduleId, lessonTitle and pageTitle labels of the API. v1.2 (B2 closure): the lesson read mapping (toNoteLessonInfo) is gone. v1.3 (cierre IA): maps the module analysis source to isFallback (DETERMINISTIC; a missing source from an older server is LLM).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,6 +11,7 @@
 
 import type { ApiPagination } from "@shared/api-client/api-types";
 import type { Note, NotesAnalysis } from "@features/learning";
+import { isFallbackSource } from "@shared/ai-conversation/application/ai-conversation.entity";
 import type { NotesPage } from "../../application/entities/my-notes.entity";
 import type { NoteDTO, NotesAnalysisDTO } from "../dtos/student-space.dto";
 
@@ -45,5 +46,7 @@ export function toModuleNotesAnalysis(dto: NotesAnalysisDTO): NotesAnalysis {
     gaps: dto.gaps,
     suggestions: dto.suggestions,
     notesAnalyzed: dto.notesAnalyzed,
+    // An older server sends no source: the analysis is the language model's.
+    isFallback: isFallbackSource(dto.source),
   };
 }

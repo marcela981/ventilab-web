@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DeepenPanel tests
-* Descripción: Integration tests of the deepen accordion body against msw serving real text/event-stream bodies of POST /api/tutor/pages/{pageId}/deepen: deltas render progressively ("Consultando IA…" first) and the rating widget appears on `done`, an empty question expands the whole page, "Detener" stops the answer (no further text, stopped note) and the stopped answer is rated with the message id announced by the `start` frame (surface ACCORDION, scope PAGE; nothing to rate when stopped before the first fragment), a follow-up question reuses the conversation (also the one announced by a stopped first answer), the July error texts with "Inténtalo de nuevo" re-sending the failed turn in the same conversation, the prefill from a TutorAI suggestion, and a fresh thread when the page changes. v1.1 (L5 fix), v1.2 (S2 ai-chat), v1.3 (S2 review R3): see git history. v1.4 (W7, Bloque 2): rewritten for the accordion body with the July texts, the shared useTutorTurn engine (start frame), retry and ratings with surface and scope. RichContent is replaced by plain text (its lazy markdown renderer is covered in shared/rich-content). Depends on vitest, Testing Library, msw and the learning/SSE test helpers.
-* Versión: 1.4
+* Descripción: Integration tests of the deepen accordion body against msw serving real text/event-stream bodies of POST /api/tutor/pages/{pageId}/deepen: deltas render progressively ("Consultando IA…" first) and the rating widget appears on `done`, an empty question expands the whole page, "Detener" stops the answer (no further text, stopped note) and the stopped answer is rated with the message id announced by the `start` frame (surface ACCORDION, scope PAGE; nothing to rate when stopped before the first fragment), a follow-up question reuses the conversation (also the one announced by a stopped first answer), the July error texts with "Inténtalo de nuevo" re-sending the failed turn in the same conversation, the prefill from a TutorAI suggestion, and a fresh thread when the page changes. v1.1 (L5 fix), v1.2 (S2 ai-chat), v1.3 (S2 review R3): see git history. v1.4 (W7, Bloque 2): rewritten for the accordion body with the July texts, the shared useTutorTurn engine (start frame), retry and ratings with surface and scope. RichContent is replaced by plain text (its lazy markdown renderer is covered in shared/rich-content). Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.5 (cierre IA): a DETERMINISTIC answer shows the fallback label, no server prefix and no rating; a 503 with Retry-After shows the local reset time.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -198,6 +198,32 @@ describe("DeepenPanel", () => {
     view.rerender(<SessionWrapper role="STUDENT"><DeepenPanel pageId="p2" /></SessionWrapper>);
     fireEvent.click(sendButton());
     expect(await screen.findByText("Sin conexión")).toBeInTheDocument();
+  });
+
+  it("labels a non-AI fallback answer without its server prefix and offers no rating", async() => {
+    respondWith([
+      startFrame(START),
+      deltaFrame("[Respuesta automática sin IA] Revisa el contenido de esta página."),
+      doneFrame({ ...DONE, source: "DETERMINISTIC" }),
+    ]);
+    renderWithSession(<DeepenPanel pageId="p1" />);
+
+    ask("¿Qué es la PEEP?");
+    expect(await screen.findByText("Respuesta automática (IA no disponible)")).toBeInTheDocument();
+    expect(screen.getByText("Revisa el contenido de esta página.", VISIBLE)).toBeInTheDocument();
+    expect(screen.queryByText(/\[Respuesta automática sin IA\]/, VISIBLE)).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "¿Te fue útil?" })).not.toBeInTheDocument();
+  });
+
+  it("shows when the AI can be used again after a 503 with Retry-After", async() => {
+    server.use(http.post(apiUrl(DEEPEN_PATH), () => HttpResponse.json(
+      { success: false, message: "busy", data: null, code: "ai.providers_unavailable", timestamp: "", traceId: "t", pagination: null },
+      { status: 503, headers: { "Retry-After": "120" } },
+    )));
+    renderWithSession(<DeepenPanel pageId="p1" />);
+
+    fireEvent.click(sendButton());
+    expect(await screen.findByText(/^La IA no está disponible en este momento\. Podrás intentarlo de nuevo a las \d{2}:\d{2}\.$/)).toBeInTheDocument();
   });
 
   it("fills and focuses the question with a suggestion prompt without sending it", async() => {

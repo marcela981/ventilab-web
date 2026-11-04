@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LessonNotesPanel tests
-* Descripción: Integration tests of the lesson notes panel against msw handlers of /api/notes: the caller's notes render with a page indicator that links to the anchored page (disabled when the page is unknown), a new note anchored to the current page sends its pageId, editing PATCHes the note, delete asks for confirmation before the DELETE, the AI analysis renders summary, key concepts, gaps, suggestions and the rating widget, and 429/503 show their messages. The lazy Tiptap editor is replaced by a textarea (the autosave rules are covered by use-note-autosave.test). v1.1 (L5/L6): a failed delete closes the dialog, keeps the note and shows a dismissible error alert. Depends on vitest, Testing Library, msw and the learning test helpers. v1.2 (B1 closure): the note fixture carries the new moduleId, lessonTitle and pageTitle fields.
-* Versión: 1.2
+* Descripción: Integration tests of the lesson notes panel against msw handlers of /api/notes: the caller's notes render with a page indicator that links to the anchored page (disabled when the page is unknown), a new note anchored to the current page sends its pageId, editing PATCHes the note, delete asks for confirmation before the DELETE, the AI analysis renders summary, key concepts, gaps, suggestions and the rating widget, and 429/503 show their messages. The lazy Tiptap editor is replaced by a textarea (the autosave rules are covered by use-note-autosave.test). v1.1 (L5/L6): a failed delete closes the dialog, keeps the note and shows a dismissible error alert. Depends on vitest, Testing Library, msw and the learning test helpers. v1.2 (B1 closure): the note fixture carries the new moduleId, lessonTitle and pageTitle fields. v1.3 (cierre IA): a DETERMINISTIC analysis shows the fallback label and no rating; a busy 503 with Retry-After shows the local reset time.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -258,5 +258,45 @@ describe("LessonNotesPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Analizar mis notas con IA" }));
 
     expect(await screen.findByText("El servicio de IA no está disponible en este momento. Inténtalo más tarde.")).toBeInTheDocument();
+  });
+
+  it("shows when a busy AI (503 with Retry-After) can be used again", async() => {
+    server.use(http.post(apiUrl("/api/notes/analyze"), () => {
+      const response = errorResponse("ai.providers_unavailable", 503);
+
+      response.headers.set("Retry-After", "300");
+
+      return response;
+    }));
+    renderPanel();
+    await screen.findByText("Nota libre");
+
+    fireEvent.click(screen.getByRole("button", { name: "Analizar mis notas con IA" }));
+
+    expect(await screen.findByText(/^El asistente de IA está saturado en este momento\. Podrás intentarlo de nuevo a las \d{2}:\d{2}\.$/)).toBeInTheDocument();
+  });
+
+  it("labels a rule-based analysis (source DETERMINISTIC) and offers no rating", async() => {
+    server.use(http.post(apiUrl("/api/notes/analyze"), () => HttpResponse.json(envelope({
+      aiCallId: "call-2",
+      summary: "Tienes 3 notas con 120 palabras.",
+      keyConcepts: ["PEEP"],
+      gaps: [],
+      suggestions: [],
+      lessonId: "l1",
+      moduleId: null,
+      model: "",
+      notesAnalyzed: 3,
+      scope: "lesson",
+      source: "DETERMINISTIC",
+    }))));
+    renderPanel();
+    await screen.findByText("Nota libre");
+
+    fireEvent.click(screen.getByRole("button", { name: "Analizar mis notas con IA" }));
+
+    expect(await screen.findByText("Tienes 3 notas con 120 palabras.")).toBeInTheDocument();
+    expect(screen.getByText("Respuesta automática (IA no disponible)")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "¿Te fue útil?" })).not.toBeInTheDocument();
   });
 });

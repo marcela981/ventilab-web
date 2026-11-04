@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notes mapper
-* Descripción: Maps the notes DTOs of the backend to the learning Note and NotesAnalysis entities (drops the model, scope and ids of the analysis that the panel does not use). Depends on the notes DTOs and the note entity. v1.1 (B1 closure): copies the moduleId, lessonTitle and pageTitle labels of the API.
-* Versión: 1.1
+* Descripción: Maps the notes DTOs of the backend to the learning Note and NotesAnalysis entities (drops the model, scope and ids of the analysis that the panel does not use). Depends on the notes DTOs and the note entity. v1.1 (B1 closure): copies the moduleId, lessonTitle and pageTitle labels of the API. v1.2 (cierre IA): maps the analysis source to isFallback (DETERMINISTIC; a missing source from an older server is LLM).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { isFallbackSource } from "@shared/ai-conversation/application/ai-conversation.entity";
 import type { Note, NotesAnalysis } from "../../application/entities/note.entity";
 import type { NoteDTO, NotesAnalysisDTO } from "../dtos/notes.dto";
 
@@ -38,5 +39,7 @@ export function toNotesAnalysis(dto: NotesAnalysisDTO): NotesAnalysis {
     gaps: dto.gaps,
     suggestions: dto.suggestions,
     notesAnalyzed: dto.notesAnalyzed,
+    // An older server sends no source: the analysis is the language model's.
+    isFallback: isFallbackSource(dto.source),
   };
 }

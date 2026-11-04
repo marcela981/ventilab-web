@@ -1,8 +1,8 @@
 /*
 * Funcionalidad: ModuleNotesAnalysis
 * Descripción: "Analizar mis notas con IA" for one module of /me/notes: the same flow and presentation as the lesson analysis of the learning feature (button with pending state, error alert, summary, key concepts, gaps and suggestions) over `POST /api/notes/analyze` with the moduleId, rated with the shared AiRatingWidget (target NOTES_ANALYSIS, the AI call id). Depends on MUI, @shared/ai-rating, the design-system async button, the module analysis hook and error messages and the student space CSS Module.
-*   v1.1 (W6, Bloque 4): the rating carries the NOTES_ANALYSIS surface and the MODULE scope (thesis analytics by surface and scope).
-* Versión: 1.1
+*   v1.1 (W6, Bloque 4): the rating carries the NOTES_ANALYSIS surface and the MODULE scope (thesis analytics by surface and scope). v1.2 (cierre IA): a rule-based analysis (isFallback, source DETERMINISTIC) shows the shared "Respuesta automática (IA no disponible)" label under the title and no rating widget.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import Alert from "@mui/material/Alert";
 import { useId } from "react";
+import { AiFallbackLabel } from "@shared/ai-conversation/application/fallback-label";
 import { AiRatingWidget } from "@shared/ai-rating";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { cx } from "@shared/lib/class-names";
@@ -70,18 +71,22 @@ export function ModuleNotesAnalysis({ moduleId, moduleTitle }: ModuleNotesAnalys
       {analysis ? (
         <section aria-labelledby={titleId} className={cx(styles.analysisResult)}>
           <h4 id={titleId} className={cx(styles.lessonTitle)}>{MODULE_ANALYSIS_COPY.title(moduleTitle)}</h4>
+          {analysis.isFallback ? <AiFallbackLabel /> : null}
           <p className={cx(styles.excerpt)}>{analysis.summary}</p>
           <AnalysisList title={MODULE_ANALYSIS_COPY.keyConcepts} items={analysis.keyConcepts} />
           <AnalysisList title={MODULE_ANALYSIS_COPY.gaps} items={analysis.gaps} />
           <AnalysisList title={MODULE_ANALYSIS_COPY.suggestions} items={analysis.suggestions} />
-          <AiRatingWidget
-            key={analysis.aiCallId}
-            targetType="NOTES_ANALYSIS"
-            targetId={analysis.aiCallId}
-            initialRating={null}
-            surface="NOTES_ANALYSIS"
-            scope="MODULE"
-          />
+          {/* Ratings measure the language model: the rule-based fallback analysis is not rated. */}
+          {analysis.isFallback ? null : (
+            <AiRatingWidget
+              key={analysis.aiCallId}
+              targetType="NOTES_ANALYSIS"
+              targetId={analysis.aiCallId}
+              initialRating={null}
+              surface="NOTES_ANALYSIS"
+              scope="MODULE"
+            />
+          )}
         </section>
       ) : null}
     </div>

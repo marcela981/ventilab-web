@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionsPanel
-* Descripción: "Preguntas" tab of the TutorAI popup: a chat with the AI tutor about the lesson (default) or the whole module. The scope selector switches between LESSON (refId = lessonId) and MODULE (refId = moduleId); each scope reopens the caller's existing conversation (useScopeConversation, client-side refId lookup) and shows its history: student and tutor bubbles, tutor answers as markdown, a note on answers saved incomplete and the shared "¿Te fue útil?" widget per rateable answer (MESSAGE target = assistant message id, surface POPUP, scope of the conversation). The first message starts the conversation (POST /api/tutor/conversations with scope, refId and currentPageId); later ones are sent to POST /api/tutor/conversations/{id}/messages; both stream the answer progressively with "Detener". After every stream the conversation is revalidated so the saved messages (including stopped, incomplete ones) replace the pending bubbles; an error before the stream gives the question back to the input. "Abrir en el asistente" opens the conversation in /assistant/[id] (disabled until its id is known). The thread is keyed by scope + refId, so switching scope or closing the popup aborts the running answer. Depends on MUI, next/router, @shared/design-system, @shared/ai-conversation (MessageList, MessageBubble, Composer, useTutorTurn), the ai-chat routes entry, useScopeConversation, useTutorPromptRequest, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L6 fix): "rejected before the stream" is decided by outcome.streamStarted. v1.2 (S2 ai-chat): shared thread, bubbles and Composer. v1.3 (W7, Bloque 2): it lives in the TutorAI popup. The stream runs on the shared useTutorTurn (the conversation id of a first message is adopted from the early `start` frame, so even a stopped first answer opens the right conversation); a failed answer offers "Reintentar" (re-sends the last message); ratings send surface POPUP and the conversation scope; "Abrir en el asistente"; a TutorAI suggestion for the questions target prefills the message.
-* Versión: 1.3
+* Descripción: "Preguntas" tab of the TutorAI popup: a chat with the AI tutor about the lesson (default) or the whole module. The scope selector switches between LESSON (refId = lessonId) and MODULE (refId = moduleId); each scope reopens the caller's existing conversation (useScopeConversation, client-side refId lookup) and shows its history: student and tutor bubbles, tutor answers as markdown, a note on answers saved incomplete and the shared "¿Te fue útil?" widget per rateable answer (MESSAGE target = assistant message id, surface POPUP, scope of the conversation). The first message starts the conversation (POST /api/tutor/conversations with scope, refId and currentPageId); later ones are sent to POST /api/tutor/conversations/{id}/messages; both stream the answer progressively with "Detener". After every stream the conversation is revalidated so the saved messages (including stopped, incomplete ones) replace the pending bubbles; an error before the stream gives the question back to the input. "Abrir en el asistente" opens the conversation in /assistant/[id] (disabled until its id is known). The thread is keyed by scope + refId, so switching scope or closing the popup aborts the running answer. Depends on MUI, next/router, @shared/design-system, @shared/ai-conversation (MessageList, MessageBubble, Composer, useTutorTurn), the ai-chat routes entry, useScopeConversation, useTutorPromptRequest, the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L6 fix): "rejected before the stream" is decided by outcome.streamStarted. v1.2 (S2 ai-chat): shared thread, bubbles and Composer. v1.3 (W7, Bloque 2): it lives in the TutorAI popup. The stream runs on the shared useTutorTurn (the conversation id of a first message is adopted from the early `start` frame, so even a stopped first answer opens the right conversation); a failed answer offers "Reintentar" (re-sends the last message); ratings send surface POPUP and the conversation scope; "Abrir en el asistente"; a TutorAI suggestion for the questions target prefills the message. v1.4 (cierre IA): a non-AI fallback answer (live: done source DETERMINISTIC; saved: the server label at the start of the message) carries the "Respuesta automática (IA no disponible)" label and no rating widget.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -68,6 +68,7 @@ function MessageView({ message, scope }: { message: ConversationMessage, scope: 
       ratingTargetId={canRateMessage(message) ? message.id : null}
       ratingSurface="POPUP"
       ratingScope={scope}
+      isFallback={message.isFallback}
     />
   );
 }
@@ -182,7 +183,13 @@ function ConversationThread({ scope, refId, currentPageId }: ConversationThreadP
           <Fragment key="pending">
             <MessageBubble role="user" content={pending} />
             {turn.status === "error" && turn.text === "" ? null : (
-              <TutorAnswer text={turn.text} live isStreaming={isStreaming} interruption={turn.status === "aborted" ? "stopped" : null} />
+              <TutorAnswer
+                text={turn.text}
+                live
+                isStreaming={isStreaming}
+                interruption={turn.status === "aborted" ? "stopped" : null}
+                isFallback={turn.isFallback}
+              />
             )}
           </Fragment>
         )}

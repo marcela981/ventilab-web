@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor mapper
-* Descripción: Maps the AI tutor conversation DTOs (summary, detail, message) to the learning tutor entities. Depends on the tutor DTOs and entity.
-* Versión: 1.0
+* Descripción: Maps the AI tutor conversation DTOs (summary, detail, message) to the learning tutor entities. Depends on the tutor DTOs and entity. v1.1 (cierre IA): a saved assistant message is a non-AI fallback (isFallback) when it starts with the server fallback label, since the message DTO carries no source.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { hasFallbackLabel } from "@shared/ai-conversation/application/ai-conversation.entity";
 import type { Conversation, ConversationMessage, ConversationSummary } from "../../application/entities/tutor.entity";
 import type { AiConversationDetailDTO, AiConversationDTO, AiConversationMessageDTO } from "../dtos/tutor.dto";
 
@@ -28,6 +29,8 @@ export function toConversationMessage(dto: AiConversationMessageDTO): Conversati
     isIncomplete: dto.isIncomplete,
     aiCallId: dto.aiCallId,
     createdAt: dto.createdAt,
+    // The message DTO has no source: the label the server puts at the start of a non-AI answer marks it.
+    isFallback: dto.role === "ASSISTANT" && hasFallbackLabel(dto.content),
   };
 }
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ChatPanel tests
-* Descripción: Behaviour of the AI assistant conversation view against msw with real SSE bodies: a new chat shows the scope text and suggested questions and a suggestion sends it (POST /api/tutor/conversations {scope: FREE}), streams the answer, reports the created conversation once and shows "¿Te fue útil?" for the complete answer; "Detener" leaves "Respuesta interrumpida" and "Reintentar" resends the same message; the fixed off-topic reply renders as an informational note (no alert); a 429 quota error shows the local reset time without a retry; "Copiar" writes the answer to the clipboard and confirms "Copiado"; scrolling up shows "Ir al final", which scrolls back to the end; a detail load failure shows "Reintentar", blocks sending and reloads. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (W7, Bloque 2): ratings send surface ASSISTANT without scope, also for a LESSON conversation, and an answer stopped after the start frame is rateable.
-* Versión: 1.1
+* Descripción: Behaviour of the AI assistant conversation view against msw with real SSE bodies: a new chat shows the scope text and suggested questions and a suggestion sends it (POST /api/tutor/conversations {scope: FREE}), streams the answer, reports the created conversation once and shows "¿Te fue útil?" for the complete answer; "Detener" leaves "Respuesta interrumpida" and "Reintentar" resends the same message; the fixed off-topic reply renders as an informational note (no alert); a 429 quota error shows the local reset time without a retry; "Copiar" writes the answer to the clipboard and confirms "Copiado"; scrolling up shows "Ir al final", which scrolls back to the end; a detail load failure shows "Reintentar", blocks sending and reloads. Depends on Testing Library, msw, the shared SSE test helpers and the AI chat test helpers. v1.1 (W7, Bloque 2): ratings send surface ASSISTANT without scope, also for a LESSON conversation, and an answer stopped after the start frame is rateable. v1.2 (cierre IA): a DETERMINISTIC answer shows the fallback label without the server prefix and without the rating.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -187,6 +187,23 @@ describe("ChatPanel", () => {
     expect(note).toHaveTextContent(OFF_TOPIC_REPLY);
     expect(note).toHaveTextContent(/medicina y del sistema respiratorio/);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("labels a non-AI fallback answer, hides its server prefix and offers no rating", async() => {
+    server.use(http.post(MESSAGES_URL, () => sseResponse([
+      deltaFrame("[Respuesta automática sin IA] Consulta el módulo de ventilación."),
+      doneFrame({ aiCallId: "call-4", messageId: "m-4", conversationId: "c1", source: "DETERMINISTIC" }),
+    ])));
+
+    renderPanel({ conversationId: "c1" });
+
+    await waitFor(() => expect(screen.queryByText("Cargando la conversación…")).not.toBeInTheDocument());
+    type("¿Qué es la PEEP?");
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    expect(await screen.findByText("Respuesta automática (IA no disponible)")).toBeInTheDocument();
+    expect(screen.queryByText(/\[Respuesta automática sin IA\]/, { ignore: "script, style, [aria-live] *" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sí, fue útil" })).not.toBeInTheDocument();
   });
 
   it("shows the daily quota with its reset time and no retry", async() => {
