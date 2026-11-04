@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console layout styles
-* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version.
-* Versión: 0.1
+* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -150,6 +150,86 @@
 
 .cardList {
   margin: 0;
+}
+
+.cardsZone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.cardsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.cardsButton,
+.adjustButton,
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: transparent;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  cursor: pointer;
+}
+
+.cardsButton[aria-pressed="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.cardsButton:disabled,
+.adjustButton:disabled {
+  color: var(--vl-console-text-muted);
+  cursor: not-allowed;
+}
+
+.cardsButton:focus-visible,
+.adjustButton:focus-visible,
+.dragHandle:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.adjustCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.adjustCard[data-hidden="true"] > dl {
+  opacity: 0.45;
+}
+
+.adjustTools {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.adjustButton,
+.dragHandle {
+  min-width: var(--vl-space-6);
+  padding: 0;
+}
+
+.dragHandle {
+  cursor: grab;
+}
+
+.hiddenTag {
+  margin-left: auto;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
 }
 
 /* Short screens: the page scrolls, the columns grow with their content. */
