@@ -9,37 +9,15 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { MEMBER_STORAGE_STATE, STUDENT_STORAGE_STATE, TEACHER_STORAGE_STATE } from "./support/auth";
 import { backendApiAs, savedUserOf } from "./support/backend-api";
-import { SIMULATOR_VIEWPORT, workspaceTab } from "./support/simulator";
+import { connectToVentilator as connect, connectionCard, openRealMonitor, SIMULATOR_VIEWPORT, workspaceTab } from "./support/simulator";
 
 test.use({ viewport: SIMULATOR_VIEWPORT });
 test.describe.configure({ mode: "serial" });
 
 type Group = { id: string, type: string, simulatorLeaderId: string | null };
-
-function connectionCard(page: Page) {
-  return page.getByRole("region", { name: "2. Conexión con el ventilador" });
-}
-
-async function connect(page: Page): Promise<void> {
-  await page.goto("/simulador?tab=conexion");
-  const card = connectionCard(page);
-
-  await expect(card.getByRole("status")).toHaveText("Ventilador reservado. Ya puedes conectar.", { timeout: 30_000 });
-  await card.getByRole("button", { name: "Conectar", exact: true }).click();
-  await expect(card.getByRole("status")).toHaveText("Conectado al ventilador.", { timeout: 30_000 });
-}
-
-async function openRealMonitor(page: Page): Promise<void> {
-  await workspaceTab(page, "Monitoreo").click();
-  await page.getByRole("group", { name: "Modo del monitor" }).getByRole("button", { name: "Real" }).click();
-  await expect(page.getByRole("status", { name: "Estado de la señal" })).toHaveText("Conectado (Físico)", { timeout: 30_000 });
-  await expect(page.getByRole("heading", { name: "Ventilador físico" })).toBeVisible({ timeout: 30_000 });
-  // No physical device on the local stack: the monitor reports the missing telemetry.
-  await expect(page.getByRole("alert").filter({ hasText: "Equipo sin datos" })).toBeVisible({ timeout: 15_000 });
-}
 
 test("holder reserves now, connects with control and sees the real monitor", async ({ page }) => {
   test.setTimeout(120_000);

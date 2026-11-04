@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E EXAM practical question in the locked console
-* Descripción: The demo seed has no evaluation with a SIMULATION question, so the setup creates one through the API as the teacher (EXAM with one SIMULATION question on the published case "Pulmón normal: postoperatorio inmediato" and a one-criterion rubric, marked READY and assigned to the student's demo group for one day). The student opens it, starts the attempt and "Iniciar parte práctica": the console opens on /simulator/sessions/[id] in locked mode (no workspace tabs, no Digital/Real selector, fixed speed without pause, exam timer, curves visible) and "Finalizar sesión" takes her back to the attempt. Cleanup closes the assignment and archives the evaluation. Depends on @playwright/test and the e2e support helpers.
-* Versión: 0.1
+* Descripción: The demo seed has no evaluation with a SIMULATION question, so the setup creates one through the API as the teacher (EXAM with one SIMULATION question on the published case "Pulmón normal: postoperatorio inmediato" and a one-criterion rubric, marked READY and assigned to the student's demo group for one day). The student opens it, starts the attempt and "Iniciar parte práctica": the console opens on /simulator/sessions/[id] in locked mode (no workspace tabs, no Digital/Real selector, fixed speed without pause, exam timer, curves visible) and "Finalizar sesión" takes her back to the attempt. Cleanup closes the assignment and archives the evaluation. Depends on @playwright/test and the e2e support helpers. v0.2 (Bloque 5, W5-1): the July locked console has no "Modo del monitor" nor "Pausar", and "Ajustar" of the value cards is disabled with the description "Disponible fuera del examen" (D29).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,6 +70,13 @@ test("a SIMULATION question of an exam opens the console in locked mode", async 
     await expect(page.getByRole("tablist", { name: "Secciones del simulador" })).toHaveCount(0);
     await expect(page.getByRole("group", { name: "Modo del monitor" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Asesoría IA" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Pausar" })).toHaveCount(0);
+    // The value cards keep the saved preference but cannot be adjusted during the exam (D29).
+    const adjust = page.getByRole("region", { name: "Valores" }).getByRole("button", { name: "Ajustar" });
+
+    await expect(adjust).toBeDisabled();
+    await expect(adjust).toHaveAccessibleDescription("Disponible fuera del examen");
+    await expect(page.getByText("Disponible fuera del examen")).toBeVisible();
 
     await page.getByRole("button", { name: "Finalizar sesión" }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Finalizar", exact: true }).click();

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E July Monitoreo layout (Bloque 5, C10)
-* Descripción: A FREE session (Simular Paciente → "Aleatorio") on the July Monitoreo console at 1920×1080 and 1280×720 checks the control order of DISENO_BLOQUE5 §6.3 by role and accessible name with boundingBox (1 px tolerance): the regions Valores < Curvas < Controles in x; the left column in y (logos, "Modo del monitor", "Paciente activo", then Confirmar and Cancelar in ONE row — compared in x, not y — the pending status, "Ajustar" and the value cards list); the input row FiO₂ < Volumen corriente < PEEP in x and above the alarms, the signal chip, the zoom group and the curves; the right column in y (group "Modo ventilatorio" with "Asesoría IA" to its right, then the separate "Más modos (PSV, CPAP, SIMV)" button, the I:E slider and status, inspiratory time and pause, the disabled expiratory pause, the rate spinbutton and slider, "Más parámetros", "Estado de la mecánica" and "Ver alertas detalladas"); the session strip in x (Control del tiempo < Mostrar caso clínico < Finalizar sesión). Also: no horizontal scroll, curves canvas at least 360 px high, and "Ver alertas detalladas" opening the 380 px "Alertas detalladas" drawer without resizing the console, closed by Escape with the focus back on the button. The session is finished at the end of each viewport. v0.1 (Bloque 5, C10): first version. Depends on @playwright/test and the simulator e2e helpers.
-* Versión: 0.1
+* Descripción: A FREE session (Simular Paciente → "Aleatorio") on the July Monitoreo console at 1920×1080 and 1280×720 checks the control order of DISENO_BLOQUE5 §6.3 by role and accessible name with boundingBox (1 px tolerance): the regions Valores < Curvas < Controles in x; the left column in y (logos, "Modo del monitor", "Paciente activo", then Confirmar and Cancelar in ONE row — compared in x, not y — the pending status, "Ajustar" and the value cards list); the input row FiO₂ < Volumen corriente < PEEP in x and above the alarms, the signal chip, the zoom group and the curves; the right column in y (group "Modo ventilatorio" with "Asesoría IA" to its right, then the separate "Más modos (PSV, CPAP, SIMV)" button, the I:E slider and status, inspiratory time and pause, the disabled expiratory pause, the rate spinbutton and slider, "Más parámetros", "Estado de la mecánica" and "Ver alertas detalladas"); the session strip in x (Control del tiempo < Mostrar caso clínico < Finalizar sesión). Also: no horizontal scroll, curves canvas at least 360 px high, and "Ver alertas detalladas" opening the 380 px "Alertas detalladas" drawer without resizing the console, closed by Escape with the focus back on the button. The session is finished at the end of each viewport. v0.1 (Bloque 5, C10): first version. v0.2 (Bloque 5, W5-1): the bounding-box order helpers moved to support/layout-order.ts. Depends on @playwright/test and the simulator and layout order e2e helpers.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,50 +9,9 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { expect, type Locator, type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+import { boxOf, expectHorizontalOrder, expectVerticalOrder, TOLERANCE_PX } from "../support/layout-order";
 import { COMPACT_VIEWPORT, CURVES_LABEL, finishWorkspaceSession, SIMULATOR_VIEWPORT, startPatientSession } from "../support/simulator";
-
-const TOLERANCE_PX = 1;
-
-type Box = { x: number, y: number, width: number, height: number };
-
-async function boxOf(locator: Locator, name: string): Promise<Box> {
-  const box = await locator.boundingBox();
-
-  expect(box, `${name} is rendered`).not.toBeNull();
-
-  return box as Box;
-}
-
-/** Each item starts below the previous one's top (1 px tolerance), in the given order. */
-async function expectVerticalOrder(items: ReadonlyArray<[string, Locator]>): Promise<void> {
-  let previous: { name: string, box: Box } | null = null;
-
-  for (const [name, locator] of items) {
-    const box = await boxOf(locator, name);
-
-    if (previous) {
-      expect(box.y, `${previous.name} is above ${name}`).toBeGreaterThan(previous.box.y + TOLERANCE_PX);
-    }
-
-    previous = { name, box };
-  }
-}
-
-/** Each item starts right of the previous one's left edge, in the given order. */
-async function expectHorizontalOrder(items: ReadonlyArray<[string, Locator]>): Promise<void> {
-  let previous: { name: string, box: Box } | null = null;
-
-  for (const [name, locator] of items) {
-    const box = await boxOf(locator, name);
-
-    if (previous) {
-      expect(box.x, `${previous.name} is left of ${name}`).toBeGreaterThan(previous.box.x + TOLERANCE_PX);
-    }
-
-    previous = { name, box };
-  }
-}
 
 async function checkOrder(page: Page): Promise<void> {
   const values = page.getByRole("region", { name: "Valores" });
