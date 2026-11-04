@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning styles
-* Descripción: Layout of the learning pages (/learn, /learn/[sectionId], /learn/modules/[moduleId]) and their components: centered column, cards (border, radius, surface, shadow) like the profile and groups pages, breadcrumb, progress bars, lists of sections / modules / lessons, lock badges and screen, preview hint and the primary "Continuar" link. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of the learning pages (/learn, /learn/[sectionId], /learn/modules/[moduleId]) and their components: centered column, cards (border, radius, surface, shadow) like the profile and groups pages, breadcrumb, progress bars, lists of sections / modules / lessons, lock badges and screen, preview hint and the primary "Continuar" link. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 5): the badge sits on the raised surface (the inverted surface turns light in the dark scheme and hid the muted text).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -117,7 +117,7 @@
   gap: var(--vl-space-1);
   padding: var(--vl-space-1) var(--vl-space-2);
   border-radius: var(--vl-radius-pill);
-  background: var(--vl-color-surface-contrast);
+  background: var(--vl-color-surface-raised);
   font: var(--mui-font-body2);
   color: var(--vl-color-text-muted);
 }

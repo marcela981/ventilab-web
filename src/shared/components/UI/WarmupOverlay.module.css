@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WarmupOverlay — estilos del overlay de cold start
-* Descripción: Overlay de pantalla completa con z-index máximo para bloquear la interfaz mientras el backend sale del cold start en Render free tier. Muestra spinner + mensaje + animación de puntos sin dependencias de MUI. v1.1 (B6): los colores literales pasan a tokens del design system (tokens.css): fondo navy de contraste translúcido, tarjeta sobre el fondo de la app, logo, spinner y puntos con el primario/secundario de la identidad (antes un degradado violeta ajeno a la paleta), textos con los colores de texto del tema.
-* Versión: 1.1
+* Descripción: Overlay de pantalla completa con z-index máximo para bloquear la interfaz mientras el backend sale del cold start en Render free tier. Muestra spinner + mensaje + animación de puntos sin dependencias de MUI. v1.1 (B6): los colores literales pasan a tokens del design system (tokens.css): fondo navy de contraste translúcido, tarjeta sobre el fondo de la app, logo, spinner y puntos con el primario/secundario de la identidad (antes un degradado violeta ajeno a la paleta), textos con los colores de texto del tema. v1.2 (Bloque 5): the veil is the page background at 78% and the card the surface, so the overlay keeps working in the dark scheme (the inverted surface became a light veil).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,14 +17,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: color-mix(in srgb, var(--vl-color-surface-contrast) 78%, transparent);
+  background-color: color-mix(in srgb, var(--vl-color-bg) 78%, transparent);
   backdrop-filter: blur(5px);
   animation: warmup-fade-in 0.3s ease;
 }
 
 /* ── Tarjeta central ────────────────────────────────────────────────────── */
 .warmup-card {
-  background: var(--vl-color-bg);
+  background: var(--vl-color-surface);
   border-radius: 20px;
   padding: 44px 52px;
   display: flex;

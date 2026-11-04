@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student detail styles
-* Descripción: Layout of /teacher/students/[userId] (DISENO_BLOQUE4 §2.4): profile header (avatar, name, email, code, group chips and the overall progress), the summary cards row, the tab list with the selected tab underlined, the kept-mounted panels (hidden when inactive), the gamification stats and achievements and the real ventilator recordings list. The lists, links and timeline of the panels keep the teacher dashboard styles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Layout of /teacher/students/[userId] (DISENO_BLOQUE4 §2.4): profile header (avatar, name, email, code, group chips and the overall progress), the summary cards row, the tab list with the selected tab underlined, the kept-mounted panels (hidden when inactive), the gamification stats and achievements and the real ventilator recordings list. The lists, links and timeline of the panels keep the teacher dashboard styles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 5): the group chips sit on the raised surface (the inverted surface turns light in the dark scheme and hid the chip text).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,7 +58,7 @@
   padding: 0 var(--vl-space-2);
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-pill);
-  background: var(--vl-color-surface-contrast);
+  background: var(--vl-color-surface-raised);
   font-size: 0.75rem;
   line-height: 1.5rem;
   color: var(--vl-color-text);
