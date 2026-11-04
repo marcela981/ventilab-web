@@ -234,6 +234,9 @@ describe("real console adapter", () => {
       minuteVolume: { value: null, derived: true },
       totalRespiratoryRate: { value: null, derived: true },
       ieRatio: { value: 0.5, derived: true },
+      meanPressure: { value: null, derived: true },
+      peakInspiratoryFlow: { value: null, derived: true },
+      peakExpiratoryFlow: { value: null, derived: true },
     });
   });
 

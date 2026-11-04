@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: CurriculumAccordion
-* Descripción: One of the three accordions of the Currículo tab (W4, Bloque 2; July CurriculumSections): a heading with a trigger button (aria-expanded, aria-controls, icon, title and the "Opcional" badge on Prerequisitos) and a region labelled by it. The region stays rendered with the `hidden` attribute when collapsed, so its level anchors exist for the deep links. Arrow up/down, Home and End between triggers are handled by the tab (onTriggerKeyDown). Depends on React, MUI icons and the curriculum CSS Module.
-* Versión: 0.1
+* Descripción: One of the three accordions of the Currículo tab (W4, Bloque 2; July CurriculumSections): a heading with a trigger button (aria-expanded, aria-controls, icon, title and the "Opcional" badge on Prerequisitos) and a region labelled by it. The region stays rendered with the `hidden` attribute when collapsed, so its level anchors exist for the deep links. Arrow up/down, Home and End between triggers are handled by the tab (onTriggerKeyDown). Depends on React, MUI icons and the curriculum CSS Module. v0.2 (Bloque 5): data-section carries the accordion key so the July skin colors its icon per section.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,8 @@ import styles from "../../../UI/curriculum.module.css";
 
 export type CurriculumAccordionProps = {
   id: string
+  // Accordion key (ventylab, prerrequisitos, mecanica): selects the section icon color.
+  section: string
   title: string
   icon: ReactNode
   badge?: string | undefined
@@ -25,12 +27,12 @@ export type CurriculumAccordionProps = {
   children: ReactNode
 };
 
-export function CurriculumAccordion({ id, title, icon, badge, expanded, onToggle, onTriggerKeyDown, children }: CurriculumAccordionProps) {
+export function CurriculumAccordion({ id, section, title, icon, badge, expanded, onToggle, onTriggerKeyDown, children }: CurriculumAccordionProps) {
   const triggerId = `${id}-trigger`;
   const regionId = `${id}-region`;
 
   return (
-    <section className={cx(styles.accordion)} data-expanded={expanded}>
+    <section className={cx(styles.accordion)} data-expanded={expanded} data-section={section}>
       <h3 className={cx(styles.accordionHeading)}>
         <button
           type="button"

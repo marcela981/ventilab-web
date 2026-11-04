@@ -11,7 +11,16 @@
 *   workspace shows the own patient there), the end confirmation and the divergence dialog. The host decides where an
 *   ended session goes (`onEnded` of SimSessionHost). Depends on next/link, the design system, the ventilator console,
 *   the simulator components, config, entities and the session console CSS.
-* Versión: 0.1
+*   v0.2 (Bloque 5, C6): July layout (DISENO_BLOQUE5 §6.2, §6.6) for Monitoreo and EXAM alike: the console uses
+*   layout="july"; the session strip (time controls, EXAM countdown, pending events, "Mostrar caso clínico",
+*   "Finalizar sesión") and the banners go in its header; "Asesoría IA" (or the host assist slot) next to the mode
+*   toggle; the clinical case (with the `aside` block) in a drawer; the left column shows the host `leftTop` and the
+*   patient status ("Paciente activo"). The value cards use the host `cards` preference; in EXAM "Ajustar" is locked
+*   ("Disponible fuera del examen", D29) while the saved preference applies; speed and pause stay hidden in EXAM
+*   (TimeControls), Confirmar / Cancelar / Enter / Escape and the mode toggle stay enabled and the assist follows the
+*   assistance policy. `curvesToolbarStart` is the host seam for the signal chip. The replay keeps the classic layout
+*   (D28).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,18 +28,23 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Link from "next/link";
-import { useCallback, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import type { ReactNode } from "react";
+import { useApiQuery } from "@shared/api-client/use-api-query";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
 import { VentilatorConsole } from "@shared/ventilator-console";
+import type { MonitorCardsController } from "@shared/ventilator-console";
+import { CLINICAL_CASE_PATH } from "../../api/services/clinical-cases.service";
 import { EVENT_PENDING_WARNING_COUNT } from "../config/sim-console.config";
 import { DEADLINE_WARNING_MS } from "../config/sim-exam.config";
 import { buildSessionResultUrl, SIMULATOR_URL } from "../config/simulator.routes";
 import type { SimulationMode } from "../config/simulator.config";
 import type { AssistancePolicyValue } from "../entities/sim-assist.entity";
 import { formatCountdown } from "../entities/sim-exam.entity";
+import type { SessionPatient } from "../entities/sim-patient.entity";
 import type { SessionBoot } from "../entities/sim-session.entity";
 import { useExamDeadline } from "../hooks/use-exam-deadline";
 import { AssistLauncher } from "./assist-launcher";
@@ -65,6 +79,11 @@ export const SESSION_PAGE_COPY = {
   claiming: "Comprobando si la sesión está abierta en otra pestaña…",
   examTimeLeft: "Tiempo restante del examen",
   deadlineReached: "Se alcanzó la fecha límite del examen. Guardando la parte práctica y volviendo al examen…",
+  patientStatus: "Paciente activo",
+  patientName: (name: string) => `Paciente: ${name}`,
+  unnamedPatient: "Paciente simulado",
+  caseFallback: "caso clínico",
+  cardsLocked: "Disponible fuera del examen",
 } as const;
 
 export type AssistSlotContext = {
@@ -82,8 +101,14 @@ export type SessionMonitorProps = {
   renderAssist?: ((context: AssistSlotContext) => ReactNode) | undefined
   /** Rubric assistance policy when the host knows it (T9 exam flow); unknown = fail safe (EXAM disabled). */
   assistancePolicy?: AssistancePolicyValue | null | undefined
-  /** Extra content of the side column, below the case panel (the workspace shows the own patient). */
+  /** Extra content of the case drawer, below the objectives (the workspace shows the own patient). */
   aside?: ReactNode
+  /** v0.2: top of the July left column, before the patient status (the workspace monitor mode selector). */
+  leftTop?: ReactNode
+  /** v0.2: first item of the curves toolbar (the workspace signal chip). */
+  curvesToolbarStart?: ReactNode
+  /** v0.2: the value cards preference of the user (stable identity); omitted, one in memory. */
+  cards?: MonitorCardsController | undefined
 };
 
 function PendingEventsIndicator({ count }: { count: number }) {
@@ -124,16 +149,35 @@ function ExamCountdown({ boot }: { boot: SessionBoot }) {
   );
 }
 
+type PatientStatusProps = { caseId: string, patient: SessionPatient | null };
+
+/** "Paciente: <nombre>" of the own patient, else the case title (the case query is shared with the case drawer). */
+const PatientStatus = memo(function PatientStatus({ caseId, patient }: PatientStatusProps) {
+  const { data } = useApiQuery(CLINICAL_CASE_PATH, { params: { caseId } });
+  const caseTitle = data?.data.clinicalCase.title ?? SESSION_PAGE_COPY.caseFallback;
+  const name = patient ? patient.displayName ?? SESSION_PAGE_COPY.unnamedPatient : caseTitle;
+
+  return (
+    <p className={cx(styles.patientStatus)} role="status" aria-label={SESSION_PAGE_COPY.patientStatus}>
+      <CheckCircleIcon className={cx(styles.patientStatusIcon)} aria-hidden="true" />
+      <span className={cx(styles.patientStatusText)}>{SESSION_PAGE_COPY.patientName(name)}</span>
+    </p>
+  );
+});
+
 type RunningViewProps = Omit<SessionMonitorProps, "host"> & {
   host: SimSessionHostValue
   running: SimSessionRunning
 };
 
-function RunningSessionView({ host, running, renderAssist, assistancePolicy, aside }: RunningViewProps) {
+function RunningSessionView({ host, running, renderAssist, assistancePolicy, aside, leftTop, curvesToolbarStart, cards }: RunningViewProps) {
   const { sessionId, assistHistory, onAssistAnswered } = host;
   const { boot, version, session, controllable, deadlineReached, endError } = running;
   const { record } = boot;
+  const { store } = session;
   const paused = session.status === "paused";
+  const exam = record.mode === "EXAM";
+  const patient = record.patient ?? null;
   // The assist never pauses the simulation; it closes (and aborts) once the end starts.
   const assistActive = controllable && !session.ending && !session.diverged;
   // A host policy wins; otherwise the one the exam slot stored with the session (unknown = fail safe in EXAM).
@@ -143,6 +187,29 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
     [assistActive, record.mode, renderAssist, sessionId],
   );
   const applicability = useMemo(() => (session.applicability ? { applicability: session.applicability } : {}), [session.applicability]);
+  // Stable slot nodes: the console shell re-renders only when what they show changes.
+  const assist = useMemo(() => {
+    if (renderAssist) {
+      return store ? <SessionAssistSlot store={store} render={renderHostAssist} /> : null;
+    }
+
+    return (
+      <AssistLauncher
+        sessionId={sessionId}
+        mode={record.mode}
+        policy={policy}
+        active={assistActive}
+        history={assistHistory}
+        onAnswered={onAssistAnswered}
+      />
+    );
+  }, [assistActive, assistHistory, onAssistAnswered, policy, record.mode, renderAssist, renderHostAssist, sessionId, store]);
+  const left = useMemo(() => (
+    <>
+      {leftTop}
+      <PatientStatus caseId={record.caseId} patient={patient} />
+    </>
+  ), [leftTop, patient, record.caseId]);
 
   if (version.status === "blocked") {
     return (
@@ -154,11 +221,8 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
     );
   }
 
-  const { store } = session;
-  const casePanel = store ? <LiveCasePanel store={store} caseId={record.caseId} engineCase={record.engineCase} /> : null;
-
-  return (
-    <>
+  const strip = (
+    <div className={cx(styles.stripZone)}>
       <div className={cx(styles.sessionBar)}>
         {store ? (
           <SessionTimeControls
@@ -174,20 +238,9 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
           />
         ) : null}
         <ExamCountdown boot={boot} />
+        <PendingEventsIndicator count={session.pendingEvents} />
         <div className={cx(styles.sessionActions)}>
-          <PendingEventsIndicator count={session.pendingEvents} />
-          {renderAssist
-            ? (store ? <SessionAssistSlot store={store} render={renderHostAssist} /> : null)
-            : (
-              <AssistLauncher
-                sessionId={sessionId}
-                mode={record.mode}
-                policy={policy}
-                active={assistActive}
-                history={assistHistory}
-                onAnswered={onAssistAnswered}
-              />
-            )}
+          {store ? <LiveCasePanel store={store} caseId={record.caseId} engineCase={record.engineCase} extra={aside} /> : null}
           <button
             type="button"
             className={cx(styles.endButton)}
@@ -211,16 +264,32 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
           </button>
         </p>
       ) : null}
-      <div className={cx(styles.sessionLayout)}>
-        <div className={cx(styles.consoleArea)}>
-          {session.adapter ? (
-            <VentilatorConsole adapter={session.adapter} variant="live" {...applicability} />
-          ) : (
+      {session.adapter && session.status === "starting" ? <p className={cx(styles.consoleMuted)} role="status">{SESSION_PAGE_COPY.starting}</p> : null}
+    </div>
+  );
+
+  return (
+    <>
+      <div className={cx(styles.consoleArea)} data-layout="july">
+        {session.adapter ? (
+          <VentilatorConsole
+            adapter={session.adapter}
+            variant="live"
+            layout="july"
+            header={strip}
+            leftTop={left}
+            assistSlot={assist}
+            curvesToolbarStart={curvesToolbarStart}
+            cards={cards}
+            {...(exam ? { cardsLockedReason: SESSION_PAGE_COPY.cardsLocked } : {})}
+            {...applicability}
+          />
+        ) : (
+          <>
+            {strip}
             <p className={cx(styles.consoleMuted)}>{session.workerError ?? SESSION_PAGE_COPY.starting}</p>
-          )}
-          {session.adapter && session.status === "starting" ? <p className={cx(styles.consoleMuted)} role="status">{SESSION_PAGE_COPY.starting}</p> : null}
-        </div>
-        {aside ? <div className={cx(styles.sideColumn)}>{casePanel}{aside}</div> : casePanel}
+          </>
+        )}
       </div>
       <ConfirmDialog
         open={running.confirming}
@@ -237,7 +306,7 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
   );
 }
 
-export function SessionMonitor({ host, renderAssist, assistancePolicy, aside }: SessionMonitorProps) {
+export function SessionMonitor({ host, renderAssist, assistancePolicy, aside, leftTop, curvesToolbarStart, cards }: SessionMonitorProps) {
   const { sessionId, phase, running } = host;
 
   if (phase === "taken") {
@@ -282,7 +351,16 @@ export function SessionMonitor({ host, renderAssist, assistancePolicy, aside }: 
 
   if (phase === "ready" && running) {
     return (
-      <RunningSessionView host={host} running={running} renderAssist={renderAssist} assistancePolicy={assistancePolicy} aside={aside} />
+      <RunningSessionView
+        host={host}
+        running={running}
+        renderAssist={renderAssist}
+        assistancePolicy={assistancePolicy}
+        aside={aside}
+        leftTop={leftTop}
+        curvesToolbarStart={curvesToolbarStart}
+        cards={cards}
+      />
     );
   }
 

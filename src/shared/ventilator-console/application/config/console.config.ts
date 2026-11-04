@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console config
-* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight). v1.2: a generic `pco2` vital (PCO2 in mmHg, for sources that report a CO2 partial pressure without saying whether it is arterial or end-tidal); a source that does not provide it never shows it; the generic no-data message of a frame source without data. v1.3 (B3.10): the unused CONSOLE_BUFFER_CAPACITY constant is removed (callers size the buffer with consoleBufferCapacity(rate)).
-* Versión: 1.3
+* Descripción: Console-owned static configuration of the generic ventilator console: the numeric monitoring metric ids and the patient vital ids with their Spanish labels, units, decimals and default normal ranges (used for the out-of-range highlight and overridable through props), the three curve channels with their console color tokens, the time-window options and the waveform ring capacity. It knows nothing about the simulation engine or a physical ventilator; adapters deliver values already in these units. v1.1: the ring capacity is computed from the frame source sample rate (default 50 Hz) as twice the largest window; the default normal ranges are teaching defaults that adapters or consumers override (`null` disables the highlight). v1.2: a generic `pco2` vital (PCO2 in mmHg, for sources that report a CO2 partial pressure without saying whether it is arterial or end-tidal); a source that does not provide it never shows it; the generic no-data message of a frame source without data. v1.3 (B3.10): the unused CONSOLE_BUFFER_CAPACITY constant is removed (callers size the buffer with consoleBufferCapacity(rate)). v1.4 (Bloque 5, C4): three cycle metrics for the July value cards, outside the classic numeric monitor list (CONSOLE_METRIC_IDS keeps the 12 classic tiles): mean airway pressure (`meanPressure`, Pmedia) and the maximum inspiratory and expiratory flows of the last breath (`peakInspiratoryFlow` "Flujo máx" and `peakExpiratoryFlow` "Flujo mín", the most negative flow, in L/min); also MONITOR_CARD_IDS, the 21 cards of the July value list in July's order (DISENO_BLOQUE5 §6.7).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,7 +40,10 @@ export const CONSOLE_METRIC_IDS = [
   "mechanicalPower",
 ] as const;
 
-export type ConsoleMetricId = (typeof CONSOLE_METRIC_IDS)[number];
+/** Cycle metrics shown only by the July value cards (not in the classic numeric monitor). */
+export const CYCLE_EXTRA_METRIC_IDS = ["meanPressure", "peakInspiratoryFlow", "peakExpiratoryFlow"] as const;
+
+export type ConsoleMetricId = (typeof CONSOLE_METRIC_IDS)[number] | (typeof CYCLE_EXTRA_METRIC_IDS)[number];
 
 /**
  * Teaching defaults for an adult on lung-protective ventilation, a deliberate front-end exception (no backend source):
@@ -59,6 +62,9 @@ export const CONSOLE_METRICS: Readonly<Record<ConsoleMetricId, ValueDefinition>>
   ieRatio: { label: "I:E", description: "Relación inspiración:espiración", unit: "", decimals: 1, format: "ratio", normalRange: null },
   fio2: { label: "FiO2", description: "Fracción inspirada de oxígeno", unit: "%", decimals: 0, format: "number", normalRange: null },
   mechanicalPower: { label: "Potencia", description: "Potencia mecánica", unit: "J/min", decimals: 1, format: "number", normalRange: { max: 17 } },
+  meanPressure: { label: "Pmedia", description: "Presión media de la vía aérea", unit: "cmH2O", decimals: 1, format: "number", normalRange: null },
+  peakInspiratoryFlow: { label: "Flujo máx", description: "Flujo inspiratorio máximo del ciclo", unit: "L/min", decimals: 0, format: "number", normalRange: null },
+  peakExpiratoryFlow: { label: "Flujo mín", description: "Flujo espiratorio máximo del ciclo (valor más negativo)", unit: "L/min", decimals: 0, format: "number", normalRange: null },
 };
 
 export const PATIENT_VITAL_IDS = ["spo2", "pao2", "paco2", "ph", "map", "pco2"] as const;
@@ -74,6 +80,29 @@ export const PATIENT_VITALS: Readonly<Record<PatientVitalId, ValueDefinition>> =
   // Not labelled arterial or end-tidal: the source does not say which one it measures, so no default range is assumed.
   pco2: { label: "PCO2", description: "Presión parcial de CO2 informada por la fuente", unit: "mmHg", decimals: 0, format: "number", normalRange: null },
 };
+
+/** A July value card: a console metric or a patient vital. */
+export type MonitorCardId = ConsoleMetricId | PatientVitalId;
+
+/** The July value list in its default order: July's sequence first, then the other metrics and the vitals (21). */
+export const MONITOR_CARD_IDS: readonly MonitorCardId[] = [
+  "peakPressure",
+  "meanPressure",
+  "totalPeep",
+  "peakInspiratoryFlow",
+  "peakExpiratoryFlow",
+  "exhaledTidalVolume",
+  "plateauPressure",
+  "drivingPressure",
+  "autoPeep",
+  "tidalVolumePerKg",
+  "minuteVolume",
+  "totalRespiratoryRate",
+  "ieRatio",
+  "fio2",
+  "mechanicalPower",
+  ...PATIENT_VITAL_IDS,
+];
 
 export const CURVE_IDS = ["pressure", "flow", "volume"] as const;
 

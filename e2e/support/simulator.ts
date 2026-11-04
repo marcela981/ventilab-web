@@ -127,3 +127,61 @@ export async function finishWorkspaceSession(page: Page): Promise<Locator> {
 
   return result;
 }
+
+/** "2. Conexión con el ventilador" card of the Conexión tab. */
+export function connectionCard(page: Page): Locator {
+  return page.getByRole("region", { name: "2. Conexión con el ventilador" });
+}
+
+/** "1. Reserva del ventilador" card of the Conexión tab. */
+export function reservationCard(page: Page): Locator {
+  return page.getByRole("region", { name: "1. Reserva del ventilador" });
+}
+
+/** "Reservar ahora" (30 min) from the Conexión tab of a free ventilator; waits until the reservation is active. */
+export async function reserveNow(page: Page): Promise<void> {
+  await page.goto("/simulador?tab=conexion");
+  const reservation = reservationCard(page);
+
+  await expect(reservation).toContainText(/Reserva:\s*Disponible/, { timeout: 30_000 });
+  await reservation.getByRole("button", { name: "Reservar ahora" }).click();
+  const dialog = page.getByRole("dialog", { name: "Reservar ahora" });
+
+  await expect(dialog).toContainText("Desde ahora · 30 min");
+  await dialog.getByRole("button", { name: "Reservar ahora" }).click();
+  await expect(reservation).toContainText(/Reserva:\s*Activa\s*·\s*\d+ min restantes/, { timeout: 30_000 });
+}
+
+/** "Liberar" of the own reservation when it is shown (cleanup); waits until the ventilator is free again. */
+export async function releaseReservation(page: Page): Promise<void> {
+  await page.goto("/simulador?tab=conexion");
+  const reservation = reservationCard(page);
+  const release = reservation.getByRole("button", { name: "Liberar" });
+
+  await expect(reservation).toContainText(/Reserva:/, { timeout: 30_000 });
+  if (await release.isVisible()) {
+    await release.click();
+  }
+
+  await expect(reservation).toContainText(/Reserva:\s*Disponible/, { timeout: 30_000 });
+}
+
+/** Connects to the reserved ventilator from the Conexión tab. */
+export async function connectToVentilator(page: Page): Promise<void> {
+  await page.goto("/simulador?tab=conexion");
+  const card = connectionCard(page);
+
+  await expect(card.getByRole("status")).toHaveText("Ventilador reservado. Ya puedes conectar.", { timeout: 30_000 });
+  await card.getByRole("button", { name: "Conectar", exact: true }).click();
+  await expect(card.getByRole("status")).toHaveText("Conectado al ventilador.", { timeout: 30_000 });
+}
+
+/** Monitoreo in Real mode after connecting; without a physical device the monitor reports the missing telemetry. */
+export async function openRealMonitor(page: Page): Promise<void> {
+  await workspaceTab(page, "Monitoreo").click();
+  await page.getByRole("group", { name: "Modo del monitor" }).getByRole("button", { name: "Real" }).click();
+  await expect(page.getByRole("status", { name: "Estado de la señal" })).toHaveText("Conectado (Físico)", { timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Ventilador físico" })).toBeVisible({ timeout: 30_000 });
+  // No physical device on the local stack: the monitor reports the missing telemetry.
+  await expect(page.getByRole("alert").filter({ hasText: "Equipo sin datos" })).toBeVisible({ timeout: 15_000 });
+}

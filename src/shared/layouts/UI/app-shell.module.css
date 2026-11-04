@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell styles
-* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only. v1.1 (G1 grading): visuallyHidden keeps the screen-reader text of a navigation badge count. v1.2 (T12 ventilator-lab): navIndicator / navIndicatorDot, the small status of a navigation item (success dot when online, muted otherwise; the text carries the meaning, never the colour alone). v1.3 (T12 review fix W1): generic tones of the nav-indicators registry: positive (success dot), negative (warning dot), neutral (muted dot). v1.4 (O5 operation): navSection, the subheader of a navigation section. v1.5 (review): the navSection comment cites this file's own version (v1.4), not v1.7. v1.6 (B4): visuallyHidden removed (the badge count is now in the item's accessible name). v1.7 (W1 Bloque 4): the navigation list styles (navIndicator, navIndicatorDot, navSection) and the header control styles (realtime, userInfo) moved to nav-list.module.css and shell-controls.module.css.
-* Versión: 1.7
+* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only. v1.1 (G1 grading): visuallyHidden keeps the screen-reader text of a navigation badge count. v1.2 (T12 ventilator-lab): navIndicator / navIndicatorDot, the small status of a navigation item (success dot when online, muted otherwise; the text carries the meaning, never the colour alone). v1.3 (T12 review fix W1): generic tones of the nav-indicators registry: positive (success dot), negative (warning dot), neutral (muted dot). v1.4 (O5 operation): navSection, the subheader of a navigation section. v1.5 (review): the navSection comment cites this file's own version (v1.4), not v1.7. v1.6 (B4): visuallyHidden removed (the badge count is now in the item's accessible name). v1.7 (W1 Bloque 4): the navigation list styles (navIndicator, navIndicatorDot, navSection) and the header control styles (realtime, userInfo) moved to nav-list.module.css and shell-controls.module.css. v1.8 (Bloque 5, §5.1): the July global sidebar: 15rem / 4rem permanent drawer with a width transition (none with reduced motion), 64px header with the brand and the toggle (ringed when collapsed), scrollable navigation, the tools row above the user card (a column when collapsed), the version line, the 15rem mobile drawer, the thin mobile bar (hidden from 900px) and the main region on --vl-color-bg-gradient.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,12 +10,17 @@
 */
 
 .root {
-  --shell-drawer-width: 16.25rem;
+  --shell-drawer-width: var(--vl-sidebar-width);
+  --shell-current-width: var(--shell-drawer-width);
 
   display: flex;
   min-height: 100vh;
   background: var(--vl-color-bg);
   color: var(--vl-color-text);
+}
+
+.rootCollapsed {
+  --shell-current-width: var(--vl-sidebar-width-collapsed);
 }
 
 .skipLink {
@@ -41,23 +46,100 @@
 }
 
 .drawerPaper {
+  width: var(--shell-current-width);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  transition: width var(--vl-duration-standard) var(--vl-ease-standard);
+}
+
+/* One class more than MUI Paper elevation 0. */
+.desktopNav .drawerPaper {
+  box-shadow: var(--vl-shadow-2);
+}
+
+.mobilePaper {
   width: var(--shell-drawer-width);
   box-sizing: border-box;
 }
 
-.navigation {
+.sidebar {
   display: flex;
+  min-height: 100%;
   flex-direction: column;
+  color: var(--vl-sidebar-text);
+}
+
+.sidebarHeader {
+  display: flex;
+  min-height: var(--vl-sidebar-header-height);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--vl-space-2) 0 var(--vl-space-3);
+  border-bottom: 1px solid var(--vl-sidebar-border);
 }
 
 .brand {
-  display: flex;
-  align-items: center;
-  min-height: var(--vl-space-8);
-  padding: 0 var(--vl-space-4);
-  color: var(--vl-color-link);
+  overflow: hidden;
+  color: var(--vl-sidebar-text);
   font: var(--mui-font-h6);
+  font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
+}
+
+.sidebarHeader .toggle {
+  flex-shrink: 0;
+  color: var(--vl-sidebar-text);
+}
+
+.navigation {
+  min-height: 0;
+  flex: 1;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.tools {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-7);
+  padding: var(--vl-space-2) var(--vl-space-4);
+  border-top: 1px solid var(--vl-sidebar-border);
+  color: var(--vl-sidebar-text);
+}
+
+/* The feature buttons (AI assistant, bell) follow the sidebar text, not the primary colour. */
+.tools :is(button) {
+  color: inherit;
+}
+
+.version {
+  margin: 0;
+  padding: var(--vl-space-1) 0 var(--vl-space-4);
+  color: var(--vl-sidebar-version);
+  font: var(--mui-font-caption);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Collapsed rail: the toggle alone in the header, the tools in a column. */
+.sidebarCollapsed .sidebarHeader {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebarCollapsed .sidebarHeader .toggle {
+  border: 2px solid var(--vl-color-primary);
+}
+
+.sidebarCollapsed .tools {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  padding: var(--vl-space-2) 0;
 }
 
 .column {
@@ -67,7 +149,7 @@
   flex-direction: column;
 }
 
-.header {
+.mobileBar {
   border-bottom: 1px solid var(--vl-color-border);
 }
 
@@ -75,20 +157,15 @@
   gap: var(--vl-space-2);
 }
 
-.menuButton {
-  display: inline-flex;
-}
-
 .title {
   flex: 1;
 }
-
-
 
 .main {
   flex: 1;
   min-width: 0;
   padding: var(--vl-space-5) var(--vl-space-4);
+  background-image: var(--vl-color-bg-gradient);
 }
 
 .main:focus {
@@ -98,11 +175,13 @@
 @media (min-width: 900px) {
   .desktopNav {
     display: block;
-    width: var(--shell-drawer-width);
+    width: var(--shell-current-width);
     flex-shrink: 0;
+    transition: width var(--vl-duration-standard) var(--vl-ease-standard);
   }
 
-  .menuButton {
+  /* One class more than the AppBar display. */
+  .column .mobileBar {
     display: none;
   }
 
@@ -111,3 +190,9 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .drawerPaper,
+  .desktopNav {
+    transition: none;
+  }
+}

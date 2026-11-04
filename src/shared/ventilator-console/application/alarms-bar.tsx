@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmsBar
-* Descripción: Top alarms bar of the generic ventilator console. Shows the active alarms sorted by priority (high > medium > low), each with a priority color token, an icon and the priority text (never color alone); one live region kept mounted around the list and the "Sin alarmas activas" text so the first alarm is announced; a 2-minute silence button with a visible countdown that mutes the sound only (its accessible name combines the state and the action); an optional sound toggle, off by default, that beeps per new high/medium alarm and once when a silence runs out while a high/medium alarm is still active; the session alarm history (derived inside the console from the adapter alarm updates, or the adapter's own history when provided) and the alarm limits panel, both as disclosure panels. Depends on React, MUI icons, the alarm helpers and hooks, AlarmLimitsPanel and the alarms bar styles.
-* Versión: 1.1
+* Descripción: Top alarms bar of the generic ventilator console. Shows the active alarms sorted by priority (high > medium > low), each with a priority color token, an icon and the priority text (never color alone); one live region kept mounted around the list and the "Sin alarmas activas" text so the first alarm is announced; a 2-minute silence button with a visible countdown that mutes the sound only (its accessible name combines the state and the action); an optional sound toggle, off by default, that beeps per new high/medium alarm and once when a silence runs out while a high/medium alarm is still active; the session alarm history (derived inside the console from the adapter alarm updates, or the adapter's own history when provided) and the alarm limits panel, both as disclosure panels. Depends on React, MUI icons, the alarm helpers and hooks, AlarmLimitsPanel and the alarms bar styles. v1.2 (Bloque 5, C9): `variant="july"` (the July Monitoreo console): "Historial de alarmas" and "Límites" open the "Alertas detalladas" drawer (`onOpenDetails`, aria-expanded / aria-controls from `detailsOpen` / `detailsId`) instead of the inline panels, and below a 1100 px console the actions are icon-only with their accessible names kept (Silenciar, Sonido, Historial, Límites); AlarmHistoryList is exported and `renderDetails` renders the drawer after the bar with the same events.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,13 +10,15 @@
 */
 
 import ErrorIcon from "@mui/icons-material/Error";
+import HistoryIcon from "@mui/icons-material/History";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import NotificationsOffIcon from "@mui/icons-material/NotificationsOff";
+import TuneIcon from "@mui/icons-material/Tune";
 import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { useState } from "react";
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { ALARM_PRIORITY_COPY } from "./config/console-controls.config";
 import { AlarmLimitsPanel } from "./alarm-limits-panel";
@@ -65,6 +67,14 @@ export type AlarmsBarProps = {
   readOnly: boolean
   clock?: ConsoleClock | undefined
   beeperFactory?: AlarmBeeperFactory | undefined
+  /** v1.2: `july` opens the details drawer instead of the inline panels and goes icon-only below 1100 px. */
+  variant?: "classic" | "july"
+  /** v1.2 (July): opens (or closes) the "Alertas detalladas" drawer. */
+  onOpenDetails?: (() => void) | undefined
+  detailsOpen?: boolean
+  detailsId?: string | undefined
+  /** v1.2 (July): renders the details drawer next to the bar with the same session events. */
+  renderDetails?: ((events: readonly ConsoleAlarmEvent[]) => ReactNode) | undefined
 };
 
 type Panel = "none" | "history" | "limits";
@@ -75,6 +85,27 @@ function PriorityIcon({ priority }: { priority: ConsoleAlarmPriority }) {
   return <Icon className={cx(styles.icon)} aria-hidden />;
 }
 
+/** The session alarm events, newest first (inline panel and July details drawer). */
+export function AlarmHistoryList({ events }: { events: readonly ConsoleAlarmEvent[] }) {
+  if (events.length === 0) {
+    return <p className={cx(styles.hint)}>{ALARMS_COPY.historyEmpty}</p>;
+  }
+
+  return (
+    <ol className={cx(styles.history)}>
+      {events.map((event) => (
+        <li key={event.id} className={cx(styles.event)} data-priority={event.priority} data-kind={event.kind}>
+          <time className={cx(styles.time)}>{formatEventTime(event.atMs)}</time>
+          <span className={cx(styles.kind)}>{event.kind === "onset" ? ALARMS_COPY.onset : ALARMS_COPY.clear}</span>
+          <PriorityIcon priority={event.priority} />
+          <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[event.priority]}</span>
+          <span className={cx(styles.message)}>{event.message}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function AlarmsBar({
   alarms,
   history,
@@ -83,6 +114,11 @@ export function AlarmsBar({
   readOnly,
   clock = SYSTEM_CLOCK,
   beeperFactory = createWebAudioBeeper,
+  variant = "classic",
+  onOpenDetails,
+  detailsOpen = false,
+  detailsId,
+  renderDetails,
 }: AlarmsBarProps) {
   const [panel, setPanel] = useState<Panel>("none");
   const derivedHistory = useAlarmHistory(alarms, clock);
@@ -92,80 +128,84 @@ export function AlarmsBar({
   const sorted = sortAlarms(alarms);
   const hasLimits = limits !== undefined && limits.length > 0;
   const togglePanel = (next: Panel) => setPanel((current) => (current === next ? "none" : next));
+  const july = variant === "july";
+  // July: the text is hidden below 1100 px of console, so every action carries its name.
+  const named = (name: string) => (july ? { "aria-label": name, title: name } : {});
+  const historyName = `${ALARMS_COPY.history} (${events.length})`;
+  const details = (panelName: Panel) => (july
+    ? { "aria-expanded": detailsOpen, ...(detailsOpen && detailsId ? { "aria-controls": detailsId } : {}), onClick: () => onOpenDetails?.() }
+    : { "aria-expanded": panel === panelName, onClick: () => togglePanel(panelName) });
 
   return (
-    <section className={cx(styles.bar)} aria-label={ALARMS_COPY.title} data-silenced={silence.silenced}>
-      <div className={cx(styles.row)}>
-        {/* One live region stays mounted around both states, so the first alarm after "none" is announced. */}
-        <div className={cx(styles.live)} aria-live="assertive">
-          {sorted.length === 0 ? (
-            <p className={cx(styles.none)}>{ALARMS_COPY.none}</p>
-          ) : (
-            <ul className={cx(styles.list)}>
-              {sorted.map((alarm) => (
-                <li key={alarm.id} className={cx(styles.alarm)} data-priority={alarm.priority}>
-                  <PriorityIcon priority={alarm.priority} />
-                  <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
-                  <span className={cx(styles.message)}>{alarm.message}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        <div className={cx(styles.actions)}>
-          {silence.silenced ? (
+    <>
+      <section className={cx(styles.bar)} aria-label={ALARMS_COPY.title} data-silenced={silence.silenced} data-variant={variant}>
+        <div className={cx(styles.row)}>
+          {/* One live region stays mounted around both states, so the first alarm after "none" is announced. */}
+          <div className={cx(styles.live)} aria-live="assertive">
+            {sorted.length === 0 ? (
+              <p className={cx(styles.none)}>{ALARMS_COPY.none}</p>
+            ) : (
+              <ul className={cx(styles.list)}>
+                {sorted.map((alarm) => (
+                  <li key={alarm.id} className={cx(styles.alarm)} data-priority={alarm.priority}>
+                    <PriorityIcon priority={alarm.priority} />
+                    <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
+                    <span className={cx(styles.message)}>{alarm.message}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className={cx(styles.actions)}>
+            {silence.silenced ? (
+              <button
+                type="button"
+                className={cx(styles.action)}
+                aria-pressed
+                aria-label={ALARMS_COPY.silencedLabel(formatCountdown(silence.remainingMs))}
+                onClick={silence.resume}
+                title={ALARMS_COPY.resumeSound}
+              >
+                <NotificationsOffIcon className={cx(styles.icon)} aria-hidden />
+                <span className={cx(styles.actionText)}>{ALARMS_COPY.silenced(formatCountdown(silence.remainingMs))}</span>
+              </button>
+            ) : (
+              <button type="button" className={cx(styles.action)} aria-pressed={false} onClick={silence.silence} {...named(ALARMS_COPY.silence)}>
+                <NotificationsOffIcon className={cx(styles.icon)} aria-hidden />
+                <span className={cx(styles.actionText)}>{ALARMS_COPY.silence}</span>
+              </button>
+            )}
             <button
               type="button"
               className={cx(styles.action)}
-              aria-pressed
-              aria-label={ALARMS_COPY.silencedLabel(formatCountdown(silence.remainingMs))}
-              onClick={silence.resume}
-              title={ALARMS_COPY.resumeSound}
+              aria-pressed={sound.enabled}
+              onClick={sound.toggle}
+              {...named(sound.enabled ? ALARMS_COPY.soundOn : ALARMS_COPY.soundOff)}
             >
-              <NotificationsOffIcon className={cx(styles.icon)} aria-hidden />
-              {ALARMS_COPY.silenced(formatCountdown(silence.remainingMs))}
+              {sound.enabled ? <VolumeUpIcon className={cx(styles.icon)} aria-hidden /> : <VolumeOffIcon className={cx(styles.icon)} aria-hidden />}
+              <span className={cx(styles.actionText)}>{sound.enabled ? ALARMS_COPY.soundOn : ALARMS_COPY.soundOff}</span>
             </button>
-          ) : (
-            <button type="button" className={cx(styles.action)} aria-pressed={false} onClick={silence.silence}>
-              <NotificationsOffIcon className={cx(styles.icon)} aria-hidden />
-              {ALARMS_COPY.silence}
+            <button type="button" className={cx(styles.action)} {...details("history")} {...named(historyName)}>
+              {july ? <HistoryIcon className={cx(styles.icon)} aria-hidden /> : null}
+              <span className={cx(styles.actionText)}>{historyName}</span>
             </button>
-          )}
-          <button type="button" className={cx(styles.action)} aria-pressed={sound.enabled} onClick={sound.toggle}>
-            {sound.enabled ? <VolumeUpIcon className={cx(styles.icon)} aria-hidden /> : <VolumeOffIcon className={cx(styles.icon)} aria-hidden />}
-            {sound.enabled ? ALARMS_COPY.soundOn : ALARMS_COPY.soundOff}
-          </button>
-          <button type="button" className={cx(styles.action)} aria-expanded={panel === "history"} onClick={() => togglePanel("history")}>
-            {`${ALARMS_COPY.history} (${events.length})`}
-          </button>
-          {hasLimits ? (
-            <button type="button" className={cx(styles.action)} aria-expanded={panel === "limits"} onClick={() => togglePanel("limits")}>
-              {ALARMS_COPY.limits}
-            </button>
-          ) : null}
+            {hasLimits ? (
+              <button type="button" className={cx(styles.action)} {...details("limits")} {...named(ALARMS_COPY.limits)}>
+                {july ? <TuneIcon className={cx(styles.icon)} aria-hidden /> : null}
+                <span className={cx(styles.actionText)}>{ALARMS_COPY.limits}</span>
+              </button>
+            ) : null}
+          </div>
         </div>
-      </div>
-      {panel === "history" ? (
-        <section className={cx(styles.panel)} aria-label={ALARMS_COPY.history}>
-          <h3 className={cx(styles.panelTitle)}>{ALARMS_COPY.history}</h3>
-          {events.length === 0 ? (
-            <p className={cx(styles.hint)}>{ALARMS_COPY.historyEmpty}</p>
-          ) : (
-            <ol className={cx(styles.history)}>
-              {events.map((event) => (
-                <li key={event.id} className={cx(styles.event)} data-priority={event.priority} data-kind={event.kind}>
-                  <time className={cx(styles.time)}>{formatEventTime(event.atMs)}</time>
-                  <span className={cx(styles.kind)}>{event.kind === "onset" ? ALARMS_COPY.onset : ALARMS_COPY.clear}</span>
-                  <PriorityIcon priority={event.priority} />
-                  <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[event.priority]}</span>
-                  <span className={cx(styles.message)}>{event.message}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </section>
-      ) : null}
-      {panel === "limits" && hasLimits ? <AlarmLimitsPanel limits={limits} onChange={onLimitsChange} readOnly={readOnly} /> : null}
-    </section>
+        {!july && panel === "history" ? (
+          <section className={cx(styles.panel)} aria-label={ALARMS_COPY.history}>
+            <h3 className={cx(styles.panelTitle)}>{ALARMS_COPY.history}</h3>
+            <AlarmHistoryList events={events} />
+          </section>
+        ) : null}
+        {!july && panel === "limits" && hasLimits ? <AlarmLimitsPanel limits={limits} onChange={onLimitsChange} readOnly={readOnly} /> : null}
+      </section>
+      {renderDetails?.(events)}
+    </>
   );
 }

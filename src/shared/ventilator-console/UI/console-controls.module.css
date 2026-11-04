@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls styles
-* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token).
-* Versión: 1.1
+* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token). v1.2 (Bloque 5, C2): the compact July field (`data-layout="july"`): label on its own line, value and unit, smaller stepper and range. vX.x (Bloque 5, Ola 4): the July field label spans the value and the free top of the stepper column and wraps when it is still longer (it was cut with an ellipsis: "Volumen (..." at 1280).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -204,4 +204,53 @@
   color: var(--vl-console-out-of-range);
   border-style: solid;
   border-color: var(--vl-console-out-of-range);
+}
+
+/* July layout field (input row and right column): label line, value + unit, compact stepper. */
+.parameter[data-layout="july"] {
+  --july-stepper-width: 3.5rem;
+
+  gap: 0 var(--vl-space-1);
+  padding: var(--vl-space-1) var(--vl-space-2) var(--vl-space-1) var(--vl-space-3);
+  background: var(--vl-console-surface);
+}
+
+.parameter[data-layout="july"] .value {
+  flex-wrap: wrap;
+  gap: 0 var(--vl-space-1);
+}
+
+/*
+ * The label line also uses the free top of the stepper column (the stepper sits at the bottom, next to the number), so
+ * "Volumen (VCV)" fits a 150px card at 1280; a longer label wraps instead of being cut. It still fills its own line.
+ */
+.parameter[data-layout="july"] .label {
+  flex: 0 0 auto;
+  width: calc(100% + var(--vl-space-1) + var(--july-stepper-width));
+  overflow-wrap: anywhere;
+}
+
+.parameter[data-layout="july"] .number {
+  font: var(--mui-font-h6);
+  font-weight: 700;
+}
+
+.parameter[data-layout="july"] .stepper {
+  align-self: end;
+  justify-content: flex-end;
+  width: var(--july-stepper-width);
+}
+
+.parameter[data-layout="july"] .step {
+  min-width: calc(var(--vl-space-5) + var(--vl-space-1) / 2);
+  min-height: calc(var(--vl-space-5) + var(--vl-space-1) / 2);
+}
+
+.parameter[data-layout="july"] .meta {
+  gap: 0 var(--vl-space-1);
+  font-size: 0.625rem;
+}
+
+.parameter[data-layout="july"] .range {
+  margin-left: 0;
 }

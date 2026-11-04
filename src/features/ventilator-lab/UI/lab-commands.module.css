@@ -3,8 +3,9 @@
 * Descripción: Styles of the command panel under the live console (notice by tone, pause reason, hint and the
 *   "Comandos recientes" list with a status tag per command) on the dark console surface tokens (--vl-console-*). No
 *   colour literals. Used by command-panel.tsx and live-console.tsx. v1.1 (T8 review fix 2, W5): `.useReported` block
-*   (explanation + «Usar los valores que informa el equipo»).
-* Versión: 1.1
+*   (explanation + «Usar los valores que informa el equipo»). v1.2 (Bloque 5, C8): the July "Comandos recientes"
+*   disclosure under the curves (title button with the latest command, a body of at most 12rem with its own scroll).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -138,4 +139,49 @@
 .reason {
   font: var(--mui-font-body2);
   color: var(--vl-console-alarm-medium);
+}
+
+/* ---- July disclosure under the curves (Bloque 5, C8) ---- */
+.disclosureTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+}
+
+.disclosure {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: 0;
+  font: inherit;
+  color: var(--vl-console-text);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.disclosure:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.latest {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.disclosureBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.disclosureBody[hidden] {
+  display: none;
 }

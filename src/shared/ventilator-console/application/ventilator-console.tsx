@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole
-* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms, the console store and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms). v1.3: the built-in controls report pending edits through `adapter.onPendingChange`. v1.4 (generic source state): `capabilities.patientMonitor: false` hides the patient monitor zone; a frame source with `status: "no-data"` greys the curves under an overlay and makes the console read-only (the slots receive `readOnly: true`) until it is live again; the read-only reason (`permissions.readOnlyReason`, else the no-data message) is shown next to the "Solo lectura" badge and describes the built-in disabled controls. v1.5: the built-in controls receive `permissions.pendingResetKey` (drop unconfirmed edits when it changes). v1.6 (W2, Bloque 1): `adapter` may be a `ConsoleAdapterStore` (stable identity, immutable snapshots at ≤ 4 Hz); every zone (alarms, numeric monitor, curves, patient monitor, controls, function slots) is a memoised component that reads only its slice with useSyncExternalStore, so a new snapshot re-renders only the zones whose slice changed and the console shell re-renders only when its layout (mode, read-only state, zone visibility) changes. A plain adapter object still works (it is wrapped in a static store per object).
-* Versión: 1.6
+* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms, the console store and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms). v1.3: the built-in controls report pending edits through `adapter.onPendingChange`. v1.4 (generic source state): `capabilities.patientMonitor: false` hides the patient monitor zone; a frame source with `status: "no-data"` greys the curves under an overlay and makes the console read-only (the slots receive `readOnly: true`) until it is live again; the read-only reason (`permissions.readOnlyReason`, else the no-data message) is shown next to the "Solo lectura" badge and describes the built-in disabled controls. v1.5: the built-in controls receive `permissions.pendingResetKey` (drop unconfirmed edits when it changes). v1.6 (W2, Bloque 1): `adapter` may be a `ConsoleAdapterStore` (stable identity, immutable snapshots at ≤ 4 Hz); every zone (alarms, numeric monitor, curves, patient monitor, controls, function slots) is a memoised component that reads only its slice with useSyncExternalStore, so a new snapshot re-renders only the zones whose slice changed and the console shell re-renders only when its layout (mode, read-only state, zone visibility) changes. A plain adapter object still works (it is wrapped in a static store per object). v1.7 (Bloque 5, C3): opt-in `layout="july"` (default `classic`, unchanged for the replay, the case editor, its preview and the recording player, D28): the July three columns (july-layout.module.css; DISENO_BLOQUE5 §6.1-§6.3): left `region "Valores"` with the logos, the `leftTop` slot (monitor mode, patient), Confirmar / Cancelar with the pending counter and the value cards (the patient vitals join them); centre with the input row FiO2 | Vt/Pinsp/PS | PEEP, the alarms, the July curves (`curvesToolbarStart` slot for the signal chip) and the `curvesFooter` slot; right `complementary "Controles"` with the mode head, VOL CTRL / PRES CTRL (+ `assistSlot`) and "Más modos", timing, rate, "Más parámetros", the maneuvers slot, the `rightFooter` slot and the keyboard hint. One pending store per console shares the edits between the zones; Enter / Escape are handled on the console root for the elements marked `data-console-control`; `confirmSummary` (Real) makes Confirmar open the summary of every change. `header` renders above the columns; `modeSlot` renders at the top of the right column; `controlsSlot={null}` drops the July controls (a read-only console). Pass stable slot nodes (or nodes that subscribe on their own) so the console shell is not re-rendered by its owner. v1.8 (Bloque 5, C5): July `cards` (a MonitorCardsController with a stable identity: the host's per-user preference; omitted, one in memory) and `cardsLockedReason` (EXAM: "Ajustar" disabled, the preference applied read-only). v1.9 (Bloque 5, C6): the July root provides the console drawers (one open at a time: Asesoría IA, Alertas detalladas, Caso clínico) to everything rendered inside, slots included. v2.0 (Bloque 5, C9): with the built-in alarms the July layout uses JulyAlarmsZone (the alarms bar opens the "Alertas detalladas" drawer with the validation alerts, the alarm history and the limits; icon-only at 1280) and the right column ends with JulyMechanicsAlerts ("Estado de la mecánica", "Alertas (n)", "Ver alertas detalladas") before the host `rightFooter`.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,8 +9,9 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { memo, useMemo } from "react";
-import type { ReactNode } from "react";
+import Image from "next/image";
+import { memo, useId, useMemo, useState } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_NO_DATA_MESSAGE } from "./config/console.config";
 import type { ConsoleMetricId, PatientVitalId } from "./config/console.config";
@@ -19,14 +20,22 @@ import { AlarmsBar } from "./alarms-bar";
 import { ConsoleControls } from "./console-controls";
 import type { ConsoleVariant } from "./console-controls";
 import type { RangeOverrides } from "./console-format";
-import { isConsoleAdapterStore, sameData, staticConsoleStore, useStoreSelector } from "./console-store";
+import { createPendingControlsStore } from "./console-pending-store";
+import { createExternalStore, isConsoleAdapterStore, sameData, staticConsoleStore, useStoreSelector } from "./console-store";
 import type { ConsoleAdapterStore } from "./console-store";
 import type { AlarmBeeperFactory, ConsoleClock } from "./use-console-alarms";
+import { ConsoleDrawersProvider } from "./console-drawers";
 import { CurvesZone } from "./curves-zone";
+import { JulyAlarmsZone, JulyMechanicsAlerts } from "./july-alerts";
+import { handleJulyKeyDown, JulyConfirmActions } from "./july-confirm";
+import { JULY_CONTROLS_COPY, JulyInputRow, JulyModeToggle, JulyMoreParameters, JulyRate, JulyTiming } from "./july-controls";
+import { MonitorCards } from "./monitor-cards";
+import type { MonitorCardsController } from "./monitor-cards";
 import { NumericMonitor } from "./numeric-monitor";
 import { PatientMonitor } from "./patient-monitor";
 import { useConsoleWaveforms } from "./use-console-waveforms";
 import type { VentilatorConsoleAdapter } from "./ventilator-console.entity";
+import julyStyles from "../UI/july-layout.module.css";
 import styles from "../UI/ventilator-console.module.css";
 
 // TODO(i18n): move to an i18next namespace once src/i18n is in scope.
@@ -36,7 +45,16 @@ export const CONSOLE_COPY = {
   readOnly: "Solo lectura",
   smallScreen: "Para usar la consola con comodidad, gira la tablet en horizontal o abre esta página en un computador.",
   controls: "Controles",
+  values: "Valores",
+  logoVentyLab: "VentyLab",
+  logoUnivalle: "Univalle",
 } as const;
+
+/** v1.7: `july` is the July three-column Monitoreo layout; `classic` (default) the original one. */
+export type ConsoleLayoutKind = "classic" | "july";
+
+const LOGO_VENTYLAB = { src: "/images/logo.png", width: 128, height: 64 } as const;
+const LOGO_UNIVALLE = { src: "/images/logo-univalle.svg", width: 180, height: 21 } as const;
 
 export type ConsoleSlotContext = {
   adapter: VentilatorConsoleAdapter
@@ -79,6 +97,24 @@ export type VentilatorConsoleProps = {
   /** Injectable clock and beeper for the built-in alarms bar (tests, replay). */
   clock?: ConsoleClock
   beeperFactory?: AlarmBeeperFactory
+  /** v1.7: `july` opts into the July three-column layout (default `classic`). */
+  layout?: ConsoleLayoutKind
+  /** v1.7 (July): Confirmar opens a summary of every change before emitting (the real ventilator, D19). */
+  confirmSummary?: boolean
+  /** v1.7 (July): left column under the logos (monitor mode selector, patient status). */
+  leftTop?: ReactNode
+  /** v1.7 (July): right of the mode toggle (the "Asesoría IA" button). */
+  assistSlot?: ReactNode
+  /** v1.7 (July): first item of the curves toolbar (the signal status chip). */
+  curvesToolbarStart?: ReactNode
+  /** v1.7 (July): under the curves (the real "Comandos recientes"). */
+  curvesFooter?: ReactNode
+  /** v1.7 (July): bottom of the right column (mechanics, detailed alerts). */
+  rightFooter?: ReactNode
+  /** v1.8 (July): order and hidden value cards (stable identity); omitted, an in-memory preference. */
+  cards?: MonitorCardsController | undefined
+  /** v1.8 (July): why "Ajustar" is unavailable (EXAM, D29); the preference still applies. */
+  cardsLockedReason?: string | undefined
   className?: string
 };
 
@@ -189,11 +225,21 @@ const ConsolePatientZone = memo(function ConsolePatientZone({ store, ranges }: C
   return <PatientMonitor patient={patient} ranges={merged} />;
 });
 
-const ConsoleCurvesZone = memo(function ConsoleCurvesZone({ store }: StoreProps) {
+type ConsoleCurvesZoneProps = StoreProps & { variant?: "classic" | "july", toolbarStart?: ReactNode };
+
+const ConsoleCurvesZone = memo(function ConsoleCurvesZone({ store, variant = "classic", toolbarStart }: ConsoleCurvesZoneProps) {
   const frames = useStoreSelector(store, selectFrames);
   const buffer = useConsoleWaveforms(frames);
 
-  return <CurvesZone buffer={buffer} status={frames.status} statusMessage={frames.statusMessage ?? CONSOLE_NO_DATA_MESSAGE} />;
+  return (
+    <CurvesZone
+      buffer={buffer}
+      status={frames.status}
+      statusMessage={frames.statusMessage ?? CONSOLE_NO_DATA_MESSAGE}
+      variant={variant}
+      toolbarStart={toolbarStart}
+    />
+  );
 });
 
 type ConsoleControlsZoneProps = StoreProps & {
@@ -246,8 +292,124 @@ function renderSlot({ store, slot, readOnly, readOnlyReason }: SlotRenderProps):
   return slot;
 }
 
-function VentilatorConsoleView({
-  adapter,
+type ConsoleViewProps = VentilatorConsoleProps & {
+  store: ConsoleAdapterStore
+  /** What the shell depends on (selectLayout). */
+  shell: ConsoleLayout
+};
+
+/** v1.7: the July three-column layout over the same zones and one pending store per console. */
+function JulyConsoleView({
+  store,
+  shell: layout,
+  metricRanges,
+  patientRanges,
+  header,
+  alarmsSlot,
+  modeSlot,
+  controlsSlot,
+  maneuversSlot,
+  applicability,
+  clock,
+  beeperFactory,
+  confirmSummary = false,
+  leftTop,
+  assistSlot,
+  curvesToolbarStart,
+  curvesFooter,
+  rightFooter,
+  cards,
+  cardsLockedReason,
+  className,
+}: ConsoleViewProps) {
+  const [pending] = useState(createPendingControlsStore);
+  const [summary] = useState(() => createExternalStore(false));
+  const reasonId = useId();
+  const alertsId = useId();
+  const { readOnly, readOnlyReason } = layout;
+  const describedBy = readOnly && readOnlyReason ? reasonId : undefined;
+  const slotProps = { store, readOnly, readOnlyReason };
+  const zone = { store, pending, readOnly, describedBy, applicability };
+  const controls = controlsSlot !== null;
+  const builtInAlarms = alarmsSlot === undefined;
+  const alerts = { store, pending, metricRanges, drawerId: alertsId };
+  const alarms = builtInAlarms
+    ? <JulyAlarmsZone {...alerts} readOnly={readOnly} clock={clock} beeperFactory={beeperFactory} />
+    : renderSlot({ ...slotProps, slot: alarmsSlot });
+  const mode = renderSlot({ ...slotProps, slot: modeSlot });
+  const maneuvers = layout.maneuvers ? renderSlot({ ...slotProps, slot: maneuversSlot }) : null;
+  const confirmOptions = { store, pending, readOnly, confirmSummary, summary };
+
+  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
+    if (controls) {
+      handleJulyKeyDown(event, confirmOptions);
+    }
+  };
+
+  return (
+    <ConsoleDrawersProvider>
+      <section
+        className={cx(julyStyles.root, className)}
+        aria-label={CONSOLE_COPY.label}
+        data-layout="july"
+        data-readonly={readOnly}
+        onKeyDown={onKeyDown}
+      >
+        <p className={cx(julyStyles.notice)} role="note">{CONSOLE_COPY.smallScreen}</p>
+        {header ? <div className={cx(julyStyles.header)}>{header}</div> : null}
+        <div className={cx(julyStyles.grid)}>
+          <section className={cx(julyStyles.column, julyStyles.left)} aria-label={CONSOLE_COPY.values}>
+            <div className={cx(julyStyles.logos)}>
+              <Image {...LOGO_VENTYLAB} alt={CONSOLE_COPY.logoVentyLab} className={cx(julyStyles.logoVentyLab)} />
+              <Image {...LOGO_UNIVALLE} alt={CONSOLE_COPY.logoUnivalle} unoptimized className={cx(julyStyles.logoUnivalle)} />
+            </div>
+            {leftTop}
+            {controls ? <JulyConfirmActions {...confirmOptions} readOnlyReason={readOnlyReason} reasonId={reasonId} /> : null}
+            <MonitorCards
+              store={store}
+              metricRanges={metricRanges}
+              patientRanges={patientRanges}
+              showPatient={layout.showPatientMonitor}
+              controller={cards}
+              lockedReason={cardsLockedReason}
+            />
+          </section>
+          <div className={cx(julyStyles.column, julyStyles.centre)}>
+            {controls ? <JulyInputRow {...zone} /> : null}
+            {alarms}
+            <ConsoleCurvesZone store={store} variant="july" toolbarStart={curvesToolbarStart} />
+            {curvesFooter}
+          </div>
+          <aside className={cx(julyStyles.column, julyStyles.right)} aria-label={CONSOLE_COPY.controls}>
+            <p className={cx(julyStyles.rightHead)}>
+              <span>{CONSOLE_COPY.mode}</span>
+              <strong>{layout.modeLabel}</strong>
+              {readOnly ? <span className={cx(julyStyles.readOnly)}>{CONSOLE_COPY.readOnly}</span> : null}
+            </p>
+            {mode}
+            {controls ? (
+              <>
+                <JulyModeToggle {...zone} assist={assistSlot} />
+                <JulyTiming {...zone} />
+                <JulyRate {...zone} />
+                <JulyMoreParameters {...zone} />
+              </>
+            ) : assistSlot}
+            {maneuvers}
+            {builtInAlarms ? <JulyMechanicsAlerts {...alerts} /> : null}
+            {rightFooter}
+            {controls && !readOnly ? <p className={cx(julyStyles.hint)}>{JULY_CONTROLS_COPY.keyboardHint}</p> : null}
+          </aside>
+        </div>
+      </section>
+    </ConsoleDrawersProvider>
+  );
+}
+
+/** The classic layout (unchanged). */
+function ClassicConsoleView({
+  store,
+  shell: layout,
   metricRanges,
   patientRanges,
   header,
@@ -260,10 +422,7 @@ function VentilatorConsoleView({
   clock,
   beeperFactory,
   className,
-}: VentilatorConsoleProps) {
-  // A store keeps its identity; a plain object gets a static store per object (its owner re-renders it).
-  const store = useMemo(() => (isConsoleAdapterStore(adapter) ? adapter : staticConsoleStore(adapter)), [adapter]);
-  const layout = useStoreSelector(store, selectLayout, sameData);
+}: ConsoleViewProps) {
   const { readOnly, readOnlyReason } = layout;
   const slotProps = { store, readOnly, readOnlyReason };
   const alarms = alarmsSlot === undefined
@@ -314,6 +473,17 @@ function VentilatorConsoleView({
       ) : null}
     </section>
   );
+}
+
+function VentilatorConsoleView(props: VentilatorConsoleProps) {
+  const { adapter } = props;
+  // A store keeps its identity; a plain object gets a static store per object (its owner re-renders it).
+  const store = useMemo(() => (isConsoleAdapterStore(adapter) ? adapter : staticConsoleStore(adapter)), [adapter]);
+  const shell = useStoreSelector(store, selectLayout, sameData);
+
+  return props.layout === "july"
+    ? <JulyConsoleView {...props} store={store} shell={shell} />
+    : <ClassicConsoleView {...props} store={store} shell={shell} />;
 }
 
 /** Memoised: with a store adapter and stable props, a new snapshot never re-renders the console shell by itself. */

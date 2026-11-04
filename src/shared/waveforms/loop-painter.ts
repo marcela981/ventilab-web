@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Loop painter
-* Descripción: Canvas painting for LoopCanvas (P-V / F-V loops): x/y gridlines with tick values, axis labels with units and the loop polyline of the last window of samples, with fixed or auto ranges. Repaints only when the buffer changed, the canvas resized or the consumer invalidated. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the palette is cached and re-read only on a full repaint (resize, theme change, invalidate); live frames read into a reused window and scratch loop buffers, so they allocate no sample arrays; a NaN gap marker in the loop lifts the pen. v1.2 (W3, Bloque 1): the live loop is the window ending at the playback head (same delay as the sweep curves), repainted when a new sample enters it.
-* Versión: 1.2
+* Descripción: Canvas painting for LoopCanvas (P-V / F-V loops): x/y gridlines with tick values, axis labels with units and the loop polyline of the last window of samples, with fixed or auto ranges. Repaints only when the buffer changed, the canvas resized or the consumer invalidated. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the palette is cached and re-read only on a full repaint (resize, theme change, invalidate); live frames read into a reused window and scratch loop buffers, so they allocate no sample arrays; a NaN gap marker in the loop lifts the pen. v1.2 (W3, Bloque 1): the live loop is the window ending at the playback head (same delay as the sweep curves), repainted when a new sample enters it. v1.3 (Bloque 5): tick values are painted with --vl-console-tick (July #919191, AA-adjusted); axis labels keep the muted console text.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,6 +36,7 @@ export type LoopPalette = {
   background: string
   grid: string
   text: string
+  tick: string
   curve: string
   font: string
 };
@@ -62,6 +63,7 @@ export function readLoopPalette(frame: WaveformRenderFrame, colorVar: string): L
     background: resolveCanvasColor(frame.ctx, styles, "--vl-console-bg"),
     grid: resolveCanvasColor(frame.ctx, styles, "--vl-console-grid"),
     text: resolveCanvasColor(frame.ctx, styles, "--vl-console-text-muted"),
+    tick: resolveCanvasColor(frame.ctx, styles, "--vl-console-tick"),
     curve: resolveCanvasColor(frame.ctx, styles, colorVar),
     font: resolveCanvasFont(styles),
   };
@@ -100,7 +102,7 @@ export function paintLoop<C extends string>(
   }
 
   ctx.stroke();
-  ctx.fillStyle = palette.text;
+  ctx.fillStyle = palette.tick;
   ctx.font = palette.font;
   ctx.textAlign = "right";
   ctx.textBaseline = "middle";
@@ -116,6 +118,7 @@ export function paintLoop<C extends string>(
     ctx.fillText(formatTick(tick), valueToX(tick, xRange, plot), lane.y + lane.height + 4);
   }
 
+  ctx.fillStyle = palette.text;
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";
   ctx.fillText(`${config.x.label} (${config.x.unit})`, plot.x + plot.width, height - 2);

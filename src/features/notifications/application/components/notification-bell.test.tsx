@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notification bell tests
-* Descripción: The bell entry renders nothing without a session; the bell menu shows the unread count in its accessible name and badge, opens the latest notifications on click, marks one as read and navigates to its deep link, only marks one without a link, marks all as read, refreshes the count on `notification:new`; NotificationToasts shows each `notification:new` title as a toast, dropped while focus mode is active. Depends on vitest, msw, Testing Library, next/router and next/link (mocked), the session context, the design-system focus mode and the notifications test helpers. v1.1 (B2 closure): the notification without a link is a typed GRADE_PUBLISHED with null data. v1.2 (B4): the bell's accessible name reads like the navigation item ("Notificaciones, 2 sin leer").
-* Versión: 1.2
+* Descripción: The bell entry renders nothing without a session; the bell menu shows the unread count in its accessible name and badge, opens the latest notifications on click, marks one as read and navigates to its deep link, only marks one without a link, marks all as read, refreshes the count on `notification:new`; NotificationToasts shows each `notification:new` title as a toast, dropped while focus mode is active. Depends on vitest, msw, Testing Library, next/router and next/link (mocked), the session context, the design-system focus mode and the notifications test helpers. v1.1 (B2 closure): the notification without a link is a typed GRADE_PUBLISHED with null data. v1.2 (B4): the bell's accessible name reads like the navigation item ("Notificaciones, 2 sin leer"). v1.3 (Bloque 5, D10): from the sidebar tools row of the staff panel the popover portal carries the panel data-surface; outside it stays unscoped.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import { setupServer } from "msw/node";
 import type { ReactNode } from "react";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { useFocusMode } from "@shared/design-system/components/use-focus-mode";
+import { ShellActionsPlacementProvider } from "@shared/layouts/top-bar-actions";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { NotificationDTO } from "../../api/dtos/notifications.dto";
@@ -126,6 +127,25 @@ describe("NotificationBellMenu", () => {
     expect(within(popover).getAllByText("hace 1 hora")).toHaveLength(2);
     expect(listQueries).toEqual([{ page: "1", limit: "8" }]);
     expect(within(popover).getByRole("link", { name: NOTIFICATION_BELL_COPY.viewAll })).toHaveAttribute("href", "/notifications");
+  });
+
+  it("opens from the sidebar tools row with the panel surface on its portal (Bloque 5, D10)", async() => {
+    renderNotifications(
+      <ShellActionsPlacementProvider placement="sidebar" surface="panel">
+        <NotificationBellMenu now={NOW} />
+      </ShellActionsPlacementProvider>,
+    );
+
+    const popover = await openBell();
+
+    expect(popover).toHaveAttribute("data-surface", "panel");
+    expect(await within(popover).findByText("Calificación publicada n1")).toBeInTheDocument();
+  });
+
+  it("keeps its portal unscoped outside the panel", async() => {
+    renderNotifications(<NotificationBellMenu now={NOW} />);
+
+    expect(await openBell()).not.toHaveAttribute("data-surface");
   });
 
   it("marks a notification as read and then opens its deep link", async() => {

@@ -16,7 +16,10 @@
 #   (exam-autosubmit espera su minuto real) o por depender de servicios ausentes en CI (MQTT, Supabase). Los dos
 #   repositorios se clonan en carpetas hermanas (web/ y server/) para que el build de la web no vea el backend. Si
 #   falla, se suben test-results/ (trazas y capturas) y los logs del stack como artefacto.
-# Versión: 1.3
+#   v1.4 (Bloque 5): el job e2e suma los E2E del Monitoreo de julio (disposición digital, tarjetas persistentes,
+#   drawer de Asesoría IA y teclado) y del sidebar colapsable. monitoreo-orden y capturas quedan fuera (reserva del
+#   ventilador y capturas solo con E2E_CAPTURES=1).
+# Versión: 1.4
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -233,6 +236,11 @@ jobs:
           e2e/bloque3/quiz-feedback.spec.ts
           e2e/bloque3/workshop-review.spec.ts
           e2e/bloque4/teacher-student-detail.spec.ts
+          e2e/bloque5/monitoreo-julio.spec.ts
+          e2e/bloque5/monitoreo-tarjetas.spec.ts
+          e2e/bloque5/monitoreo-ia.spec.ts
+          e2e/bloque5/monitoreo-teclado.spec.ts
+          e2e/bloque5/sidebar.spec.ts
 
       - name: Stack logs
         if: failure()

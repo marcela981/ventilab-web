@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoginForm
-* Descripción: Local login form: labelled email and password fields (autocomplete hints, password visibility toggle with an accessible label), client-side validation with per-field messages (validateCredentials) before submitting, and a submit button disabled while a login is pending. Server errors are shown by the page. v1.1 (T6b): fields are design-system FormFields and the submit is an AsyncButton (spinner + aria-busy while pending, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the auth entities and UI/login-form.module.css.
-* Versión: 1.1
+* Descripción: Local login form: labelled email and password fields (autocomplete hints, password visibility toggle with an accessible label), client-side validation with per-field messages (validateCredentials) before submitting, and a submit button disabled while a login is pending. Server errors are shown by the page. v1.1 (T6b): fields are design-system FormFields and the submit is an AsyncButton (spinner + aria-busy while pending, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the auth entities and UI/login-form.module.css. v1.2 (Bloque 5, §5.3): optional `afterPassword` slot between the password and the submit (the July "¿Olvidaste tu contraseña?" row) and the July Login icon on the submit; labels unchanged; the visibility toggle takes the AA link colour of the light card.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,12 +9,13 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import LoginIcon from "@mui/icons-material/Login";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import { useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent, FormEvent, ReactNode } from "react";
 import { AsyncButton } from "@shared/design-system/components/async-button";
 import { FormField } from "@shared/design-system/components/form-field";
 import { cx } from "@shared/lib/class-names";
@@ -26,11 +27,13 @@ export type LoginFormProps = {
   pending: boolean
   onSubmit: (credentials: LoginCredentials) => void
   onEdit?: () => void
+  // Rendered between the password and the submit button (the July "¿Olvidaste tu contraseña?" row).
+  afterPassword?: ReactNode
 };
 
 function noop() {}
 
-export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) {
+export function LoginForm({ pending, onSubmit, onEdit = noop, afterPassword = null }: LoginFormProps) {
   const [credentials, setCredentials] = useState<LoginCredentials>({ email: "", password: "" });
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -100,6 +103,7 @@ export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) 
                   onClick={() => setShowPassword((visible) => !visible)}
                   edge="end"
                   disabled={pending}
+                  className={cx(styles.visibility)}
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
@@ -108,7 +112,16 @@ export function LoginForm({ pending, onSubmit, onEdit = noop }: LoginFormProps) 
           },
         }}
       />
-      <AsyncButton type="submit" variant="contained" size="large" fullWidth loading={pending} className={cx(styles.submit)}>
+      {afterPassword}
+      <AsyncButton
+        type="submit"
+        variant="contained"
+        size="large"
+        fullWidth
+        loading={pending}
+        startIcon={<LoginIcon aria-hidden="true" />}
+        className={cx(styles.submit)}
+      >
         Iniciar sesión
       </AsyncButton>
     </form>

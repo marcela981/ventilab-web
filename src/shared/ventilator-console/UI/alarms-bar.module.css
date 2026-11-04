@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Alarms bar styles
-* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels, plus the persistent live region around the alarm list. Console and design-system tokens only.
-* Versión: 1.1
+* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels, plus the persistent live region around the alarm list. Console and design-system tokens only. v1.2 (Bloque 5, C9): the July variant goes icon-only below a 1100 px console (the action texts stay for screen readers) so the bar fits one line at 1280.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -206,4 +206,31 @@
 .panelActions {
   display: flex;
   gap: var(--vl-space-2);
+}
+
+/* ---- July variant (Bloque 5, C9): icon-only actions at 1280 ---- */
+.bar[data-variant="july"] .row {
+  flex-wrap: nowrap;
+}
+
+.bar[data-variant="july"] .actions {
+  flex-wrap: nowrap;
+  flex: none;
+}
+
+@container vl-monitor (max-width: 1099.98px) {
+  .bar[data-variant="july"] .actionText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bar[data-variant="july"] .action {
+    min-width: var(--vl-space-6);
+    justify-content: center;
+    padding: 0 var(--vl-space-1);
+  }
 }

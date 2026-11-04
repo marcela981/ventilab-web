@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Login page tests
-* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked). v1.4 (O5): role homes are /me for students and /teacher for staff. v1.5 (B3.4, D4): NextAuth removed: the bridge and reconciliation tests and the next-auth/react mock are gone. v1.6 (W1 Bloque 1): the role home of every role is /simulador.
-* Versión: 1.6
+* Descripción: Integration tests of the login page with the real backend session (AuthProvider) and MSW: local login posts the credentials and navigates to the role home or a safe returnTo, each backend error code shows its Spanish message, the Google ID token from Google Identity Services is posted to /api/auth/google, an authenticated visitor is redirected to the home of their role, the Google button is disabled without a client ID and an expired session shows a notice. v1.1: the best-effort NextAuth bridge (next-auth/react mocked): a local login signs in to NextAuth after establishSession and before the redirect, a bridge failure still redirects, and Google login never calls it (it only clears a stale NextAuth cookie). v1.2 (T9 follow-up): NextAuth session reconciliation (same user or none -> redirect; another user's session cleared -> redirect; persisting -> Spanish error, backend session signed out, no redirect, for local and Google logins), redirect loop guard (a bounced returnTo falls back to the role home; a bounced role home stops with an error and a sign-out button) and a staff-only returnTo for a student -> role home. v1.3 (T12): while a login is pending "Iniciar sesión" keeps its label, is disabled and aria-busy with a spinner (no "Iniciando sesión…" text). Depends on vitest, Testing Library, MSW, next/router (mocked) and the hard navigation helper (mocked). v1.4 (O5): role homes are /me for students and /teacher for staff. v1.5 (B3.4, D4): NextAuth removed: the bridge and reconciliation tests and the next-auth/react mock are gone. v1.6 (W1 Bloque 1): the role home of every role is /simulador. v1.7 (Bloque 5, D6): the July order (logo, Google, "o con tu correo", the form with the forgot link before the submit, the register link) and no "Recordarme".
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -138,6 +138,29 @@ afterEach(() => {
   window.sessionStorage.clear();
   vi.unstubAllEnvs();
   delete (window as unknown as { google?: unknown }).google;
+});
+
+describe("LoginPage July layout (Bloque 5, D6)", () => {
+  it("shows the logo, then Google, the divider and the email form with the forgot link before the submit", async() => {
+    renderLogin();
+
+    const submit = await screen.findByRole("button", { name: /iniciar sesión/i });
+    const logo = screen.getByRole("img", { name: "VentyLab" });
+    const divider = screen.getByText("o con tu correo");
+    const form = screen.getByRole("form", { name: "Iniciar sesión con correo" });
+    const forgot = screen.getByRole("link", { name: "¿Olvidaste tu contraseña?" });
+    const follows = (first: Node, second: Node) => Boolean(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Iniciar sesión" })).toBeInTheDocument();
+    expect(follows(logo, divider)).toBe(true);
+    expect(googleIdentity.renderButton).toHaveBeenCalled();
+    expect(follows(divider, form)).toBe(true);
+    expect(form).toContainElement(forgot);
+    expect(follows(forgot, submit)).toBe(true);
+    expect(forgot).toHaveAttribute("href", "/auth/forgot-password");
+    expect(screen.getByRole("link", { name: "Regístrate" })).toHaveAttribute("href", "/auth/register");
+    expect(screen.queryByRole("checkbox", { name: /recordarme/i })).not.toBeInTheDocument();
+  });
 });
 
 describe("LoginPage local login", () => {

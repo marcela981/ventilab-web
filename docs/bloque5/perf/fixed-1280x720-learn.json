@@ -1,0 +1,951 @@
+{
+  "meta": {
+    "label": "fixed",
+    "contentDefinition": "after",
+    "runs": 5,
+    "warmupRoundsDiscarded": 1,
+    "cpuThrottlingRate": 4,
+    "settleMs": 3000,
+    "network": "localhost, no network throttling",
+    "storageState": "e2e/.auth/student.json",
+    "webCommit": "9fdcbbb",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "measuredAt": "2026-11-04T13:32:58.799Z",
+    "definitions": {
+      "contentMs": "page performance.now() at the first visible match of the content selector (MutationObserver); 0 = navigation start (cold/warm) or the click (next)",
+      "apiDepth": "sequential waves among API requests until the content: wave = 1 + highest wave of the API requests that had finished before it started",
+      "depthWithChunks": "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound, since a request started later for an unrelated reason also counts as a new wave",
+      "warm": "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
+      "next": "client-side navigation by clicking Siguiente in the viewer",
+      "tabs": "click on a /learn tab (after the warm visit, in PERF_LEARN_TABS order) until the first child of its visible panel without a busy skeleton inside; a panel visited before stays mounted"
+    }
+  },
+  "screens": {
+    "learn-home": {
+      "url": "/learn",
+      "contentSelector": "[role=\"region\"]:not([hidden]) ul[aria-label^=\"Módulos de\"] > li",
+      "median": {
+        "cold": {
+          "contentMs": 2346,
+          "api": 6,
+          "apiDepth": 4,
+          "chunksNetwork": 37,
+          "chunksFromCache": 0,
+          "depthWithChunks": 17,
+          "apiAfterContent": 2,
+          "longTasksUntilContent": 11,
+          "longTasksMsUntilContent": 1462,
+          "longTasksUntilSettle": 11,
+          "longTasksMsUntilSettle": 1468,
+          "longTaskMaxMs": 286
+        },
+        "warm": {
+          "contentMs": 925,
+          "api": 3,
+          "apiDepth": 2,
+          "chunksNetwork": 0,
+          "chunksFromCache": 26,
+          "depthWithChunks": 3,
+          "apiAfterContent": 2,
+          "longTasksUntilContent": 3,
+          "longTasksMsUntilContent": 384,
+          "longTasksUntilSettle": 4,
+          "longTasksMsUntilSettle": 412,
+          "longTaskMaxMs": 162
+        },
+        "next": [],
+        "tabs": [
+          {
+            "tab": "inicio",
+            "contentSelector": "#learn-panel-inicio:not([hidden]) > :not([aria-busy=\"true\"]):not(:has([aria-busy=\"true\"]))",
+            "contentMs": 393,
+            "api": 3,
+            "apiDepth": 1,
+            "chunksNetwork": 2,
+            "chunksFromCache": 0,
+            "depthWithChunks": 2,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 1,
+            "longTasksMsUntilContent": 98,
+            "longTasksUntilSettle": 1,
+            "longTasksMsUntilSettle": 98,
+            "longTaskMaxMs": 98
+          },
+          {
+            "tab": "progreso",
+            "contentSelector": "#learn-panel-progreso:not([hidden]) > :not([aria-busy=\"true\"]):not(:has([aria-busy=\"true\"]))",
+            "contentMs": 576,
+            "api": 2,
+            "apiDepth": 1,
+            "chunksNetwork": 2,
+            "chunksFromCache": 0,
+            "depthWithChunks": 3,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 0,
+            "longTasksMsUntilContent": 0,
+            "longTasksUntilSettle": 0,
+            "longTasksMsUntilSettle": 0,
+            "longTaskMaxMs": 0
+          },
+          {
+            "tab": "curriculo",
+            "contentSelector": "#learn-panel-curriculo:not([hidden]) > :not([aria-busy=\"true\"]):not(:has([aria-busy=\"true\"]))",
+            "contentMs": 160,
+            "api": 0,
+            "apiDepth": 0,
+            "chunksNetwork": 0,
+            "chunksFromCache": 0,
+            "depthWithChunks": 0,
+            "apiAfterContent": 0,
+            "longTasksUntilContent": 0,
+            "longTasksMsUntilContent": 0,
+            "longTasksUntilSettle": 0,
+            "longTasksMsUntilSettle": 0,
+            "longTaskMaxMs": 0
+          }
+        ]
+      },
+      "runs": [
+        {
+          "cold": {
+            "contentMs": 2360,
+            "untilContent": {
+              "api": 6,
+              "apiDepth": 4,
+              "chunksNetwork": 37,
+              "chunksFromCache": 0,
+              "depthWithChunks": 19,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "POST /api/auth/refresh",
+                "GET /api/auth/me",
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1543,
+                "maxMs": 345
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1543,
+                "maxMs": 345
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 925,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 26,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/my-evaluations",
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 22
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 4,
+                "totalMs": 416,
+                "maxMs": 158
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 416,
+                "maxMs": 158
+              }
+            }
+          },
+          "next": [],
+          "tabs": [
+            {
+              "tab": "inicio",
+              "contentMs": 392,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 2,
+                "apiCalls": [
+                  "GET /api/me/summary",
+                  "GET /api/progress/gamification",
+                  "GET /api/progress/activity/recent?limit=10"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 18
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 98,
+                  "maxMs": 98
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 98,
+                  "maxMs": 98
+                }
+              }
+            },
+            {
+              "tab": "progreso",
+              "contentMs": 584,
+              "untilContent": {
+                "api": 2,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/progress/activity?from=2026-08-17&to=2026-11-04",
+                  "GET /api/progress/achievements"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            },
+            {
+              "tab": "curriculo",
+              "contentMs": 187,
+              "untilContent": {
+                "api": 0,
+                "apiDepth": 0,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 0,
+                "apiCalls": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2301,
+            "untilContent": {
+              "api": 6,
+              "apiDepth": 4,
+              "chunksNetwork": 37,
+              "chunksFromCache": 0,
+              "depthWithChunks": 17,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "POST /api/auth/refresh",
+                "GET /api/auth/me",
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1456,
+                "maxMs": 262
+              },
+              "untilSettle": {
+                "count": 10,
+                "totalMs": 1456,
+                "maxMs": 262
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 906,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 26,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/my-evaluations",
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 22
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 353,
+                "maxMs": 159
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 423,
+                "maxMs": 159
+              }
+            }
+          },
+          "next": [],
+          "tabs": [
+            {
+              "tab": "inicio",
+              "contentMs": 388,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 2,
+                "apiCalls": [
+                  "GET /api/me/summary",
+                  "GET /api/progress/gamification",
+                  "GET /api/progress/activity/recent?limit=10"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 18
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 98,
+                  "maxMs": 98
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 98,
+                  "maxMs": 98
+                }
+              }
+            },
+            {
+              "tab": "progreso",
+              "contentMs": 571,
+              "untilContent": {
+                "api": 2,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/progress/activity?from=2026-08-17&to=2026-11-04",
+                  "GET /api/progress/achievements"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            },
+            {
+              "tab": "curriculo",
+              "contentMs": 152,
+              "untilContent": {
+                "api": 0,
+                "apiDepth": 0,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 0,
+                "apiCalls": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2554,
+            "untilContent": {
+              "api": 6,
+              "apiDepth": 4,
+              "chunksNetwork": 37,
+              "chunksFromCache": 0,
+              "depthWithChunks": 16,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "POST /api/auth/refresh",
+                "GET /api/auth/me",
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1667,
+                "maxMs": 296
+              },
+              "untilSettle": {
+                "count": 11,
+                "totalMs": 1667,
+                "maxMs": 296
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 966,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 26,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/my-evaluations",
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 22
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 385,
+                "maxMs": 191
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 385,
+                "maxMs": 191
+              }
+            }
+          },
+          "next": [],
+          "tabs": [
+            {
+              "tab": "inicio",
+              "contentMs": 436,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 2,
+                "apiCalls": [
+                  "GET /api/me/summary",
+                  "GET /api/progress/gamification",
+                  "GET /api/progress/activity/recent?limit=10"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 18
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 107,
+                  "maxMs": 107
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 107,
+                  "maxMs": 107
+                }
+              }
+            },
+            {
+              "tab": "progreso",
+              "contentMs": 571,
+              "untilContent": {
+                "api": 2,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/progress/activity?from=2026-08-17&to=2026-11-04",
+                  "GET /api/progress/achievements"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            },
+            {
+              "tab": "curriculo",
+              "contentMs": 155,
+              "untilContent": {
+                "api": 0,
+                "apiDepth": 0,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 0,
+                "apiCalls": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2346,
+            "untilContent": {
+              "api": 6,
+              "apiDepth": 4,
+              "chunksNetwork": 37,
+              "chunksFromCache": 0,
+              "depthWithChunks": 16,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "POST /api/auth/refresh",
+                "GET /api/auth/me",
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 10,
+                "totalMs": 1462,
+                "maxMs": 286
+              },
+              "untilSettle": {
+                "count": 10,
+                "totalMs": 1462,
+                "maxMs": 286
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 960,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 26,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/my-evaluations",
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 22
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 384,
+                "maxMs": 177
+              },
+              "untilSettle": {
+                "count": 3,
+                "totalMs": 384,
+                "maxMs": 177
+              }
+            }
+          },
+          "next": [],
+          "tabs": [
+            {
+              "tab": "inicio",
+              "contentMs": 397,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 2,
+                "apiCalls": [
+                  "GET /api/me/summary",
+                  "GET /api/progress/gamification",
+                  "GET /api/progress/activity/recent?limit=10"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 18
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 98,
+                  "maxMs": 98
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 98,
+                  "maxMs": 98
+                }
+              }
+            },
+            {
+              "tab": "progreso",
+              "contentMs": 576,
+              "untilContent": {
+                "api": 2,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/progress/activity?from=2026-08-17&to=2026-11-04",
+                  "GET /api/progress/achievements"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            },
+            {
+              "tab": "curriculo",
+              "contentMs": 220,
+              "untilContent": {
+                "api": 0,
+                "apiDepth": 0,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 0,
+                "apiCalls": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "cold": {
+            "contentMs": 2234,
+            "untilContent": {
+              "api": 6,
+              "apiDepth": 4,
+              "chunksNetwork": 37,
+              "chunksFromCache": 0,
+              "depthWithChunks": 17,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "POST /api/auth/refresh",
+                "GET /api/auth/me",
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/notifications/unread-count",
+                "GET /api/my-evaluations"
+              ],
+              "chunksAfterContent": 11
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 11,
+                "totalMs": 1407,
+                "maxMs": 268
+              },
+              "untilSettle": {
+                "count": 12,
+                "totalMs": 1468,
+                "maxMs": 268
+              }
+            }
+          },
+          "warm": {
+            "contentMs": 924,
+            "untilContent": {
+              "api": 3,
+              "apiDepth": 2,
+              "chunksNetwork": 0,
+              "chunksFromCache": 26,
+              "depthWithChunks": 3,
+              "apiCalls": [
+                "GET /api/auth/me",
+                "GET /api/curriculum/tree",
+                "GET /api/progress/summary"
+              ]
+            },
+            "settle": {
+              "apiAfterContent": [
+                "GET /api/my-evaluations",
+                "GET /api/notifications/unread-count"
+              ],
+              "chunksAfterContent": 22
+            },
+            "longTasks": {
+              "untilContent": {
+                "count": 3,
+                "totalMs": 357,
+                "maxMs": 162
+              },
+              "untilSettle": {
+                "count": 4,
+                "totalMs": 412,
+                "maxMs": 162
+              }
+            }
+          },
+          "next": [],
+          "tabs": [
+            {
+              "tab": "inicio",
+              "contentMs": 393,
+              "untilContent": {
+                "api": 3,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 2,
+                "apiCalls": [
+                  "GET /api/me/summary",
+                  "GET /api/progress/gamification",
+                  "GET /api/progress/activity/recent?limit=10"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 18
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 1,
+                  "totalMs": 103,
+                  "maxMs": 103
+                },
+                "untilSettle": {
+                  "count": 1,
+                  "totalMs": 103,
+                  "maxMs": 103
+                }
+              }
+            },
+            {
+              "tab": "progreso",
+              "contentMs": 580,
+              "untilContent": {
+                "api": 2,
+                "apiDepth": 1,
+                "chunksNetwork": 2,
+                "chunksFromCache": 0,
+                "depthWithChunks": 3,
+                "apiCalls": [
+                  "GET /api/progress/activity?from=2026-08-17&to=2026-11-04",
+                  "GET /api/progress/achievements"
+                ]
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            },
+            {
+              "tab": "curriculo",
+              "contentMs": 160,
+              "untilContent": {
+                "api": 0,
+                "apiDepth": 0,
+                "chunksNetwork": 0,
+                "chunksFromCache": 0,
+                "depthWithChunks": 0,
+                "apiCalls": []
+              },
+              "settle": {
+                "apiAfterContent": [],
+                "chunksAfterContent": 0
+              },
+              "longTasks": {
+                "untilContent": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                },
+                "untilSettle": {
+                  "count": 0,
+                  "totalMs": 0,
+                  "maxMs": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

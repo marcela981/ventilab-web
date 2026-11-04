@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Curriculum tab styles
-* Descripción: Currículo tab of /learn (W4, Bloque 2): the three accordions (July CurriculumSections: rounded surface, icon, title, optional badge, rotating chevron), the vertical level stepper (numbered / check / lock markers joined by a line, locked levels dimmed like July's 0.55 opacity), the level progress bar and text, the responsive module card grid (state-colored left border, badges, full-width footer button: green primary action for Comenzar/Continuar, outlined for Completado, disabled for Bloqueado/Próximamente, as in July ModuleCardFooter), the staff actions and the floating "Modo edición" toggle (July EditModeToggle). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v0.2 (W10 fix): the badges (Opcional, Sin iniciar, Próximamente, Bloqueado, Completado, Borrador) sit on a light tint of the surface in the primary text color instead of muted text on the navy contrast background, where it was unreadable (WCAG AA). v0.3 (Bloque 3): extra action of a module card.
-* Versión: 0.3
+* Descripción: Currículo tab of /learn (W4, Bloque 2): the three accordions (July CurriculumSections: rounded surface, icon, title, optional badge, rotating chevron), the vertical level stepper (numbered / check / lock markers joined by a line, locked levels dimmed like July's 0.55 opacity), the level progress bar and text, the responsive module card grid (state-colored left border, badges, full-width footer button: green primary action for Comenzar/Continuar, outlined for Completado, disabled for Bloqueado/Próximamente, as in July ModuleCardFooter), the staff actions and the floating "Modo edición" toggle (July EditModeToggle). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v0.2 (W10 fix): the badges (Opcional, Sin iniciar, Próximamente, Bloqueado, Completado, Borrador) sit on a light tint of the surface in the primary text color instead of muted text on the navy contrast background, where it was unreadable (WCAG AA). v0.3 (Bloque 3): extra action of a module card. v0.4 (Bloque 5): July skin (DISENO_BLOQUE5 §5.4): accordions on the raised (glass 8%) surface with the 12% border, a cyan chevron, the section icon colored by data-section and an outlined "Opcional" chip; stepper levels colored by data-tone (marker, title and bar; --vl-level-*), "En progreso" as a filled cyan chip; module cards on glass with the #0BBAF4 border while open and the green #22c55e action with navy text.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,15 +34,11 @@
   gap: var(--vl-space-3);
 }
 
+/* July glass 8% (opaque equivalent) with the 12% border; no elevation. */
 .accordion {
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
-  box-shadow: var(--vl-shadow-1);
-}
-
-.accordion[data-expanded="true"] {
-  box-shadow: var(--vl-shadow-2);
+  background: var(--vl-color-surface-raised);
 }
 
 .accordionHeading {
@@ -54,7 +50,7 @@
   align-items: center;
   gap: var(--vl-space-3);
   width: 100%;
-  padding: var(--vl-space-3) var(--vl-space-5);
+  padding: var(--vl-space-5) var(--vl-space-6);
   font: var(--mui-font-subtitle1);
   font-weight: 600;
   color: var(--vl-color-text);
@@ -74,13 +70,30 @@
   color: var(--vl-color-primary);
 }
 
+.accordion[data-section="ventylab"] .accordionIcon {
+  color: var(--vl-learn-section-ventylab);
+}
+
+.accordion[data-section="prerrequisitos"] .accordionIcon {
+  color: var(--vl-learn-section-prereq);
+}
+
+.accordion[data-section="mecanica"] .accordionIcon {
+  color: var(--vl-learn-section-mechanics);
+}
+
+/* "Opcional": outlined chip, as July. */
+.accordionTrigger .badge {
+  background: transparent;
+}
+
 .accordionTitle {
   flex: 0 1 auto;
 }
 
 .accordionChevron {
   margin-left: auto;
-  color: var(--vl-color-text-muted);
+  color: var(--vl-color-primary);
   transition: transform var(--vl-duration-short) var(--vl-ease-standard);
 }
 
@@ -89,7 +102,7 @@
 }
 
 .accordionRegion {
-  padding: 0 var(--vl-space-4) var(--vl-space-4);
+  padding: var(--vl-space-1) var(--vl-space-4) var(--vl-space-5);
 }
 
 .accordionRegion[hidden] {
@@ -129,6 +142,13 @@
   color: var(--vl-color-text);
 }
 
+/* Level status chip: "En progreso" filled cyan (July chip info). */
+.levelStatus[data-status="in-progress"] {
+  border-color: var(--vl-color-primary);
+  background: var(--vl-color-primary);
+  color: var(--vl-color-on-primary);
+}
+
 .badgeDraft {
   border-style: dashed;
   color: var(--vl-color-text);
@@ -146,6 +166,9 @@
 }
 
 .step {
+  --level-tone: var(--vl-level-beginner);
+  --level-tone-text: var(--vl-level-beginner);
+
   position: relative;
   display: grid;
   grid-template-columns: var(--vl-space-7) minmax(0, 1fr);
@@ -164,6 +187,21 @@
   background: var(--vl-color-border);
 }
 
+.step[data-tone="prereq"] {
+  --level-tone: var(--vl-level-prereq);
+  --level-tone-text: var(--vl-level-prereq);
+}
+
+.step[data-tone="intermediate"] {
+  --level-tone: var(--vl-level-intermediate);
+  --level-tone-text: var(--vl-level-intermediate);
+}
+
+.step[data-tone="advanced"] {
+  --level-tone: var(--vl-level-advanced);
+  --level-tone-text: var(--vl-level-advanced-text);
+}
+
 .stepMarker {
   z-index: 1;
   display: inline-flex;
@@ -171,11 +209,11 @@
   justify-content: center;
   width: var(--vl-space-7);
   height: var(--vl-space-7);
-  border: 2px solid var(--vl-color-primary);
+  border: 2px solid var(--level-tone);
   border-radius: 50%;
-  background: var(--vl-color-surface);
+  background: var(--vl-color-surface-raised);
   font: var(--mui-font-subtitle2);
-  color: var(--vl-color-primary);
+  color: var(--level-tone);
 }
 
 .step[data-status="completed"] .stepMarker {
@@ -211,6 +249,10 @@
 .levelTitle {
   margin: 0;
   font: var(--mui-font-h6);
+  color: var(--level-tone-text);
+}
+
+.step[data-status="locked"] .levelTitle {
   color: var(--vl-color-text);
 }
 
@@ -237,7 +279,11 @@
 
 .progressBar {
   height: 6px;
-  border-radius: var(--vl-radius-sm);
+  border-radius: var(--vl-radius-pill);
+}
+
+.step:not([data-status="completed"]) .progressBar :global(.MuiLinearProgress-bar) {
+  background-color: var(--level-tone);
 }
 
 .progressText {
@@ -249,7 +295,7 @@
 
 .moduleGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(14.375rem, 1fr));
   gap: var(--vl-space-3);
   margin: var(--vl-space-2) 0 0;
   padding: 0;
@@ -265,23 +311,22 @@
   flex: 1;
   flex-direction: column;
   gap: var(--vl-space-2);
+  min-height: 15.5rem;
   padding: var(--vl-space-4);
-  border: 1px solid var(--vl-color-border);
-  border-left: var(--vl-space-1) solid var(--vl-color-primary);
-  border-radius: var(--vl-radius-md);
-  background: var(--vl-color-surface);
-  box-shadow: var(--vl-shadow-1);
+  border: 1px solid var(--vl-glass-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-glass-bg);
   overflow-wrap: anywhere;
 }
 
-.moduleCard[data-state="completed"] {
-  border-left-color: var(--vl-color-success);
+/* July: the cyan border marks the modules the student can open. */
+.moduleCard[data-state="available"],
+.moduleCard[data-state="in-progress"] {
+  border-color: var(--vl-learn-module-open-border);
 }
 
-.moduleCard[data-state="locked"],
-.moduleCard[data-state="coming_soon"] {
-  border-left-color: var(--vl-color-border);
-  background: var(--vl-color-hover);
+.moduleCard[data-state="completed"] {
+  border-color: var(--vl-color-success);
 }
 
 .moduleCardHeader {
@@ -327,9 +372,9 @@
   gap: var(--vl-space-1);
   width: 100%;
   padding: var(--vl-space-2) var(--vl-space-3);
-  border: 1px solid var(--vl-color-success);
+  border: 1px solid var(--vl-learn-module-go);
   border-radius: var(--vl-radius-md);
-  background: var(--vl-color-success);
+  background: var(--vl-learn-module-go);
   font: var(--mui-font-button);
   text-transform: none;
   color: var(--vl-color-on-primary);
@@ -339,10 +384,14 @@
 }
 
 .cardButton:hover {
+  border-color: var(--vl-learn-module-go-hover);
+  background: var(--vl-learn-module-go-hover);
   box-shadow: var(--vl-shadow-2);
 }
 
-.cardButtonOutlined {
+.cardButtonOutlined,
+.cardButtonOutlined:hover {
+  border-color: var(--vl-color-success);
   background: transparent;
   color: var(--vl-color-success);
 }

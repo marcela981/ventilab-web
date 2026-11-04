@@ -6,7 +6,8 @@
 *   and that the REC indicator is local to this tab. RecIndicator is the REC mark of the console header while THIS tab
 *   recorded the session (the backend gives no shared recording signal, so nobody else sees it: gap). Depends on MUI,
 *   the design-system confirm dialog, the session recording entity and hook type, and the live page styles.
-* Versión: 1.0
+*   v1.1 (Bloque 5, C8): `compact` (the July Real strip): no frame; the hint is the button description and tooltip.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +16,7 @@
 */
 
 import Button from "@mui/material/Button";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
 import { RECORDING_COPY } from "../entities/session-recording.entity";
@@ -30,8 +31,9 @@ const BUTTON_LABELS: Readonly<Record<RecordingPhase, string>> = {
   stopping: RECORDING_COPY.stopping,
 };
 
-export function RecordingControl({ recording }: { recording: SessionRecording }) {
+export function RecordingControl({ recording, compact = false }: { recording: SessionRecording, compact?: boolean }) {
   const [confirming, setConfirming] = useState(false);
+  const hintId = useId();
   const { phase, error } = recording.state;
   const recordingNow = phase === "recording" || phase === "stopping";
 
@@ -46,17 +48,18 @@ export function RecordingControl({ recording }: { recording: SessionRecording })
   };
 
   return (
-    <div className={cx(styles.recordingBar)} data-testid="lab-live-recording">
+    <div className={cx(styles.recordingBar)} data-testid="lab-live-recording" data-compact={compact}>
       <Button
         variant={recordingNow ? "outlined" : "contained"}
         color={recordingNow ? "error" : "primary"}
         size="small"
         disabled={phase === "starting" || phase === "stopping"}
         onClick={() => (phase === "recording" ? setConfirming(true) : void recording.start())}
+        {...(compact ? { "aria-describedby": hintId, title: RECORDING_COPY.hint } : {})}
       >
         {BUTTON_LABELS[phase]}
       </Button>
-      <p className={cx(styles.recordingHint)}>{RECORDING_COPY.hint}</p>
+      <p id={hintId} className={cx(styles.recordingHint)}>{RECORDING_COPY.hint}</p>
       {error ? (
         <div className={cx(styles.banner)} data-tone="error" role="alert">
           <span>{error}</span>

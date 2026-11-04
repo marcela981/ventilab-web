@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Breath detection tests
 * Descripción: Checks the breath-cycle detection and the derived metrics against synthetic curves of KNOWN values built from a single-compartment lung (P = PEEP + V/C + R·F): volume control with an inspiratory pause (plateau), volume control without a pause (no plateau → Pplat/ΔP null), pressure control whose flow decays to zero (plateau = inspiratory pressure), and the paused volume breath with deterministic noise. Every metric must be within 2 % of the known value. Also covers chunked pushes, a stream starting mid-inspiration, data gaps, backwards time and stale metrics. v1.1 (T5 review fix): a flow offset / leak during the expiratory pause, a 1–3 L/min noisy baseline with a short spike, a patient-triggered inspiration, fast and slow rates, the restart after an apnea, a missing peak sample, the few-periods gap limit and the null PEEP of a breath without end-expiratory samples. Depends on Vitest only.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C4): the mean pressure and the flow extremes of a known pressure-control breath.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -169,6 +170,17 @@ describe("breath detection on known curves", () => {
     expectWithin(metrics.minuteVolume, 7.5);
   });
 
+  it("v1.2: the mean pressure and the flow extremes of the last breath", () => {
+    // PCV: square pressure, PEEP 8 + 15 for 2 s of 6 s → Pmean 13; the flow starts at C·Pinsp/τ = 750/0.25 mL/s.
+    const pcv = computeBreathMetrics(detectBreaths(synthesize(PCV, 6)));
+
+    expectWithin(pcv.meanPressure, 13);
+    expectWithin(pcv.peakInspiratoryFlow, 180);
+    expectWithin(pcv.peakExpiratoryFlow, -180);
+    // VCV: constant 500 mL/s inspiratory flow.
+    expectWithin(computeBreathMetrics(detectBreaths(synthesize(VCV_WITH_PAUSE, 8))).peakInspiratoryFlow, 30);
+  });
+
   it("volume control without a pause has no plateau: Pplat and ΔP stay null", () => {
     const metrics = computeBreathMetrics(detectBreaths(synthesize(VCV_NO_PAUSE, 8)));
 
@@ -286,6 +298,9 @@ describe("breath detector stream handling", () => {
       respiratoryRate: null,
       ieRatio: null,
       minuteVolume: null,
+      meanPressure: null,
+      peakInspiratoryFlow: null,
+      peakExpiratoryFlow: null,
     });
 
     // Breaths [4000, 8000) and [8000, 12000): the last one ends at 12000, the mean period is 4 s.

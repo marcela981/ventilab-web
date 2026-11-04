@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E student flow of the unified simulator
-* Descripción: The student signs in (saved session), opens /simulador, fills Simular Paciente with "Aleatorio" plus a unique name and sends it to Monitoreo; the curves canvas keeps changing its pixels and the chip says "Simulando"; switching to Conexión and back keeps the same ?session and the simulated clock keeps advancing (the session lives above the tabs); "Finalizar sesión" opens the result dialog; Mis sesiones lists the session and opens its replay inside the panel in read-only mode. v0.2 (W6-fix): at 1280×720 with the long case "Neumonía grave con hipoxemia" the curves canvas is at least 300 px wide, the case panel stacks under the console without covering it, and hiding the case keeps the console visible at its full width. Depends on @playwright/test and the e2e support helpers.
-* Versión: 0.2
+* Descripción: The student signs in (saved session), opens /simulador, fills Simular Paciente with "Aleatorio" plus a unique name and sends it to Monitoreo; the curves canvas keeps changing its pixels and the chip says "Simulando"; switching to Conexión and back keeps the same ?session and the simulated clock keeps advancing (the session lives above the tabs); "Finalizar sesión" opens the result dialog; Mis sesiones lists the session and opens its replay inside the panel in read-only mode. v0.2 (W6-fix): at 1280×720 with the long case "Neumonía grave con hipoxemia" the curves canvas is at least 300 px wide, the case panel stacks under the console without covering it, and hiding the case keeps the console visible at its full width. v0.3 (Bloque 5, C6): July layout: the own patient shows as the "Paciente activo" status of the left column; the case is a 380 px drawer opened from the session strip (closed by default) that overlays the right edge without changing the console width, and closing it returns the focus to its button. Depends on @playwright/test and the e2e support helpers.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,7 +38,7 @@ test("student simulates a patient, keeps the session across tabs, finishes it an
   const firstPaint = await curvesSignature(page);
 
   await expect.poll(() => curvesSignature(page), { timeout: 10_000 }).not.toBe(firstPaint);
-  await expect(page.getByRole("region", { name: `Paciente: ${patientName}` })).toBeVisible();
+  await expect(page.getByRole("status", { name: "Paciente activo" })).toHaveText(`Paciente: ${patientName}`);
 
   // Conexión and back: same session, the clock kept running.
   await expect.poll(() => simulatedSeconds(page), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
@@ -86,7 +86,7 @@ test("student simulates a patient, keeps the session across tabs, finishes it an
   await expect(replay.getByRole("button", { name: "Confirmar" })).toBeDisabled();
 });
 
-test("Monitoreo keeps usable curves at 1280×720 with a long case and the case panel never covers the console", async ({ page }) => {
+test("Monitoreo keeps usable curves at 1280×720 with a long case and the case drawer never resizes the console", async ({ page }) => {
   test.setTimeout(180_000);
   await page.setViewportSize(COMPACT_VIEWPORT);
   await startPatientSession(page, { caseTitle: LONG_CASE_TITLE });
@@ -95,18 +95,24 @@ test("Monitoreo keeps usable curves at 1280×720 with a long case and the case p
   const consoleZone = page.getByRole("region", { name: "Consola del ventilador" });
   const casePanel = page.getByRole("complementary", { name: "Caso clínico" });
 
-  await expect(page.getByRole("heading", { name: "Historia clínica" })).toBeVisible({ timeout: 30_000 });
-  expect(await curves.evaluate((canvas: HTMLCanvasElement) => canvas.clientWidth)).toBeGreaterThanOrEqual(300);
+  const toggle = page.getByRole("button", { name: "Mostrar caso clínico" });
 
-  // The case panel stacks under the console at this width: no horizontal overlap with it.
+  expect(await curves.evaluate((canvas: HTMLCanvasElement) => canvas.clientWidth)).toBeGreaterThanOrEqual(300);
+  await expect(casePanel).toHaveCount(0);
   const consoleBox = await consoleZone.boundingBox();
+
+  // The case drawer (380 px) overlays the right edge: the console keeps its size.
+  await toggle.click();
+  await expect(page.getByRole("heading", { name: "Historia clínica" })).toBeVisible({ timeout: 30_000 });
   const panelBox = await casePanel.boundingBox();
 
-  expect(consoleBox && panelBox && panelBox.y >= consoleBox.y + consoleBox.height).toBe(true);
+  expect(Math.abs((panelBox?.width ?? 0) - 380)).toBeLessThanOrEqual(1);
+  expect(await consoleZone.boundingBox()).toEqual(consoleBox);
 
-  // Hiding the case leaves only its toggle; the console keeps the full width.
+  // Closing it removes the drawer and gives the focus back to the strip button.
   await casePanel.getByRole("button", { name: "Ocultar caso clínico" }).click();
   await expect(page.getByRole("heading", { name: "Historia clínica" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Mostrar caso clínico" })).toBeFocused();
   await expect(consoleZone).toBeVisible();
   expect((await consoleZone.boundingBox())?.width).toBe(consoleBox?.width);
 

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console curves zone
-* Descripción: Curves area of the ventilator console: one SweepCanvas with stacked pressure (cmH2O), flow (L/min) and volume (mL) lanes colored by the console curve tokens, plus a toolbar with the sweep/scroll toggle, the time-window selector, the freeze button (the frozen trace exposes the measurement cursor) and the P-V / F-V loop toggle rendered by LoopCanvas. Reads the waveform ring buffer directly. v1.1: an optional frame-source `status`; with `no-data` the last curves stay greyed under an overlay (role status) with the source message or a generic default, and the zone exposes `data-source-status`. Depends on React, MUI icons, @shared/waveforms and the console config. v1.2 (W3, Bloque 1): the sweep and loop canvases draw at the display refresh rate (no 30 fps cap) and by time, DEFAULT_PLAYBACK_DELAY_MS behind the newest sample, so the curves advance smoothly between the 30 Hz data batches.
-* Versión: 1.2
+* Descripción: Curves area of the ventilator console: one SweepCanvas with stacked pressure (cmH2O), flow (L/min) and volume (mL) lanes colored by the console curve tokens, plus a toolbar with the sweep/scroll toggle, the time-window selector, the freeze button (the frozen trace exposes the measurement cursor) and the P-V / F-V loop toggle rendered by LoopCanvas. Reads the waveform ring buffer directly. v1.1: an optional frame-source `status`; with `no-data` the last curves stay greyed under an overlay (role status) with the source message or a generic default, and the zone exposes `data-source-status`. Depends on React, MUI icons, @shared/waveforms and the console config. v1.2 (W3, Bloque 1): the sweep and loop canvases draw at the display refresh rate (no 30 fps cap) and by time, DEFAULT_PLAYBACK_DELAY_MS behind the newest sample, so the curves advance smoothly between the 30 Hz data batches. v1.3 (Bloque 5, C3): optional `variant="july"`: the July toolbar (an optional `toolbarStart` slot for the signal chip, group "Zoom de las curvas" with Acercar / Alejar / Restablecer zoom over the same time windows, "Ventana N s", Bucles, Congelar, and "Opciones de trazado" holding the sweep/scroll toggle) and plots that take the remaining height of the column (at least 360 px), sized by the canvas ResizeObserver as before; the classic toolbar is unchanged.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,8 +10,13 @@
 */
 
 import AcUnitIcon from "@mui/icons-material/AcUnit";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import { useState } from "react";
+import RestoreIcon from "@mui/icons-material/Restore";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import { useId, useState } from "react";
+import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { DEFAULT_PLAYBACK_DELAY_MS, DISPLAY_REFRESH_FPS, LoopCanvas, SweepCanvas } from "@shared/waveforms";
 import type { LoopAxis, SweepChannel, WaveformDisplayMode, WaveformRingBuffer } from "@shared/waveforms";
@@ -37,6 +42,12 @@ export const CURVES_COPY = {
   loopFv: "F-V",
   pvLabel: "Bucle presión-volumen",
   fvLabel: "Bucle flujo-volumen",
+  zoom: "Zoom de las curvas",
+  zoomIn: "Acercar",
+  zoomOut: "Alejar",
+  zoomReset: "Restablecer zoom",
+  windowLabel: (seconds: number) => `Ventana ${seconds} s`,
+  plotOptions: "Opciones de trazado",
 } as const;
 
 export type LoopKind = "none" | "pv" | "fv";
@@ -79,6 +90,10 @@ export type CurvesZoneProps = {
   status?: ConsoleFrameStatus | undefined
   /** Overlay text while there is no data (default CONSOLE_NO_DATA_MESSAGE). */
   statusMessage?: string | undefined
+  /** v1.3: `july` draws the July toolbar and fills the column height. */
+  variant?: "classic" | "july"
+  /** v1.3 (July): first item of the toolbar, e.g. the signal status chip. */
+  toolbarStart?: ReactNode
   className?: string
 };
 
@@ -109,12 +124,170 @@ function ToggleGroup<T extends string | number>({ label, options, value, onChang
 
 const WINDOW_OPTIONS = CONSOLE_WINDOW_SECONDS.map((seconds) => ({ id: seconds as number, label: `${seconds} s` }));
 
-export function CurvesZone({ buffer, status = "live", statusMessage, className }: CurvesZoneProps) {
+const WINDOWS: readonly number[] = CONSOLE_WINDOW_SECONDS;
+
+/** The next window toward `direction` (-1: shorter = zoom in, +1: longer = zoom out), or the same at the ends. */
+export function stepWindow(seconds: number, direction: -1 | 1): number {
+  const index = WINDOWS.indexOf(seconds);
+  const next = WINDOWS[(index === -1 ? WINDOWS.indexOf(DEFAULT_CONSOLE_WINDOW_SECONDS) : index) + direction];
+
+  return next ?? seconds;
+}
+
+type JulyToolbarProps = {
+  toolbarStart: ReactNode
+  windowSeconds: number
+  onWindow: (seconds: number) => void
+  loop: LoopKind
+  onLoop: (loop: LoopKind) => void
+  frozen: boolean
+  onFreeze: () => void
+  mode: WaveformDisplayMode
+  onMode: (mode: WaveformDisplayMode) => void
+};
+
+function JulyToolbar({ toolbarStart, windowSeconds, onWindow, loop, onLoop, frozen, onFreeze, mode, onMode }: JulyToolbarProps) {
+  const [optionsOpen, setOptionsOpen] = useState(false);
+  const optionsId = useId();
+  const freezeLabel = frozen ? CURVES_COPY.resume : CURVES_COPY.freeze;
+
+  return (
+    <div className={cx(styles.toolbar, styles.julyToolbar)}>
+      {toolbarStart}
+      <div className={cx(styles.zoom)} role="group" aria-label={CURVES_COPY.zoom}>
+        <button
+          type="button"
+          className={cx(styles.zoomButton)}
+          aria-label={CURVES_COPY.zoomIn}
+          title={CURVES_COPY.zoomIn}
+          disabled={stepWindow(windowSeconds, -1) === windowSeconds}
+          onClick={() => onWindow(stepWindow(windowSeconds, -1))}
+        >
+          <ZoomInIcon fontSize="small" aria-hidden />
+        </button>
+        <button
+          type="button"
+          className={cx(styles.zoomButton)}
+          aria-label={CURVES_COPY.zoomOut}
+          title={CURVES_COPY.zoomOut}
+          disabled={stepWindow(windowSeconds, 1) === windowSeconds}
+          onClick={() => onWindow(stepWindow(windowSeconds, 1))}
+        >
+          <ZoomOutIcon fontSize="small" aria-hidden />
+        </button>
+        <button
+          type="button"
+          className={cx(styles.zoomButton)}
+          aria-label={CURVES_COPY.zoomReset}
+          title={CURVES_COPY.zoomReset}
+          disabled={windowSeconds === DEFAULT_CONSOLE_WINDOW_SECONDS}
+          onClick={() => onWindow(DEFAULT_CONSOLE_WINDOW_SECONDS)}
+        >
+          <RestoreIcon fontSize="small" aria-hidden />
+        </button>
+      </div>
+      <span className={cx(styles.windowLabel)}>{CURVES_COPY.windowLabel(windowSeconds)}</span>
+      <ToggleGroup label={CURVES_COPY.loops} options={LOOP_OPTIONS} value={loop} onChange={onLoop} />
+      <button type="button" className={cx(styles.freeze)} aria-label={freezeLabel} aria-pressed={frozen} onClick={onFreeze}>
+        {frozen ? <PlayArrowIcon fontSize="small" aria-hidden /> : <AcUnitIcon fontSize="small" aria-hidden />}
+        <span className={cx(styles.freezeText)}>{freezeLabel}</span>
+      </button>
+      <div className={cx(styles.plotOptions)}>
+        <button
+          type="button"
+          className={cx(styles.freeze)}
+          aria-label={CURVES_COPY.plotOptions}
+          title={CURVES_COPY.plotOptions}
+          aria-expanded={optionsOpen}
+          aria-controls={optionsId}
+          onClick={() => setOptionsOpen((value) => !value)}
+        >
+          <MoreHorizIcon fontSize="small" aria-hidden />
+        </button>
+        {optionsOpen ? (
+          <div id={optionsId} className={cx(styles.plotOptionsPanel)}>
+            <ToggleGroup label={CURVES_COPY.displayMode} options={DISPLAY_MODES} value={mode} onChange={onMode} />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+type PlotsProps = {
+  buffer: WaveformRingBuffer<CurveId>
+  status: ConsoleFrameStatus
+  statusMessage: string | undefined
+  mode: WaveformDisplayMode
+  windowSeconds: number
+  frozen: boolean
+  loopSetup: LoopSetup | null
+  className?: string | undefined
+};
+
+function Plots({ buffer, status, statusMessage, mode, windowSeconds, frozen, loopSetup, className }: PlotsProps) {
+  return (
+    <div className={cx(styles.plots, loopSetup ? styles.withLoop : undefined, className)}>
+      {status === "no-data" ? (
+        <p className={cx(styles.overlay)} role="status">{statusMessage ?? CONSOLE_NO_DATA_MESSAGE}</p>
+      ) : null}
+      <SweepCanvas
+        buffer={buffer}
+        channels={SWEEP_CHANNELS}
+        label={CURVES_COPY.chartLabel}
+        mode={mode}
+        windowSeconds={windowSeconds}
+        frozen={frozen}
+        fps={DISPLAY_REFRESH_FPS}
+        playbackDelayMs={DEFAULT_PLAYBACK_DELAY_MS}
+        className={cx(styles.sweep)}
+      />
+      {loopSetup ? (
+        <LoopCanvas
+          buffer={buffer}
+          x={loopSetup.x}
+          y={loopSetup.y}
+          colorVar={loopSetup.colorVar}
+          label={loopSetup.label}
+          frozen={frozen}
+          fps={DISPLAY_REFRESH_FPS}
+          playbackDelayMs={DEFAULT_PLAYBACK_DELAY_MS}
+          className={cx(styles.loop)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+export function CurvesZone({ buffer, status = "live", statusMessage, variant = "classic", toolbarStart, className }: CurvesZoneProps) {
   const [mode, setMode] = useState<WaveformDisplayMode>("sweep");
   const [windowSeconds, setWindowSeconds] = useState<number>(DEFAULT_CONSOLE_WINDOW_SECONDS);
   const [frozen, setFrozen] = useState(false);
   const [loop, setLoop] = useState<LoopKind>("none");
   const loopSetup = loop === "none" ? null : LOOPS[loop];
+  const plots = { buffer, status, statusMessage, mode, windowSeconds, frozen, loopSetup };
+
+  if (variant === "july") {
+    return (
+      <section className={cx(styles.zone, styles.julyZone, className)} aria-label={CURVES_COPY.title} data-source-status={status}>
+        <JulyToolbar
+          toolbarStart={toolbarStart}
+          windowSeconds={windowSeconds}
+          onWindow={setWindowSeconds}
+          loop={loop}
+          onLoop={setLoop}
+          frozen={frozen}
+          onFreeze={() => setFrozen((value) => !value)}
+          mode={mode}
+          onMode={setMode}
+        />
+        {frozen ? <p className={cx(styles.hint)}>{CURVES_COPY.freezeHint}</p> : null}
+        <div className={cx(styles.julyPlots)}>
+          <Plots {...plots} className={styles.julyFill} />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className={cx(styles.zone, className)} aria-label={CURVES_COPY.title} data-source-status={status}>
@@ -133,35 +306,7 @@ export function CurvesZone({ buffer, status = "live", statusMessage, className }
         </button>
       </div>
       {frozen ? <p className={cx(styles.hint)}>{CURVES_COPY.freezeHint}</p> : null}
-      <div className={cx(styles.plots, loopSetup ? styles.withLoop : undefined)}>
-        {status === "no-data" ? (
-          <p className={cx(styles.overlay)} role="status">{statusMessage ?? CONSOLE_NO_DATA_MESSAGE}</p>
-        ) : null}
-        <SweepCanvas
-          buffer={buffer}
-          channels={SWEEP_CHANNELS}
-          label={CURVES_COPY.chartLabel}
-          mode={mode}
-          windowSeconds={windowSeconds}
-          frozen={frozen}
-          fps={DISPLAY_REFRESH_FPS}
-          playbackDelayMs={DEFAULT_PLAYBACK_DELAY_MS}
-          className={cx(styles.sweep)}
-        />
-        {loopSetup ? (
-          <LoopCanvas
-            buffer={buffer}
-            x={loopSetup.x}
-            y={loopSetup.y}
-            colorVar={loopSetup.colorVar}
-            label={loopSetup.label}
-            frozen={frozen}
-            fps={DISPLAY_REFRESH_FPS}
-            playbackDelayMs={DEFAULT_PLAYBACK_DELAY_MS}
-            className={cx(styles.loop)}
-          />
-        ) : null}
-      </div>
+      <Plots {...plots} />
     </section>
   );
 }

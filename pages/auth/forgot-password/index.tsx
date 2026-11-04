@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Forgot password route
-* Descripción: Thin route for /auth/forgot-password: composes the public layout (no session guard) with the informational ForgotPasswordPage of the auth feature. Replaces the legacy MUI `sx` page rendered without the shell (B3.7). Depends on @features/auth and @shared/layouts/public-layout.
-* Versión: 1.0
+* Descripción: Thin route for /auth/forgot-password: composes the public layout (no session guard) with the informational ForgotPasswordPage of the auth feature. Replaces the legacy MUI `sx` page rendered without the shell (B3.7). Depends on @features/auth and @shared/layouts/public-layout. v1.1 (Bloque 5, D5): uses withAuthLayout (July brand background and light card island of the /auth/* pages).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,10 +12,10 @@
 import { ForgotPasswordPage } from "@features/auth";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull the AppShell into this chunk.
-import { withPublicLayout } from "@shared/layouts/public-layout";
+import { withAuthLayout } from "@shared/layouts/public-layout";
 
 const ForgotPasswordRoute: NextPageWithLayout = () => <ForgotPasswordPage />;
 
-ForgotPasswordRoute.getLayout = withPublicLayout;
+ForgotPasswordRoute.getLayout = withAuthLayout;
 
 export default ForgotPasswordRoute;

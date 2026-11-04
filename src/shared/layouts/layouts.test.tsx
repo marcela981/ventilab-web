@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Layouts and AppShell tests
-* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts. v1.4 (O5 operation): role homes /me (students) and /teacher (teachers and admins); the teacher navigation starts at "Panel docente" (/teacher) and shows "Estado del sistema" but no admin-only item; the admin navigation shows the "Administración" section subheader and its items. v1.5 (W1 Bloque 1): every role lands on /simulador (wrong-role redirects go there); the teacher navigation shows the "Panel docente" section with "Resumen" (/teacher) active; the "Simulador" item (/simulador) carries the device indicator; the user menu lists the role links in order (students: Mi resumen, Mis notas, Mis calificaciones, Mi grupo, Perfil; staff: Perfil) as anchors, then "Cerrar sesión". v1.6 (W1 Bloque 4): TeacherLayout and AdminLayout render the staff panel (PanelShell: "Navegación del panel", Dashboard active on /teacher, Estado del sistema for teachers, the admin-only items for admins); RoleShellLayout gives staff the panel and students the AppShell.
-* Versión: 1.6
+* Descripción: Verifies the guard behavior of the Student/Teacher/Admin layouts (redirect to login, wrong role to its landing route, content for the right role), the public layout without auth, and the AppShell (role-filtered nav, skip link, sign-out through the session, realtime status indicator, route error boundary). v1.1 (T11a): the user avatar shows the session image with the initials as fallback, and the student-only layout sends other roles to their landing route. v1.2 (T12 ventilator-lab): the Laboratorio item shows the device indicator. v1.3 (T12 review fix W1): the shell shows no indicator nobody fed (no invented device state), shows the one a feeder sets in the nav-indicators registry (tone + text) and declares the keys of the role's navigation as visible. Depends on vitest, Testing Library, next/router and next/link (mocked) and the session/realtime contexts. v1.4 (O5 operation): role homes /me (students) and /teacher (teachers and admins); the teacher navigation starts at "Panel docente" (/teacher) and shows "Estado del sistema" but no admin-only item; the admin navigation shows the "Administración" section subheader and its items. v1.5 (W1 Bloque 1): every role lands on /simulador (wrong-role redirects go there); the teacher navigation shows the "Panel docente" section with "Resumen" (/teacher) active; the "Simulador" item (/simulador) carries the device indicator; the user menu lists the role links in order (students: Mi resumen, Mis notas, Mis calificaciones, Mi grupo, Perfil; staff: Perfil) as anchors, then "Cerrar sesión". v1.6 (W1 Bloque 4): TeacherLayout and AdminLayout render the staff panel (PanelShell: "Navegación del panel", Dashboard active on /teacher, Estado del sistema for teachers, the admin-only items for admins); RoleShellLayout gives staff the panel and students the AppShell. v1.7 (Bloque 5, D7): the mobile drawer test counts the July label "Módulo de Enseñanza". v1.8 (Bloque 5, D12): the student user menu lists Perfil first. v1.9 (Bloque 5, §5.1): the July sidebar: the user card (profile link with the avatar image or initials and the role chip, "Opciones" menu with sign-out), the collapse toggle (aria-expanded, aria-controls, own localStorage key, restored on mount, avatar-only card, hidden version) and the plain divider before "Panel docente". v1.10 (Bloque 5, D5-D6): the auth variant of the public layout (light island, footer) and the neutral one without it.
+* Versión: 1.10
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +18,7 @@ import type { Role, SessionStatus } from "@shared/session/session.entity";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import { AppShell } from "./app-shell";
+import { PANEL_COLLAPSED_STORAGE_KEY, SIDEBAR_COLLAPSED_STORAGE_KEY } from "./use-collapsed-preference";
 import { NavIndicatorProvider, useNavIndicatorVisible, useSetNavIndicator } from "./nav-indicators";
 import type { NavIndicator } from "./nav-indicators";
 import { AdminLayout } from "./admin-layout";
@@ -74,6 +75,7 @@ function renderWith(value: SessionContextValue, ui: ReactNode, realtime?: Realti
 const content = <p>Contenido de la página</p>;
 
 beforeEach(() => {
+  window.localStorage.clear();
   router.pathname = "/teacher";
   router.asPath = "/teacher";
   router.replace.mockClear();
@@ -184,6 +186,22 @@ describe("PublicLayout", () => {
     expect(screen.getByRole("main")).toContainElement(screen.getByText("Contenido de la página"));
     expect(router.replace).not.toHaveBeenCalled();
   });
+
+  it("renders the auth variant as a light island on the brand background with the footer (D5, D6)", () => {
+    renderWith(sessionValue("unauthenticated"), <PublicLayout variant="auth">{content}</PublicLayout>);
+
+    const island = screen.getByText("Contenido de la página").closest("[data-surface='auth']");
+
+    expect(island).toHaveAttribute("data-mui-color-scheme", "light");
+    expect(screen.getByRole("main")).toContainElement(island as HTMLElement);
+    expect(screen.getByText(`© ${new Date().getFullYear()} VentyLab. Plataforma educativa de ventilación mecánica.`)).toBeInTheDocument();
+  });
+
+  it("keeps the neutral variant without the island", () => {
+    renderWith(sessionValue("unauthenticated"), <PublicLayout>{content}</PublicLayout>);
+
+    expect(document.querySelector("[data-surface]")).toBeNull();
+  });
 });
 
 describe("AppShell", () => {
@@ -196,40 +214,42 @@ describe("AppShell", () => {
     expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
   });
 
-  it("shows the session user's avatar image when present", () => {
+  it("shows the session user's avatar image in the sidebar user card when present", () => {
     renderWith(sessionValue("authenticated", "STUDENT", "https://cdn.example/ana.png"), <AppShell>{content}</AppShell>);
 
-    const button = screen.getByRole("button", { name: "Abrir menú de usuario" });
+    const card = screen.getByRole("link", { name: /Ana Torres/ });
 
-    expect(button.querySelector("img")).toHaveAttribute("src", "https://cdn.example/ana.png");
+    expect(card).toHaveAttribute("href", "/profile");
+    expect(card.querySelector("img")).toHaveAttribute("src", "https://cdn.example/ana.png");
   });
 
   it("falls back to the initials without an avatar image", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>);
 
-    const button = screen.getByRole("button", { name: "Abrir menú de usuario" });
+    const card = screen.getByRole("link", { name: /Ana Torres/ });
 
-    expect(button.querySelector("img")).toBeNull();
-    expect(button).toHaveTextContent("AT");
+    expect(card.querySelector("img")).toBeNull();
+    expect(card).toHaveTextContent("AT");
+    expect(card).toHaveTextContent("Estudiante");
   });
 
-  it("signs out through the session from the user menu", () => {
+  it("signs out through the session from the Opciones menu", () => {
     const value = sessionValue("authenticated", "STUDENT");
 
     renderWith(value, <AppShell>{content}</AppShell>);
-    fireEvent.click(screen.getByRole("button", { name: "Abrir menú de usuario" }));
+    fireEvent.click(screen.getByRole("button", { name: "Opciones" }));
     fireEvent.click(screen.getByRole("menuitem", { name: /Cerrar sesión/ }));
 
     expect(value.signOut).toHaveBeenCalledTimes(1);
   });
 
   it.each([
-    ["STUDENT", [["Mi resumen", "/me"], ["Mis notas", "/me/notes"], ["Mis calificaciones", "/me/grades"], ["Mi grupo", "/my-group"], ["Perfil", "/profile"]]],
+    ["STUDENT", [["Perfil", "/profile"], ["Mi resumen", "/me"], ["Mis notas", "/me/notes"], ["Mis calificaciones", "/me/grades"], ["Mi grupo", "/my-group"]]],
     ["TEACHER", [["Perfil", "/profile"]]],
     ["ADMIN", [["Perfil", "/profile"]]],
-  ] as const)("lists the %s user menu links in order, then Cerrar sesión (W1)", (role, links) => {
+  ] as const)("lists the %s Opciones menu links in order, then Cerrar sesión (W1, D12)", (role, links) => {
     renderWith(sessionValue("authenticated", role), <AppShell>{content}</AppShell>);
-    fireEvent.click(screen.getByRole("button", { name: "Abrir menú de usuario" }));
+    fireEvent.click(screen.getByRole("button", { name: "Opciones" }));
 
     const items = screen.getAllByRole("menuitem");
 
@@ -240,12 +260,51 @@ describe("AppShell", () => {
     expect(items.at(-1)).not.toHaveAttribute("href");
   });
 
+  it("collapses and expands the sidebar, persisting it under its own key (D13)", () => {
+    renderWith(sessionValue("authenticated", "TEACHER"), <AppShell>{content}</AppShell>);
+
+    const toggle = screen.getByRole("button", { name: "Contraer menú" });
+    const nav = screen.getByRole("navigation", { name: "Navegación principal" });
+
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(toggle).toHaveAttribute("aria-controls", nav.id);
+    expect(screen.getByText("VentyLab v0.1.0")).toBeInTheDocument();
+    fireEvent.click(toggle);
+
+    expect(screen.getByRole("button", { name: "Expandir menú" })).toHaveAttribute("aria-expanded", "false");
+    expect(window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)).toBe("1");
+    expect(window.localStorage.getItem(PANEL_COLLAPSED_STORAGE_KEY)).toBeNull();
+    // Icons only: the labels stay the accessible names, the card is the avatar button, the version hides.
+    expect(within(nav).getByRole("link", { name: "Módulo de Enseñanza" })).toHaveAttribute("href", "/learn");
+    expect(screen.getByRole("button", { name: "Opciones de Ana Torres" })).toBeInTheDocument();
+    expect(screen.queryByText("VentyLab v0.1.0")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Expandir menú" }));
+    expect(window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)).toBeNull();
+  });
+
+  it("restores the collapsed sidebar from localStorage", () => {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, "1");
+    renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>);
+
+    expect(screen.getByRole("button", { name: "Expandir menú" })).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("separates the staff Panel docente item with a plain divider", () => {
+    renderWith(sessionValue("authenticated", "TEACHER"), <AppShell>{content}</AppShell>);
+
+    const nav = screen.getByRole("navigation", { name: "Navegación principal" });
+    const panel = within(nav).getByRole("link", { name: "Panel docente" });
+
+    expect(panel.previousElementSibling).toHaveClass("MuiDivider-root");
+    expect(within(nav).queryByText("Panel docente", { selector: ".MuiListSubheader-root" })).not.toBeInTheDocument();
+  });
+
   it("opens the mobile navigation drawer", () => {
     renderWith(sessionValue("authenticated", "STUDENT"), <AppShell>{content}</AppShell>);
     fireEvent.click(screen.getByRole("button", { name: "Abrir menú de navegación" }));
 
     // The modal drawer hides the rest of the page from the accessibility tree, so count by text.
-    expect(screen.getAllByText("Enseñanza")).toHaveLength(2);
+    expect(screen.getAllByText("Módulo de Enseñanza")).toHaveLength(2);
   });
 
   it.each<RealtimeStatus>(["disconnected", "unauthorized"])("shows the realtime indicator when %s", (status) => {

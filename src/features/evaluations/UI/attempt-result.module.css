@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt result styles
-* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July result band (passed, failed, pending).
-* Versión: 1.1
+* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July result band (passed, failed, pending). vX.x (Bloque 5): July skin: status, summary and question cards on glass, reviewed answers on green/red translucent tints, the teacher explanation with the #00a1db left edge, the feedback block on the raised surface and the verdict band tinted with its own color.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -55,9 +55,9 @@
   gap: var(--vl-space-3);
   min-width: 0;
   padding: var(--vl-space-5);
-  border: 1px solid var(--vl-color-border);
+  border: 1px solid var(--vl-glass-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-bg);
   color: var(--vl-color-text);
 }
 
@@ -142,6 +142,7 @@
 
 .reviewCorrect {
   border-color: var(--vl-color-success);
+  background: var(--vl-eval-correct-bg);
 }
 
 .reviewCorrect > svg {
@@ -150,6 +151,7 @@
 
 .reviewWrong {
   border-color: var(--vl-color-error);
+  background: var(--vl-eval-wrong-bg);
 }
 
 .reviewWrong > svg {
@@ -173,10 +175,13 @@
   font-size: 0.875rem;
 }
 
+/* July explanation box: #00a1db left edge. */
 .explanation {
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
+  padding: var(--vl-space-2) 0 var(--vl-space-2) var(--vl-space-4);
+  border-left: 4px solid var(--vl-eval-explanation-border);
 }
 
 .blockTitle {
@@ -220,7 +225,7 @@
   gap: var(--vl-space-2);
   padding: var(--vl-space-3) var(--vl-space-4);
   border-radius: var(--vl-radius-md);
-  background: var(--vl-color-hover);
+  background: var(--vl-color-surface-raised);
 }
 
 .feedbackHeader {
@@ -259,7 +264,8 @@
   border: 1px solid currentColor;
   border-left-width: 6px;
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  /* Translucent tint of the verdict color (currentColor: success, error or warning). */
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
 .bandPassed {

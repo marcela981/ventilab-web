@@ -5,7 +5,8 @@
 *   the worker and the barrel never load console code. Depends on the settings binding module.
 *   v1.1 (T12): the engine output ↔ console mapping (samples, frame hub, metrics, vitals, trends, alarms, target
 *   ranges), moved from the simulator for the case editor local preview.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C4): the cycle flow extremes fold (cycle-flow.ts).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -34,4 +35,6 @@ export {
   toConsoleSamples,
   toPatientValues,
 } from "./frame-binding";
-export type { ConsoleFrameHub, PatientTrends, PatientValues } from "./frame-binding";
+export type { ConsoleFrameHub, CycleFlowExtremes, PatientTrends, PatientValues } from "./frame-binding";
+export { foldCycleFlow, INITIAL_CYCLE_FLOW, MAX_KEPT_SAMPLES } from "./cycle-flow";
+export type { CycleFlow } from "./cycle-flow";

@@ -11,7 +11,8 @@
 *   default (`canControl` false; control comes with T7/T8) with an optional reason, limits and confirm callback. Pure.
 *   v1.1: ΔP described as Pplat minus the end-expiratory PEEP (not a total PEEP). v1.2 (T8): optional `modeOptionsFor(reportedMode)` narrows the mode selector to the modes a command may target. Depends on the breath metrics, the reported state and the console contract. v1.3 (T9): optional `pendingResetKey` passed to the console permissions.
 *   v1.4 (W10, Bloque 1): optional alarm limits and their change callback (the AlarmLimitsPanel of the real console).
-* Versión: 1.4
+*   v1.5 (Bloque 5, C4): the derived metrics add Pmedia and the flow extremes of the last breath (July value cards).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -81,6 +82,9 @@ export function toDerivedMetrics(metrics: BreathMetrics): ConsoleMetrics {
     minuteVolume: { value: metrics.minuteVolume, derived: true },
     totalRespiratoryRate: { value: metrics.respiratoryRate, derived: true },
     ieRatio: { value: metrics.ieRatio, derived: true },
+    meanPressure: { value: metrics.meanPressure, derived: true },
+    peakInspiratoryFlow: { value: metrics.peakInspiratoryFlow, derived: true },
+    peakExpiratoryFlow: { value: metrics.peakExpiratoryFlow, derived: true },
   };
 }
 

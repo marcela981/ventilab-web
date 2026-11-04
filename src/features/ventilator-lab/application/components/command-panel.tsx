@@ -11,7 +11,11 @@
 *   explanation) while an unreported block can be lifted. v1.2 (T8 review fix 3, W1): the notice right above the
 *   button names each accepted value the device does not report and what the next command would send (built by the
 *   hook); the hint says that a later change keeping a value different from an accepted one must be repeated to be sent.
-* Versión: 1.2
+*   v1.3 (Bloque 5, C8): `collapsible` (the July real monitor, under the curves): the title is the button
+*   "Comandos recientes (n)" (aria-expanded, closed by default) with the latest command on its right; the notice, the
+*   busy reason and «Usar los valores…» stay visible while it is closed, and the panel opens by itself when that
+*   action becomes available; the hint and the list show only while it is open.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,8 +23,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Button from "@mui/material/Button";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { cx } from "@shared/lib/class-names";
 import { formatDateTime } from "@shared/lib/format";
 import { commandOutcomeReason, commandStatusLabel } from "../entities/command-messages";
@@ -30,6 +36,8 @@ import styles from "../../UI/lab-commands.module.css";
 // TODO(i18n): move to a ventilator-lab namespace in src/i18n.
 export const COMMAND_PANEL_COPY = {
   title: "Comandos recientes",
+  titleCount: (count: number) => `Comandos recientes (${count})`,
+  latest: (summary: string, status: string) => `Último: ${summary} · ${status}`,
   loading: "Cargando los comandos…",
   failed: "No se pudieron cargar los comandos recientes.",
   empty: "Todavía no se enviaron comandos en esta reserva.",
@@ -47,6 +55,8 @@ export type CommandPanelProps = {
   recentFailed: boolean
   /** W5: given only while an unreported block can be lifted. */
   onUseReported?: () => void
+  /** v1.3: the July disclosure (closed by default). */
+  collapsible?: boolean
 };
 
 function NoticeView({ notice }: { notice: CommandNotice }) {
@@ -66,21 +76,29 @@ function reasonOf(item: RecentCommandItem): string | null {
   return item.status === "REJECTED" || item.status === "TIMEOUT" ? commandOutcomeReason(item.status, item.reason) : null;
 }
 
-export function CommandPanel({ notice, busyReason, recent, recentLoading, recentFailed, onUseReported }: CommandPanelProps) {
+export function CommandPanel({ notice, busyReason, recent, recentLoading, recentFailed, onUseReported, collapsible = false }: CommandPanelProps) {
   const titleId = useId();
+  const bodyId = useId();
+  const [expanded, setExpanded] = useState(false);
+  const [lifted, setLifted] = useState(false);
+  const canLift = onUseReported !== undefined;
 
-  return (
-    <section className={cx(styles.panel)} aria-labelledby={titleId} data-testid="lab-command-panel">
-      {notice ? <NoticeView notice={notice} /> : null}
-      {busyReason ? <p className={cx(styles.busy)} role="status">{busyReason}</p> : null}
-      {onUseReported ? (
-        <div className={cx(styles.useReported)}>
-          <p className={cx(styles.hint)}>{COMMAND_PANEL_COPY.useReportedHint}</p>
-          <Button variant="outlined" size="small" onClick={onUseReported}>{COMMAND_PANEL_COPY.useReported}</Button>
-        </div>
-      ) : null}
+  // «Usar los valores…» became available: open the disclosure once (its hint lives in the body).
+  if (collapsible && canLift !== lifted) {
+    setLifted(canLift);
+
+    if (canLift) {
+      setExpanded(true);
+    }
+  }
+
+  const open = !collapsible || expanded;
+  const latest = recent[0];
+
+  const body = (
+    <>
       <p className={cx(styles.hint)}>{COMMAND_PANEL_COPY.hint}</p>
-      <h2 id={titleId} className={cx(styles.title)}>{COMMAND_PANEL_COPY.title}</h2>
+      {collapsible ? null : <h2 id={titleId} className={cx(styles.title)}>{COMMAND_PANEL_COPY.title}</h2>}
       {recentLoading ? <p className={cx(styles.muted)}>{COMMAND_PANEL_COPY.loading}</p> : null}
       {recentFailed && recent.length === 0 ? <p className={cx(styles.muted)}>{COMMAND_PANEL_COPY.failed}</p> : null}
       {!recentLoading && !recentFailed && recent.length === 0 ? <p className={cx(styles.muted)}>{COMMAND_PANEL_COPY.empty}</p> : null}
@@ -106,6 +124,35 @@ export function CommandPanel({ notice, busyReason, recent, recentLoading, recent
           })}
         </ol>
       ) : null}
+    </>
+  );
+
+  return (
+    <section className={cx(styles.panel)} aria-labelledby={titleId} data-testid="lab-command-panel">
+      {notice ? <NoticeView notice={notice} /> : null}
+      {busyReason ? <p className={cx(styles.busy)} role="status">{busyReason}</p> : null}
+      {onUseReported ? (
+        <div className={cx(styles.useReported)}>
+          <p className={cx(styles.hint)}>{COMMAND_PANEL_COPY.useReportedHint}</p>
+          <Button variant="outlined" size="small" onClick={onUseReported}>{COMMAND_PANEL_COPY.useReported}</Button>
+        </div>
+      ) : null}
+      {collapsible ? (
+        <h2 id={titleId} className={cx(styles.disclosureTitle)}>
+          <button
+            type="button"
+            className={cx(styles.disclosure)}
+            aria-expanded={expanded}
+            aria-controls={bodyId}
+            onClick={() => setExpanded((value) => !value)}
+          >
+            {expanded ? <ExpandMoreIcon fontSize="small" aria-hidden /> : <ChevronRightIcon fontSize="small" aria-hidden />}
+            {COMMAND_PANEL_COPY.titleCount(recent.length)}
+          </button>
+          {latest ? <span className={cx(styles.latest)}>{COMMAND_PANEL_COPY.latest(latest.summary, commandStatusLabel(latest.status))}</span> : null}
+        </h2>
+      ) : null}
+      {collapsible ? <div id={bodyId} className={cx(styles.disclosureBody)} hidden={!open}>{body}</div> : body}
     </section>
   );
 }

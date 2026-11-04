@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LevelStepper
-* Descripción: Levels of one Currículo accordion as a vertical stepper (W4, Bloque 2; July LevelStepper): each step has a marker (its number, a check when completed, a lock when locked), the level title, its status chip (July texts: Completado, En progreso, Sin iniciar, Bloqueado), description, the backend progress bar with "x % · x/y módulos", and the module card grid. A level locked for a student shows the lock and "Completa el nivel anterior para desbloquear" (or the missing prerequisites by name) and no modules, like July (the locked level does not expand). Staff are never locked, see drafts with "Borrador" and, in edit mode, "Editar en el CMS" on each level. Each level is an anchor (level-<id>) for the deep links. Depends on MUI, the curriculum view selectors, the learning URLs, the ModuleCard and the curriculum CSS Module. v0.2 (Bloque 3): optional moduleAction passes an extra action to each module card.
-* Versión: 0.2
+* Descripción: Levels of one Currículo accordion as a vertical stepper (W4, Bloque 2; July LevelStepper): each step has a marker (its number, a check when completed, a lock when locked), the level title, its status chip (July texts: Completado, En progreso, Sin iniciar, Bloqueado), description, the backend progress bar with "x % · x/y módulos", and the module card grid. A level locked for a student shows the lock and "Completa el nivel anterior para desbloquear" (or the missing prerequisites by name) and no modules, like July (the locked level does not expand). Staff are never locked, see drafts with "Borrador" and, in edit mode, "Editar en el CMS" on each level. Each level is an anchor (level-<id>) for the deep links. Depends on MUI, the curriculum view selectors, the learning URLs, the ModuleCard and the curriculum CSS Module. v0.2 (Bloque 3): optional moduleAction passes an extra action to each module card. v0.3 (Bloque 5): each step carries data-tone (July LevelStepper colors: prerequisite grey for the Prerequisitos accordion, otherwise beginner, intermediate, advanced by position) for its marker, title and bar; the status chip carries data-status (En progreso filled cyan).
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,7 +47,17 @@ export type LevelStepperProps = {
   editMode: boolean
   // Extra action of each module card, composed by the curriculum tab.
   moduleAction?: ((module: CurriculumModule, state: ModuleCardState) => ReactNode) | undefined
+  // Levels of the Prerequisitos accordion: grey tone instead of the beginner → advanced ramp.
+  prerequisite?: boolean | undefined
 };
+
+type LevelTone = "prereq" | "beginner" | "intermediate" | "advanced";
+
+const LEVEL_TONES: LevelTone[] = ["beginner", "intermediate", "advanced"];
+
+// July colored the levels by difficulty; the tree has no difficulty key, so the position in the track stands for it.
+const levelTone = (index: number, prerequisite: boolean): LevelTone =>
+  (prerequisite ? "prereq" : LEVEL_TONES[Math.min(index, LEVEL_TONES.length - 1)] ?? "advanced");
 
 type LevelStepProps = Omit<LevelStepperProps, "levels"> & {
   level: CurriculumLevel
@@ -55,7 +65,7 @@ type LevelStepProps = Omit<LevelStepperProps, "levels"> & {
   index: number
 };
 
-function LevelStep({ level, previous, index, summary, isStaff, editMode, moduleAction }: LevelStepProps) {
+function LevelStep({ level, previous, index, summary, isStaff, editMode, moduleAction, prerequisite = false }: LevelStepProps) {
   const headingId = `${levelAnchorId(level.id)}-title`;
   const studentLocked = level.locked && !isStaff;
   const cards = level.modules.map((module) => {
@@ -69,7 +79,7 @@ function LevelStep({ level, previous, index, summary, isStaff, editMode, moduleA
   const lockText = studentLocked ? levelLockText(level, previous) : null;
 
   return (
-    <li id={levelAnchorId(level.id)} className={cx(styles.step)} data-status={status} aria-labelledby={headingId}>
+    <li id={levelAnchorId(level.id)} className={cx(styles.step)} data-status={status} data-tone={levelTone(index, prerequisite)} aria-labelledby={headingId}>
       <span className={cx(styles.stepMarker)} aria-hidden="true">
         {status === "completed" ? <CheckIcon fontSize="small" /> : null}
         {status === "locked" ? <LockIcon fontSize="small" /> : null}
@@ -79,7 +89,7 @@ function LevelStep({ level, previous, index, summary, isStaff, editMode, moduleA
         <div className={cx(styles.stepHeader)}>
           <h4 id={headingId} className={cx(styles.levelTitle)}>{level.title}</h4>
           <div className={cx(styles.badges)}>
-            <span className={cx(styles.badge, status === "completed" ? styles.badgeSuccess : undefined)}>
+            <span className={cx(styles.badge, styles.levelStatus, status === "completed" ? styles.badgeSuccess : undefined)} data-status={status}>
               {status === "locked" ? <LockIcon fontSize="inherit" aria-hidden="true" /> : null}
               {LEVEL_STEPPER_COPY.status[status]}
             </span>
@@ -138,7 +148,7 @@ function LevelStep({ level, previous, index, summary, isStaff, editMode, moduleA
   );
 }
 
-export function LevelStepper({ levels, summary, isStaff, editMode, moduleAction }: LevelStepperProps) {
+export function LevelStepper({ levels, summary, isStaff, editMode, moduleAction, prerequisite }: LevelStepperProps) {
   return (
     <ol className={cx(styles.stepper)}>
       {levels.map((level, index) => (
@@ -151,6 +161,7 @@ export function LevelStepper({ levels, summary, isStaff, editMode, moduleAction 
           isStaff={isStaff}
           editMode={editMode}
           moduleAction={moduleAction}
+          prerequisite={prerequisite}
         />
       ))}
     </ol>

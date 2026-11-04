@@ -1,0 +1,285 @@
+/*
+* Funcionalidad: July console layout styles
+* Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed). v0.3 (Bloque 5, C6): smaller logos below a 1100 px console. v0.4 (Bloque 5, C8): the root is a growing flex item (the host is a flex column with a min-height): the centre (input row, alarms, curves ≥ 360 px, footer) sizes the row, the side columns are size-contained and scroll inside it, so with banners or a short host the page scrolls instead of clipping the curves.
+* Versión: 0.4
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  container: vl-monitor / inline-size;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+  color: var(--vl-console-text);
+  background: var(--vl-console-bg);
+}
+
+.notice {
+  display: none;
+  margin: 0;
+  padding: var(--vl-space-2) var(--vl-space-3);
+  font: var(--mui-font-body2);
+  background: var(--vl-console-pending-bg);
+  border: 1px solid var(--vl-console-pending);
+  border-radius: var(--vl-radius-md);
+}
+
+.header {
+  flex: none;
+  min-width: 0;
+}
+
+.grid {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 16.25rem minmax(0, 1fr) 15.625rem;
+  grid-template-areas: "left centre right";
+  gap: var(--vl-space-3);
+}
+
+@container vl-monitor (max-width: 1099.98px) {
+  .grid {
+    grid-template-columns: 15rem minmax(0, 1fr) 14.375rem;
+    gap: var(--vl-space-2);
+  }
+}
+
+.column {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vl-scrollbar-thumb) transparent;
+}
+
+.left,
+.right {
+  /* Their content never sizes the row: the centre (curves ≥ 360 px) does, and they scroll inside it. */
+  contain: size;
+}
+
+.left {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding-right: var(--vl-space-1);
+}
+
+.centre {
+  grid-area: centre;
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  overflow: hidden;
+}
+
+.right {
+  grid-area: right;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--vl-space-2) + 2px);
+  padding: calc(var(--vl-space-2) + 2px) var(--vl-space-3);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-lg);
+}
+
+.logos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.logoVentyLab {
+  display: block;
+  height: var(--vl-space-8);
+  width: auto;
+  max-width: 100%;
+}
+
+.logoUnivalle {
+  display: block;
+  width: 11.25rem;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 1280: smaller logos leave the height to the value cards (after the base rules, so it wins). */
+@container vl-monitor (max-width: 1099.98px) {
+  .logoVentyLab {
+    width: 9.25rem;
+    height: calc(var(--vl-space-8) * 0.625);
+  }
+
+  .logoUnivalle {
+    width: 9rem;
+  }
+}
+
+.rightHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-1) var(--vl-space-2);
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.rightHead strong {
+  color: var(--vl-console-text);
+}
+
+.readOnly {
+  padding: 0 var(--vl-space-2);
+  color: var(--vl-console-text);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-pill);
+}
+
+.hint {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+/* ---- Value cards ---- */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--vl-space-1) + 2px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  min-width: 0;
+}
+
+.cardList {
+  margin: 0;
+}
+
+.cardsZone {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.cardsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.cardsButton,
+.adjustButton,
+.dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: transparent;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  cursor: pointer;
+}
+
+.cardsButton[aria-pressed="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.cardsButton:disabled,
+.adjustButton:disabled {
+  color: var(--vl-console-text-muted);
+  cursor: not-allowed;
+}
+
+.cardsButton:focus-visible,
+.adjustButton:focus-visible,
+.dragHandle:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.adjustCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.adjustCard[data-hidden="true"] > dl {
+  opacity: 0.45;
+}
+
+.adjustTools {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+}
+
+.adjustButton,
+.dragHandle {
+  min-width: var(--vl-space-6);
+  padding: 0;
+}
+
+.dragHandle {
+  cursor: grab;
+}
+
+.hiddenTag {
+  margin-left: auto;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+/* Short screens: the page scrolls, the columns grow with their content. */
+@media (max-height: 699.98px) {
+  .column {
+    overflow: visible;
+  }
+
+  .left,
+  .right {
+    contain: none;
+  }
+}
+
+/* Small screens: the columns stack (curves first) under the notice. */
+@media (max-width: 1023.98px) {
+  .notice {
+    display: block;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "centre"
+      "left"
+      "right";
+  }
+
+  .column {
+    overflow: visible;
+  }
+
+  .left,
+  .right {
+    contain: none;
+  }
+}

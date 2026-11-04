@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Runtime performance of /learn and the lesson viewer
-* Descripción: Measures, as the student and with CPU throttling ×PERF_CPU_RATE (4) through CDP, three learning screens on a production build: /learn (section cards), /learn/[sectionId] (level cards with their modules) and the lesson viewer (article + first content block), plus PERF_NEXT_CLICKS (1) "Siguiente" clicks inside the viewer (next Page of the same lesson; PERF_SCREENS limits the screens, PERF_DEBUG=1 logs each step). For every navigation it records with the CDP Network domain the requests until the first useful content (API calls and JS chunks, from the network or from the HTTP cache) and the request depth (sequential waves: a request belongs to wave 1 + the highest wave among the requests of the same kind that had finished before it started), the time from the navigation start (or the click) to the first useful content measured in the page with a MutationObserver, the long tasks > 50 ms (PerformanceObserver) until that moment and until PERF_SETTLE_MS later, and every request fired in the settle window (e.g. the progress POST and a curriculum tree re-fetch after "Siguiente"). Cold = new browser context (empty HTTP cache, saved session); warm = second full visit of the same URL in that context. Runs one discarded warm-up round, then PERF_RUNS rounds, and writes <PERF_OUT_DIR>/<PERF_LABEL>-learn.json with every run and the medians. Depends on @playwright/test, Node and the perf support helpers. v0.2 (W11, Bloque 2): /learn and /learn/[sectionId] no longer have section cards (Currículo tab with accordions; /learn/[sectionId] redirects to /learn?tab=curriculo&section=<id>), so with PERF_CONTENT=after (default) their useful content is the first module card of the open accordion ([role="region"]:not([hidden]) ul[aria-label^="Módulos de"] > li); PERF_CONTENT=baseline keeps the pre-Block 2 selectors.
-* Versión: 0.2
+* Descripción: Measures, as the student and with CPU throttling ×PERF_CPU_RATE (4) through CDP, three learning screens on a production build: /learn (section cards), /learn/[sectionId] (level cards with their modules) and the lesson viewer (article + first content block), plus PERF_NEXT_CLICKS (1) "Siguiente" clicks inside the viewer (next Page of the same lesson; PERF_SCREENS limits the screens, PERF_DEBUG=1 logs each step). For every navigation it records with the CDP Network domain the requests until the first useful content (API calls and JS chunks, from the network or from the HTTP cache) and the request depth (sequential waves: a request belongs to wave 1 + the highest wave among the requests of the same kind that had finished before it started), the time from the navigation start (or the click) to the first useful content measured in the page with a MutationObserver, the long tasks > 50 ms (PerformanceObserver) until that moment and until PERF_SETTLE_MS later, and every request fired in the settle window (e.g. the progress POST and a curriculum tree re-fetch after "Siguiente"). Cold = new browser context (empty HTTP cache, saved session); warm = second full visit of the same URL in that context. Runs one discarded warm-up round, then PERF_RUNS rounds, and writes <PERF_OUT_DIR>/<PERF_LABEL>-learn.json with every run and the medians. Depends on @playwright/test, Node and the perf support helpers. v0.2 (W11, Bloque 2): /learn and /learn/[sectionId] no longer have section cards (Currículo tab with accordions; /learn/[sectionId] redirects to /learn?tab=curriculo&section=<id>), so with PERF_CONTENT=after (default) their useful content is the first module card of the open accordion ([role="region"]:not([hidden]) ul[aria-label^="Módulos de"] > li); PERF_CONTENT=baseline keeps the pre-Block 2 selectors. v0.3 (Bloque 5): PERF_VIEWPORT (e.g. 1280x720; default 1920x1080, a non-default viewport is part of the file name: <PERF_LABEL>-<W>x<H>-learn.json) and a tab switch on /learn after the warm visit: PERF_LEARN_TABS (inicio,progreso,curriculo) are clicked in order and each one is measured from the click to its first loaded panel content (the visible panel's first child without a busy skeleton inside), with the same request and long-task accounting as "Siguiente".
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { type Browser, type CDPSession, type Page, test } from "@playwright/test";
 import { STUDENT_STORAGE_STATE } from "../support/auth";
+import { parseViewport } from "./perf-scenarios";
 import { currentCommit } from "./perf-support";
 
 const LABEL = process.env.PERF_LABEL ?? "baseline";
@@ -29,6 +30,12 @@ const LESSON_ID = process.env.PERF_LESSON_ID ?? "ebdf6985-39a6-59c7-b94d-f5127dc
 const NEXT_CLICKS = Number(process.env.PERF_NEXT_CLICKS ?? 1);
 const SELECTED = process.env.PERF_SCREENS?.split(",").map((id) => id.trim()).filter((id) => id.length > 0);
 const ACTION_TIMEOUT_MS = 30_000;
+const VIEWPORT_OVERRIDE = parseViewport(process.env.PERF_VIEWPORT);
+const VIEWPORT = VIEWPORT_OVERRIDE ?? { width: 1920, height: 1080 };
+// A non-default viewport is part of the file name, so the 1280 and 1920 runs of one label never overwrite each other.
+const VIEWPORT_SUFFIX = VIEWPORT_OVERRIDE === null ? "" : `-${VIEWPORT.width}x${VIEWPORT.height}`;
+// Tabs clicked in order on /learn after the warm visit (Currículo is the default tab, so it comes back last).
+const LEARN_TABS = (process.env.PERF_LEARN_TABS ?? "inicio,progreso,curriculo").split(",").map((id) => id.trim()).filter((id) => id.length > 0);
 
 function log(message: string): void {
   if (process.env.PERF_DEBUG) {
@@ -44,10 +51,13 @@ const LEARN_HOME_CONTENT = CONTENT_DEFINITION === "baseline" ? "ul[aria-label=\"
 
 const VIEWER_CONTENT = "article[aria-labelledby=\"lesson-page-title\"] section[data-block-type]";
 
-type Screen = { id: string, url: string, selector: string, nextClicks: number };
+type Screen = { id: string, url: string, selector: string, nextClicks: number, tabs?: readonly string[] };
+
+// First child of the visible panel with no busy skeleton inside (the Suspense fallback and the panels' loading grids are CardSkeleton, aria-busy="true").
+const tabContent = (tab: string): string => `#learn-panel-${tab}:not([hidden]) > :not([aria-busy="true"]):not(:has([aria-busy="true"]))`;
 
 const SCREENS: readonly Screen[] = [
-  { id: "learn-home", url: "/learn", selector: LEARN_HOME_CONTENT, nextClicks: 0 },
+  { id: "learn-home", url: "/learn", selector: LEARN_HOME_CONTENT, nextClicks: 0, tabs: LEARN_TABS },
   { id: "learn-section", url: `/learn/${SECTION_ID}`, selector: MODULE_CARDS, nextClicks: 0 },
   { id: "lesson-viewer", url: `/learn/modules/${MODULE_ID}/lessons/${LESSON_ID}/1`, selector: VIEWER_CONTENT, nextClicks: NEXT_CLICKS },
 ];
@@ -310,7 +320,7 @@ function buildResult(requests: readonly NetRequest[], marks: InPageMarks, startP
 }
 
 async function openThrottledPage(browser: Browser, screen: Screen): Promise<{ page: Page, cdp: CDPSession, net: ReturnType<typeof recordNetwork>, close: () => Promise<void> }> {
-  const context = await browser.newContext({ storageState: STUDENT_STORAGE_STATE, viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
+  const context = await browser.newContext({ storageState: STUDENT_STORAGE_STATE, viewport: VIEWPORT, deviceScaleFactor: 1 });
   const page = await context.newPage();
 
   await page.addInitScript(installLearnProbe, { name: "content", selector: screen.selector });
@@ -352,7 +362,24 @@ async function clickNext(page: Page, net: ReturnType<typeof recordNetwork>, inde
   return { from: new URL(from).pathname, to: new URL(page.url()).pathname, ...buildResult(net.requests, marks, clickPerf, name) };
 }
 
-type RoundResult = { cold: NavigationResult, warm: NavigationResult, next: (NavigationResult & { from: string, to: string })[] };
+async function clickTab(page: Page, net: ReturnType<typeof recordNetwork>, tab: string): Promise<NavigationResult & { tab: string }> {
+  const name = `tab-${tab}`;
+
+  await page.evaluate(({ markName, selector }) => {
+    (window as LearnPerfWindow).__learnPerf?.watch(markName, selector);
+  }, { markName: name, selector: tabContent(tab) });
+  net.reset();
+  log(`tab ${tab}`);
+  await page.locator(`#learn-tab-${tab}`).click({ timeout: ACTION_TIMEOUT_MS });
+  await page.waitForFunction((markName) => (window as LearnPerfWindow).__learnPerf?.marks[markName] !== undefined, name, { timeout: CONTENT_TIMEOUT_MS });
+  await page.waitForTimeout(SETTLE_MS);
+  const marks = await readMarks(page);
+  const clickPerf = marks.clicks.at(-1) ?? 0;
+
+  return { tab, ...buildResult(net.requests, marks, clickPerf, name) };
+}
+
+type RoundResult = { cold: NavigationResult, warm: NavigationResult, next: (NavigationResult & { from: string, to: string })[], tabs: (NavigationResult & { tab: string })[] };
 
 async function round(browser: Browser, screen: Screen): Promise<RoundResult> {
   const { page, net, close } = await openThrottledPage(browser, screen);
@@ -366,7 +393,13 @@ async function round(browser: Browser, screen: Screen): Promise<RoundResult> {
       next.push(await clickNext(page, net, index));
     }
 
-    return { cold, warm, next };
+    const tabs: RoundResult["tabs"] = [];
+
+    for (const tab of screen.tabs ?? []) {
+      tabs.push(await clickTab(page, net, tab));
+    }
+
+    return { cold, warm, next, tabs };
   } finally {
     await close();
   }
@@ -424,10 +457,16 @@ test("learn · runtime baseline (CPU throttled)", async ({ browser }) => {
       ...medians(rounds.map((item) => item.next[index]).filter((item): item is NavigationResult & { from: string, to: string } => item !== undefined)),
     }));
 
+    const tabMedians = (screen.tabs ?? []).map((tab, index) => ({
+      tab,
+      contentSelector: tabContent(tab),
+      ...medians(rounds.map((item) => item.tabs[index]).filter((item): item is NavigationResult & { tab: string } => item !== undefined)),
+    }));
+
     screens[screen.id] = {
       url: screen.url,
       contentSelector: screen.selector,
-      median: { cold: medians(rounds.map((item) => item.cold)), warm: medians(rounds.map((item) => item.warm)), next: nextMedians },
+      median: { cold: medians(rounds.map((item) => item.cold)), warm: medians(rounds.map((item) => item.warm)), next: nextMedians, tabs: tabMedians },
       runs: rounds,
     };
   }
@@ -444,7 +483,7 @@ test("learn · runtime baseline (CPU throttled)", async ({ browser }) => {
       storageState: STUDENT_STORAGE_STATE,
       webCommit: currentCommit(),
       browser: `chromium ${browser.version()}`,
-      viewport: { width: 1920, height: 1080 },
+      viewport: VIEWPORT,
       measuredAt: new Date().toISOString(),
       definitions: {
         contentMs: "page performance.now() at the first visible match of the content selector (MutationObserver); 0 = navigation start (cold/warm) or the click (next)",
@@ -452,11 +491,12 @@ test("learn · runtime baseline (CPU throttled)", async ({ browser }) => {
         depthWithChunks: "same rule over document + JS chunks + API requests served from the network (cache hits excluded) until the content; an upper bound, since a request started later for an unrelated reason also counts as a new wave",
         warm: "second full visit (page.goto) of the same URL in the same browser context: HTTP cache warm, SWR memory cache empty",
         next: "client-side navigation by clicking Siguiente in the viewer",
+        tabs: "click on a /learn tab (after the warm visit, in PERF_LEARN_TABS order) until the first child of its visible panel without a busy skeleton inside; a panel visited before stays mounted",
       },
     },
     screens,
   };
 
   mkdirSync(OUT_DIR, { recursive: true });
-  writeFileSync(join(OUT_DIR, `${LABEL}-learn.json`), `${JSON.stringify(result, null, 2)}\n`);
+  writeFileSync(join(OUT_DIR, `${LABEL}${VIEWPORT_SUFFIX}-learn.json`), `${JSON.stringify(result, null, 2)}\n`);
 });

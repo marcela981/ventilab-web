@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab MUI theme tests
-* Descripción: Verifies the cssVariables theme keeps the official light identity: CSS variables enabled, primary.main, shape radius, custom palette keys, the CSS variables tokens.css relies on, and the legacy color helpers. next/font is mocked because it only runs inside the Next compiler. Depends on vitest.
-* Versión: 1.0
+* Descripción: Verifies the cssVariables theme keeps the official light identity: CSS variables enabled, primary.main, shape radius, custom palette keys, the CSS variables tokens.css relies on, and the legacy color helpers. next/font is mocked because it only runs inside the Next compiler. Depends on vitest. v1.1 (Bloque 5): the July dark scheme is the default (selector [data-mui-color-scheme]), the light scheme keeps its values with the AA fix of the secondary text, and both draw navy text on the primary (D2). v1.2 (Bloque 5): the declared font weights are only the loaded ones (light = 400, D3).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,13 @@ vi.mock("next/font/google", () => ({
   Roboto: () => ({ className: "roboto", style: { fontFamily: "'Roboto', 'Roboto Fallback'" } }),
 }));
 
+// createTheme types the result as Theme; with colorSchemes the runtime object also carries these.
+const schemed = theme as typeof theme & {
+  defaultColorScheme: string,
+  colorSchemes: Partial<Record<"light" | "dark", { palette: typeof theme.palette }>>,
+  getColorSchemeSelector: (scheme: string) => string,
+};
+
 // MUI var() references carry a fallback (e.g. "var(--mui-spacing, 8px)"); match the name only.
 const expectCssVar = (value: unknown, name: string) => {
   expect(String(value).startsWith(`var(${name}`)).toBe(true);
@@ -29,12 +36,31 @@ describe("design-system theme", () => {
     expectCssVar(theme.vars?.palette.primary.main, "--mui-palette-primary-main");
   });
 
-  it("keeps the official light palette", () => {
-    expect(theme.palette.mode).toBe("light");
+  it("uses the July dark scheme by default with the data attribute selector", () => {
+    expect(schemed.defaultColorScheme).toBe("dark");
+    expect(theme.palette.mode).toBe("dark");
     expect(theme.palette.primary.main).toBe("#10aede");
-    expect(theme.palette.secondary.main).toBe("#3d98cc");
-    expect(theme.palette.background.default).toBe("#ffffff");
-    expect(theme.palette.text.primary).toBe("#0a112b");
+    expect(theme.palette.background.default).toBe("#0a112b");
+    expect(theme.palette.background.paper).toBe("#161d36");
+    expect(theme.palette.text.primary).toBe("#e8f4fd");
+    expect(theme.palette.text.secondary).toBe("rgba(232, 244, 253, 0.7)");
+    expect(theme.palette.divider).toBe("rgba(255, 255, 255, 0.12)");
+    expect(schemed.getColorSchemeSelector("light")).toBe('[data-mui-color-scheme="light"] &');
+  });
+
+  it("keeps the official light palette with its AA fixes as the second scheme", () => {
+    const light = schemed.colorSchemes.light?.palette;
+    expect(light?.mode).toBe("light");
+    expect(light?.primary.main).toBe("#10aede");
+    expect(light?.secondary.main).toBe("#3d98cc");
+    expect(light?.background.default).toBe("#ffffff");
+    expect(light?.text.primary).toBe("#0a112b");
+    expect(light?.text.secondary).toBe("#6b747c");
+  });
+
+  it("draws navy text on the cyan primary in both schemes (D2)", () => {
+    expect(schemed.colorSchemes.dark?.palette.primary.contrastText).toBe("#0a112b");
+    expect(schemed.colorSchemes.light?.palette.primary.contrastText).toBe("#0a112b");
   });
 
   it("keeps shape, spacing and custom breakpoints", () => {
@@ -47,8 +73,9 @@ describe("design-system theme", () => {
   it("exposes the custom palette keys", () => {
     expect(theme.palette.curriculum.beginner.main).toBe("#4CAF50");
     expect(theme.palette.curriculum.advanced.opacity10).toBe("rgba(244, 67, 54, 0.1)");
-    expect(theme.palette.background.contrast).toBe("#0a112b");
-    expect(theme.palette.text.hint).toBe("#bdbdbd");
+    expect(theme.palette.background.contrast).toBe("#e8f4fd");
+    expect(schemed.colorSchemes.light?.palette.background.contrast).toBe("#0a112b");
+    expect(schemed.colorSchemes.light?.palette.text.hint).toBe("#bdbdbd");
   });
 
   it("emits the CSS variables that tokens.css references", () => {
@@ -62,6 +89,13 @@ describe("design-system theme", () => {
 
   it("uses the self-hosted Roboto stack", () => {
     expect(theme.typography.fontFamily).toBe("'Roboto', 'Roboto Fallback', \"Helvetica\", \"Arial\", sans-serif");
+  });
+
+  it("only declares Roboto weights that roboto.ts loads (light maps to 400, D3)", () => {
+    expect(theme.typography.fontWeightLight).toBe(400);
+    expect(theme.typography.fontWeightRegular).toBe(400);
+    expect(theme.typography.fontWeightMedium).toBe(500);
+    expect(theme.typography.fontWeightBold).toBe(700);
   });
 });
 

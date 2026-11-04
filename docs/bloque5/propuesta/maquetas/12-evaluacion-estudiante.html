@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es" data-mui-color-scheme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluaciones | VentyLab (propuesta Bloque 5)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<style>
+  /* Mockup of evaluations.module.css + evaluation-card.tsx (data-evaluation-type). Decisions D15, D16. */
+  .tabs--plain .tab { padding: 12px 18px; font-size: .9375rem; }
+  .group-title { font-size: 1rem; font-weight: 600; color: var(--vl-color-text); padding-bottom: 8px; border-bottom: 1px solid var(--vl-color-divider); margin: 6px 4px 12px; }
+  .level-title { font-size: .8125rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--vl-color-text-muted); margin: 0 4px 12px; }
+  .evals { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 0 4px 8px; }
+  .ev { display: flex; flex-direction: column; gap: 10px; min-height: 240px; padding: 16px 16px 14px; border-radius: var(--vl-radius-lg);
+    background: var(--vl-eval-card-bg); border: 1px solid rgba(16, 174, 222, .25); }
+  .ev--done { border-color: rgba(76, 175, 80, .6); }
+  .ev-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ev-type { color: #fff; }
+  .ev-type[data-evaluation-type="QUIZ"] { background: var(--vl-eval-chip-quiz); }
+  .ev-type[data-evaluation-type="WORKSHOP"] { background: var(--vl-eval-chip-workshop); }
+  .ev-type[data-evaluation-type="EXAM"] { background: var(--vl-eval-chip-exam); }
+  .ev-done { background: var(--vl-eval-completed-bg); color: var(--vl-eval-completed); border: 1px solid var(--vl-eval-completed); }
+  .ev h4 { font-size: 1.0625rem; font-weight: 600; line-height: 1.35; }
+  .ev h4 a { color: var(--vl-color-text); }
+  .ev dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: .8125rem; }
+  .ev dt { color: var(--vl-color-text-muted); }
+  .ev dd { margin: 0; }
+  .ev-foot { margin-top: auto; display: flex; justify-content: flex-end; }
+  .head-row { display: flex; align-items: flex-start; }
+</style>
+<script src="icons.js"></script>
+<script src="shell.js"></script>
+</head>
+<body data-shell="global" data-role="student" data-active="evaluations">
+<div class="vl-app">
+  <div id="shell"></div>
+  <main class="vl-main" id="main-content" tabindex="-1">
+    <div class="head-row">
+      <div><h1 class="page-title">Evaluaciones</h1><p class="page-subtitle">Exámenes, quizzes y talleres asignados a tus grupos.</p></div>
+    </div>
+    <div class="tabs tabs--plain" role="tablist" aria-label="Estado de las evaluaciones">
+      <span class="tab" role="tab" aria-selected="true">Activas (5)</span>
+      <span class="tab" role="tab" aria-selected="false">Próximas (1)</span>
+      <span class="tab" role="tab" aria-selected="false">Cerradas (2)</span>
+    </div>
+
+    <section class="acc">
+      <div class="acc-head">📝 Quizzes <span class="muted" style="font-weight:400">(3)</span><span class="acc-caret"><i data-ic="ExpandLess"></i></span></div>
+      <div class="acc-body">
+        <div class="group-title">Mecánica</div>
+        <div class="level-title">Nivel Principiante</div>
+        <div class="evals">
+          <article class="ev">
+            <div class="ev-chips"><span class="chip ev-type" data-evaluation-type="QUIZ">Quiz</span><span class="chip chip--outlined">Nivel Principiante</span></div>
+            <h4><a href="#">Quiz: La Ecuación del Movimiento</a></h4>
+            <dl><dt>Ventana</dt><dd>3 de nov de 2026, 8:00 a. m. – 10 de nov de 2026, 11:59 p. m.</dd><dt>Duración</dt><dd>30 min</dd><dt>Intentos</dt><dd>0 de 2 intentos</dd></dl>
+            <div class="ev-foot"><button class="btn btn--contained">Comenzar<i data-ic="ArrowForward" class="ic-sm"></i></button></div>
+          </article>
+          <article class="ev">
+            <div class="ev-chips"><span class="chip ev-type" data-evaluation-type="QUIZ">Quiz</span><span class="chip chip--outlined">Nivel Principiante</span></div>
+            <h4><a href="#">Quiz de modos ventilatorios</a></h4>
+            <dl><dt>Ventana</dt><dd>31 de oct de 2026, 7:18 p. m. – 14 de nov de 2026, 7:19 p. m.</dd><dt>Duración</dt><dd>Sin límite de tiempo</dd><dt>Intentos</dt><dd>0 de 1 intento</dd></dl>
+            <div class="ev-foot"><button class="btn btn--contained">Comenzar<i data-ic="ArrowForward" class="ic-sm"></i></button></div>
+          </article>
+          <article class="ev ev--done">
+            <div class="ev-chips"><span class="chip ev-done">Completado ✓</span><span class="chip ev-type" data-evaluation-type="QUIZ">Quiz</span><span class="chip chip--outlined">Nivel Principiante</span></div>
+            <h4><a href="#">Quiz: La Inversión Fisiológica</a></h4>
+            <dl><dt>Duración</dt><dd>20 min</dd><dt>Intentos</dt><dd>1 de 2 intentos</dd><dt>Último intento:</dt><dd>90/100</dd></dl>
+            <div class="ev-foot"><button class="btn btn--outlined" style="border-color:var(--vl-eval-completed);color:var(--vl-eval-completed)">Ver resultado</button></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="acc">
+      <div class="acc-head">📋 Talleres <span class="muted" style="font-weight:400">(1)</span><span class="acc-caret"><i data-ic="ExpandLess"></i></span></div>
+      <div class="acc-body">
+        <div class="group-title">Mecánica</div>
+        <div class="evals">
+          <article class="ev">
+            <div class="ev-chips"><span class="chip ev-type" data-evaluation-type="WORKSHOP">Taller</span><span class="chip chip--outlined">Nivel Principiante</span></div>
+            <h4><a href="#">Taller de distensibilidad</a></h4>
+            <dl><dt>Ventana</dt><dd>1 de nov de 2026 – 15 de nov de 2026</dd><dt>Duración</dt><dd>Sin límite de tiempo</dd><dt>Intentos</dt><dd>0 de 1 intento</dd></dl>
+            <div class="ev-foot"><button class="btn btn--contained">Comenzar<i data-ic="ArrowForward" class="ic-sm"></i></button></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="acc">
+      <div class="acc-head">🎓 Exámenes <span class="muted" style="font-weight:400">(1)</span><span class="acc-caret"><i data-ic="ExpandLess"></i></span></div>
+      <div class="acc-body">
+        <div class="group-title">Mecánica</div>
+        <div class="evals">
+          <article class="ev">
+            <div class="ev-chips"><span class="chip ev-type" data-evaluation-type="EXAM">Examen</span><span class="chip chip--outlined">Nivel Principiante</span></div>
+            <h4><a href="#">Examen parcial: mecánica respiratoria</a></h4>
+            <dl><dt>Ventana</dt><dd>12 de nov de 2026, 2:00 p. m. – 4:00 p. m.</dd><dt>Duración</dt><dd>90 min</dd><dt>Intentos</dt><dd>0 de 1 intento</dd></dl>
+            <div class="ev-foot"><button class="btn btn--contained">Comenzar<i data-ic="ArrowForward" class="ic-sm"></i></button></div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>

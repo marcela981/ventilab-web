@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Screenshots of Block 4 (documentation)
-* Descripción: Only with E2E_CAPTURES=1: writes PNG screenshots to docs/bloque4/capturas/ (E2E_CAPTURES_DIR overrides) of the staff panel, administration and profile screens on the local seeded data (demo seed + load seed of 500 students): the panel dashboard (General and Por grupo with the 500-student group, one page of rows), the students directory, the "Conformar Grupo" dialog with three selected students, the five tabs of a load student's detail, the staff lab with "Próximas reservas" (an immediate reservation of the demo group, cancelled afterwards), the admin users ("Gestión de roles" and "Profesores"), /admin/ai with the surface filter, the profile tabs and the Google-account notice of the password tab (the only stubbed state: GET /api/users/me answers hasPassword=false in the browser, there is no Google account locally). It asserts only what it needs to frame each capture. Depends on @playwright/test and the auth, backend API and panel e2e helpers.
-* Versión: 0.1
+* Descripción: Only with E2E_CAPTURES=1: writes PNG screenshots to docs/bloque4/capturas/ (E2E_CAPTURES_DIR overrides) of the staff panel, administration and profile screens on the local seeded data (demo seed + load seed of 500 students): the panel dashboard (General and Por grupo with the 500-student group, one page of rows), the students directory, the "Conformar Grupo" dialog with three selected students, the five tabs of a load student's detail, the staff lab with "Próximas reservas" (an immediate reservation of the demo group, cancelled afterwards), the admin users ("Gestión de roles" and "Profesores"), /admin/ai with the surface filter, the profile tabs and the Google-account notice of the password tab (the only stubbed state: GET /api/users/me answers hasPassword=false in the browser, there is no Google account locally). It asserts only what it needs to frame each capture. Depends on @playwright/test and the auth, backend API and panel e2e helpers. v0.2 (Bloque 5, W5-2): the "Estudiantes" table and region are matched exactly (the group chart table name can contain the word).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,8 +47,8 @@ test("Block 4 key screens", async ({ browser, page, request, baseURL }) => {
   await expect(page.getByRole("region", { name: "Estudiantes recientes" }).getByRole("link").first()).toBeVisible({ timeout: 30_000 });
   await shot(page, "01-panel-dashboard-general");
   await page.goto(loadGroup ? `/teacher?groupId=${loadGroup.id}` : "/teacher?tab=grupo");
-  await expect(page.getByRole("table", { name: "Estudiantes" })).toBeVisible({ timeout: 45_000 });
-  await page.getByRole("region", { name: "Estudiantes" }).scrollIntoViewIfNeeded();
+  await expect(page.getByRole("table", { name: "Estudiantes", exact: true })).toBeVisible({ timeout: 45_000 });
+  await page.getByRole("region", { name: "Estudiantes", exact: true }).scrollIntoViewIfNeeded();
   await shot(page, "02-panel-dashboard-por-grupo");
 
   // Directory and "Conformar Grupo".

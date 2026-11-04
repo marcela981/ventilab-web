@@ -1,0 +1,689 @@
+/*
+ * Bloque 5 proposal mockups: Monitoreo with the July three-column layout.
+ * Mockup of shared/ventilator-console/UI/july-layout.module.css (DISENO_BLOQUE5.md §5).
+ * Columns: 260 / 1fr / 250 when the panel is >= 1100px wide, July minimums 240 / 1fr / 230 below.
+ */
+.vl-main--sim {
+  padding: var(--vl-space-4) var(--vl-space-6) 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--vl-console-bg);
+}
+
+.mon {
+  container: vl-monitor / inline-size;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--vl-console-text);
+}
+
+/* ---- Session strip (F) ---- */
+.strip {
+  flex: none;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  padding: 4px 10px;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  font-size: 0.8125rem;
+}
+
+.strip-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.strip-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--vl-console-border);
+}
+
+.strip-end {
+  margin-left: auto;
+}
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  overflow: hidden;
+}
+
+.seg > * {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 0;
+  background: transparent;
+  color: var(--vl-console-text-muted);
+}
+
+.seg > * + * {
+  border-left: 1px solid var(--vl-console-border);
+}
+
+.seg > [aria-pressed="true"] {
+  background: var(--vl-console-pending-bg);
+  color: var(--vl-console-text);
+}
+
+.sbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--vl-radius-md);
+  border: 1px solid var(--vl-console-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--vl-console-text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sbtn .ic {
+  width: 16px;
+  height: 16px;
+}
+
+.sbtn--primary {
+  background: var(--vl-color-primary);
+  border-color: var(--vl-color-primary);
+  color: var(--vl-color-on-primary);
+}
+
+.sbtn--danger {
+  border-color: var(--vl-color-error);
+  color: #ff8a80;
+}
+
+.sbtn--cyan {
+  border-color: var(--vl-color-primary);
+  color: var(--vl-color-primary);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--vl-radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--vl-console-border);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ---- Three columns ---- */
+.cols3 {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 250px;
+  gap: 12px;
+}
+
+@container vl-monitor (max-width: 1100px) {
+  .cols3 {
+    grid-template-columns: 240px minmax(0, 1fr) 230px;
+    gap: 8px;
+  }
+}
+
+.col {
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--vl-scrollbar-thumb) transparent;
+}
+
+.col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.col-centre {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+}
+
+/* ---- Left column ---- */
+.logos img {
+  display: block;
+}
+
+.logo-venty {
+  height: 64px;
+}
+
+.logo-univalle {
+  width: 180px;
+  margin-top: 6px;
+}
+
+.left-label {
+  font-size: 0.6875rem;
+  color: var(--vl-console-text-muted);
+  margin-bottom: 4px;
+}
+
+.patient {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--vl-radius-md);
+  border: 1px solid rgba(76, 175, 80, 0.6);
+  background: rgba(76, 175, 80, 0.12);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.patient .ic {
+  color: var(--vl-color-success);
+  width: 18px;
+  height: 18px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions .sbtn {
+  flex: 1;
+  justify-content: center;
+  height: 32px;
+}
+
+.pending-note {
+  font-size: 0.75rem;
+  color: var(--vl-console-pending);
+  font-weight: 600;
+}
+
+.tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tile {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 8px 10px;
+  min-height: 58px;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+}
+
+.tile-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--vl-color-success);
+  line-height: 1.1;
+}
+
+.tile-value small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--vl-console-text);
+}
+
+.tile-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.tile-mark {
+  grid-column: 1 / -1;
+  justify-self: start;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--vl-console-text-muted);
+}
+
+.tile--vital .tile-value {
+  color: var(--vl-glass-accent-cyan-text);
+}
+
+/* ---- Centre ---- */
+.inputs {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.spin {
+  padding: 6px 8px 6px 12px;
+  border-radius: var(--vl-radius-md);
+  border: 1px solid var(--vl-console-border);
+  background: var(--vl-console-surface);
+  min-width: 0;
+}
+
+.spin-label {
+  font-size: 0.6875rem;
+  color: var(--vl-console-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spin-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spin-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.spin-value small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--vl-console-text-muted);
+}
+
+.mini {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid var(--vl-console-border);
+  background: rgba(255, 255, 255, 0.04);
+  display: grid;
+  place-items: center;
+  color: var(--vl-console-text);
+  flex: none;
+}
+
+.mini .ic {
+  width: 16px;
+  height: 16px;
+}
+
+.spin--pending {
+  border-color: var(--vl-console-pending);
+  background: var(--vl-console-pending-bg);
+}
+
+.spin-range {
+  font-size: 0.625rem;
+  color: var(--vl-console-text-muted);
+}
+
+.alarms {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 5px 8px;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+}
+
+.alarms-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--vl-console-text-muted);
+}
+
+.alarm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--vl-console-alarm-medium);
+  color: var(--vl-console-on-alarm);
+}
+
+.alarm-chip .ic {
+  width: 16px;
+  height: 16px;
+}
+
+.alarms .sbtn:first-of-type {
+  margin-left: auto;
+}
+
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.zoom {
+  display: inline-flex;
+  border: 1px solid var(--vl-color-primary);
+  border-radius: var(--vl-radius-md);
+  overflow: hidden;
+}
+
+.zoom > span {
+  width: 32px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--vl-color-primary);
+}
+
+.zoom > span + span {
+  border-left: 1px solid var(--vl-color-primary);
+}
+
+.zoom .ic {
+  width: 16px;
+  height: 16px;
+}
+
+.curves {
+  flex: 1;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.channel {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  padding: 4px 8px 2px 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.channel-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  padding-left: 32px;
+}
+
+.channel svg {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: block;
+}
+
+.cmds {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--vl-radius-md);
+  background: var(--vl-console-surface);
+  border: 1px solid var(--vl-console-border);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* ---- Right column ---- */
+.right-head {
+  font-size: 0.75rem;
+  color: var(--vl-console-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.right-head strong {
+  color: var(--vl-console-text);
+}
+
+.modes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mode-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+
+.mode-btn small {
+  display: block;
+  font-size: 0.5rem;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.mode-btn[aria-pressed="true"] {
+  background: var(--vl-color-primary);
+  color: var(--vl-color-on-primary);
+  border-color: var(--vl-brand-navy);
+  box-shadow: 0 0 0 2px #f53e53;
+}
+
+.ai-btn {
+  margin-left: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--vl-color-primary);
+  color: var(--vl-color-primary);
+}
+
+.more-modes {
+  align-self: flex-start;
+}
+
+.field-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.slider {
+  position: relative;
+  height: 22px;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 9px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(16, 174, 222, 0.3);
+}
+
+.slider > i {
+  position: absolute;
+  left: 0;
+  top: 9px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--vl-color-primary);
+}
+
+.slider > b {
+  position: absolute;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  margin-left: -8px;
+  border-radius: 50%;
+  background: var(--vl-color-primary);
+  box-shadow: 0 0 0 4px rgba(16, 174, 222, 0.2);
+}
+
+.ro {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.8125rem;
+}
+
+.ro b {
+  font-size: 1rem;
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.spin--disabled {
+  opacity: 0.6;
+  border-style: dashed;
+}
+
+.collapser {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 6px 2px;
+  border-top: 1px solid var(--vl-console-border);
+}
+
+.mech {
+  padding: 8px 10px;
+  border-radius: var(--vl-radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--vl-console-border);
+  font-size: 0.8125rem;
+}
+
+.mech-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.kbd-hint {
+  font-size: 0.6875rem;
+  color: var(--vl-console-text-muted);
+}
+
+/* ---- Bottom tabs ---- */
+.simtabs {
+  flex: none;
+  height: 56px;
+  margin: 8px calc(-1 * var(--vl-space-6)) 0;
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  background: var(--vl-sim-tabbar-bg);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.simtab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 110px;
+  font-size: 0.8125rem;
+  color: var(--vl-sim-tab-inactive);
+}
+
+.simtab[aria-selected="true"] {
+  color: var(--vl-sim-tab-active);
+  font-weight: 600;
+}
+
+/* Narrow monitor (1280x720): icon-only secondary buttons, keep each bar on one line */
+@container vl-monitor (max-width: 1100px) {
+  .sbtn--compact .lbl,
+  .win-label,
+  .wide-only {
+    display: none;
+  }
+  .sbtn--compact {
+    padding: 0 7px;
+  }
+  .alarms .sbtn {
+    padding: 0 7px;
+  }
+  .strip {
+    gap: 6px 10px;
+  }
+}

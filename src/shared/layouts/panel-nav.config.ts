@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Staff panel navigation config
-* Descripción: Navigation of the staff panel (PanelShell, DISENO_BLOQUE4 §2.1), in the NavItem shape of nav.config so the shared NavList and findActiveHref work unchanged. Every staff member (TEACHER, ADMIN): Dashboard (/teacher), Estudiantes (/teacher/students), Grupos (/groups), Contenido (/content), Casos clínicos (/simulator/cases), Evaluaciones (/evaluations, with the gradingPending badge and active on /grading/**) and Laboratorio (/teacher/lab, with the ventilatorDevice indicator). Then the "Administración" section: Estado del sistema (/admin/status, every staff member; read-only for teachers, as before), and for ADMIN only Usuarios, Configuración, Auditoría, Analítica de IA and Investigación. Texts from the July panel where it had them (Dashboard, Estudiantes, Configuración). Also the panel copy (title, collapse toggle, "Volver a la plataforma" → /simulador) and the Spanish role labels of the header chip. getPanelNavItems filters by role. Plain Spanish copy (TODO(i18n), see nav.config). Depends on MUI icons, the session route table and entities and nav.config types.
-* Versión: 1.0
+* Descripción: Navigation of the staff panel (PanelShell, DISENO_BLOQUE4 §2.1), in the NavItem shape of nav.config so the shared NavList and findActiveHref work unchanged. Every staff member (TEACHER, ADMIN): Dashboard (/teacher), Estudiantes (/teacher/students), Grupos (/groups), Contenido (/content), Casos clínicos (/simulator/cases), Evaluaciones (/evaluations, with the gradingPending badge and active on /grading/**) and Laboratorio (/teacher/lab, with the ventilatorDevice indicator). Then the "Administración" section: Estado del sistema (/admin/status, every staff member; read-only for teachers, as before), and for ADMIN only Usuarios, Configuración, Auditoría, Analítica de IA and Investigación. Texts from the July panel where it had them (Dashboard, Estudiantes, Configuración). Also the panel copy (title, collapse toggle, "Volver a la plataforma" → /simulador) and the Spanish role labels of the header chip. getPanelNavItems filters by role. Plain Spanish copy (TODO(i18n), see nav.config). Depends on MUI icons, the session route table and entities and nav.config types. v1.1 (Bloque 5, D8): the panel copy adds the "Herramientas" group label and the footer version "VentyLab Admin v0.1.0" (shell.config); the Bloque 4 texts stay.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +25,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import type { RoutePath } from "@shared/session/routes.config";
 import type { Role } from "@shared/session/session.entity";
 import type { NavItem } from "./nav.config";
+import { APP_NAME, APP_VERSION } from "./shell.config";
 
 const STAFF: readonly Role[] = ["TEACHER", "ADMIN"];
 const ADMIN: readonly Role[] = ["ADMIN"];
@@ -40,6 +41,8 @@ export const PANEL_COPY = {
   openMobile: "Abrir menú del panel",
   backToPlatform: "Volver a la plataforma",
   skipToContent: "Saltar al contenido principal",
+  tools: "Herramientas",
+  version: `${APP_NAME} Admin v${APP_VERSION}`,
 } as const;
 
 // The platform home of every role (the unified simulator workspace).

@@ -6,7 +6,9 @@
 *   next/router, @features/simulator and @shared/layouts/student-layout.
 *   v1.1 (W4, Bloque 1): imports the page from @features/simulator/session.entry instead of the feature barrel, so the
 *   route chunk carries only its own area.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C6): passes the signed-in user's value cards preference (simulator-workspace monitor-cards entry)
+*   to the July console, so EXAM applies it read-only.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,15 +18,19 @@
 
 import { useRouter } from "next/router";
 import { SessionConsolePage } from "@features/simulator/session.entry";
+import { useMonitorCardsPref } from "@features/simulator-workspace/monitor-cards.entry";
 import type { NextPageWithLayout } from "@shared/layouts/get-layout";
 // Direct module import: the layouts index would pull every layout into this chunk.
 import { withStudentLayout } from "@shared/layouts/student-layout";
+import { useSession } from "@shared/session/use-session";
 
 const SimulationSessionRoute: NextPageWithLayout = () => {
   const { query } = useRouter();
   const sessionId = typeof query.sessionId === "string" ? query.sessionId : null;
+  const { user } = useSession();
+  const cards = useMonitorCardsPref(user?.id);
 
-  return sessionId ? <SessionConsolePage key={sessionId} sessionId={sessionId} /> : null;
+  return sessionId ? <SessionConsolePage key={sessionId} sessionId={sessionId} cards={cards} /> : null;
 };
 
 SimulationSessionRoute.getLayout = withStudentLayout;

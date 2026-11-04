@@ -1,0 +1,260 @@
+/*
+* Funcionalidad: July console controls styles
+* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" stays on one line. vX.x (Bloque 5, Ola 4): "Más modos" wraps its mode list onto a second line in a narrow column instead of cutting it ("Más modos (PSV, CPAP, SI..."); the button text and name are unchanged.
+* Versión: 0.3
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.inputRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--vl-space-2);
+}
+
+.emptySlot {
+  display: grid;
+  place-items: center;
+  min-height: var(--vl-space-8);
+  color: var(--vl-console-text-muted);
+  border: 1px dashed var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+/* ---- Mode toggle ---- */
+.modeBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.modeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.modeRow > :last-child:not(.modes) {
+  margin-left: auto;
+}
+
+.modes {
+  display: flex;
+  align-items: center;
+  gap: var(--vl-space-2);
+}
+
+.modeButton {
+  display: grid;
+  place-content: center;
+  width: calc(var(--vl-space-7) + var(--vl-space-1) + var(--vl-space-1) / 2);
+  height: calc(var(--vl-space-7) + var(--vl-space-1) + var(--vl-space-1) / 2);
+  padding: 0;
+  font: var(--mui-font-button);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--vl-console-text-muted);
+  background: var(--vl-console-surface-raised);
+  border: 2px solid var(--vl-console-border);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.modeButton small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.5rem;
+  font-weight: 600;
+}
+
+.modeButton[aria-pressed="true"] {
+  color: var(--vl-color-on-primary);
+  background: var(--vl-color-primary);
+  border-color: var(--vl-console-bg);
+  box-shadow: 0 0 0 2px var(--vl-console-curve-pressure);
+}
+
+.modeButton[data-pending="true"] {
+  box-shadow: 0 0 0 2px var(--vl-console-pending);
+}
+
+.modeButton:disabled,
+.moreModes:disabled,
+.action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.moreModes,
+.collapser,
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  background: transparent;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  cursor: pointer;
+}
+
+/* The mode list moves under "Más modos" (with the arrow at the end) when the column is narrow; nothing is cut. */
+.moreModes {
+  flex-wrap: wrap;
+  align-self: flex-start;
+  max-width: 100%;
+  padding-block: var(--vl-space-1);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.moreModesList {
+  display: inline-flex;
+  align-items: center;
+  color: var(--vl-console-text-muted);
+}
+
+.moreModes[data-active="true"] {
+  border-color: var(--vl-color-primary);
+}
+
+.moreModes[data-active="true"] .moreModesList {
+  color: var(--vl-console-text);
+}
+
+.moreModes[data-pending="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.pendingNote,
+.pendingCount[data-pending="true"] {
+  margin: 0;
+  font: var(--mui-font-caption);
+  font-weight: 600;
+  color: var(--vl-console-pending);
+}
+
+.modeButton:focus-visible,
+.moreModes:focus-visible,
+.collapser:focus-visible,
+.action:focus-visible,
+.slider:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+/* ---- Timing and rate ---- */
+.timing,
+.rate,
+.more {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.sliderBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.sliderEnds {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  font: var(--mui-font-caption);
+  font-weight: 600;
+}
+
+.slider {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--vl-color-primary);
+  cursor: pointer;
+}
+
+.slider:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.readOut {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  font: var(--mui-font-body2);
+}
+
+.readOut b {
+  font: var(--mui-font-subtitle1);
+  font-weight: 700;
+}
+
+.unavailable {
+  padding: var(--vl-space-1) var(--vl-space-2);
+  border: 1px dashed var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  opacity: 0.7;
+}
+
+.unavailableValue {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.unavailableReason {
+  margin: 0;
+  font: var(--mui-font-caption);
+}
+
+.collapser {
+  justify-content: space-between;
+  width: 100%;
+  border-width: 1px 0 0;
+  border-radius: 0;
+}
+
+.moreList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+/* ---- Confirm actions ---- */
+.confirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.actions {
+  display: flex;
+  gap: var(--vl-space-2);
+}
+
+.action {
+  flex: 1 1 0;
+  justify-content: center;
+}
+
+.primary:not(:disabled) {
+  color: var(--vl-color-on-primary);
+  background: var(--vl-color-primary);
+  border-color: var(--vl-color-primary);
+}
+
+.pendingCount,
+.reason,
+.hint {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}

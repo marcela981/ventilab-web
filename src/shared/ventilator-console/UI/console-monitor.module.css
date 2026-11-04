@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Console monitor styles
 * Descripción: Numeric monitoring and patient monitor zones of the ventilator console: titled panel, two-column tile grid (three columns below 1024 px, where the zone spans the full width), value tiles with label, large value and unit, the out-of-range state (token border and background plus the icon-and-text flag) and the trend sparkline stroke. v1.1: the "derivada" label of a value computed from the curves. Console and design-system tokens only.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C3): the July value card (`data-layout="july"`): large coloured value and unit on the left, bold label on the right, marks below; vitals in the cyan text token.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -124,4 +125,53 @@
   border: 1px dashed var(--vl-console-border);
   border-radius: var(--vl-radius-pill);
   cursor: help;
+}
+
+/* July value card (left column list): value on the left, label on the right, marks on the line below. */
+.tile[data-layout="july"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "reading label"
+    "marks marks";
+  align-items: center;
+  gap: 2px var(--vl-space-2);
+  min-height: calc(var(--vl-space-7) + var(--vl-space-3) - 2px);
+  padding: var(--vl-space-2) calc(var(--vl-space-2) + 2px);
+  background: var(--vl-console-surface);
+  border-radius: var(--vl-radius-md);
+}
+
+.tile[data-layout="july"] .label {
+  grid-area: label;
+  font-weight: 700;
+  color: var(--vl-console-text);
+  text-align: right;
+}
+
+.tile[data-layout="july"] .reading {
+  grid-area: reading;
+}
+
+.tile[data-layout="july"] .value {
+  font: var(--mui-font-h6);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--vl-color-success);
+}
+
+.tile[data-layout="july"][data-kind="vital"] .value {
+  color: var(--vl-glass-accent-cyan-text);
+}
+
+.tile[data-layout="july"] .unit {
+  color: var(--vl-console-text);
+}
+
+.tile[data-layout="july"] > dd:not(.reading) {
+  grid-column: 1 / -1;
+}
+
+.tile[data-layout="july"].outOfRange .value {
+  color: var(--vl-console-text);
 }

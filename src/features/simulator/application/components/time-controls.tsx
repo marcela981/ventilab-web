@@ -5,7 +5,9 @@
 *   the simulated time by wall time × session multiplier) plus pause/resume. EXAM: the fixed multiplier as text and no
 *   pause. Native buttons with aria-pressed on the dark console surface. Depends on MUI icons, the simulator config
 *   and the simulator CSS. v1.1: the limit hint says the top speed was chosen when the practice started (catalog).
-* Versión: 1.1
+*   v1.2 (Bloque 5, C6): one line in the July session strip: the limit hint is the description and tooltip of the
+*   speed group (visually hidden text) instead of a paragraph.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +17,7 @@
 
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { useId } from "react";
 import { cx } from "@shared/lib/class-names";
 import { TIME_MULTIPLIER_LABELS, TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { SimulationMode, TimeMultiplier } from "../config/simulator.config";
@@ -67,6 +70,7 @@ export function TimeControls({
 }: TimeControlsProps) {
   const free = mode === "FREE";
   const limited = free && TIME_MULTIPLIERS.some((value) => !multiplierOptions.includes(value));
+  const hintId = useId();
 
   return (
     <div className={cx(styles.timeControls)} role="group" aria-label={TIME_CONTROLS_COPY.label}>
@@ -77,7 +81,12 @@ export function TimeControls({
       </p>
       {free ? (
         <>
-          <div className={cx(styles.speed)} role="group" aria-label={TIME_CONTROLS_COPY.speed}>
+          <div
+            className={cx(styles.speed)}
+            role="group"
+            aria-label={TIME_CONTROLS_COPY.speed}
+            {...(limited ? { "aria-describedby": hintId, title: TIME_CONTROLS_COPY.limited } : {})}
+          >
             {TIME_MULTIPLIERS.map((value) => (
               <button
                 key={value}
@@ -100,7 +109,7 @@ export function TimeControls({
             {paused ? <PlayArrowIcon aria-hidden="true" /> : <PauseIcon aria-hidden="true" />}
             <span>{paused ? TIME_CONTROLS_COPY.resume : TIME_CONTROLS_COPY.pause}</span>
           </button>
-          {limited ? <p className={cx(styles.timeHint)}>{TIME_CONTROLS_COPY.limited}</p> : null}
+          {limited ? <span id={hintId} className={cx(styles.visuallyHidden)}>{TIME_CONTROLS_COPY.limited}</span> : null}
         </>
       ) : (
         <p className={cx(styles.timeHint)}>{TIME_CONTROLS_COPY.fixed(TIME_MULTIPLIER_LABELS[multiplier])}</p>

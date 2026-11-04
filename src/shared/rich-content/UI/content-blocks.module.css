@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Content blocks styles
-* Descripción: Layout of the page block renderer (block spacing and titles, callout variants, figures and captions, responsive 16:9 video frame, native video, file link, equations, code, divider, task lists) plus the print mode (no shadows, blocks not split across pages). Rich text typography comes from rich-content.module.css. Tokens only.
-* Versión: 1.0
+* Descripción: Layout of the page block renderer (block spacing and titles, callout variants, figures and captions, responsive 16:9 video frame, native video, file link, equations, code, divider, task lists) plus the print mode (no shadows, blocks not split across pages). Rich text typography comes from rich-content.module.css. Tokens only. v1.1 (Bloque 5): the video frame and the native video letterbox in black (the inverted surface turns light in the dark scheme).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -111,7 +111,7 @@
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: var(--vl-radius-md);
-  background: var(--vl-color-surface-contrast);
+  background: var(--mui-palette-common-black);
 }
 
 .videoFrame iframe {
@@ -127,7 +127,7 @@
   width: 100%;
   max-height: 70vh;
   border-radius: var(--vl-radius-md);
-  background: var(--vl-color-surface-contrast);
+  background: var(--mui-palette-common-black);
 }
 
 .videoLink,

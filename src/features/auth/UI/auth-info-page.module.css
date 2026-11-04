@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth information page styles
-* Descripción: Card, icon badge, user summary, help list and action column of the informational auth pages (access denied, forgot password) shown inside the public layout. Tokens only.
-* Versión: 1.0
+* Descripción: Card, icon badge, user summary, help list and action column of the informational auth pages (access denied, forgot password) shown inside the public layout. Tokens only. v1.1 (Bloque 5): the icon badge sits on the raised surface (the inverted surface turns light in the dark scheme and hid the muted icon).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,7 +36,7 @@
   width: var(--vl-space-8);
   height: var(--vl-space-8);
   border-radius: 50%;
-  background: var(--vl-color-surface-contrast);
+  background: var(--vl-color-surface-raised);
   color: var(--vl-color-text-muted);
 }
 

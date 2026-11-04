@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learn workspace tabs
-* Descripción: Top tab list of the /learn workspace (W3, Bloque 2): Inicio, Currículo and Mi Progreso, in the July order (TeachingTabs). An accessible tab list (role tablist/tab, aria-selected, aria-controls pointing at each panel, roving tabindex with the arrow, Home and End keys through the shared useTabListKeyboard). Only the tabs of the role are listed (staff never get this list: they only see Currículo). Depends on React, MUI icons, @shared/lib/tab-list-keyboard, the learn tab entity and the workspace styles.
-* Versión: 0.1
+* Descripción: Top tab list of the /learn workspace (W3, Bloque 2): Inicio, Currículo and Mi Progreso, in the July order (TeachingTabs). An accessible tab list (role tablist/tab, aria-selected, aria-controls pointing at each panel, roving tabindex with the arrow, Home and End keys through the shared useTabListKeyboard). Only the tabs of the role are listed (staff never get this list: they only see Currículo). Depends on React, MUI icons, @shared/lib/tab-list-keyboard, the learn tab entity and the workspace styles. v0.2 (Bloque 5): July tab icons Dashboard (Inicio), School (Currículo) and TrendingUp (Mi Progreso).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,9 +9,9 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import HomeIcon from "@mui/icons-material/Home";
-import InsightsIcon from "@mui/icons-material/Insights";
-import MenuBookIcon from "@mui/icons-material/MenuBook";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import SchoolIcon from "@mui/icons-material/School";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { useTabListKeyboard } from "@shared/lib/tab-list-keyboard";
@@ -29,9 +29,9 @@ export const LEARN_TABS_COPY = {
 } as const;
 
 const TAB_ICONS: Record<LearnTab, ReactNode> = {
-  inicio: <HomeIcon fontSize="small" aria-hidden="true" />,
-  curriculo: <MenuBookIcon fontSize="small" aria-hidden="true" />,
-  progreso: <InsightsIcon fontSize="small" aria-hidden="true" />,
+  inicio: <DashboardIcon fontSize="small" aria-hidden="true" />,
+  curriculo: <SchoolIcon fontSize="small" aria-hidden="true" />,
+  progreso: <TrendingUpIcon fontSize="small" aria-hidden="true" />,
 };
 
 export const learnTabId = (tab: LearnTab): string => `learn-tab-${tab}`;

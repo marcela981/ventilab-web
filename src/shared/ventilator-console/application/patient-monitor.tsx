@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Console patient monitor
 * Descripción: Patient monitor zone of the ventilator console: shows only the vitals the adapter provides (for the simulation engine: SpO2, PaO2, PaCO2, pH and PAM), each as a value tile with unit and out-of-range highlight plus a short trend sparkline drawn as an inline SVG path computed from the data (last PATIENT_TREND_POINTS values). Renders a notice when the source provides no vitals. Depends on React, the value tile, the console format helpers and the console config.
-* Versión: 1.0
+*   v1.1 (Bloque 5, C3): the trend sparkline is exported for the July value cards.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,7 +34,7 @@ export type PatientMonitorProps = {
   className?: string
 };
 
-function Sparkline({ values, label }: { values: readonly number[], label: string }) {
+export function Sparkline({ values, label }: { values: readonly number[], label: string }) {
   const path = sparklinePath(values.slice(-PATIENT_TREND_POINTS), SPARK_WIDTH, SPARK_HEIGHT);
 
   if (!path) {
