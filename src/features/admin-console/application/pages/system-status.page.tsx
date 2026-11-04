@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SystemStatusPage
-* Descripción: Page /admin/status (TEACHER and ADMIN): the global state of `GET /api/system/status` (OK / DEGRADED / DOWN badge), the "última actualización" checkedAt and one card per component (database, MQTT broker, physical ventilator, AI providers with per-provider rows, media storage, server process with appVersion, appCommit and engineVersion), each with its state badge (service health tokens). Live: `system:status-changed` updates the cached states at once and revalidates; polling every 60 s is only a fallback. Admins also get the ventilator telemetry metrics (`GET /api/ventilator/telemetry/metrics`) and "Probar proveedor" per AI provider (`POST /api/system/probe/ai/{provider}`, 3 per minute; a 429 tells how long to wait). Teachers see it read-only: no probe buttons and no telemetry metrics (role from useSession). Depends on next/head, the design-system components, the session, the admin console components, entities, hooks and CSS Module.
-* Versión: 1.0
+* Descripción: Page /admin/status (TEACHER and ADMIN): the global state of `GET /api/system/status` (OK / DEGRADED / DOWN badge), the "última actualización" checkedAt and one card per component (database, MQTT broker, physical ventilator, AI providers with per-provider rows, media storage, server process with appVersion, appCommit and engineVersion), each with its state badge (service health tokens). Live: `system:status-changed` updates the cached states at once and revalidates; polling every 60 s is only a fallback. Admins also get the ventilator telemetry metrics (`GET /api/ventilator/telemetry/metrics`) and "Probar proveedor" per AI provider (`POST /api/system/probe/ai/{provider}`, 3 per minute; a 429 tells how long to wait). Teachers see it read-only: no probe buttons and no telemetry metrics (role from useSession). v1.1 (Ola 0 closure): admins also get a read-only line with the server build of `GET /api/version` (short sha and build date; useApiVersion, the same once-per-session query as the contract banner). Depends on next/head, the design-system components, the session, the admin console components, entities, hooks and CSS Module.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { formatDateTime } from "@shared/lib/format";
+import { useApiVersion } from "@shared/api-client/version/use-api-version";
 import { useSession } from "@shared/session/use-session";
 import { AiProvidersCard, BasicComponentCards, StatusBadge, TelemetryMetricsCard } from "../components/status-components";
 import { getAdminConsoleErrorMessage } from "../entities/admin-console-error-messages";
@@ -33,7 +34,12 @@ export const SYSTEM_STATUS_COPY = {
   loading: "Cargando el estado del sistema…",
   errorTitle: "No se pudo cargar el estado del sistema",
   componentsTitle: "Componentes",
+  serverBuild: (sha: string, builtAt: string) => `Compilación del servidor: ${sha} · ${builtAt}.`,
 } as const;
+
+function formatBuiltAt(builtAt: string): string {
+  return Number.isNaN(Date.parse(builtAt)) ? builtAt : formatDateTime(builtAt);
+}
 
 export function SystemStatusPage() {
   const { role } = useSession();
@@ -41,6 +47,7 @@ export function SystemStatusPage() {
   const { status, error, isLoading, reload } = useSystemStatus();
   const telemetry = useTelemetryMetrics(isAdmin);
   const { probes, probe } = useAiProbe();
+  const { version } = useApiVersion(isAdmin);
 
   const renderContent = () => {
     if (error && !status) {
@@ -61,6 +68,7 @@ export function SystemStatusPage() {
             <p className={cx(styles.note)}>{SYSTEM_STATUS_COPY.checkedAt(formatDateTime(status.checkedAt))}</p>
           </div>
           <p className={cx(styles.note)}>{SYSTEM_STATUS_COPY.live}</p>
+          {isAdmin && version ? <p className={cx(styles.note)}>{SYSTEM_STATUS_COPY.serverBuild(version.shortSha, formatBuiltAt(version.builtAt))}</p> : null}
         </section>
         <section className={cx(styles.section)} aria-labelledby="status-components">
           <h2 id="status-components" className={cx(styles.sectionTitle)}>{SYSTEM_STATUS_COPY.componentsTitle}</h2>
