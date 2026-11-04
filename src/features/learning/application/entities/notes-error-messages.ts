@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Notes error messages
-* Descripción: Spanish message for a failed AI analysis of the lesson notes: no notes in the scope (422), AI service unavailable (503), AI service failure or invalid analysis (502); anything else (429 with the Retry-After wait, timeouts, network, 4xx/5xx) falls back to the learning error messages. Depends on the api-client errors and learning-error-messages.
-* Versión: 1.0
+* Descripción: Spanish message for a failed AI analysis of the lesson notes: no notes in the scope (422), AI service unavailable (503), AI service failure or invalid analysis (502); anything else (429 with the Retry-After wait, timeouts, network, 4xx/5xx) falls back to the learning error messages. Depends on the api-client errors and learning-error-messages. v1.1 (cierre IA): the AI quota (429 ai.quota_exceeded) and a busy AI (503 with Retry-After) show the local reset time through the shared getAiLimitMessage.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { getAiLimitMessage } from "@shared/ai-conversation/application/ai-error-messages";
 import { toApiError } from "@shared/api-client/api-error";
 import { getLearningErrorMessage } from "./learning-error-messages";
 
@@ -25,8 +26,9 @@ const STATUS_MESSAGES: Record<number, string> = {
   503: NOTES_ANALYSIS_MESSAGES.unavailable,
 };
 
-export function getNotesAnalysisErrorMessage(error: unknown): string {
+export function getNotesAnalysisErrorMessage(error: unknown, now?: number): string {
   const apiError = toApiError(error);
 
-  return STATUS_MESSAGES[apiError.status] ?? getLearningErrorMessage(apiError);
+  // AI quota and busy AI first: they show the local time the analysis can be requested again.
+  return getAiLimitMessage(apiError, { now }) ?? STATUS_MESSAGES[apiError.status] ?? getLearningErrorMessage(apiError);
 }
