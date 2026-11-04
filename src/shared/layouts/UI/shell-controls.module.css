@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Shell header controls styles
-* Descripción: Styles of the header controls shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the realtime status chip wrapper and the user block at the top of the user menu. Tokens only.
-* Versión: 1.0
+* Descripción: Styles of the header controls shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the realtime status chip wrapper and the user block at the top of the user menu. Tokens only. v1.1 (Bloque 5, D10): realtimeCompact, the WifiOff icon of the collapsed sidebar (warning colour, centred in a 40px cell) and visuallyHidden for its text.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,4 +15,21 @@
 
 .userInfo {
   padding: var(--vl-space-2) var(--vl-space-4);
+}
+
+.realtimeCompact {
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: var(--vl-color-warning);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

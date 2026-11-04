@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NotificationBellMenu
-* Descripción: Bell of the AppShell top bar (loaded lazily by NotificationBell): IconButton + MUI Badge with the unread count (useUnreadNotificationsCount; aria-label "Notificaciones: N sin leer"), and a popover (keyboard: focus moves in, Escape closes, items are buttons) that reads the latest BELL_NOTIFICATIONS_LIMIT notifications only while open: icon, title, body, relative time and read state. Clicking a notification marks it as read (`PATCH /api/notifications/{id}/read`, a failure does not block) and then navigates to its deep link (notification-links); one without a link only gets marked. "Marcar todas como leídas" (`PATCH /api/notifications/read-all`, error as a toast) and "Ver todas" → /notifications. Refreshes the count and the list on `notification:new` (useNotificationsRealtime). Loading skeleton, retryable error and empty state. Depends on MUI, next/link, next/router, the design-system skeleton and toast, the notifications hooks, config, entities, components and styles. v1.1 (O1 review): "Marcar todas como leídas" is also enabled when the loaded popover page shows an unread item, even if the polled count still says 0. v1.2 (B4): labelWithUnread uses the shared navBadgeText, so the bell and the navigation item announce the same "Notificaciones, N sin leer".
-* Versión: 1.2
+* Descripción: Bell of the AppShell top bar (loaded lazily by NotificationBell): IconButton + MUI Badge with the unread count (useUnreadNotificationsCount; aria-label "Notificaciones: N sin leer"), and a popover (keyboard: focus moves in, Escape closes, items are buttons) that reads the latest BELL_NOTIFICATIONS_LIMIT notifications only while open: icon, title, body, relative time and read state. Clicking a notification marks it as read (`PATCH /api/notifications/{id}/read`, a failure does not block) and then navigates to its deep link (notification-links); one without a link only gets marked. "Marcar todas como leídas" (`PATCH /api/notifications/read-all`, error as a toast) and "Ver todas" → /notifications. Refreshes the count and the list on `notification:new` (useNotificationsRealtime). Loading skeleton, retryable error and empty state. Depends on MUI, next/link, next/router, the design-system skeleton and toast, the notifications hooks, config, entities, components and styles. v1.1 (O1 review): "Marcar todas como leídas" is also enabled when the loaded popover page shows an unread item, even if the polled count still says 0. v1.2 (B4): labelWithUnread uses the shared navBadgeText, so the bell and the navigation item announce the same "Notificaciones, N sin leer". v1.3 (Bloque 5, D10): the popover reads the shell actions placement (useShellActionsPlacement of @shared/layouts): from the sidebar tools row it opens to the right of the bell and upwards, from a top bar it hangs below as before; inside the staff panel its portal root carries the panel data-surface (useShellActionsSurface).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,7 @@ import Badge from "@mui/material/Badge";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Popover from "@mui/material/Popover";
+import type { PopoverProps } from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -23,6 +24,8 @@ import type { MouseEvent } from "react";
 import { ListSkeleton } from "@shared/design-system/components/skeleton";
 import { useToast } from "@shared/design-system/components/use-toast";
 import { navBadgeText } from "@shared/layouts/nav-badges";
+import { useShellActionsPlacement, useShellActionsSurface } from "@shared/layouts/top-bar-actions";
+import type { ShellActionsPlacement } from "@shared/layouts/top-bar-actions";
 import { cx } from "@shared/lib/class-names";
 import { resolveNotificationLink } from "../config/notification-links";
 import { NOTIFICATIONS_URL } from "../config/notifications.routes";
@@ -58,10 +61,27 @@ export type NotificationBellMenuProps = {
   now?: Date | undefined
 };
 
+// From a top bar the popover hangs below the bell; from the sidebar tools row it opens to the right and upwards.
+const POPOVER_ORIGINS = {
+  topbar: {
+    anchorOrigin: { vertical: "bottom", horizontal: "right" },
+    transformOrigin: { vertical: "top", horizontal: "right" },
+  },
+  sidebar: {
+    anchorOrigin: { vertical: "bottom", horizontal: "right" },
+    transformOrigin: { vertical: "bottom", horizontal: "left" },
+  },
+} as const satisfies Record<ShellActionsPlacement, object>;
+
+// The portal root is a Modal: data attributes are valid there but absent from its slot props type.
+type PopoverRootProps = NonNullable<NonNullable<PopoverProps["slotProps"]>["root"]>;
+
 export function NotificationBellMenu({ now }: NotificationBellMenuProps = {}) {
   const router = useRouter();
   const toast = useToast();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const placement = useShellActionsPlacement();
+  const surface = useShellActionsSurface();
   const [markingAll, setMarkingAll] = useState(false);
   const open = anchor !== null;
   const count = useUnreadNotificationsCount(true) ?? 0;
@@ -155,9 +175,11 @@ export function NotificationBellMenu({ now }: NotificationBellMenuProps = {}) {
         open={open}
         anchorEl={anchor}
         onClose={close}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        slotProps={{ paper: { className: cx(styles.popover), "aria-label": NOTIFICATION_BELL_COPY.title } }}
+        {...POPOVER_ORIGINS[placement]}
+        slotProps={{
+          paper: { className: cx(styles.popover), "aria-label": NOTIFICATION_BELL_COPY.title },
+          ...(surface ? { root: { "data-surface": surface } as PopoverRootProps } : {}),
+        }}
       >
         <div className={cx(styles.popoverHeader)}>
           <Typography variant="subtitle1" component="h2">{NOTIFICATION_BELL_COPY.title}</Typography>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Top bar actions slot tests
-* Descripción: Verifies that the AppShell renders the actions registered through TopBarActionsProvider inside its top bar (banner), before the user menu, and renders no extra action without a provider. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the top-bar-actions slot.
-* Versión: 1.0
+* Descripción: Verifies that the AppShell renders the actions registered through TopBarActionsProvider inside its top bar (banner), before the user menu, and renders no extra action without a provider. Depends on vitest, Testing Library, next/router and next/link (mocked), the session context, the AppShell and the top-bar-actions slot. v1.1 (Bloque 5, D10): the shell actions placement and surface hooks (top bar by default, sidebar and panel inside a provider) and the compact realtime indicator.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,8 +14,10 @@ import type { AnchorHTMLAttributes } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
+import { RealtimeContext } from "@shared/realtime/realtime-context";
 import { AppShell } from "./app-shell";
-import { TopBarActionsProvider } from "./top-bar-actions";
+import { RealtimeIndicator } from "./shell-controls";
+import { ShellActionsPlacementProvider, TopBarActionsProvider, useShellActionsPlacement, useShellActionsSurface } from "./top-bar-actions";
 
 const router = vi.hoisted(() => ({ pathname: "/panel", asPath: "/panel", isReady: true, replace: vi.fn() }));
 
@@ -73,5 +75,42 @@ describe("AppShell top bar actions", () => {
 
     expect(within(screen.getByRole("banner")).getAllByRole("button").map((button) => button.getAttribute("aria-label")))
       .toEqual(["Abrir menú de navegación", "Abrir menú de usuario"]);
+  });
+});
+
+describe("shell actions placement (Bloque 5, D10)", () => {
+  function Probe() {
+    return <output>{`${useShellActionsPlacement()}|${useShellActionsSurface() ?? "none"}`}</output>;
+  }
+
+  it("defaults to the top bar without a scope", () => {
+    render(<Probe />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("topbar|none");
+  });
+
+  it("tells the actions they are in the sidebar of the panel", () => {
+    render(
+      <ShellActionsPlacementProvider placement="sidebar" surface="panel">
+        <Probe />
+      </ShellActionsPlacementProvider>,
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent("sidebar|panel");
+  });
+});
+
+describe("RealtimeIndicator compact", () => {
+  it("keeps a status with the hidden text and no chip", () => {
+    render(
+      <RealtimeContext.Provider value={{ socket: null, status: "disconnected" }}>
+        <RealtimeIndicator compact />
+      </RealtimeContext.Provider>,
+    );
+
+    const status = screen.getByRole("status");
+
+    expect(status).toHaveTextContent("Sin conexión en tiempo real");
+    expect(status.querySelector(".MuiChip-root")).toBeNull();
   });
 });
