@@ -1,7 +1,9 @@
 /*
 * Funcionalidad: Console value tile
 * Descripción: One labelled value of the console monitors (a metric or a patient vital) as a description-list group: label (with the long name as title), formatted value with its unit, and, when the value is out of its normal range, a warning icon plus the text "Alto"/"Bajo" and the out-of-range token colors, so the state is never conveyed by color alone. A missing value shows "—". Optional children (e.g. a sparkline) go under the value. v1.1: an optional `derived` flag adds a visible "derivada" label (with an explanatory title) for values computed from the curves. Depends on React, MUI icons and the console monitor styles.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C3): optional `layout="july"` (the July value card: large value and unit, label on the right) and
+*   `kind="vital"` (the vital colour); classic tiles are unchanged.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,15 +31,25 @@ export type ValueTileProps = {
   range: NormalRange | null
   /** The value is computed from the curves, not reported by the source. */
   derived?: boolean
+  /** v1.2: `july` draws the July value card. */
+  layout?: "classic" | "july"
+  /** v1.2: a patient vital (July colour). */
+  kind?: "metric" | "vital"
   children?: ReactNode
 };
 
-export function ValueTile({ definition, value, range, derived = false, children }: ValueTileProps) {
+export function ValueTile({ definition, value, range, derived = false, layout = "classic", kind = "metric", children }: ValueTileProps) {
   const status = evaluateRange(value, range);
   const outOfRange = status === "low" || status === "high";
 
   return (
-    <div className={cx(styles.tile, outOfRange ? styles.outOfRange : undefined)} data-status={status} data-derived={derived || undefined}>
+    <div
+      className={cx(styles.tile, outOfRange ? styles.outOfRange : undefined)}
+      data-status={status}
+      data-derived={derived || undefined}
+      data-layout={layout === "july" ? layout : undefined}
+      data-kind={layout === "july" ? kind : undefined}
+    >
       <dt className={cx(styles.label)} title={definition.description}>{definition.label}</dt>
       <dd className={cx(styles.reading)}>
         <span className={cx(styles.value)}>{formatConsoleValue(value, definition)}</span>

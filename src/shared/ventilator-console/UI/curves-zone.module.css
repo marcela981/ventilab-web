@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Console curves zone styles
 * Descripción: Curves area of the ventilator console: toolbar of pressed-state toggle groups (sweep/scroll, time window, loops) and the freeze button, the frozen hint, and the plot row where the stacked sweep canvas takes the remaining width beside an optional loop canvas (stacked under it below 1024 px). Sizes the canvases through --vl-sweep-height / --vl-loop-height. Console and design-system tokens only. v1.1: the no-data overlay over greyed (grayscale, dimmed) curves.
-* Versión: 1.1
+*   v1.2 (Bloque 5, C3): the July variant: compact toolbar (zoom group framed in the primary colour, window label, icon-only Congelar below 1100 px of console, the plot options popover) and plots that fill the remaining column height with a 360 px minimum.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -130,4 +131,104 @@
   color: var(--vl-console-text);
   text-align: center;
   pointer-events: none;
+}
+
+/* ---- July variant ---- */
+.julyZone {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: var(--vl-space-2);
+}
+
+.julyToolbar {
+  flex: none;
+  gap: var(--vl-space-2);
+}
+
+.zoom {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--vl-color-primary);
+  border-radius: var(--vl-radius-md);
+}
+
+.zoomButton {
+  display: grid;
+  place-items: center;
+  width: var(--vl-space-6);
+  min-height: calc(var(--vl-space-5) + 2px);
+  padding: 0;
+  color: var(--vl-color-primary);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.zoomButton + .zoomButton {
+  border-left: 1px solid var(--vl-color-primary);
+}
+
+.zoomButton:disabled {
+  color: var(--vl-console-text-muted);
+  cursor: not-allowed;
+}
+
+.zoomButton:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: calc(var(--vl-focus-ring-width) * -1);
+}
+
+.windowLabel {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.plotOptions {
+  position: relative;
+  margin-left: auto;
+}
+
+.plotOptionsPanel {
+  position: absolute;
+  top: calc(100% + var(--vl-space-1));
+  right: 0;
+  z-index: var(--vl-z-raised);
+  padding: var(--vl-space-2);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+  box-shadow: var(--vl-shadow-2);
+}
+
+/* The canvas fills what the column leaves (the ResizeObserver of the canvas resizes the backing store). */
+.julyPlots {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 22.5rem;
+}
+
+.julyFill {
+  position: absolute;
+  inset: 0;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.julyFill .sweep {
+  --vl-sweep-height: 100%;
+}
+
+.julyFill .loop {
+  --vl-loop-height: 100%;
+  align-self: stretch;
+}
+
+@container vl-monitor (max-width: 1099.98px) {
+  .freezeText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }

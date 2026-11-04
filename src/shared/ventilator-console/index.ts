@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console module (public API)
-* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy). v1.5 (B3.10): no longer exports the unused CONSOLE_BUFFER_CAPACITY. v1.6 (W2): exports the console external store (createExternalStore, useStoreSelector, ConsoleAdapterStore, reuseUnchangedSlices, createUiThrottle) that live sources use to publish ≤ 4 Hz snapshots. v1.7 (Bloque 5, C1): exports the per-console pending edits store (createPendingControlsStore and its selectors and edit operations).
-* Versión: 1.7
+* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy). v1.5 (B3.10): no longer exports the unused CONSOLE_BUFFER_CAPACITY. v1.6 (W2): exports the console external store (createExternalStore, useStoreSelector, ConsoleAdapterStore, reuseUnchangedSlices, createUiThrottle) that live sources use to publish ≤ 4 Hz snapshots. v1.7 (Bloque 5, C1): exports the per-console pending edits store (createPendingControlsStore and its selectors and edit operations). v1.8 (Bloque 5, C3-C4): the July layout kind, the card catalog (MONITOR_CARD_IDS, MonitorCardId) and the cycle metrics of the July cards (CYCLE_EXTRA_METRIC_IDS).
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +17,9 @@ export {
   CONSOLE_WINDOW_SECONDS,
   consoleBufferCapacity,
   CURVE_IDS,
+  CYCLE_EXTRA_METRIC_IDS,
   DEFAULT_CONSOLE_SAMPLE_RATE_HZ,
+  MONITOR_CARD_IDS,
   DEFAULT_CONSOLE_WINDOW_SECONDS,
   PATIENT_TREND_POINTS,
   PATIENT_VITAL_IDS,
@@ -27,6 +29,7 @@ export type {
   ConsoleMetricId,
   CurveDefinition,
   CurveId,
+  MonitorCardId,
   NormalRange,
   PatientVitalId,
   ValueDefinition,
@@ -125,7 +128,7 @@ export { pushConsoleBatch, useConsoleWaveforms } from "./application/use-console
 export { VALUE_TILE_COPY, ValueTile } from "./application/value-tile";
 export type { ValueTileProps } from "./application/value-tile";
 export { CONSOLE_COPY, VentilatorConsole } from "./application/ventilator-console";
-export type { ConsoleSlot, ConsoleSlotContext, VentilatorConsoleProps } from "./application/ventilator-console";
+export type { ConsoleLayoutKind, ConsoleSlot, ConsoleSlotContext, VentilatorConsoleProps } from "./application/ventilator-console";
 export type {
   ConsoleAlarm,
   ConsoleAlarmEvent,
