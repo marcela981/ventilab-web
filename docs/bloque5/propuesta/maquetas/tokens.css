@@ -1,0 +1,247 @@
+/*
+ * Bloque 5 proposal: design tokens (mockup copy).
+ * Mirrors the token set proposed in DISENO_BLOQUE5.md §3. In the real app these values live in
+ * src/shared/design-system/theme/palette.ts + theme.ts (colorSchemes.dark / colorSchemes.light,
+ * colorSchemeSelector "data") and src/shared/design-system/UI/tokens.css.
+ * Default scheme = dark (July skin, decision D1). The light scheme keeps today's values with the AA fixes.
+ * Scheme selector follows the MUI CSS-variables pattern: [data-mui-color-scheme="dark|light"].
+ */
+
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  /* Latin variable subset copied from the next/font build cache of ventilab-web (.next/static/media). */
+  src: url("fonts/roboto-latin-var.woff2") format("woff2");
+}
+
+/* ---------- Scheme-independent tokens ---------- */
+:root {
+  /* Brand (unchanged, palette.ts:12-43) */
+  --vl-brand-cyan: #10aede;
+  --vl-brand-blue: #3d98cc;
+  --vl-brand-accent: #00a1db;
+  --vl-brand-navy: #0a112b;
+  --vl-brand-navy-deep: #0a0f26;
+
+  /* Typography (theme.ts:105-134; weight 300 mapped to 400, decision D3) */
+  --vl-font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  --vl-font-weight-light: 400;
+  --vl-font-weight-regular: 400;
+  --vl-font-weight-medium: 500;
+  --vl-font-weight-bold: 600;
+  --vl-font-weight-heavy: 700;
+
+  /* Spacing and radii (unchanged scale + the July glass radii) */
+  --vl-space-1: 4px;
+  --vl-space-2: 8px;
+  --vl-space-3: 12px;
+  --vl-space-4: 16px;
+  --vl-space-5: 20px;
+  --vl-space-6: 24px;
+  --vl-space-8: 32px;
+  --vl-radius-sm: 4px;
+  --vl-radius-md: 8px;
+  --vl-radius-lg: 12px;
+  --vl-radius-xl: 16px;   /* NEW: user card, panel item */
+  --vl-radius-2xl: 20px;  /* NEW: glass cards */
+  --vl-radius-3xl: 24px;  /* NEW: hero, login card */
+  --vl-radius-pill: 999px;
+  --vl-radius-nav-item: 0 25px 25px 0; /* NEW: July sidebar pill (Sidebar.jsx:176) */
+
+  --vl-duration-short: 150ms;
+  --vl-duration-standard: 250ms;
+  --vl-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Shell (NEW) */
+  --vl-sidebar-width: 15rem;            /* 240px, July */
+  --vl-sidebar-width-collapsed: 4rem;   /* 64px, July */
+  --vl-sidebar-header-height: 4rem;
+  --vl-sidebar-item-height: 3rem;
+  --vl-panel-sidebar-width: 16.25rem;   /* 260px, unchanged */
+  --vl-panel-sidebar-width-collapsed: 4.5rem;
+  --vl-main-padding: var(--vl-space-6);
+
+  /* Roles (NEW, AA-adjusted from SidebarUserCard.jsx:66-86; white text >= 4.5:1) */
+  --vl-role-student: #3a863d;
+  --vl-role-teacher: #0b78ce;
+  --vl-role-admin: #e81c0d;
+  --vl-on-role: #ffffff;
+
+  /* Staff panel (NEW, PanelSidebar.jsx / PanelLayout.jsx) */
+  --vl-panel-sidebar-bg: #1a237e;
+  --vl-panel-sidebar-text: #e8eaf6;
+  --vl-panel-sidebar-muted: rgba(255, 255, 255, 0.7);
+  --vl-panel-sidebar-faint: rgba(255, 255, 255, 0.55); /* version line, 0.4 failed AA */
+  --vl-panel-accent: #8457ff;                          /* #7c4dff failed 3:1 on indigo */
+  --vl-panel-item-active-bg: rgba(124, 77, 255, 0.3);
+  --vl-panel-item-active-hover-bg: rgba(124, 77, 255, 0.4);
+  --vl-panel-item-active-icon: #b388ff;
+  --vl-panel-content-bg: linear-gradient(160deg, #080d1a 0%, #0f1c35 55%, #0a1220 100%);
+
+  /* Glass (NEW) */
+  --vl-glass-bg: rgba(255, 255, 255, 0.05);
+  --vl-glass-bg-hover: rgba(255, 255, 255, 0.09);
+  --vl-glass-border: rgba(255, 255, 255, 0.1);
+  --vl-glass-blur: 10px;
+  --vl-glass-blur-hero: 12px;
+  --vl-glass-accent-cyan: rgba(16, 174, 222, 0.25);
+  --vl-glass-accent-cyan-border: rgba(16, 174, 222, 0.4);
+  --vl-glass-accent-cyan-text: #7dd3fc;
+  --vl-glass-accent-green: rgba(76, 175, 80, 0.25);
+  --vl-glass-accent-green-text: #86efac;
+  --vl-glass-accent-violet: rgba(124, 77, 255, 0.25);
+  --vl-glass-accent-violet-text: #d1c4e9;
+  --vl-glass-accent-orange: rgba(255, 152, 0, 0.25);
+  --vl-glass-accent-orange-text: #fcd34d;
+
+  /* Auth (NEW, login gradient with the AA-adjusted first stop; #667eea failed with the footer) */
+  --vl-auth-bg: linear-gradient(135deg, #506be7 0%, #764ba2 100%);
+
+  /* Ventilator console: pinned to navy, no longer derived from background.contrast */
+  --vl-console-bg: #0a112b;
+  --vl-console-surface: #161d36;
+  --vl-console-surface-raised: #1e243c;
+  --vl-console-border: rgba(255, 255, 255, 0.12);
+  --vl-console-grid: rgba(255, 255, 255, 0.07);
+  --vl-console-text: #e8f4fd;
+  --vl-console-text-muted: rgba(232, 244, 253, 0.7);
+  --vl-console-tick: #919191;               /* #757575 failed AA (3.11:1) */
+  --vl-console-curve-pressure: #ef5350;     /* July ChartsColumn.jsx:138 */
+  --vl-console-curve-flow: #42a5f5;         /* July ChartsColumn.jsx:142 */
+  --vl-console-curve-volume: #66bb6a;       /* July ChartsColumn.jsx:146 */
+  --vl-console-pending: #10aede;
+  --vl-console-pending-bg: rgba(16, 174, 222, 0.2);
+  --vl-console-out-of-range: #f44336;
+  --vl-console-out-of-range-bg: rgba(244, 67, 54, 0.2);
+  --vl-console-alarm-high: #f44336;
+  --vl-console-alarm-medium: #ff9800;
+  --vl-console-alarm-low: #10aede;
+  --vl-console-on-alarm: #0a112b;
+
+  /* Simulator bottom tabs (NEW) */
+  --vl-sim-tabbar-bg: #1e1e20;              /* rgba(31,31,31,.95) over navy */
+  --vl-sim-tab-active: #f53e53;             /* July #de0b24, AA-adjusted (4.51:1) */
+  --vl-sim-tab-inactive: rgba(255, 255, 255, 0.6);
+
+  /* Learning (NEW, per-section icon colours, AA-adjusted to 3:1 on the accordion) */
+  --vl-learn-section-ventylab: #a835d8;     /* July #7B1FA2 = 1.87:1 */
+  --vl-learn-section-prereq: #757575;
+  --vl-learn-section-mechanics: #176dd0;    /* July #1565C0 = 2.66:1 */
+  --vl-level-prereq: #9e9e9e;
+  --vl-level-beginner: #4caf50;
+  --vl-level-intermediate: #ff9800;
+  --vl-level-advanced: #f44336;
+
+  /* Evaluation (NEW) */
+  --vl-eval-card-bg: rgba(16, 174, 222, 0.1);
+  --vl-eval-card-bg-hover: rgba(16, 174, 222, 0.17);
+  --vl-eval-chip-quiz: #1565c0;
+  --vl-eval-chip-workshop: #cf4900;         /* July #e65100 = 3.79:1 with white */
+  --vl-eval-chip-exam: #6a1b9a;
+  --vl-eval-chip-level: #2e7d32;
+  --vl-eval-completed: #4caf50;
+  --vl-eval-completed-bg: rgba(76, 175, 80, 0.15);
+}
+
+/* ---------- Dark scheme (DEFAULT, July skin) ---------- */
+:root,
+[data-mui-color-scheme="dark"] {
+  color-scheme: dark;
+  --vl-color-bg: #0a112b;
+  --vl-color-bg-gradient: linear-gradient(180deg, #0a112b 0%, #0a0f26 100%);
+  --vl-color-surface: #161d36;              /* opaque equivalent of glass 5% on navy */
+  --vl-color-surface-raised: #1e243c;       /* glass 8% */
+  --vl-color-surface-contrast: #e8f4fd;     /* derived */
+  --vl-color-text: #e8f4fd;
+  --vl-color-text-muted: rgba(232, 244, 253, 0.7);
+  --vl-color-text-disabled: rgba(232, 244, 253, 0.55); /* 0.4 failed AA */
+  --vl-color-border: rgba(255, 255, 255, 0.12);
+  --vl-color-border-strong: rgba(255, 255, 255, 0.2);
+  --vl-color-divider: rgba(255, 255, 255, 0.08);
+  --vl-color-primary: #10aede;
+  --vl-color-on-primary: #0a112b;           /* decision D2: 7.21:1 */
+  --vl-color-secondary: #3d98cc;
+  --vl-color-success: #4caf50;
+  --vl-color-warning: #ff9800;
+  --vl-color-error: #f44336;
+  --vl-color-info: #10aede;
+  --vl-color-hover: rgba(255, 255, 255, 0.08);
+  --vl-color-selected: rgba(255, 255, 255, 0.15);
+  --vl-color-link: #10aede;
+  --vl-color-link-hover: #00a1db;
+  --vl-color-field-bg: rgba(255, 255, 255, 0.04);
+  --vl-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --vl-shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --vl-shadow-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  --vl-scrollbar-thumb: rgba(255, 255, 255, 0.2);
+
+  /* Global sidebar (NEW) */
+  --vl-sidebar-bg: #161d36;
+  --vl-sidebar-border: rgba(255, 255, 255, 0.12);
+  --vl-sidebar-text: #e8f4fd;
+  --vl-sidebar-item-active-bg: rgba(255, 255, 255, 0.15);
+  --vl-sidebar-version: rgba(255, 255, 255, 0.5);
+  --vl-user-card-bg: rgba(255, 255, 255, 0.08);
+  --vl-user-card-bg-hover: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- Light scheme (kept: today's palette + AA fixes) ---------- */
+[data-mui-color-scheme="light"] {
+  color-scheme: light;
+  --vl-color-bg: #ffffff;
+  --vl-color-bg-gradient: none;
+  --vl-color-surface: #fafafa;
+  --vl-color-surface-raised: #ffffff;
+  --vl-color-surface-contrast: #0a112b;
+  --vl-color-text: #0a112b;
+  --vl-color-text-muted: #6b747c;           /* #6c757d = 4.49:1 on paper */
+  --vl-color-text-disabled: #767676;
+  --vl-color-border: #e9ecef;
+  --vl-color-border-strong: #ced4da;
+  --vl-color-divider: #e9ecef;
+  --vl-color-primary: #10aede;
+  --vl-color-on-primary: #0a112b;
+  --vl-color-secondary: #3d98cc;
+  --vl-color-success: #4caf50;
+  --vl-color-warning: #ff9800;
+  --vl-color-error: #f44336;
+  --vl-color-info: #10aede;
+  --vl-color-hover: rgba(16, 174, 222, 0.08);
+  --vl-color-selected: rgba(16, 174, 222, 0.12);
+  --vl-color-link: #0a6885;
+  --vl-color-link-hover: #0a6885;
+  --vl-color-field-bg: #ffffff;
+  --vl-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --vl-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --vl-shadow-3: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --vl-scrollbar-thumb: rgba(0, 0, 0, 0.25); /* white 20% was invisible on white */
+  --vl-sidebar-bg: #fafafa;
+  --vl-sidebar-border: #e9ecef;
+  --vl-sidebar-text: #0a112b;
+  --vl-sidebar-item-active-bg: rgba(16, 174, 222, 0.12);
+  --vl-sidebar-version: #6b747c;
+  --vl-user-card-bg: #ffffff;
+  --vl-user-card-bg-hover: rgba(16, 174, 222, 0.08);
+}
+
+/* ---------- Surface scopes ---------- */
+/* Staff panel: PanelShell .root[data-surface="panel"] (all panel pages, decision D9) */
+[data-surface="panel"] {
+  --vl-color-bg: #0a1220;
+  --vl-color-surface: #19253d;              /* glass 4% over the #0f1c35 stop */
+  --vl-color-border: rgba(255, 255, 255, 0.09);
+}
+
+/* Auth pages: a light island on the gradient, like July's login card */
+[data-surface="auth"] {
+  color-scheme: light;
+  --vl-color-surface: #fafafa;
+  --vl-color-text: #0a112b;
+  --vl-color-text-muted: #6b747c;
+  --vl-color-border: #ced4da;
+  --vl-color-divider: #e9ecef;
+  --vl-color-link: #0a6885;
+  --vl-color-field-bg: #fafafa;
+}

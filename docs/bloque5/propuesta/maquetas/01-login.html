@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es" data-mui-color-scheme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iniciar sesión | VentyLab (propuesta Bloque 5)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="base.css">
+<style>
+  /* Mockup of login-page.module.css + public-layout.module.css (brand variant). Decisions D5, D6. */
+  body { background: var(--vl-auth-bg); overflow: auto; }
+  .auth { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; gap: 20px; }
+  .auth-card { width: 100%; max-width: 34rem; background: var(--vl-color-surface); color: var(--vl-color-text);
+    border-radius: var(--vl-radius-3xl); padding: 40px 40px 32px; box-shadow: 0 24px 38px rgba(0,0,0,.14), 0 9px 46px rgba(0,0,0,.12), 0 11px 15px rgba(0,0,0,.2); }
+  .auth-logo { display: block; height: 60px; margin: 0 auto 20px; }
+  .auth-card h1 { font-size: 1.25rem; font-weight: 600; text-align: center; }
+  .auth-sub { text-align: center; color: var(--vl-color-text-muted); font-size: .9375rem; margin: 8px 0 24px; }
+  .gis { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 44px; border: 1px solid #dadce0;
+    border-radius: 4px; background: #ffffff; color: #3c4043; font-size: .9375rem; font-weight: 500; }
+  .gis svg { width: 18px; height: 18px; }
+  .or { display: flex; align-items: center; gap: 12px; color: var(--vl-color-text-muted); font-size: .875rem; margin: 22px 0; }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--vl-color-divider); }
+  .field { position: relative; margin-bottom: 18px; }
+  .field label { position: absolute; top: -9px; left: 10px; padding: 0 4px; background: var(--vl-color-surface); font-size: .75rem; color: var(--vl-color-text-muted); }
+  .field input { width: 100%; height: 54px; border: 1px solid var(--vl-color-border); border-radius: var(--vl-radius-md); padding: 0 48px 0 14px;
+    font: inherit; color: var(--vl-color-text); background: var(--vl-color-field-bg); }
+  .field .icon-btn { position: absolute; right: 6px; top: 7px; color: #0a6885; }
+  .row-end { display: flex; justify-content: flex-end; margin: -4px 0 22px; font-size: .875rem; }
+  .submit { width: 100%; height: 50px; border-radius: var(--vl-radius-3xl); font-size: 1rem; }
+  .signup { text-align: center; margin-top: 20px; font-size: .875rem; color: var(--vl-color-text-muted); }
+  .signup a { font-weight: 600; }
+  .foot { color: #ffffff; font-size: .8125rem; text-align: center; }
+</style>
+<script src="icons.js"></script>
+<script src="shell.js"></script>
+</head>
+<body>
+<main class="auth" id="main-content">
+  <section class="auth-card" data-surface="auth" aria-labelledby="login-title">
+    <img class="auth-logo" src="../../../../public/images/logo.png" alt="VentyLab">
+    <h1 id="login-title">Iniciar sesión</h1>
+    <p class="auth-sub">Accede a tu plataforma de aprendizaje de ventilación mecánica</p>
+
+    <!-- Official Google Identity Services button (theme outline, text continue_with, locale es); not a MUI copy. -->
+    <div class="gis" role="button" aria-label="Continuar con Google">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.2 0-11.5-4.2-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>
+      Continuar con Google
+    </div>
+
+    <div class="or">o con tu correo</div>
+
+    <form aria-label="Iniciar sesión con correo" onsubmit="return false">
+      <div class="field"><label for="email">Correo electrónico</label><input id="email" type="email" value="laura.gomez@correounivalle.edu.co"></div>
+      <div class="field"><label for="pwd">Contraseña</label><input id="pwd" type="password" value="contrasena">
+        <button class="icon-btn" type="button" aria-label="Mostrar contraseña" aria-pressed="false"><i data-ic="Visibility"></i></button></div>
+      <div class="row-end"><a href="#">¿Olvidaste tu contraseña?</a></div>
+      <button class="btn btn--contained submit" type="submit"><i data-ic="Login"></i>Iniciar sesión</button>
+    </form>
+    <p class="signup">¿No tienes cuenta? <a href="#">Regístrate</a></p>
+  </section>
+  <p class="foot">© 2026 VentyLab. Plataforma educativa de ventilación mecánica.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+/* Bloque 5 proposal mockups: /learn (curriculum.module.css, home.module.css). */
+.learn-resume { padding: 24px; }
+.learn-resume-row { display: flex; align-items: flex-end; gap: 48px; margin-top: 22px; }
+.learn-big { display: flex; align-items: center; gap: 6px; font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+.learn-up, .learn-ok { color: var(--vl-color-success); }
+.learn-fire { color: var(--vl-color-warning); }
+.learn-trophy { color: #ffc107; }
+.learn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 16px 0; }
+.learn-tile { padding: 20px 24px; }
+.learn-activity { padding: 20px 24px; }
+.learn-cal { display: grid; grid-template-columns: repeat(28, 1fr); gap: 4px; margin-top: 14px; max-width: 760px; }
+.learn-cal span { aspect-ratio: 1; border-radius: 3px; background: var(--vl-color-primary); }
+
+.acc-icon { display: inline-grid; }
+.acc-icon--ventylab { color: var(--vl-learn-section-ventylab); }
+.acc-icon--prereq { color: var(--vl-learn-section-prereq); }
+.acc-icon--mechanics { color: var(--vl-learn-section-mechanics); }
+
+.level { display: flex; gap: 16px; padding: 4px 8px 0; }
+.level-dot { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 2px solid var(--vl-level-beginner);
+  color: var(--vl-level-beginner); display: grid; place-items: center; font-weight: 700; }
+.level-title { font-size: 1.25rem; font-weight: 600; color: var(--vl-level-beginner); }
+.mods { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; margin-top: 18px; }
+.mod { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; padding: 18px; min-height: 250px;
+  background: var(--vl-glass-bg); border: 1px solid var(--vl-glass-border); border-radius: var(--vl-radius-lg); }
+.mod--open { border-color: #0bbaf4; }
+.mod-title { font-size: 1rem; font-weight: 600; line-height: 1.4; }
+.mod-desc { font-size: .875rem; color: var(--vl-color-text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.mod-count { font-size: .75rem; color: var(--vl-color-text-muted); margin-top: auto; }
+.mod-go { width: 100%; }
+.mod--open .mod-go { background: #22c55e; color: var(--vl-color-on-primary); }
