@@ -1,0 +1,147 @@
+/*
+* Funcionalidad: July alerts styles
+* Descripción: The bottom of the July right column (mockup 05-monitoreo-digital: "Estado de la mecánica" box with Cst / Cdin and their "derivada" tags, "Alertas (n)" and the "Ver alertas detalladas" button) and the sections of the "Alertas detalladas" drawer (validation alerts by tone, never colour alone: icon and text). Console and design-system tokens only. v0.1 (Bloque 5, C9): first version.
+* Versión: 0.1
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.mechanics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-2);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.heading {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-console-text);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--vl-space-1) var(--vl-space-3);
+  margin: 0;
+  font: var(--mui-font-caption);
+}
+
+.facts dt {
+  color: var(--vl-console-text-muted);
+}
+
+.facts dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--vl-space-1);
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--vl-console-text);
+}
+
+.derived {
+  padding: 0 var(--vl-space-1);
+  font-weight: 400;
+  color: var(--vl-console-text-muted);
+  background: var(--vl-console-surface);
+  border-radius: var(--vl-radius-sm);
+}
+
+.count {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+}
+
+.count[data-alerts="true"] {
+  color: var(--vl-console-pending);
+}
+
+.open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vl-space-1);
+  min-height: var(--vl-space-6);
+  padding: 0 var(--vl-space-2);
+  font: var(--mui-font-button);
+  color: var(--vl-console-text);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--vl-console-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.open[aria-expanded="true"] {
+  background: var(--vl-console-pending-bg);
+  border-color: var(--vl-console-pending);
+}
+
+.open:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+/* ---- Drawer sections ---- */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding-bottom: var(--vl-space-3);
+  border-bottom: 1px solid var(--vl-console-border);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border-left: var(--vl-space-1) solid var(--vl-console-border);
+  border-radius: var(--vl-radius-sm);
+}
+
+.alert[data-tone="warning"] {
+  border-left-color: var(--vl-console-alarm-medium);
+}
+
+.alert[data-tone="error"] {
+  border-left-color: var(--vl-console-alarm-high);
+}
+
+.alert[data-tone="info"] {
+  border-left-color: var(--vl-console-pending);
+}
+
+.alertIcon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--vl-console-text-muted);
+}

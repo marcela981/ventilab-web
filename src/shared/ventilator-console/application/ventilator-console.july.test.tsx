@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole July layout tests
-* Descripción: The opt-in July layout of the console: the three regions (Valores, Curvas, Controles) in DOM order with the left column order of the E2E contract (logos, leftTop slot, Confirmar, Cancelar, pending status, value cards), the input row above the alarms and the curves, the right column (mode head, toggle with the assist slot, timing, rate), the value cards (15 metrics + the provided vitals, none without a patient monitor), the slots (leftTop, assistSlot, curvesToolbarStart, curvesFooter, rightFooter, header), Enter / Escape on the console root, the Real summary (`confirmSummary`), `controlsSlot={null}` (no July controls), the zoom buttons over the time windows, the classic layout untouched by default. v0.1 (Bloque 5, C3): first version. Depends on Vitest, Testing Library and the console.
-* Versión: 0.1
+* Descripción: The opt-in July layout of the console: the three regions (Valores, Curvas, Controles) in DOM order with the left column order of the E2E contract (logos, leftTop slot, Confirmar, Cancelar, pending status, value cards), the input row above the alarms and the curves, the right column (mode head, toggle with the assist slot, timing, rate), the value cards (15 metrics + the provided vitals, none without a patient monitor), the slots (leftTop, assistSlot, curvesToolbarStart, curvesFooter, rightFooter, header), Enter / Escape on the console root, the Real summary (`confirmSummary`), `controlsSlot={null}` (no July controls), the zoom buttons over the time windows, the classic layout untouched by default. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C9): the rightFooter probe button has its own name (the console now renders "Ver alertas detalladas" itself). Depends on Vitest, Testing Library and the console.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -118,7 +118,7 @@ describe("VentilatorConsole layout=\"july\"", () => {
         assistSlot={<button type="button">Asesoría IA</button>}
         curvesToolbarStart={<span role="status" aria-label="Estado de la señal">Simulando</span>}
         curvesFooter={<button type="button">Comandos recientes</button>}
-        rightFooter={<button type="button">Ver alertas detalladas</button>}
+        rightFooter={<button type="button">Pie de la columna</button>}
       />,
     );
 
@@ -129,7 +129,7 @@ describe("VentilatorConsole layout=\"july\"", () => {
     expect(inOrder(within(controls).getByRole("group", { name: "Modo ventilatorio" }), within(controls).getByRole("button", { name: "Asesoría IA" }))).toBe(true);
     expect(inOrder(within(curves).getByRole("status", { name: "Estado de la señal" }), within(curves).getByRole("group", { name: "Zoom de las curvas" }))).toBe(true);
     expect(inOrder(curves, screen.getByRole("button", { name: "Comandos recientes" }))).toBe(true);
-    expect(within(controls).getByRole("button", { name: "Ver alertas detalladas" })).toBeInTheDocument();
+    expect(within(controls).getByRole("button", { name: "Pie de la columna" })).toBeInTheDocument();
   });
 
   it("confirms with Enter and cancels with Escape on the console", () => {
