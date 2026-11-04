@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher workspace and General tab styles
-* Descripción: Layout of /teacher as a workspace (tab list General / Por grupo and its panels, hidden panels stay mounted) and of the General tab (julio panel home, FLUJOS_JULIO §c.3): greeting banner, statistic link cards in an auto-fit grid, two columns with "Estudiantes recientes" (name, progress bar and percentage) and "Accesos rápidos" (link cards with icon, title, description and the pending-grading badge). Tokens only; the layout collapses to one column on narrow screens.
-* Versión: 1.0
+* Descripción: Layout of /teacher as a workspace (tab list General / Por grupo and its panels, hidden panels stay mounted) and of the General tab (julio panel home, FLUJOS_JULIO §c.3): greeting banner, statistic link cards in an auto-fit grid, two columns with "Estudiantes recientes" (name, progress bar and percentage) and "Accesos rápidos" (link cards with icon, title, description and the pending-grading badge). Tokens only; the layout collapses to one column on narrow screens. vX.x (Bloque 5, §5.2): July panel glass containers (GlassStatCard, DashboardHero): the content spans the panel width; hero, stat cards, boxes and quick actions on white 5% with the 10% border (blur only on the containers, behind @supports); hero icon badge; stat cards with an accent icon badge (cyan, green, violet, orange by data-accent) and the value over its label.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,7 @@
   flex-direction: column;
   gap: var(--vl-space-4);
   width: 100%;
-  max-width: 80rem;
+  max-width: none;
   margin: 0 auto;
 }
 
@@ -80,10 +80,44 @@
   gap: var(--vl-space-3);
   align-items: center;
   justify-content: space-between;
-  padding: var(--vl-space-5);
-  border: 1px solid var(--vl-color-border);
+  padding: var(--vl-space-5) var(--vl-space-6);
+  border: 1px solid var(--vl-glass-border);
+  border-radius: var(--vl-radius-2xl);
+  background: var(--vl-glass-bg);
+}
+
+/* Glass only on containers (hero, stat cards, boxes), never per row; opaque-looking fallback without backdrop-filter. */
+@supports (backdrop-filter: blur(1px)) {
+  .hero {
+    backdrop-filter: blur(var(--vl-glass-blur-hero));
+  }
+
+  .statCard,
+  .panelCard {
+    backdrop-filter: blur(var(--vl-glass-blur));
+  }
+}
+
+.heroIdentity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: var(--vl-space-4);
+}
+
+/* July DashboardHero icon badge (cyan glass accent). */
+.heroIcon,
+.statIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--vl-glass-accent-cyan-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-accent-cyan);
+  color: var(--vl-glass-accent-cyan-text);
 }
 
 .heroText {
@@ -123,22 +157,47 @@
   min-width: 0;
 }
 
+/* July GlassStatCard: accent icon badge, then the value over its label (the DOM keeps title first for the name). */
 .statCard {
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-direction: column;
-  gap: var(--vl-space-2);
+  grid-template-areas: "icon value" "icon title";
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--vl-space-3);
   padding: var(--vl-space-4);
   color: var(--vl-color-text);
   text-decoration: none;
-  border: 1px solid var(--vl-color-border);
-  border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
-  transition: box-shadow var(--vl-duration-short) var(--vl-ease-standard);
+  border: 1px solid var(--vl-glass-border);
+  border-radius: var(--vl-radius-xl);
+  background: var(--vl-glass-bg);
+  transition: background var(--vl-duration-short) var(--vl-ease-standard);
 }
 
 .statCard:hover {
-  box-shadow: var(--vl-shadow-2);
+  background: var(--vl-glass-bg-hover);
+}
+
+.statIcon {
+  grid-area: icon;
+}
+
+.statCard[data-accent="green"] .statIcon {
+  border-color: var(--vl-glass-accent-green-border);
+  background: var(--vl-glass-accent-green);
+  color: var(--vl-glass-accent-green-text);
+}
+
+.statCard[data-accent="violet"] .statIcon {
+  border-color: var(--vl-glass-accent-violet-border);
+  background: var(--vl-glass-accent-violet);
+  color: var(--vl-glass-accent-violet-text);
+}
+
+.statCard[data-accent="orange"] .statIcon {
+  border-color: var(--vl-glass-accent-orange-border);
+  background: var(--vl-glass-accent-orange);
+  color: var(--vl-glass-accent-orange-text);
 }
 
 .statCard:focus-visible,
@@ -148,12 +207,15 @@
 }
 
 .statTitle {
+  grid-area: title;
   color: var(--vl-color-text-muted);
-  font-weight: 600;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .statValue {
-  font-size: 2rem;
+  grid-area: value;
+  font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.2;
 }
@@ -176,10 +238,10 @@
   flex-direction: column;
   gap: var(--vl-space-3);
   min-width: 0;
-  padding: var(--vl-space-4);
-  border: 1px solid var(--vl-color-border);
-  border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  padding: var(--vl-space-4) var(--vl-space-5);
+  border: 1px solid var(--vl-glass-border);
+  border-radius: var(--vl-radius-xl);
+  background: var(--vl-glass-bg);
 }
 
 .panelHeader {
@@ -267,12 +329,13 @@
   padding: var(--vl-space-3);
   color: var(--vl-color-text);
   text-decoration: none;
-  border: 1px solid var(--vl-color-border);
-  border-radius: var(--vl-radius-md);
+  border: 1px solid var(--vl-glass-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-glass-bg);
 }
 
 .action:hover {
-  background: var(--vl-color-hover);
+  background: var(--vl-glass-bg-hover);
 }
 
 .actionIcon {

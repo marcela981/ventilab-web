@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NavList styles
-* Descripción: Styles of the navigation list shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the section subheader, the small status of an item (dot + text; positive = success dot, negative = warning dot, neutral = muted dot; the text carries the meaning, never the colour alone) and the collapsed variant, where the label and the indicator text are visually hidden (they stay the accessible name) and the icons are centred. Tokens only. v1.1 (Bloque 5, §5.1): the plain divider of a `separated` item and the July global sidebar skin (`data-variant="sidebar"`, Sidebar.jsx:167-202): 48px items shaped as a pill flat on the left edge, white 15% active background with a semibold label, 12px rounded squares when collapsed. Selectors that override MUI properties (padding, margin, radius, selected background) carry one class or attribute more than MUI's. The July staff panel skin (`data-variant="panel"`, PanelSidebar.jsx:218-253): 42px items rounded 16px in light indigo, the active one violet 30% with a white semibold label and a lilac icon, muted section subheaders on the indigo background.
-* Versión: 1.1
+* Descripción: Styles of the navigation list shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the section subheader, the small status of an item (dot + text; positive = success dot, negative = warning dot, neutral = muted dot; the text carries the meaning, never the colour alone) and the collapsed variant, where the label and the indicator text are visually hidden (they stay the accessible name) and the icons are centred. Tokens only. v1.1 (Bloque 5, §5.1): the plain divider of a `separated` item and the July global sidebar skin (`data-variant="sidebar"`, Sidebar.jsx:167-202): 48px items shaped as a pill flat on the left edge, white 15% active background with a semibold label, 12px rounded squares when collapsed. Selectors that override MUI properties (padding, margin, radius, selected background) carry one class or attribute more than MUI's. The July staff panel skin (`data-variant="panel"`, PanelSidebar.jsx:218-253): 42px items rounded 16px in light indigo, the active one violet 30% with a white semibold label and a lilac icon, muted section subheaders on the indigo background. vX.x (Bloque 5, Ola 4): on desktop viewports under 960px high the panel items compact to 28px (14px label, 20px icon) and the subheader to 20px, so the 13 admin items fit at 1280x720 without the list's inner scroll.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -158,6 +158,36 @@
 
 .list[data-variant="panel"].collapsed .item > :first-child {
   min-width: 0;
+}
+
+/* Short desktop viewports: compact 28px panel items (14px label) so every admin item is on screen at 1280x720 (13 items). */
+@media (min-width: 900px) and (max-height: 959.95px) {
+  .list[data-variant="panel"] {
+    padding-block: var(--vl-space-1);
+  }
+
+  .list[data-variant="panel"] .section {
+    line-height: var(--vl-space-5);
+  }
+
+  .list[data-variant="panel"] .item {
+    min-height: 1.75rem;
+    margin: 1px var(--vl-space-2);
+    padding: 2px var(--vl-space-4);
+  }
+
+  .list[data-variant="panel"] .item .label {
+    margin: 0;
+  }
+
+  .list[data-variant="panel"] .item .label > * {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .list[data-variant="panel"] .item :is(svg) {
+    font-size: 1.25rem;
+  }
 }
 
 .list[data-variant="panel"] .divider {
