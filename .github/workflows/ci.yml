@@ -5,7 +5,18 @@
 #   privado, el secreto BACKEND_REPO_TOKEN debe tener permiso de lectura sobre marcela981/ventylab-server.
 #   v1.1 (A7): sin DATABASE_URL de marcador; la web ya no tiene Prisma.
 #   v1.2 (W1 Bloque 1): el lote (d) incluye la feature simulator-workspace.
-# Versión: 1.2
+#   v1.3 (Bloque 5, Ola 0): nuevo job e2e que levanta el stack completo dentro del runner (PostgreSQL 17 como servicio,
+#   ventylab-server@main migrado y sembrado como en LOCAL_STACK.md §3.3, backend en :4000 contra el LLM falso
+#   scripts/e2e/fake-llm.mjs, web con next start en :3000) y ejecuta solo los cinco E2E críticos con Chromium:
+#   simulador digital (simulator-student: sesión simulada, curvas, resultado y repetición; sin MQTT, a diferencia de
+#   simulator-connection), lección (bloque2/learning-student: visor, avance y Mi Progreso), quiz
+#   (bloque3/quiz-feedback: retroalimentación inmediata y de IA del LLM falso), calificación docente
+#   (bloque3/workshop-review: el docente califica la respuesta abierta en /grading y se publica la nota) y panel
+#   (bloque4/teacher-student-detail: panel docente y detalle del estudiante). Las demás specs quedan fuera por costo
+#   (exam-autosubmit espera su minuto real) o por depender de servicios ausentes en CI (MQTT, Supabase). Los dos
+#   repositorios se clonan en carpetas hermanas (web/ y server/) para que el build de la web no vea el backend. Si
+#   falla, se suben test-results/ (trazas y capturas) y los logs del stack como artefacto.
+# Versión: 1.3
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -89,3 +100,150 @@ jobs:
         env:
           BACKEND_SPEC_PATH: .ci/ventylab-server/openapi/openapi.json
         run: npm run check:api
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ventylab
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      # Backend: local, non-secret values of LOCAL_STACK.md §3.2. NODE_ENV=development goes only on the backend
+      # steps: at job level it also reaches next build and breaks its prerendering.
+      PORT: "4000"
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/ventylab
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/ventylab
+      JWT_SECRET: ci-e2e-access-secret-not-for-production-0001
+      JWT_EXPIRES_IN: 15m
+      JWT_REFRESH_SECRET: ci-e2e-refresh-secret-not-for-production-0002
+      JWT_REFRESH_EXPIRES_IN: 7d
+      SUPERADMIN_EMAIL: superadmin@ventylab.demo
+      CORS_ORIGIN: http://localhost:3000
+      FRONTEND_URL: http://localhost:3000
+      PRODUCTION_URL: https://ventylab.vercel.app
+      THROTTLE_TTL: "60000"
+      THROTTLE_LIMIT: "100"
+      SWAGGER_ALLOWED_IPS: "*"
+      SMTP_HOST: localhost
+      SMTP_PORT: "1025"
+      SMTP_FROM: no-reply@ventylab.demo
+      SMTP_SECURE: "false"
+      OPENAI_BASE_URL: http://127.0.0.1:4910/v1
+      OPENAI_API_KEY: local
+      # Web and Playwright.
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:4000
+      CSP_REPORT_ONLY: "true"
+      E2E_BASE_URL: http://localhost:3000
+      E2E_API_URL: http://localhost:4000
+    steps:
+      - name: Checkout web
+        uses: actions/checkout@v4
+        with:
+          path: web
+
+      - name: Checkout backend
+        uses: actions/checkout@v4
+        with:
+          repository: marcela981/ventylab-server
+          ref: main
+          path: server
+          token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            server/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: Migrate and seed the database (LOCAL_STACK.md §3.3)
+        working-directory: server
+        env:
+          NODE_ENV: development
+          PGPASSWORD: postgres
+        run: |
+          npx prisma migrate deploy
+          npm run prisma:seed
+          psql -h localhost -U postgres -d ventylab -v ON_ERROR_STOP=1 -c 'UPDATE levels lv SET "sectionId" = s.id FROM sections s WHERE lv."sectionId" IS NULL AND s.slug = lv.track'
+          npm run demo:seed
+          npx tsx prisma/seed-clinical-cases.ts
+          npx tsx prisma/seed-evaluation.ts
+
+      - name: Build backend
+        working-directory: server
+        run: npm run build
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Build web
+        working-directory: web
+        run: npm run build
+
+      - name: Start fake LLM, backend and web
+        run: |
+          mkdir -p logs
+          (cd web && nohup node scripts/e2e/fake-llm.mjs > ../logs/fake-llm.log 2>&1 &)
+          (cd server && NODE_ENV=development nohup node dist/main > ../logs/backend.log 2>&1 &)
+          (cd web && nohup npx next start -p 3000 > ../logs/web.log 2>&1 &)
+
+      - name: Wait for the stack
+        run: |
+          wait_for() {
+            for i in $(seq 1 90); do
+              if curl -sf "$1" > /dev/null; then echo "ready: $1"; return 0; fi
+              sleep 2
+            done
+            echo "not ready: $1"
+            return 1
+          }
+          wait_for http://localhost:4000/health/ready || { tail -n 100 logs/backend.log; exit 1; }
+          wait_for http://localhost:3000/auth/login || { tail -n 100 logs/web.log; exit 1; }
+
+      - name: Install Playwright Chromium
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E critical specs
+        working-directory: web
+        run: >-
+          npx playwright test --project=e2e
+          e2e/simulator-student.spec.ts
+          e2e/bloque2/learning-student.spec.ts
+          e2e/bloque3/quiz-feedback.spec.ts
+          e2e/bloque3/workshop-review.spec.ts
+          e2e/bloque4/teacher-student-detail.spec.ts
+
+      - name: Stack logs
+        if: failure()
+        run: tail -n 200 logs/*.log || true
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            web/test-results/
+            logs/
+          retention-days: 7

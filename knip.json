@@ -18,5 +18,6 @@
   "ignore": [
     "src/shared/sim-engine/engine/**"
   ],
+  "ignoreBinaries": ["prisma", "tsx"],
   "ignoreExportsUsedInFile": true
 }
