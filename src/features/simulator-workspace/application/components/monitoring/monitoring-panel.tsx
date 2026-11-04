@@ -15,7 +15,11 @@
 *   mounted (hidden in digital mode), so its console edits, recording state and latency survive mode switches.
 *   v0.4 (Bloque 5, C6): the digital SessionMonitor is the July layout (the own patient goes into the case drawer) and
 *   receives the signed-in user's value cards preference (useMonitorCardsPref).
-* Versión: 0.4
+*   v0.5 (Bloque 5, C7): with the digital console on screen, the Digital/Real selector moves into its left column
+*   (`leftTop`, before "Paciente activo") and the status chip to the start of the curves toolbar
+*   (`curvesToolbarStart`); the top row (MonitorHeader) only shows for the states without a digital console (guide,
+*   preparing, notices) and for the real view.
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,7 +27,8 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { SessionMonitor } from "@features/simulator/session.entry";
 import type { SimSessionHostValue } from "@features/simulator/session.entry";
 import { cx } from "@shared/lib/class-names";
@@ -33,7 +38,7 @@ import { useMonitorCardsPref } from "../../hooks/use-monitor-cards-pref";
 import type { MonitorMode } from "../../entities/monitor-status.entity";
 import { useLabConnection } from "../lab-connection-provider";
 import { useWorkspaceSession } from "../workspace-session-provider";
-import { MonitorHeader } from "./monitor-header";
+import { MonitorHeader, MonitorModeSelector, MonitorStatusChip } from "./monitor-header";
 import { EmptyMonitorGuide, RealMonitorSlot } from "./monitor-guides";
 import { PatientInfo } from "./patient-info";
 import { SessionResultDialog } from "./session-result-dialog";
@@ -45,14 +50,32 @@ export const MONITORING_PANEL_COPY = {
   preparing: "Preparando la sesión de simulación…",
 } as const;
 
-function DigitalMonitor({ host }: { host: SimSessionHostValue }) {
+type DigitalMonitorProps = {
+  host: SimSessionHostValue
+  /** The July left column top (monitor mode selector) and the curves toolbar start (status chip). */
+  leftTop: ReactNode
+  chip: ReactNode
+};
+
+/** The digital console is on screen (not a phase notice nor the starting text). */
+function hasDigitalConsole(host: SimSessionHostValue | null): boolean {
+  return host?.phase === "ready" && Boolean(host.running?.session.adapter) && host.running?.version.status !== "blocked";
+}
+
+function DigitalMonitor({ host, leftTop, chip }: DigitalMonitorProps) {
   const patient = host.running?.boot.record.patient ?? null;
   const { user } = useSession();
   const cards = useMonitorCardsPref(user?.id);
 
   return (
     <div className={cx(styles.console)}>
-      <SessionMonitor host={host} aside={patient ? <PatientInfo patient={patient} /> : null} cards={cards} />
+      <SessionMonitor
+        host={host}
+        aside={patient ? <PatientInfo patient={patient} /> : null}
+        cards={cards}
+        leftTop={leftTop}
+        curvesToolbarStart={chip}
+      />
     </div>
   );
 }
@@ -64,6 +87,10 @@ export function MonitoringPanel() {
   const [realOpened, setRealOpened] = useState(false);
   const sessionStatus = host?.running?.session.status ?? null;
   const status = deriveMonitorStatus({ mode, sessionStatus, connected });
+  // Stable nodes for the console slots (the console shell re-renders only when they change).
+  const selector = useMemo(() => <MonitorModeSelector mode={mode} onModeChange={setMode} placement="column" />, [mode]);
+  const chip = useMemo(() => <MonitorStatusChip status={status} />, [status]);
+  const consoleHeader = mode === "digital" && hasDigitalConsole(host);
 
   if (mode === "real" && !realOpened) {
     setRealOpened(true);
@@ -74,7 +101,7 @@ export function MonitoringPanel() {
   if (!sessionId) {
     digital = <EmptyMonitorGuide />;
   } else if (host) {
-    digital = <DigitalMonitor host={host} />;
+    digital = <DigitalMonitor host={host} leftTop={selector} chip={chip} />;
   } else {
     digital = <p className={cx(styles.muted)} role="status">{MONITORING_PANEL_COPY.preparing}</p>;
   }
@@ -82,7 +109,7 @@ export function MonitoringPanel() {
   return (
     <section className={cx(styles.panel)} aria-labelledby="workspace-monitoreo-title">
       <h2 id="workspace-monitoreo-title" className={cx(styles.visuallyHidden)}>{MONITORING_PANEL_COPY.title}</h2>
-      <MonitorHeader mode={mode} onModeChange={setMode} status={status} />
+      {consoleHeader ? null : <MonitorHeader mode={mode} onModeChange={setMode} status={status} />}
       {/* The digital view stays mounted in real mode while a session runs (console state, pending edits, canvases). */}
       <div hidden={mode !== "digital"}>{digital}</div>
       {/* Same for the real view once opened (telemetry consumers exist only while CONNECTED). */}

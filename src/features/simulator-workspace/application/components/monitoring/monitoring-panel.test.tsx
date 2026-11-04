@@ -13,7 +13,9 @@
 *   lab connection controller is mocked idle (no session or socket providers here).
 *   v0.4 (W11, Bloque 1): no mock of the simulator catalog entry point (removed with the temporary panels).
 *   v0.5 (Bloque 5, C6): a signed-in student session (the July value cards preference is per user).
-* Versión: 0.5
+*   v0.6 (Bloque 5, C7): with the digital console on screen the mode selector is in the console left column (before
+*   "Paciente activo") and the status chip in the curves zone; switching to real brings the top row back.
+* Versión: 0.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -209,6 +211,13 @@ describe("MonitoringPanel", () => {
     await startRunning(harness);
 
     await waitFor(() => expect(chip()).toHaveTextContent("Simulando"));
+    // July left column and curves toolbar (C7): one selector and one chip, inside the console.
+    const values = screen.getByRole("region", { name: "Valores" });
+    const selector = within(values).getByRole("group", { name: "Modo del monitor" });
+
+    expect(screen.getAllByRole("group", { name: "Modo del monitor" })).toHaveLength(1);
+    expect(selector.compareDocumentPosition(within(values).getByRole("status", { name: "Paciente activo" })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(screen.getByRole("region", { name: "Curvas" })).getByRole("status", { name: "Estado de la señal" })).toBe(chip());
     expect(screen.getByRole("button", { name: "Finalizar sesión" })).toBeEnabled();
     expect(screen.getByRole("group", { name: "Control del tiempo" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Asesoría IA" })).toBeInTheDocument();

@@ -50,15 +50,6 @@
     grid-template-columns: 15rem minmax(0, 1fr) 14.375rem;
     gap: var(--vl-space-2);
   }
-
-  /* 1280: smaller logos leave the height to the value cards. */
-  .logoVentyLab {
-    height: calc(var(--vl-space-8) * 0.625);
-  }
-
-  .logoUnivalle {
-    width: 9rem;
-  }
 }
 
 .column {
@@ -114,6 +105,18 @@
   width: 11.25rem;
   max-width: 100%;
   height: auto;
+}
+
+/* 1280: smaller logos leave the height to the value cards (after the base rules, so it wins). */
+@container vl-monitor (max-width: 1099.98px) {
+  .logoVentyLab {
+    width: 9.25rem;
+    height: calc(var(--vl-space-8) * 0.625);
+  }
+
+  .logoUnivalle {
+    width: 9rem;
+  }
 }
 
 .rightHead {
