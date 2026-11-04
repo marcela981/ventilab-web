@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard page tests
-* Descripción: /teacher with msw: the first STUDENT group is shown by default (`GET /api/groups?type=STUDENT`), the group of ?groupId wins and choosing another group writes it to the URL; the cards show the envelope totals of the grading queue and the active assignments and only the scheduled reservations of the group; the students table lists the dashboard rows with API values, highlights the student with a failed published evaluation (legend and "En riesgo" label), filters by name or email and sorts by an API column; the charts receive the API histogram of the selected evaluation (charts stubbed); a 403 of the analytics shows "No tienes acceso a este grupo"; "Exportar CSV" requests the export path and hands the file to the browser. v1.1 (O3 review): switching group shows the loading state and not the previous rows; a 500 on the new group shows the error. v1.2 (closure B2): the pending card reads the queue count endpoint (no queue page), the calendar and the stats are requested with the group, the risk highlight and its Spanish reasons come from the API row (a failed grade without the API flag is not highlighted), the legend states the passing grade and the API thresholds, the selector marks managed/supervised groups and the group module averages are charted. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
-* Versión: 1.2
+* Descripción: /teacher with msw: the first STUDENT group is shown by default (`GET /api/groups?type=STUDENT`), the group of ?groupId wins and choosing another group writes it to the URL; the cards show the envelope totals of the grading queue and the active assignments and only the scheduled reservations of the group; the students table lists the dashboard rows with API values, highlights the student with a failed published evaluation (legend and "En riesgo" label), filters by name or email and sorts by an API column; the charts receive the API histogram of the selected evaluation (charts stubbed); a 403 of the analytics shows "No tienes acceso a este grupo"; "Exportar CSV" requests the export path and hands the file to the browser. v1.1 (O3 review): switching group shows the loading state and not the previous rows; a 500 on the new group shows the error. v1.2 (closure B2): the pending card reads the queue count endpoint (no queue page), the calendar and the stats are requested with the group, the risk highlight and its Spanish reasons come from the API row (a failed grade without the API flag is not highlighted), the legend states the passing grade and the API thresholds, the selector marks managed/supervised groups and the group module averages are charted. v1.3 (Ola 4 Bloque 4): a 30-student group renders one page of 25 rows with the table pagination, the next page shows the rest and a new filter goes back to the first page. Depends on vitest, msw, Testing Library and the teacher dashboard test helpers.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GradeDistributionChartProps, GroupModuleProgressChartProps, ModuleProgressChartProps } from "../components/dashboard-charts";
 import { DASHBOARD_CARDS_COPY } from "../components/dashboard-cards";
-import { STUDENTS_TABLE_COPY } from "../components/students-table";
+import { STUDENTS_TABLE_COPY, STUDENTS_TABLE_PAGE_SIZE } from "../components/students-table";
 import { GROUP_RELATION_LABELS, RISK_REASON_LABELS } from "../entities/teacher-dashboard-labels";
 import {
   apiUrl,
@@ -351,6 +351,29 @@ describe("TeacherDashboardPage", () => {
     expect(await screen.findByText(TEACHER_DASHBOARD_COPY.forbiddenTitle)).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: TEACHER_DASHBOARD_COPY.export })).toBeDisabled();
+  });
+
+  it("renders one page of 25 students at a time and goes back to the first page on a new filter", async() => {
+    server.use(http.get(apiUrl("/api/analytics/groups/:groupId/dashboard"), () => HttpResponse.json(envelope(dashboardDto(
+      Array.from({ length: 30 }, (_, index) => rowDto(`p${index + 1}`, `Estudiante ${String(index + 1).padStart(2, "0")}`)),
+    )))));
+    renderTeacherDashboard(<TeacherDashboardPage />);
+    await screen.findByRole("link", { name: "Estudiante 01" });
+
+    const table = screen.getByRole("table", { name: STUDENTS_TABLE_COPY.title });
+
+    // Header row + one page of body rows.
+    expect(within(table).getAllByRole("row")).toHaveLength(STUDENTS_TABLE_PAGE_SIZE + 1);
+    expect(screen.getByText("1–25 de 30")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: STUDENTS_TABLE_COPY.pageButtons.next }));
+    expect(await screen.findByRole("link", { name: "Estudiante 30" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Estudiante 01" })).not.toBeInTheDocument();
+    expect(screen.getByText("26–30 de 30")).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(STUDENTS_TABLE_COPY.filter), { target: { value: "Estudiante" } });
+    expect(screen.getByText("1–25 de 30")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Estudiante 01" })).toBeInTheDocument();
   });
 
   it("exports the group CSV from the export endpoint", async() => {

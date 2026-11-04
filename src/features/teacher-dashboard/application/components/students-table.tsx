@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentsTable
-* Descripción: Students table of /teacher from the group dashboard rows: student (link to the detail page with the group), overall progress, average grade, simulation (sessions, average score, average time to stabilize), AI usage per use case (calls and helpful percentage exactly as returned, never summed) and ventilator hours. Columns sort by their API value (TableSortLabel) and a text filter keeps the rows whose name or email matches. A row is highlighted (warning border, tint and the "En riesgo" label) when the API flags it (`atRisk`); the label lists the API reasons in Spanish (Reprobó evaluaciones with the failed evaluation titles, Avance bajo, Inactivo) and a short legend states the passing grade and the risk thresholds the API used (a 0 threshold is shown as off). Each row expands to its section, level and module progress (curriculum titles) and its published evaluations. v1.1 (O3 review): the legend says that only the latest published attempt of each evaluation counts. v1.2 (closure B2): the client risk rule (assessStudentRisk) is gone; risk, reasons and failed evaluations come from the API row, thresholds from the dashboard. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard entities, routes and CSS Module.
-* Versión: 1.2
+* Descripción: Students table of /teacher from the group dashboard rows: student (link to the detail page with the group), overall progress, average grade, simulation (sessions, average score, average time to stabilize), AI usage per use case (calls and helpful percentage exactly as returned, never summed) and ventilator hours. Columns sort by their API value (TableSortLabel) and a text filter keeps the rows whose name or email matches. A row is highlighted (warning border, tint and the "En riesgo" label) when the API flags it (`atRisk`); the label lists the API reasons in Spanish (Reprobó evaluaciones with the failed evaluation titles, Avance bajo, Inactivo) and a short legend states the passing grade and the risk thresholds the API used (a 0 threshold is shown as off). Each row expands to its section, level and module progress (curriculum titles) and its published evaluations. v1.1 (O3 review): the legend says that only the latest published attempt of each evaluation counts. v1.2 (closure B2): the client risk rule (assessStudentRisk) is gone; risk, reasons and failed evaluations come from the API row, thresholds from the dashboard. v1.3 (Ola 4 Bloque 4): only one page of STUDENTS_TABLE_PAGE_SIZE (25) filtered and sorted rows is rendered, with the table pagination (Spanish labels), so a 500-student group no longer renders 500 rows in one long task; a new filter or sort goes back to the first page and a page beyond the last one (fewer rows) shows the last page. Depends on MUI, next/link, @shared/lib/format, the teacher dashboard entities, routes and CSS Module.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,6 +19,7 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import TablePagination from "@mui/material/TablePagination";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import TextField from "@mui/material/TextField";
 import Link from "next/link";
@@ -81,7 +82,13 @@ export const STUDENTS_TABLE_COPY = {
   gradeLine: (grade: string, attempt: number, date: string) => `Nota ${grade} · intento ${attempt} · ${date}`,
   noMatches: "Ningún estudiante coincide con la búsqueda.",
   empty: "El grupo no tiene estudiantes.",
+  rowsPerPage: "Filas por página:",
+  displayedRows: (from: number, to: number, count: number) => `${from}–${to} de ${count}`,
+  pageButtons: { first: "Primera página", last: "Última página", next: "Página siguiente", previous: "Página anterior" },
 } as const;
+
+/** Rows rendered at once: a large group (500 students) is paged on the client instead of rendered in one long task. */
+export const STUDENTS_TABLE_PAGE_SIZE = 25;
 
 type SortableColumn = { key: SortKey, label: string, numeric: boolean };
 
@@ -199,14 +206,21 @@ export function StudentsTable({ rows, groupId, titles, passingGrade, thresholds 
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
   const visible = useMemo(() => sortRows(filterRows(rows, filter), sort), [rows, filter, sort]);
+  // A page beyond the last one (the rows shrank) shows the last page.
+  const currentPage = Math.min(page, Math.max(0, Math.ceil(visible.length / STUDENTS_TABLE_PAGE_SIZE) - 1));
+  const pageRows = visible.slice(currentPage * STUDENTS_TABLE_PAGE_SIZE, (currentPage + 1) * STUDENTS_TABLE_PAGE_SIZE);
 
   const header = (column: SortableColumn) => (
     <TableCell key={column.key} align={column.numeric ? "right" : "left"} sortDirection={sort.key === column.key ? sort.direction : false}>
       <TableSortLabel
         active={sort.key === column.key}
         direction={sort.key === column.key ? sort.direction : "asc"}
-        onClick={() => setSort((current) => toggleSort(current, column.key))}
+        onClick={() => {
+          setSort((current) => toggleSort(current, column.key));
+          setPage(0);
+        }}
       >
         {column.label}
       </TableSortLabel>
@@ -289,7 +303,10 @@ export function StudentsTable({ rows, groupId, titles, passingGrade, thresholds 
           label={STUDENTS_TABLE_COPY.filter}
           value={filter}
           className={cx(styles.filter)}
-          onChange={(event) => setFilter(event.target.value)}
+          onChange={(event) => {
+            setFilter(event.target.value);
+            setPage(0);
+          }}
         />
       </div>
       <p className={cx(styles.legend)}>
@@ -315,9 +332,22 @@ export function StudentsTable({ rows, groupId, titles, passingGrade, thresholds 
                 <TableRow>
                   <TableCell colSpan={COLUMN_COUNT}>{STUDENTS_TABLE_COPY.noMatches}</TableCell>
                 </TableRow>
-              ) : visible.map(renderRow)}
+              ) : pageRows.map(renderRow)}
             </TableBody>
           </Table>
+          {visible.length > STUDENTS_TABLE_PAGE_SIZE ? (
+            <TablePagination
+              component="div"
+              count={visible.length}
+              page={currentPage}
+              rowsPerPage={STUDENTS_TABLE_PAGE_SIZE}
+              rowsPerPageOptions={[STUDENTS_TABLE_PAGE_SIZE]}
+              onPageChange={(_event, next) => setPage(next)}
+              labelRowsPerPage={STUDENTS_TABLE_COPY.rowsPerPage}
+              labelDisplayedRows={({ from, to, count }) => STUDENTS_TABLE_COPY.displayedRows(from, to, count)}
+              getItemAriaLabel={(type) => STUDENTS_TABLE_COPY.pageButtons[type]}
+            />
+          ) : null}
         </div>
       )}
     </section>
