@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: LoginForm styles
-* Descripción: Vertical field stack and submit spacing of the local login form. Tokens only. v1.1 (Bloque 5, §5.3): the July rounded 50px submit.
+* Descripción: Vertical field stack and submit spacing of the local login form. Tokens only. v1.1 (Bloque 5, §5.3): the July rounded 50px submit and the AA colour of the visibility toggle.
 * Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -13,6 +13,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-2);
+}
+
+/* The password visibility toggle: the AA link colour of the light island (cyan is 2.4:1 on paper). */
+.form .visibility {
+  color: var(--vl-color-link);
 }
 
 /* One class more than MUI Button: the July rounded submit (radius 24, 50px). */

@@ -1,6 +1,6 @@
 /*
 * Funcionalidad: LoginForm
-* Descripción: Local login form: labelled email and password fields (autocomplete hints, password visibility toggle with an accessible label), client-side validation with per-field messages (validateCredentials) before submitting, and a submit button disabled while a login is pending. Server errors are shown by the page. v1.1 (T6b): fields are design-system FormFields and the submit is an AsyncButton (spinner + aria-busy while pending, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the auth entities and UI/login-form.module.css. v1.2 (Bloque 5, §5.3): optional `afterPassword` slot between the password and the submit (the July "¿Olvidaste tu contraseña?" row) and the July Login icon on the submit; labels unchanged.
+* Descripción: Local login form: labelled email and password fields (autocomplete hints, password visibility toggle with an accessible label), client-side validation with per-field messages (validateCredentials) before submitting, and a submit button disabled while a login is pending. Server errors are shown by the page. v1.1 (T6b): fields are design-system FormFields and the submit is an AsyncButton (spinner + aria-busy while pending, same label). Spanish copy, TODO(i18n). Depends on MUI, @shared/design-system, the auth entities and UI/login-form.module.css. v1.2 (Bloque 5, §5.3): optional `afterPassword` slot between the password and the submit (the July "¿Olvidaste tu contraseña?" row) and the July Login icon on the submit; labels unchanged; the visibility toggle takes the AA link colour of the light card.
 * Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -103,6 +103,7 @@ export function LoginForm({ pending, onSubmit, onEdit = noop, afterPassword = nu
                   onClick={() => setShowPassword((visible) => !visible)}
                   edge="end"
                   disabled={pending}
+                  className={cx(styles.visibility)}
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>

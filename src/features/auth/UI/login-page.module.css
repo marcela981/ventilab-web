@@ -42,7 +42,8 @@
   font-weight: 600;
 }
 
-.subtitle {
+/* One class more than MUI Typography, which paints the primary text colour. */
+.header .subtitle {
   color: var(--vl-color-text-muted);
 }
 

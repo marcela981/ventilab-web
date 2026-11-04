@@ -112,6 +112,11 @@
   color: var(--vl-sidebar-text);
 }
 
+/* The feature buttons (AI assistant, bell) follow the sidebar text, not the primary colour. */
+.tools :is(button) {
+  color: inherit;
+}
+
 .version {
   margin: 0;
   padding: var(--vl-space-1) 0 var(--vl-space-4);
