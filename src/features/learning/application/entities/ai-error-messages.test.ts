@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor error messages tests
-* Descripción: Unit tests of the Spanish messages of the AI tutor errors: daily quota with the local reset time (and without it), short rate limit with the wait, provider unavailable (503 or its code), unpublished page (404, caller message or the learning default, pinned to the pre-S1 text), interrupted stream (client code, backend code, 502), a generic stream failure and network fallbacks. Depends on vitest and the api-client ApiError. v1.2 (W7, Bloque 2): the July deepen accordion messages (getDeepenErrorMessage).
-* Versión: 1.2
+* Descripción: Unit tests of the Spanish messages of the AI tutor errors: daily quota with the local reset time (and without it), short rate limit with the wait, provider unavailable (503 or its code), unpublished page (404, caller message or the learning default, pinned to the pre-S1 text), interrupted stream (client code, backend code, 502), a generic stream failure and network fallbacks. Depends on vitest and the api-client ApiError. v1.2 (W7, Bloque 2): the July deepen accordion messages (getDeepenErrorMessage). v1.3 (cierre IA): the deepen texts add the local reset time of a 429 or 503 with Retry-After; 503 without it says the AI is unavailable; the tutor busy message.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,12 +27,26 @@ describe("formatResetTime", () => {
 
 describe("getDeepenErrorMessage", () => {
   it("uses the July deepen accordion texts", () => {
-    expect(getDeepenErrorMessage(error("common.too_many_requests", 429, 30))).toBe("Demasiadas solicitudes. Por favor, espera un momento.");
-    expect(getDeepenErrorMessage(error(AI_ERROR_CODES.quotaExceeded, 429, 3_600))).toBe(DEEPEN_ERROR_MESSAGES.rateLimit);
+    expect(getDeepenErrorMessage(error("common.too_many_requests", 429))).toBe("Demasiadas solicitudes. Por favor, espera un momento.");
+    expect(getDeepenErrorMessage(error(AI_ERROR_CODES.quotaExceeded, 429))).toBe(DEEPEN_ERROR_MESSAGES.rateLimit);
     expect(getDeepenErrorMessage(error(CLIENT_ERROR_CODES.networkUnavailable, 0))).toBe("Sin conexión");
     expect(getDeepenErrorMessage(error(CLIENT_ERROR_CODES.networkTimeout, 0))).toBe("Tiempo de espera agotado");
-    expect(getDeepenErrorMessage(error("ai.providers_unavailable", 503))).toBe("Error al expandir el tema");
+    expect(getDeepenErrorMessage(error("common.internal", 500))).toBe("Error al expandir el tema");
     expect(getDeepenErrorMessage(new Error("boom"))).toBe(DEEPEN_ERROR_MESSAGES.failed);
+  });
+
+  it("shows when the AI can be used again after a quota, a rate limit or a busy AI", () => {
+    const at = localTime(NOW + 3_600_000);
+
+    expect(getDeepenErrorMessage(error(AI_ERROR_CODES.quotaExceeded, 429, 3_600), NOW)).toBe(`${DEEPEN_ERROR_MESSAGES.rateLimit} Podrás intentarlo de nuevo a las ${at}.`);
+    expect(getDeepenErrorMessage(error("common.too_many_requests", 429, 3_600), NOW)).toBe(`${DEEPEN_ERROR_MESSAGES.rateLimit} Podrás intentarlo de nuevo a las ${at}.`);
+    expect(getDeepenErrorMessage(error(AI_ERROR_CODES.providersUnavailable, 503, 3_600), NOW)).toBe(`${DEEPEN_ERROR_MESSAGES.unavailable} Podrás intentarlo de nuevo a las ${at}.`);
+    expect(getDeepenErrorMessage(error(AI_ERROR_CODES.providersUnavailable, 503))).toBe(`${DEEPEN_ERROR_MESSAGES.unavailable} Inténtalo más tarde.`);
+  });
+
+  it("says the tutor is busy until the Retry-After time on a 503", () => {
+    expect(getAiErrorMessage(error(AI_ERROR_CODES.providersUnavailable, 503, 600), { now: NOW }))
+      .toBe(`${AI_ERROR_MESSAGES.providerBusy} Podrás intentarlo de nuevo a las ${localTime(NOW + 600_000)}.`);
   });
 });
 

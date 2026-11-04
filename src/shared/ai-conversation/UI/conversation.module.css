@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI conversation styles
-* Descripción: Styles of the shared AI conversation pieces: message list, user and assistant bubbles with their actions/footer slots, the typing indicator (animated dots, static with reduced motion), the visually hidden live region of a streaming answer and the source citations. Moved from the learning tutor panel bubbles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+* Descripción: Styles of the shared AI conversation pieces: message list, user and assistant bubbles with their actions/footer slots, the typing indicator (animated dots, static with reduced motion), the visually hidden live region of a streaming answer and the source citations. Moved from the learning tutor panel bubbles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (cierre IA): discreet pill label of a non-AI fallback answer (fallbackLabel, fallbackIcon).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -148,4 +148,22 @@
 
 .sourceLink {
   color: var(--vl-color-link);
+}
+
+/* Cierre IA: discreet label of a non-AI fallback answer (same muted tone as the evaluation feedback source label). */
+.fallbackLabel {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0 var(--vl-space-2);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-pill);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.fallbackIcon {
+  font-size: 1rem;
 }

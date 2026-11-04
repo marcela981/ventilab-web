@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor entity
-* Descripción: Domain types of the AI tutor in the lesson viewer: question scope (LESSON | MODULE), conversation summary and detail, chat messages (USER | ASSISTANT, incomplete flag, aiCallId) and the stream request (path + JSON body) consumed by useAiStream. Pure helpers: find the caller's conversation of a scope + refId in a listing (the backend filters only by scope) and decide whether an assistant answer can be rated (ai-ratings MESSAGE target = assistant message id, only for messages produced by an AI call). No dependencies. v1.1 (W7, Bloque 2): canRateMessage also accepts an answer saved incomplete with text (a stopped answer has no aiCallId but the backend rates it through its aborted call).
-* Versión: 1.1
+* Descripción: Domain types of the AI tutor in the lesson viewer: question scope (LESSON | MODULE), conversation summary and detail, chat messages (USER | ASSISTANT, incomplete flag, aiCallId) and the stream request (path + JSON body) consumed by useAiStream. Pure helpers: find the caller's conversation of a scope + refId in a listing (the backend filters only by scope) and decide whether an assistant answer can be rated (ai-ratings MESSAGE target = assistant message id, only for messages produced by an AI call). No dependencies. v1.1 (W7, Bloque 2): canRateMessage also accepts an answer saved incomplete with text (a stopped answer has no aiCallId but the backend rates it through its aborted call). v1.2 (cierre IA): ConversationMessage.isFallback (non-AI fallback answer) and canRateMessage is false for it.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +26,8 @@ export type ConversationMessage = {
   isIncomplete: boolean
   aiCallId: string | null
   createdAt: string
+  // Non-AI fallback answer (the saved message carries no source: the server label at its start marks it).
+  isFallback: boolean
 };
 
 export type Conversation = ConversationSummary & {
@@ -47,7 +49,8 @@ export function findScopeConversation(
 
 // A complete answer has its AI call; a stopped one is saved incomplete without it but can still be rated when it has text.
 export function canRateMessage(message: ConversationMessage): boolean {
-  if (message.role !== "ASSISTANT") {
+  // Ratings measure the language model: a non-AI fallback answer is never rated.
+  if (message.role !== "ASSISTANT" || message.isFallback) {
     return false;
   }
 

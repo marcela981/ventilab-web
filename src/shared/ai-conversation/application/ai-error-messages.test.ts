@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI conversation error messages tests
-* Descripción: Unit tests of the generic Spanish messages of AI stream errors: quota with the local reset time (and without it), provider unavailable (503, its code, as a stream frame), connection lost mid-stream (client code, backend code, 502), generic stream failure, 404 with the caller's text, generic fallbacks (network, plain 429 wait, 5xx) and caller overrides of messages and fallback. Depends on vitest and the api-client ApiError.
-* Versión: 1.0
+* Descripción: Unit tests of the generic Spanish messages of AI stream errors: quota with the local reset time (and without it), provider unavailable (503, its code, as a stream frame), connection lost mid-stream (client code, backend code, 502), generic stream failure, 404 with the caller's text, generic fallbacks (network, plain 429 wait, 5xx) and caller overrides of messages and fallback. Depends on vitest and the api-client ApiError. v1.1 (cierre IA): a 503 with Retry-After says the AI is busy and shows the local time it can be used again.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { ApiError, CLIENT_ERROR_CODES } from "@shared/api-client/api-error";
-import { AI_ERROR_CODES, AI_FALLBACK_MESSAGES, AI_STREAM_ERROR_MESSAGES, formatResetTime, getAiErrorMessage } from "./ai-error-messages";
+import { AI_ERROR_CODES, AI_FALLBACK_MESSAGES, AI_STREAM_ERROR_MESSAGES, formatResetTime, getAiErrorMessage, retryAtHint } from "./ai-error-messages";
 
 const NOW = Date.UTC(2026, 9, 15, 15, 0, 0);
 const error = (code: string, status: number, retryAfter?: number) => new ApiError({ code, message: code, status, retryAfter });
@@ -32,6 +32,12 @@ describe("getAiErrorMessage (generic core)", () => {
     expect(getAiErrorMessage(error(AI_ERROR_CODES.providersUnavailable, 503))).toBe(AI_STREAM_ERROR_MESSAGES.providerUnavailable);
     expect(getAiErrorMessage(error("common.unknown", 503))).toBe(AI_STREAM_ERROR_MESSAGES.providerUnavailable);
     expect(getAiErrorMessage(error(AI_ERROR_CODES.providersUnavailable, 0))).toBe(AI_STREAM_ERROR_MESSAGES.providerUnavailable);
+  });
+
+  it("shows when a busy AI (503 with Retry-After) can be used again", () => {
+    expect(getAiErrorMessage(error(AI_ERROR_CODES.providersUnavailable, 503, 120), { now: NOW }))
+      .toBe(`${AI_STREAM_ERROR_MESSAGES.providerBusy} Podrás intentarlo de nuevo a las ${localTime(NOW + 120_000)}.`);
+    expect(retryAtHint(undefined)).toBe("");
   });
 
   it("reports a connection lost mid-stream and other stream failures", () => {

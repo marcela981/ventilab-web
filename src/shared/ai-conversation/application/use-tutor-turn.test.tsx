@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useTutorTurn tests
-* Descripción: Tests of the AI tutor turn engine against msw serving real text/event-stream bodies: the early `start` frame gives the conversation and message ids before any text, `done` confirms them, a stop keeps the announced message id (ratable only when some text arrived; a stop before the first fragment leaves nothing to rate), a stream without `start` falls back to `done`, retry() re-sends the last request, and a builder request receives the conversation adopted by the previous turn (retry after a failure that already created the conversation continues it). Depends on vitest, Testing Library, msw and the shared SSE test helpers.
-* Versión: 0.1
+* Descripción: Tests of the AI tutor turn engine against msw serving real text/event-stream bodies: the early `start` frame gives the conversation and message ids before any text, `done` confirms them, a stop keeps the announced message id (ratable only when some text arrived; a stop before the first fragment leaves nothing to rate), a stream without `start` falls back to `done`, retry() re-sends the last request, and a builder request receives the conversation adopted by the previous turn (retry after a failure that already created the conversation continues it). Depends on vitest, Testing Library, msw and the shared SSE test helpers. v0.2 (cierre IA): isFallback from the done source (DETERMINISTIC: fallback, not ratable; LLM or absent: rated).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -112,6 +112,32 @@ describe("useTutorTurn", () => {
     });
     expect(result.current.conversationId).toBe("conv-1");
     expect(result.current.messageId).toBe("msg-1");
+  });
+
+  it("maps the done source: DETERMINISTIC is a fallback that is never rated; LLM or no source is not", async() => {
+    server.use(http.post(URL, () => sseResponse([startFrame(START), deltaFrame("[Respuesta automática sin IA] Revisa la lección."), doneFrame({ ...DONE, source: "DETERMINISTIC" })])));
+    const { result } = renderHook(() => useTutorTurn());
+
+    await act(async() => {
+      await result.current.start({ path: PATH, body: {} });
+    });
+    expect(result.current.isFallback).toBe(true);
+    expect(result.current.ratableMessageId).toBeNull();
+
+    server.use(http.post(URL, () => sseResponse([deltaFrame("Hola"), doneFrame({ ...DONE, source: "LLM" })])));
+    await act(async() => {
+      await result.current.start({ path: PATH, body: {} });
+    });
+    expect(result.current.isFallback).toBe(false);
+    expect(result.current.ratableMessageId).toBe("msg-1");
+
+    // An older server sends no source: the answer is the language model's.
+    server.use(http.post(URL, () => sseResponse([deltaFrame("Hola"), doneFrame(DONE)])));
+    await act(async() => {
+      await result.current.start({ path: PATH, body: {} });
+    });
+    expect(result.current.isFallback).toBe(false);
+    expect(result.current.ratableMessageId).toBe("msg-1");
   });
 
   it("retries the last request and passes the adopted conversation to a request builder", async() => {

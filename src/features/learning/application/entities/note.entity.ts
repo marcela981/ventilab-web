@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Note entity
-* Descripción: Domain types and pure rules of the private lesson notes: Note (Tiptap JSON document, optional anchor Page), NotesAnalysis (AI summary, key concepts, gaps, suggestions and the aiCallId used to rate it), the empty document, the "has any text" check used to avoid creating empty notes, the resolution of an anchor pageId to its 1-based page number inside the lesson (null when unknown) and the newest-first upsert/removal of a note in a list. No dependencies. v1.1 (B1 closure): Note carries the moduleId, lessonTitle and pageTitle labels of the API.
-* Versión: 1.1
+* Descripción: Domain types and pure rules of the private lesson notes: Note (Tiptap JSON document, optional anchor Page), NotesAnalysis (AI summary, key concepts, gaps, suggestions and the aiCallId used to rate it), the empty document, the "has any text" check used to avoid creating empty notes, the resolution of an anchor pageId to its 1-based page number inside the lesson (null when unknown) and the newest-first upsert/removal of a note in a list. No dependencies. v1.1 (B1 closure): Note carries the moduleId, lessonTitle and pageTitle labels of the API. v1.2 (cierre IA): NotesAnalysis.isFallback marks the rule-based analysis sent when no AI provider answered (source DETERMINISTIC).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,6 +31,8 @@ export type NotesAnalysis = {
   gaps: string[]
   suggestions: string[]
   notesAnalyzed: number
+  // Rule-based analysis sent when no AI provider answered (source DETERMINISTIC); never rated.
+  isFallback: boolean
 };
 
 export const EMPTY_NOTE_DOC: NoteDoc = { type: "doc", content: [{ type: "paragraph" }] };

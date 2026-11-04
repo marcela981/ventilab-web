@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space error messages
-* Descripción: Spanish message for any failure of a student space request (summary, notes, grades): backend codes of the notes (notes.not_found), then fallbacks by status (403, 404, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. getModuleAnalysisErrorMessage covers the module notes analysis (`POST /api/notes/analyze` with moduleId): 422 without notes in the module, 502 failed AI call, 503 AI unavailable. Depends on the api-client errors.
-* Versión: 1.0
+* Descripción: Spanish message for any failure of a student space request (summary, notes, grades): backend codes of the notes (notes.not_found), then fallbacks by status (403, 404, 400/422, 429 with Retry-After, 5xx), timeout, network and unknown errors. getModuleAnalysisErrorMessage covers the module notes analysis (`POST /api/notes/analyze` with moduleId): 422 without notes in the module, 502 failed AI call, 503 AI unavailable. Depends on the api-client errors. v1.1 (cierre IA): getModuleAnalysisErrorMessage shows the local reset time of the AI quota (429 ai.quota_exceeded) and of a busy AI (503 with Retry-After) through the shared getAiLimitMessage.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { getAiLimitMessage } from "@shared/ai-conversation/application/ai-error-messages";
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
 
 // TODO(i18n): move to a student-space namespace in src/i18n.
@@ -88,8 +89,9 @@ export function getStudentSpaceErrorMessage(error: unknown): string {
   return STATUS_MESSAGES[apiError.status] ?? STUDENT_SPACE_FALLBACK_MESSAGES.unknown;
 }
 
-export function getModuleAnalysisErrorMessage(error: unknown): string {
+export function getModuleAnalysisErrorMessage(error: unknown, now?: number): string {
   const apiError = toApiError(error);
 
-  return ANALYSIS_STATUS_MESSAGES[apiError.status] ?? getStudentSpaceErrorMessage(apiError);
+  // AI quota and busy AI first: they show the local time the analysis can be requested again.
+  return getAiLimitMessage(apiError, { now }) ?? ANALYSIS_STATUS_MESSAGES[apiError.status] ?? getStudentSpaceErrorMessage(apiError);
 }

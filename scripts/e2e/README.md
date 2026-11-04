@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Fake ventilator usage
-* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E.
-* Versión: 1.4
+* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E. v1.5 (cierre IA): fault injection modes of the fake LLM (per request, runtime and start mode) and the deterministic fallback E2E of Profundizar.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -97,6 +97,8 @@ OPENAI_BASE_URL=http://127.0.0.1:4910/v1 OPENAI_API_KEY=local node dist/main
 | --- | --- | --- |
 | `--port <n>` | 4910 (`FAKE_LLM_PORT`) | Port on 127.0.0.1. |
 | `--chunk-delay <ms>` | 120 | Pause between streamed deltas (keeps "Detener" visible while it streams). |
+| `--mode <mode>` | `ok` (`FAKE_LLM_MODE`) | Start fault injection mode (see below). |
+| `--retry-after <s>` | 30 (`FAKE_LLM_RETRY_AFTER`) | `Retry-After` seconds sent by the `429` mode. |
 
 What it answers: a grade feedback prompt (it asks for `{"overall": …, "perQuestion": …}`) gets a parseable grade
 feedback whose overall text says "proveedor falso de E2E" (so the evaluation result shows LLM feedback, not the
@@ -104,6 +106,54 @@ deterministic fallback); otherwise a streamed request gets a fixed Spanish markd
 E2E)…") in deltas of 24 characters, then a usage chunk and `[DONE]`; a full or JSON-format request gets
 `{ onTopic: true, summary, keyConcepts, gaps, suggestions }`, which satisfies the topic check and the notes analysis.
 The model reported is `fake-llm-e2e`.
+
+## Fault injection
+
+Each request is answered in one of these modes:
+
+| Mode | What the backend receives |
+| --- | --- |
+| `ok` | The normal answers above (default). |
+| `429` | `429` with `Retry-After: <--retry-after>` and an OpenAI-style `rate_limit_exceeded` JSON error. |
+| `500` | `500` with an OpenAI-style `server_error` JSON error. |
+| `timeout` | Nothing: the request stays open until the backend times it out or aborts it. |
+| `drop-mid-stream` | `200` and part of the answer (about half of the deltas, or half of the JSON body), then the connection is destroyed without `[DONE]`. |
+| `malformed-json` | `200` with an unparseable body (full request) or, in a stream, one valid delta, an unparseable `data:` chunk and `[DONE]`. |
+
+How the mode of a request is chosen, first match wins:
+
+1. **Per request:** a `[[fake-llm:<mode>]]` directive anywhere in the prompt (system or messages). In the UI, type it in
+   the question, e.g. `¿Qué es la PEEP? [[fake-llm:500]]`. Later turns of the same conversation carry it in their
+   history, so they fault too. An unknown mode in the directive is ignored.
+2. **Runtime:** `PUT /__fake-llm/mode` with `{"mode": "<mode>"}` (also `POST`); `GET /__fake-llm/mode` returns the
+   current one. It lasts until the next change or a restart.
+
+   ```bash
+   curl -X PUT http://127.0.0.1:4910/__fake-llm/mode -d '{"mode":"429"}'
+   curl -X PUT http://127.0.0.1:4910/__fake-llm/mode -d '{"mode":"ok"}'
+   ```
+3. **Start:** `--mode <mode>` or `FAKE_LLM_MODE` (default `ok`).
+
+Every request logs `stream|completion (mode <mode>)`. What the user sees depends on the backend: its retries, the next
+provider, the per-use-case fallback (deterministic answer labelled "Respuesta automática (IA no disponible)" in the
+web) or the error (503 with `Retry-After` when every provider is rate limited and the use case has no fallback).
+
+> **Circuit breaker.** Every failed call counts towards the backend breaker of the provider: after
+> `AI_BREAKER_FAILURE_THRESHOLD` consecutive failures (default 3) it skips the fake for `AI_BREAKER_OPEN_SECONDS`
+> (default 60), so the **following** AI requests also get the fallback. Run fault specs alone or last, or start the
+> backend with a high `AI_BREAKER_FAILURE_THRESHOLD` while testing faults.
+
+### Deterministic fallback E2E (Profundizar)
+
+`e2e/bloque2/tutor-fallback.spec.ts` asks Profundizar a question with the `[[fake-llm:500]]` directive, so no
+provider answers and the backend sends the deterministic fallback: the page shows "Respuesta automática (IA no
+disponible)", the text without the "[Respuesta automática sin IA]" prefix and no "¿Te fue útil?" widget. It needs the
+same stack as the Block 2 specs. It is **not in the CI job**: its failures open the provider breaker for the rest of
+the run (see above). Run it on its own:
+
+```bash
+E2E_BASE_URL=http://localhost:3000 E2E_API_URL=http://localhost:4000 npx playwright test --project=e2e e2e/bloque2/tutor-fallback.spec.ts
+```
 
 Block 2 E2E (stack of `LOCAL_STACK.md`, fake LLM running, backend started with the two variables above):
 

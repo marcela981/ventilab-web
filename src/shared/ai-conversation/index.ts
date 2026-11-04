@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI conversation module (public API)
-* Descripción: Public surface of the feature-agnostic streamed AI conversation UI shared by the learning tutor panels and the AI chat: the stream hook (rAF-batched deltas, abort, done metadata), the safe markdown renderer, the presentational pieces (MessageList, MessageBubble, StreamingMessage, Composer, TypingIndicator, SourceCitations), the generic AI error messages and the entity types. Test helpers stay internal.
-* Versión: 1.0
+* Descripción: Public surface of the feature-agnostic streamed AI conversation UI shared by the learning tutor panels and the AI chat: the stream hook (rAF-batched deltas, abort, done metadata), the safe markdown renderer, the presentational pieces (MessageList, MessageBubble, StreamingMessage, Composer, TypingIndicator, SourceCitations), the generic AI error messages and the entity types. Test helpers stay internal. v1.1 (cierre IA): exports the answer origin rules (isFallbackSource, fallback label helpers), retryAtHint and AiFallbackLabel.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,8 +9,16 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-export { COMPOSER_COUNTER_THRESHOLD, isNearLimit, isSafeExternalUrl } from "./application/ai-conversation.entity";
-export type { AiSourceCitation, MessageRole, StreamDoneMetadata } from "./application/ai-conversation.entity";
+export {
+  COMPOSER_COUNTER_THRESHOLD,
+  FALLBACK_ANSWER_LABELS,
+  hasFallbackLabel,
+  isFallbackSource,
+  isNearLimit,
+  isSafeExternalUrl,
+  stripFallbackLabel,
+} from "./application/ai-conversation.entity";
+export type { AiSourceCitation, AnswerSource, MessageRole, StreamDoneMetadata } from "./application/ai-conversation.entity";
 export {
   AI_ERROR_CODES,
   AI_FALLBACK_MESSAGES,
@@ -18,8 +26,12 @@ export {
   formatResetTime,
   getAiErrorMessage,
   getGenericErrorMessage,
+  getAiLimitMessage,
+  retryAtHint,
 } from "./application/ai-error-messages";
 export type { AiErrorMessageOptions, AiStreamErrorMessages } from "./application/ai-error-messages";
+export { AI_FALLBACK_LABEL, AiFallbackLabel } from "./application/fallback-label";
+export type { AiFallbackLabelProps } from "./application/fallback-label";
 export { AiMarkdown } from "./application/ai-markdown";
 export type { AiMarkdownProps } from "./application/ai-markdown";
 export { Composer, COMPOSER_COPY } from "./application/composer";

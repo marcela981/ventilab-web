@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Server-sent events stream helper
-* Descripción: POSTs a JSON body to a backend text/event-stream route with fetch + ReadableStream (EventSource cannot POST or send a bearer token) and exposes the events as an async iterator (postEventStream) or as callbacks (runEventStream). Same backend origin, bearer token and credentials as the axios client; on a 401 it reuses the shared single-flight refresh and retries once (auth routes never refresh). Errors before the stream starts (validation, 403, 404 unpublished, 429 with Retry-After or retry info in the body, 503 provider unavailable) become ApiError through apiErrorFromResponse; `event: error` after the stream started is yielded as an event, and a stream that closes before `done`/`error` yields `network.stream_interrupted`. Aborting the signal ends the iteration silently. Depends on env, api-error, token-storage and token-refresh. v1.1 (B5): the stream request sends Accept-Language: es and the client-built error messages are Spanish (CLIENT_ERROR_MESSAGES). v1.2 (W7, Bloque 2): the AI tutor routes send an early `event: start` {conversationId, messageId} before the first delta; it is yielded as a non-terminal `start` event (like delta) so callers learn the conversation and the assistant message id even when the answer is stopped before `done`. Frames with an unknown event name are still ignored.
-* Versión: 1.2
+* Descripción: POSTs a JSON body to a backend text/event-stream route with fetch + ReadableStream (EventSource cannot POST or send a bearer token) and exposes the events as an async iterator (postEventStream) or as callbacks (runEventStream). Same backend origin, bearer token and credentials as the axios client; on a 401 it reuses the shared single-flight refresh and retries once (auth routes never refresh). Errors before the stream starts (validation, 403, 404 unpublished, 429 with Retry-After or retry info in the body, 503 provider unavailable) become ApiError through apiErrorFromResponse; `event: error` after the stream started is yielded as an event, and a stream that closes before `done`/`error` yields `network.stream_interrupted`. Aborting the signal ends the iteration silently. Depends on env, api-error, token-storage and token-refresh. v1.1 (B5): the stream request sends Accept-Language: es and the client-built error messages are Spanish (CLIENT_ERROR_MESSAGES). v1.2 (W7, Bloque 2): the AI tutor routes send an early `event: start` {conversationId, messageId} before the first delta; it is yielded as a non-terminal `start` event (like delta) so callers learn the conversation and the assistant message id even when the answer is stopped before `done`. Frames with an unknown event name are still ignored. v1.3 (cierre IA): the tutor `done` payload may carry `source` (LLM, or DETERMINISTIC for the non-AI answer sent when no provider answers); it is optional because an older server omits it.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -31,6 +31,8 @@ export type TutorStreamDone = {
   aiCallId: string
   messageId: string
   conversationId: string
+  // LLM, or DETERMINISTIC for the labelled non-AI answer; absent on an older server (treated as LLM).
+  source?: "LLM" | "DETERMINISTIC" | undefined
 };
 
 // The `start` payload of the AI tutor routes: sent before the first delta, once the turn is stored.

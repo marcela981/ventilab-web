@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI chat entity
-* Descripción: Domain types and pure rules of the AI assistant. Types: conversation scope (FREE | LESSON | MODULE | PAGE), conversation summary and detail, chat message (local or server id, role, content, status complete | streaming | interrupted | error, kind answer | off-topic, aiCallId and server messageId for ratings, optional sources) and the classified chat error. Rules: off-topic detection by exact trimmed match of the mirrored backend reply (BACKEND GAP: no explicit signal), the client title filter (case and accent insensitive, over loaded items only), rename title normalization (collapsed whitespace, 1–120 characters), error classification over the shared getAiErrorMessage (quota with the local reset time, provider unavailable, interrupted, not found, failed) and the assistant conversation URL. The learning deep link lives in conversation-origin.ts so the chat session does not pull the learning feature in. Depends on the shared AI conversation and api-client errors and the AI chat config. v1.1 (A3): ASSISTANT_URL and buildConversationUrl moved to config/ai-chat.routes (re-exported here) so the drawer provider stays out of the shared conversation UI.
-* Versión: 1.1
+* Descripción: Domain types and pure rules of the AI assistant. Types: conversation scope (FREE | LESSON | MODULE | PAGE), conversation summary and detail, chat message (local or server id, role, content, status complete | streaming | interrupted | error, kind answer | off-topic, aiCallId and server messageId for ratings, optional sources) and the classified chat error. Rules: off-topic detection by exact trimmed match of the mirrored backend reply (BACKEND GAP: no explicit signal), the client title filter (case and accent insensitive, over loaded items only), rename title normalization (collapsed whitespace, 1–120 characters), error classification over the shared getAiErrorMessage (quota with the local reset time, provider unavailable, interrupted, not found, failed) and the assistant conversation URL. The learning deep link lives in conversation-origin.ts so the chat session does not pull the learning feature in. Depends on the shared AI conversation and api-client errors and the AI chat config. v1.1 (A3): ASSISTANT_URL and buildConversationUrl moved to config/ai-chat.routes (re-exported here) so the drawer provider stays out of the shared conversation UI. v1.2 (cierre IA): message kind fallback for the non-AI answer (done source DETERMINISTIC that is not the off-topic refusal, or a saved message that starts with the server fallback label); an unavailable error keeps its Retry-After seconds (503 of a busy AI).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import { toApiError } from "@shared/api-client/api-error";
-import { AI_ERROR_CODES, getAiErrorMessage } from "@shared/ai-conversation";
+import { AI_ERROR_CODES, getAiErrorMessage, hasFallbackLabel, isFallbackSource } from "@shared/ai-conversation";
 import type { AiSourceCitation, MessageRole } from "@shared/ai-conversation";
 import { CONVERSATION_TITLE_MAX_LENGTH, OFF_TOPIC_REPLY } from "../config/ai-chat.config";
 
@@ -28,7 +28,8 @@ export type ConversationSummary = {
 
 export type ChatMessageStatus = "complete" | "streaming" | "interrupted" | "error";
 
-export type ChatMessageKind = "answer" | "off-topic";
+// fallback: the non-AI answer sent when no AI provider answered (never rated).
+export type ChatMessageKind = "answer" | "off-topic" | "fallback";
 
 export type ChatMessage = {
   // Server message id, or a local id for a turn sent in this session.
@@ -55,7 +56,7 @@ export type ChatError = {
   kind: ChatErrorKind
   message: string
   retryable: boolean
-  // Seconds until the quota resets (Retry-After / resetAt); null when unknown or not a quota error.
+  // Seconds until the quota resets or a busy AI can be used again (Retry-After / resetAt); null when unknown.
   retryAfterSeconds: number | null
 };
 
@@ -63,8 +64,18 @@ export function isOffTopicReply(content: string): boolean {
   return content.trim() === OFF_TOPIC_REPLY;
 }
 
-export function messageKind(role: MessageRole, content: string): ChatMessageKind {
-  return role === "assistant" && isOffTopicReply(content) ? "off-topic" : "answer";
+// The off-topic refusal is also DETERMINISTIC, so it is recognized first by its fixed text. A saved message has no
+// source: the label the server puts at the start of a non-AI answer marks it. A missing source (older server) is LLM.
+export function messageKind(role: MessageRole, content: string, source?: unknown): ChatMessageKind {
+  if (role !== "assistant") {
+    return "answer";
+  }
+
+  if (isOffTopicReply(content)) {
+    return "off-topic";
+  }
+
+  return isFallbackSource(source) || hasFallbackLabel(content) ? "fallback" : "answer";
 }
 
 function foldText(value: string): string {
@@ -98,7 +109,7 @@ export function classifyChatError(error: unknown, now?: number): ChatError {
   }
 
   if (apiError.code === AI_ERROR_CODES.providersUnavailable || apiError.status === 503) {
-    return { kind: "unavailable", message, retryable: true, retryAfterSeconds: null };
+    return { kind: "unavailable", message, retryable: true, retryAfterSeconds: apiError.retryAfter ?? null };
   }
 
   if (INTERRUPTED_CODES.has(apiError.code) || apiError.status === 502) {

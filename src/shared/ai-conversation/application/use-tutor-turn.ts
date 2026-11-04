@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useTutorTurn
-* Descripción: Single streaming engine of the AI tutor turns (deepen accordion, TutorAI popup questions), built on the shared useStreamingResponse and the SSE helper. `start(request)` streams one answer; the request is either a fixed {path, body} or a builder that receives the conversation id known so far, so a retry or a follow-up after a first turn that already created its conversation (announced by the early `start` frame) continues that conversation instead of opening a new one. `stop()` aborts the answer (the backend keeps the received part as an incomplete message), `retry()` re-sends the last request. It exposes status, text, error, the conversation id (adopted from the `start` frame, falling back to `done`; it survives later turns until reset) and the assistant message id of the current turn (same sources), which stays known after a stop. `ratableMessageId` is that id once the answer can be rated: done, or stopped after at least one fragment (stopping before the first fragment leaves nothing to rate). Depends on react, useStreamingResponse and the SSE types.
-* Versión: 0.1
+* Descripción: Single streaming engine of the AI tutor turns (deepen accordion, TutorAI popup questions), built on the shared useStreamingResponse and the SSE helper. `start(request)` streams one answer; the request is either a fixed {path, body} or a builder that receives the conversation id known so far, so a retry or a follow-up after a first turn that already created its conversation (announced by the early `start` frame) continues that conversation instead of opening a new one. `stop()` aborts the answer (the backend keeps the received part as an incomplete message), `retry()` re-sends the last request. It exposes status, text, error, the conversation id (adopted from the `start` frame, falling back to `done`; it survives later turns until reset) and the assistant message id of the current turn (same sources), which stays known after a stop. `ratableMessageId` is that id once the answer can be rated: done, or stopped after at least one fragment (stopping before the first fragment leaves nothing to rate). Depends on react, useStreamingResponse, the SSE types and the AI conversation entity. v0.2 (cierre IA): `isFallback` maps the `source` of the `done` frame (DETERMINISTIC: non-AI answer sent when no provider answers; absent on an older server, so LLM), and such an answer is never ratable (ratings measure the language model).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import type { ApiError } from "@shared/api-client/api-error";
 import type { TutorStreamDone } from "@shared/api-client/sse-stream";
 import { useStreamingResponse } from "./use-streaming-response";
 import type { StreamingOutcome, StreamingStatus, StreamRequest } from "./use-streaming-response";
+import { isFallbackSource } from "./ai-conversation.entity";
 
 // Builds the request with the conversation id known so far (null before the first turn created one).
 export type TutorTurnRequestBuilder = (conversationId: string | null) => StreamRequest;
@@ -33,7 +34,9 @@ export type TutorTurn = {
   conversationId: string | null
   // Assistant message of the current turn (start frame first, then done); kept after a stop.
   messageId: string | null
-  // Message id to rate: done, or stopped after some text; null otherwise.
+  // The finished answer is the non-AI fallback (done.source DETERMINISTIC).
+  isFallback: boolean
+  // Message id to rate: done (and not a fallback), or stopped after some text; null otherwise.
   ratableMessageId: string | null
   // A request was sent and nothing is streaming, so retry() can re-send it.
   canRetry: boolean
@@ -93,7 +96,9 @@ export function useTutorTurn(): TutorTurn {
 
   const messageId = stream.done?.messageId ?? stream.announced?.messageId ?? null;
   const conversationId = stream.done?.conversationId ?? stream.announced?.conversationId ?? adoptedId;
-  const isRatable = stream.status === "done" || (stream.status === "aborted" && stream.text !== "");
+  const isFallback = stream.status === "done" && isFallbackSource(stream.done?.source);
+  // Ratings measure the language model, so a non-AI fallback is never rated.
+  const isRatable = (stream.status === "done" && !isFallback) || (stream.status === "aborted" && stream.text !== "");
 
   return {
     status: stream.status,
@@ -101,6 +106,7 @@ export function useTutorTurn(): TutorTurn {
     error: stream.error,
     conversationId,
     messageId,
+    isFallback,
     ratableMessageId: isRatable ? messageId : null,
     canRetry: hasRequest && stream.status !== "streaming",
     start,

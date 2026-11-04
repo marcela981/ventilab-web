@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI conversation error messages
-* Descripción: Generic Spanish messages for the errors of AI answer streams, shared by every AI conversation (learning tutor panels, AI chat). Errors before the stream (JSON envelope) and `event: error` frames after it started arrive as ApiError (stream errors with status 0 and the backend code). Daily quota (`ai.quota_exceeded`, 429 + Retry-After or resetAt, already turned into seconds by the SSE helper) shows the local reset time hh:mm; `ai.providers_unavailable` / 503 says the AI is unavailable; a connection lost mid-stream (`network.stream_interrupted`, `ai.stream_interrupted`, 502) and other stream failures get their own text; 404 uses the caller's message; the rest (network, timeout, plain 429 with its wait, 5xx, other HTTP errors) goes to the caller's fallback or the generic one. Callers may replace any message (e.g. learning keeps its "tutor de IA" wording). Depends on the api-client ApiError.
-* Versión: 1.0
+* Descripción: Generic Spanish messages for the errors of AI answer streams, shared by every AI conversation (learning tutor panels, AI chat). Errors before the stream (JSON envelope) and `event: error` frames after it started arrive as ApiError (stream errors with status 0 and the backend code). Daily quota (`ai.quota_exceeded`, 429 + Retry-After or resetAt, already turned into seconds by the SSE helper) shows the local reset time hh:mm; `ai.providers_unavailable` / 503 says the AI is unavailable; a connection lost mid-stream (`network.stream_interrupted`, `ai.stream_interrupted`, 502) and other stream failures get their own text; 404 uses the caller's message; the rest (network, timeout, plain 429 with its wait, 5xx, other HTTP errors) goes to the caller's fallback or the generic one. Callers may replace any message (e.g. learning keeps its "tutor de IA" wording). Depends on the api-client ApiError. v1.1 (cierre IA): a 503 that carries Retry-After (every provider is rate limited and the use case has no fallback) says the AI is busy and shows the local time hh:mm from which it can be used again (`providerBusy` + retryAtHint, also used by callers with their own texts); getAiLimitMessage gives the quota and busy messages to non-stream AI calls (notes analysis).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +23,8 @@ export const AI_ERROR_CODES = {
 export type AiStreamErrorMessages = {
   quotaExceeded: string
   providerUnavailable: string
+  // 503 with Retry-After: every provider is rate limited; followed by the local time it can be used again.
+  providerBusy: string
   interrupted: string
   failed: string
 };
@@ -31,6 +33,7 @@ export type AiStreamErrorMessages = {
 export const AI_STREAM_ERROR_MESSAGES: AiStreamErrorMessages = {
   quotaExceeded: "Alcanzaste el límite de uso de la IA.",
   providerUnavailable: "El asistente de IA no está disponible en este momento. Inténtalo más tarde.",
+  providerBusy: "El asistente de IA está saturado en este momento.",
   interrupted: "La respuesta se interrumpió antes de terminar. Inténtalo de nuevo.",
   failed: "El asistente de IA no pudo responder. Inténtalo de nuevo.",
 };
@@ -52,6 +55,11 @@ const RESET_TIME_FORMAT = new Intl.DateTimeFormat("es-CO", { hour: "2-digit", mi
 // Local wall-clock time ("hh:mm") at which a wait of `retryAfterSeconds` ends.
 export function formatResetTime(retryAfterSeconds: number, now: number = Date.now()): string {
   return RESET_TIME_FORMAT.format(new Date(now + retryAfterSeconds * 1000));
+}
+
+// " Podrás intentarlo de nuevo a las hh:mm." when the error says when to retry; "" otherwise.
+export function retryAtHint(retryAfterSeconds: number | undefined, now?: number): string {
+  return retryAfterSeconds === undefined ? "" : ` Podrás intentarlo de nuevo a las ${formatResetTime(retryAfterSeconds, now)}.`;
 }
 
 function formatWait(seconds: number): string {
@@ -97,7 +105,9 @@ export type AiErrorMessageOptions = {
   now?: number | undefined
 };
 
-export function getAiErrorMessage(error: unknown, { notFound, messages, fallback = getGenericErrorMessage, now }: AiErrorMessageOptions = {}): string {
+// Message of an AI usage limit: the daily quota (with its reset time when known) or a busy AI (503 with Retry-After);
+// null for any other error. Non-stream AI calls (notes analysis) use it before their own messages.
+export function getAiLimitMessage(error: unknown, { messages, now }: Pick<AiErrorMessageOptions, "messages" | "now"> = {}): string | null {
   const apiError = toApiError(error);
   const copy = { ...AI_STREAM_ERROR_MESSAGES, ...messages };
 
@@ -105,6 +115,20 @@ export function getAiErrorMessage(error: unknown, { notFound, messages, fallback
     return apiError.retryAfter === undefined
       ? `${copy.quotaExceeded} Inténtalo más tarde.`
       : `${copy.quotaExceeded} Podrás usarlo de nuevo a las ${formatResetTime(apiError.retryAfter, now)}.`;
+  }
+
+  const isUnavailable = apiError.code === AI_ERROR_CODES.providersUnavailable || apiError.status === 503;
+
+  return isUnavailable && apiError.retryAfter !== undefined ? `${copy.providerBusy}${retryAtHint(apiError.retryAfter, now)}` : null;
+}
+
+export function getAiErrorMessage(error: unknown, { notFound, messages, fallback = getGenericErrorMessage, now }: AiErrorMessageOptions = {}): string {
+  const apiError = toApiError(error);
+  const copy = { ...AI_STREAM_ERROR_MESSAGES, ...messages };
+  const limit = getAiLimitMessage(apiError, { messages, now });
+
+  if (limit !== null) {
+    return limit;
   }
 
   if (apiError.code === AI_ERROR_CODES.providersUnavailable || apiError.status === 503) {

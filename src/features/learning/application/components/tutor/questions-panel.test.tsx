@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuestionsPanel tests
-* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. v1.2 (S2 ai-chat): Enter keeps inserting a new line (no submit) and no character counter is shown, as before the shared Composer. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back. v1.3 (W7, Bloque 2): an answer saved incomplete with text is rateable; ratings send surface POPUP and the conversation scope; "Abrir en el asistente" is disabled until the conversation id is known and pushes /assistant/[id]; a stopped first message adopts the conversation announced by the start frame; "Reintentar" re-sends a failed message; a TutorAI suggestion prefills the message.
-* Versión: 1.3
+* Descripción: Integration tests of the "Preguntas" panel against msw (real text/event-stream bodies for the streamed answers): it reopens the caller's LESSON conversation (client-side refId lookup, also on a later page of the listing) and shows its history with the incomplete note and the rating widget, sending a message streams the answer progressively and then shows the saved conversation, the first message starts a conversation with scope/refId/currentPageId, switching to MODULE looks up and starts with the moduleId, "Detener" stops the answer, an error before the stream gives the question back, and unmounting aborts the running stream. v1.2 (S2 ai-chat): Enter keeps inserting a new line (no submit) and no character counter is shown, as before the shared Composer. RichContent is replaced by plain text. Depends on vitest, Testing Library, msw and the learning/SSE test helpers. v1.1 (L6 fix): a network failure before the stream (status 0) also gives the question back. v1.3 (W7, Bloque 2): an answer saved incomplete with text is rateable; ratings send surface POPUP and the conversation scope; "Abrir en el asistente" is disabled until the conversation id is known and pushes /assistant/[id]; a stopped first message adopts the conversation announced by the start frame; "Reintentar" re-sends a failed message; a TutorAI suggestion prefills the message. v1.4 (cierre IA): a saved answer that starts with the server fallback label shows the fallback label without the prefix and no rating.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -239,6 +239,19 @@ describe("QuestionsPanel", () => {
     await waitFor(() => expect(screen.getAllByText("Respuesta incompleta: se interrumpió antes de terminar.")).toHaveLength(2));
     expect(screen.queryByText(/distensibilidad/)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Detener" })).not.toBeInTheDocument();
+  });
+
+  it("labels a saved non-AI fallback answer by its server prefix and offers no rating for it", async() => {
+    details["c-l1"] = [
+      { id: "u1", role: "USER", content: "¿Qué es la PEEP?" },
+      { id: "a1", role: "ASSISTANT", content: "[Respuesta automática sin IA] Revisa el contenido de la lección." },
+    ];
+    renderPanel();
+
+    expect(await screen.findByText("Revisa el contenido de la lección.")).toBeInTheDocument();
+    expect(screen.getByText("Respuesta automática (IA no disponible)")).toBeInTheDocument();
+    expect(screen.queryByText(/\[Respuesta automática sin IA\]/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "¿Te fue útil?" })).not.toBeInTheDocument();
   });
 
   it("rates an answer with surface POPUP and the conversation scope", async() => {

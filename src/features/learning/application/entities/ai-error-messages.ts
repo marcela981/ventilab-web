@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor error messages
-* Descripción: Spanish messages for the errors of the AI tutor streams (deepen a page, lesson/module questions), shared by the Profundizar and Preguntas panels. Thin learning wrapper over the generic core of @shared/ai-conversation (quota with the local reset time hh:mm, provider unavailable, interrupted stream, generic stream failure): it keeps the "tutor de IA" wording, adds the unpublished-page text for a 404 of Profundizar and sends the remaining errors (network, plain 429 wait, 404 default, other HTTP) to getLearningErrorMessage. v1.1 (S1 ai-chat): the generic logic moved to @shared/ai-conversation; same messages and same public API. v1.2 (W7, Bloque 2): getDeepenErrorMessage with the July deepen accordion texts (429/quota → "Demasiadas solicitudes…", network.unavailable → "Sin conexión", network.timeout → "Tiempo de espera agotado", anything else → "Error al expandir el tema").
-* Versión: 1.2
+* Descripción: Spanish messages for the errors of the AI tutor streams (deepen a page, lesson/module questions), shared by the Profundizar and Preguntas panels. Thin learning wrapper over the generic core of @shared/ai-conversation (quota with the local reset time hh:mm, provider unavailable, interrupted stream, generic stream failure): it keeps the "tutor de IA" wording, adds the unpublished-page text for a 404 of Profundizar and sends the remaining errors (network, plain 429 wait, 404 default, other HTTP) to getLearningErrorMessage. v1.1 (S1 ai-chat): the generic logic moved to @shared/ai-conversation; same messages and same public API. v1.2 (W7, Bloque 2): getDeepenErrorMessage with the July deepen accordion texts (429/quota → "Demasiadas solicitudes…", network.unavailable → "Sin conexión", network.timeout → "Tiempo de espera agotado", anything else → "Error al expandir el tema"). v1.3 (cierre IA): the deepen messages add the local reset time (retryAtHint) to 429 and to 503 (new "La IA no está disponible en este momento."), and the tutor wording of providerBusy (503 with Retry-After).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { AI_ERROR_CODES, getAiErrorMessage as getAiStreamErrorMessage } from "@shared/ai-conversation/application/ai-error-messages";
+import { AI_ERROR_CODES, getAiErrorMessage as getAiStreamErrorMessage, retryAtHint } from "@shared/ai-conversation/application/ai-error-messages";
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
 import { getLearningErrorMessage } from "./learning-error-messages";
 
@@ -19,6 +19,7 @@ export { AI_ERROR_CODES, formatResetTime } from "@shared/ai-conversation/applica
 export const AI_ERROR_MESSAGES = {
   quotaExceeded: "Alcanzaste el límite de uso del tutor de IA.",
   providerUnavailable: "El tutor de IA no está disponible en este momento. Inténtalo más tarde.",
+  providerBusy: "El tutor de IA está saturado en este momento.",
   pageNotPublished: "Esta página no está publicada o ya no existe, así que el tutor no puede profundizar en ella.",
   interrupted: "La respuesta se interrumpió antes de terminar. Inténtalo de nuevo.",
   failed: "El tutor de IA no pudo responder. Inténtalo de nuevo.",
@@ -36,13 +37,19 @@ export const DEEPEN_ERROR_MESSAGES = {
   network: "Sin conexión",
   timeout: "Tiempo de espera agotado",
   failed: "Error al expandir el tema",
+  unavailable: "La IA no está disponible en este momento.",
 } as const;
 
-export function getDeepenErrorMessage(error: unknown): string {
+// 429 (quota or rate limit) and 503 add the local time from which the AI can be used again when the server sends it.
+export function getDeepenErrorMessage(error: unknown, now?: number): string {
   const apiError = toApiError(error);
 
   if (apiError.status === 429 || apiError.code === AI_ERROR_CODES.quotaExceeded) {
-    return DEEPEN_ERROR_MESSAGES.rateLimit;
+    return `${DEEPEN_ERROR_MESSAGES.rateLimit}${retryAtHint(apiError.retryAfter, now)}`;
+  }
+
+  if (apiError.status === 503 || apiError.code === AI_ERROR_CODES.providersUnavailable) {
+    return `${DEEPEN_ERROR_MESSAGES.unavailable}${retryAtHint(apiError.retryAfter, now) || " Inténtalo más tarde."}`;
   }
 
   if (apiError.code === CLIENT_ERROR_CODES.networkUnavailable) {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: TutorAnswer
-* Descripción: One AI tutor answer bubble shared by the Profundizar and Preguntas panels, composed from the shared @shared/ai-conversation pieces. A `live` answer (the one being streamed in this session) is a StreamingMessage: "Pensando…" while the stream has not sent text yet, the markdown as it grows and a visually hidden aria-live region that announces it by fragments. A saved answer (history, or an earlier turn of this session) uses the same StreamingMessage without its live region, so it is not announced again. Both carry in their footer a note when the answer was stopped or saved incomplete and the shared "¿Te fue útil?" widget (ai-ratings MESSAGE target = assistant message id) once the answer is complete. `initialRating` null skips loading a previous rating (fresh answers); undefined loads it (history). Depends on @shared/ai-conversation, @shared/ai-rating and the tutor CSS Module. v1.1 (S2 ai-chat): bubbles, typing hint and markdown come from @shared/ai-conversation; same copy and rating placement. v1.2 (S2 review R3): live and saved answers share one element tree (StreamingMessage with `announce`), so a turn that stops being live keeps its mounted rating widget and the rating given in this session. v1.3 (W7, Bloque 2): the rating carries the surface and scope of the answer (ratingSurface, ratingScope) and the waiting hint is configurable (typingLabel, "Consultando IA…" in the deepen accordion).
-* Versión: 1.3
+* Descripción: One AI tutor answer bubble shared by the Profundizar and Preguntas panels, composed from the shared @shared/ai-conversation pieces. A `live` answer (the one being streamed in this session) is a StreamingMessage: "Pensando…" while the stream has not sent text yet, the markdown as it grows and a visually hidden aria-live region that announces it by fragments. A saved answer (history, or an earlier turn of this session) uses the same StreamingMessage without its live region, so it is not announced again. Both carry in their footer a note when the answer was stopped or saved incomplete and the shared "¿Te fue útil?" widget (ai-ratings MESSAGE target = assistant message id) once the answer is complete. `initialRating` null skips loading a previous rating (fresh answers); undefined loads it (history). Depends on @shared/ai-conversation, @shared/ai-rating and the tutor CSS Module. v1.1 (S2 ai-chat): bubbles, typing hint and markdown come from @shared/ai-conversation; same copy and rating placement. v1.2 (S2 review R3): live and saved answers share one element tree (StreamingMessage with `announce`), so a turn that stops being live keeps its mounted rating widget and the rating given in this session. v1.3 (W7, Bloque 2): the rating carries the surface and scope of the answer (ratingSurface, ratingScope) and the waiting hint is configurable (typingLabel, "Consultando IA…" in the deepen accordion). v1.4 (cierre IA): isFallback (non-AI answer, source DETERMINISTIC) shows the shared AiFallbackLabel in the footer, strips the server prefix "[Respuesta automática sin IA]" from the displayed text (the label already says it) and hides the rating widget (ratings measure the language model).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,6 +9,8 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { stripFallbackLabel } from "@shared/ai-conversation/application/ai-conversation.entity";
+import { AiFallbackLabel } from "@shared/ai-conversation/application/fallback-label";
 import { StreamingMessage } from "@shared/ai-conversation/application/streaming-message";
 import { AiRatingWidget } from "@shared/ai-rating";
 import type { AiRatingScope, AiRatingSurface } from "@shared/ai-rating";
@@ -37,6 +39,8 @@ export type TutorAnswerProps = {
   ratingScope?: AiRatingScope | undefined
   // Hint shown while no text has arrived; defaults to "Pensando…".
   typingLabel?: string | undefined
+  // Non-AI fallback answer: shows the fallback label instead of the server prefix and is never rated.
+  isFallback?: boolean | undefined
 };
 
 export function TutorAnswer({
@@ -49,15 +53,19 @@ export function TutorAnswer({
   ratingSurface,
   ratingScope,
   typingLabel = TUTOR_ANSWER_COPY.thinking,
+  isFallback = false,
 }: TutorAnswerProps) {
-  const footer = interruption || ratingTargetId ? (
+  // Ratings measure the language model: a fallback answer has nothing to rate.
+  const rateId = isFallback ? null : ratingTargetId;
+  const footer = interruption || rateId || isFallback ? (
     <>
+      {isFallback ? <AiFallbackLabel /> : null}
       {interruption ? <p className={cx(styles.note)}>{TUTOR_ANSWER_COPY[interruption]}</p> : null}
-      {ratingTargetId ? (
+      {rateId ? (
         <AiRatingWidget
-          key={ratingTargetId}
+          key={rateId}
           targetType="MESSAGE"
-          targetId={ratingTargetId}
+          targetId={rateId}
           surface={ratingSurface}
           scope={ratingScope}
           {...(initialRating === undefined ? {} : { initialRating })}
@@ -70,7 +78,7 @@ export function TutorAnswer({
   // so the rating widget in the footer keeps its state (a rating given in this session stays selected).
   return (
     <StreamingMessage
-      text={text}
+      text={isFallback ? stripFallbackLabel(text) : text}
       isStreaming={isStreaming}
       announce={live}
       typingLabel={typingLabel}

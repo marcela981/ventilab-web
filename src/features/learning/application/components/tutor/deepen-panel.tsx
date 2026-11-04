@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DeepenPanel
-* Descripción: Body of the deepen accordion at the end of each page ("Expansión de Tema con IA", July AITopicExpander texts). It asks the AI tutor to deepen the visible Page (POST /api/tutor/pages/{pageId}/deepen, SSE) with an optional question ("Tu pregunta"; left blank, the whole page is expanded); the answer renders progressively as markdown with "Consultando IA…" until the first fragment, "Detener" aborts it, and the shared "¿Te fue útil?" widget rates it (MESSAGE target with surface ACCORDION and scope PAGE) once it is done or stopped after some text. Follow-up questions continue the same page conversation and the thread of the current Page stays visible. Errors use the July texts (too many requests, offline, timeout, generic) with "Inténtalo de nuevo", which re-sends the failed turn. The thread is keyed by pageId by its parent. A prompt from the TutorAI suggestions arrives as `prefill`: it fills the question and focuses it, it is never sent by itself. Depends on MUI, @shared/ai-conversation (MessageList, MessageBubble, useTutorTurn), the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L5 fix): a conversationId is adopted only from `done`. v1.2 (S2 ai-chat): shared thread and bubbles. v1.3 (W7, Bloque 2): it is the body of the deepen accordion (no longer a side panel tab), with the July texts, retry and rating of stopped answers; the stream runs on the shared useTutorTurn, which adopts the conversation and message ids from the early `start` frame, so a first answer stopped or failed after it started keeps its conversation for the next question.
-* Versión: 1.3
+* Descripción: Body of the deepen accordion at the end of each page ("Expansión de Tema con IA", July AITopicExpander texts). It asks the AI tutor to deepen the visible Page (POST /api/tutor/pages/{pageId}/deepen, SSE) with an optional question ("Tu pregunta"; left blank, the whole page is expanded); the answer renders progressively as markdown with "Consultando IA…" until the first fragment, "Detener" aborts it, and the shared "¿Te fue útil?" widget rates it (MESSAGE target with surface ACCORDION and scope PAGE) once it is done or stopped after some text. Follow-up questions continue the same page conversation and the thread of the current Page stays visible. Errors use the July texts (too many requests, offline, timeout, generic) with "Inténtalo de nuevo", which re-sends the failed turn. The thread is keyed by pageId by its parent. A prompt from the TutorAI suggestions arrives as `prefill`: it fills the question and focuses it, it is never sent by itself. Depends on MUI, @shared/ai-conversation (MessageList, MessageBubble, useTutorTurn), the tutor service, the AI error messages, TutorAnswer and the tutor CSS Module. v1.1 (L5 fix): a conversationId is adopted only from `done`. v1.2 (S2 ai-chat): shared thread and bubbles. v1.3 (W7, Bloque 2): it is the body of the deepen accordion (no longer a side panel tab), with the July texts, retry and rating of stopped answers; the stream runs on the shared useTutorTurn, which adopts the conversation and message ids from the early `start` frame, so a first answer stopped or failed after it started keeps its conversation for the next question. v1.4 (cierre IA): a non-AI fallback answer (done source DETERMINISTIC) carries the "Respuesta automática (IA no disponible)" label and no rating widget.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -49,6 +49,7 @@ type DeepenTurn = {
   answer: string
   status: StreamingStatus
   ratingId: string | null
+  isFallback: boolean
 };
 
 export type DeepenPrefill = {
@@ -72,6 +73,7 @@ function TurnView({ turn, live }: { turn: DeepenTurn, live: boolean }) {
           ratingSurface="ACCORDION"
           ratingScope="PAGE"
           typingLabel={DEEPEN_COPY.loading}
+          isFallback={turn.isFallback}
         />
       )}
     </>
@@ -95,7 +97,7 @@ export function DeepenPanel({ pageId, prefill = null }: DeepenPanelProps) {
   const [current, setCurrent] = useState<{ id: number, question: string | null } | null>(null);
   const isStreaming = turn.status === "streaming";
   const currentTurn: DeepenTurn | null = current
-    ? { ...current, answer: turn.text, status: turn.status, ratingId: turn.ratableMessageId }
+    ? { ...current, answer: turn.text, status: turn.status, ratingId: turn.ratableMessageId, isFallback: turn.isFallback }
     : null;
 
   // A newer suggestion replaces the question (state update during render, applied once per id).
