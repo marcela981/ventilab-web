@@ -169,7 +169,7 @@ Diseño, decisiones por defecto y desvíos: `../DISENO_BLOQUE4.md` (§2, §3, §
 - **Laboratorio de staff.** `/teacher/lab` monta la página de reservas dentro del panel y suma «Próximas reservas» (7 días, solo lectura); el docente reserva para los grupos que creó o supervisa y «para otro usuario» es solo ADMIN.
 - **Administración.** Usuarios: «Editar código» también deshabilitado en la fila del superadmin; pestaña Profesores sobre `GET /api/admin/teachers`. Analítica de IA: filtros `surface` y `scope` en la URL, tabla agrupada por superficie y alcance, CSV del servidor con esas columnas. `assist-panel` y `module-notes-analysis` envían su superficie (`SIMULATOR_ASSIST`, `NOTES_ANALYSIS` con `scope=MODULE`).
 - **Perfil.** Cambiar contraseña usa `POST /api/auth/change-password` y guarda el par reemitido con `saveTokens` (las otras pestañas se enteran por el evento `storage`); los refresh tokens anteriores quedan revocados. Con `hasPassword=false` se muestra «Tu cuenta usa Google; la contraseña se gestiona en Google.». La foto se recorta al centro y se reduce a 512 px con canvas y se sube al elegirla (`PUT/DELETE /api/users/me/avatar`); `image` es una URL firmada que no se guarda.
-- **Mediciones y capturas:** `docs/bloque4/perf/` (sonda `e2e/perf/teacher-perf.spec.ts`, antes y después) y `docs/bloque4/capturas/`.
+- **Mediciones y capturas:** sonda `e2e/perf/teacher-perf.spec.ts` (la medición "después" queda pendiente) y `docs/bloque4/capturas/`.
 
 **Limitaciones conocidas**
 
