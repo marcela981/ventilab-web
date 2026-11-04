@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learning styles
-* Descripción: Layout of the learning pages (/learn, /learn/[sectionId], /learn/modules/[moduleId]) and their components: centered column, cards (border, radius, surface, shadow) like the profile and groups pages, breadcrumb, progress bars, lists of sections / modules / lessons, lock badges and screen, preview hint and the primary "Continuar" link. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 5): the badge sits on the raised surface (the inverted surface turns light in the dark scheme and hid the muted text).
-* Versión: 1.1
+* Descripción: Layout of the learning pages (/learn, /learn/[sectionId], /learn/modules/[moduleId]) and their components: centered column, cards (border, radius, surface, shadow) like the profile and groups pages, breadcrumb, progress bars, lists of sections / modules / lessons, lock badges and screen, preview hint and the primary "Continuar" link. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 5): the badge sits on the raised surface (the inverted surface turns light in the dark scheme and hid the muted text). v1.2 (Bloque 5): the cards of the section and module pages are July glass cards (white 5%, 10% border, no elevation).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,11 +29,10 @@
   flex-direction: column;
   gap: var(--vl-space-3);
   padding: var(--vl-space-5);
-  border: 1px solid var(--vl-color-border);
+  border: 1px solid var(--vl-glass-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-bg);
   color: var(--vl-color-text);
-  box-shadow: var(--vl-shadow-1);
   scroll-margin-top: var(--vl-space-7);
 }
 

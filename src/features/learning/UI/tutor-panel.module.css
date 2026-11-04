@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI tutor panels styles
-* Descripción: Styles of the "Profundizar" and "Preguntas" tabs of the lesson viewer: panel column, scope selector, stopped/incomplete notes, the deepen form with its actions and the intro/empty/hint texts. v1.1 (S2 ai-chat): the thread, bubbles and "thinking" hint moved to @shared/ai-conversation (conversation.module.css). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.2 (W7, Bloque 2): deepen accordion (heading button, chevron, region) and the panel title and thread actions of the TutorAI popup panels.
-* Versión: 1.2
+* Descripción: Styles of the "Profundizar" and "Preguntas" tabs of the lesson viewer: panel column, scope selector, stopped/incomplete notes, the deepen form with its actions and the intro/empty/hint texts. v1.1 (S2 ai-chat): the thread, bubbles and "thinking" hint moved to @shared/ai-conversation (conversation.module.css). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.2 (W7, Bloque 2): deepen accordion (heading button, chevron, region) and the panel title and thread actions of the TutorAI popup panels. v1.3 (Bloque 5): the Profundizar accordion sits on the raised surface (July glass 8%) inside the glass article.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,7 +59,7 @@
 /* Deepen accordion at the end of the page content (W7). */
 .accordion {
   margin-top: var(--vl-space-4);
-  background: var(--vl-color-surface);
+  background: var(--vl-color-surface-raised);
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-lg);
 }

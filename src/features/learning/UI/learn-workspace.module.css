@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Learn workspace styles
-* Descripción: Layout of the /learn workspace (W3, Bloque 2): centered column, the top tab list (Inicio, Currículo, Mi Progreso; selected tab underlined in the primary color, like the July TeachingTabs) and the tab panels (a hidden panel stays mounted but is not displayed). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 0.1
+* Descripción: Layout of the /learn workspace (W3, Bloque 2): centered column, the top tab list (Inicio, Currículo, Mi Progreso; selected tab underlined in the primary color, like the July TeachingTabs) and the tab panels (a hidden panel stays mounted but is not displayed). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v0.2 (Bloque 5): full-width column like the July /teaching page and the mockup; July tabs (selected tab tinted cyan 12%, white label, #2196F3 underline and icon, rounded top).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,13 +14,11 @@
   flex-direction: column;
   gap: var(--vl-space-4);
   width: 100%;
-  max-width: 72rem;
-  margin: 0 auto;
 }
 
 .tabList {
   display: flex;
-  gap: var(--vl-space-1);
+  gap: var(--vl-space-2);
   overflow-x: auto;
   border-bottom: 1px solid var(--vl-color-border);
 }
@@ -29,25 +27,35 @@
   display: inline-flex;
   align-items: center;
   gap: var(--vl-space-1);
+  gap: var(--vl-space-2);
   min-height: 48px;
-  padding: var(--vl-space-2) var(--vl-space-4);
+  padding: var(--vl-space-3) var(--vl-space-5);
   font: var(--mui-font-button);
+  font-weight: 600;
   color: var(--vl-color-text-muted);
   white-space: nowrap;
   cursor: pointer;
   background: transparent;
   border: 0;
-  border-bottom: 2px solid transparent;
-  transition: color var(--vl-duration-short) var(--vl-ease-standard);
+  border-bottom: 3px solid transparent;
+  border-radius: var(--vl-radius-lg) var(--vl-radius-lg) 0 0;
+  transition: color var(--vl-duration-short) var(--vl-ease-standard), background var(--vl-duration-short) var(--vl-ease-standard);
 }
 
 .tab:hover {
   color: var(--vl-color-text);
+  background: var(--vl-color-hover);
 }
 
+/* July TeachingTabs: tinted selected tab, white label, blue underline and icon. */
 .tab[aria-selected="true"] {
-  color: var(--vl-color-primary);
-  border-bottom-color: var(--vl-color-primary);
+  color: var(--vl-color-text);
+  background: var(--vl-learn-tab-active-bg);
+  border-bottom-color: var(--vl-learn-tab-indicator);
+}
+
+.tab[aria-selected="true"] svg {
+  color: var(--vl-learn-tab-indicator);
 }
 
 .tab:focus-visible {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Student space styles
-* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only. v1.1 (B2 closure): the /me/notes search field and the module filter of /me/grades. v1.2 (W8, Bloque 2): the "Continuar donde quedaste" block (shared with the Inicio tab of /learn) and its primary "Continuar" link.
-* Versión: 1.2
+* Descripción: Layout of the student space: /me (responsive grid of summary cards with lists, progress bars, links and the unread counter), /me/notes (filters, module groups with the AI analysis and lesson groups with their notes) and /me/grades (type filter and the grades table). Passed and failed grades use the success and error tokens and always carry their text label (never colour alone). Tokens only. v1.1 (B2 closure): the /me/notes search field and the module filter of /me/grades. v1.2 (W8, Bloque 2): the "Continuar donde quedaste" block (shared with the Inicio tab of /learn) and its primary "Continuar" link. v1.3 (Bloque 5): the summary cards (/me and the Inicio tab of /learn) are July glass cards (white 5%, 10% border, no elevation).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,11 +40,10 @@
   flex-direction: column;
   gap: var(--vl-space-3);
   min-width: 0;
-  padding: var(--vl-space-4);
-  border: 1px solid var(--vl-color-border);
+  padding: var(--vl-space-4) var(--vl-space-5);
+  border: 1px solid var(--vl-glass-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
-  box-shadow: var(--vl-shadow-1);
+  background: var(--vl-glass-bg);
 }
 
 .cardHeader {
