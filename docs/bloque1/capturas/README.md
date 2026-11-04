@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Capturas del simulador, julio frente al nuevo (Bloque 1)
-* Descripción: Índice de las capturas por pestaña del simulador unificado (/simulador) tomadas en W12 y comparación con la versión de julio (worktree _legacy-web-jul, commit 62c9d68). Explica por qué la app de julio no se pudo capturar y remite a las secciones de FLUJOS_JULIO.md que describen esas pantallas. v0.2 (W6-fix): las dos capturas del defecto de Monitoreo se reemplazan por las del layout corregido a 1280, 1440 y 1920 px (digital con el caso largo, caso oculto y vista real).
-* Versión: 0.2
+* Descripción: Índice de las capturas por pestaña del simulador unificado (/simulador) tomadas en W12 y comparación con la versión de julio (worktree _legacy-web-jul, commit 62c9d68). Explica por qué la app de julio no se pudo capturar y remite a las secciones de FLUJOS_JULIO.md que describen esas pantallas. v0.2 (W6-fix): las dos capturas del defecto de Monitoreo se reemplazan por las del layout corregido a 1280, 1440 y 1920 px (digital con el caso largo, caso oculto y vista real). v0.3 (Bloque 5, W5-2): las capturas de Monitoreo (monitoreo-*-1280/1440/1920 y nuevo-monitoreo-*) se regeneraron con el layout de julio mediante e2e/bloque5/capturas.spec.ts (E2E_CAPTURES=1); el caso largo se ve ahora en el drawer "Caso clínico".
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
