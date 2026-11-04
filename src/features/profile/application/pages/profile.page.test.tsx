@@ -10,6 +10,7 @@
 */
 
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { AxiosError } from "axios";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { useSyncExternalStore } from "react";
@@ -336,8 +337,15 @@ describe("ProfilePage photo", { timeout: 15_000 }, () => {
     expect(screen.queryByRole("button", { name: "Quitar foto" })).not.toBeInTheDocument();
   });
 
+  // The multipart PUT is stubbed at the http client: jsdom + axios cannot serialize this FormData on every Node
+  // version (it hangs on Node 22), and the page behaviour, not the transport, is what these tests cover.
   it("uploads a chosen photo and shows the URL read again from the profile", async() => {
-    const put = vi.spyOn(httpClient, "put");
+    const put = vi.spyOn(httpClient, "put").mockImplementation(async() => {
+      avatarUploads += 1;
+      stored = { ...stored, image: `data:image/jpeg;base64,signed-${avatarUploads}` };
+
+      return { data: envelope(userDto()) } as never;
+    });
 
     renderProfile();
     await nameField();
@@ -370,12 +378,21 @@ describe("ProfilePage photo", { timeout: 15_000 }, () => {
   });
 
   it("explains when photo storage is unavailable", async() => {
-    server.use(http.put(url("/api/users/me/avatar"), () => errorResponse("media.storage_unavailable", 503)));
+    const code = "media.storage_unavailable";
+    const put = vi.spyOn(httpClient, "put").mockRejectedValue(new AxiosError(code, "ERR_BAD_RESPONSE", undefined, undefined, {
+      status: 503,
+      statusText: "Service Unavailable",
+      headers: {},
+      config: {} as never,
+      data: { success: false, message: code, data: null, code, timestamp: "", traceId: "t", pagination: null },
+    }));
+
     renderProfile();
     await nameField();
     chooseFile(new File(["jpg"], "me.jpg", { type: "image/jpeg" }));
 
     expect(await screen.findByRole("alert", {}, { timeout: 5000 })).toHaveTextContent(/almacenamiento de fotos no está disponible/i);
+    put.mockRestore();
   });
 
   it("removes the photo and falls back to the initials", async() => {
