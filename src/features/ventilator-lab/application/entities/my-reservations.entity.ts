@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: My reservations entity
-* Descripción: Pure model of "Mis reservas" on /lab/reservations. GET /api/reservations/mine returns only reservations whose window has not ended (any status), so the split is by status: upcoming = scheduled and not ended (ordered by start; the one in progress is labelled "En curso"); past = cancelled, preempted, completed or already ended (most recent first). canCancelReservation mirrors the backend cancel rules (reservation-access-policy.canCancel + Reservation.cancel: an admin, the creator, the holder user, the leader of the holder group or a teacher who supervises it, and only while the reservation is SCHEDULED) only to show or hide the button: the backend stays the authority and its errors are shown. Also the cancel error codes. Depends on the reservation entities.
-* Versión: 1.0
+* Descripción: Pure model of "Mis reservas" on /lab/reservations. GET /api/reservations/mine returns only reservations whose window has not ended (any status), so the split is by status: upcoming = scheduled and not ended (ordered by start; the one in progress is labelled "En curso"); past = cancelled, preempted, completed or already ended (most recent first). canCancelReservation mirrors the backend cancel rules (reservation-access-policy.canCancel + Reservation.cancel: an admin, the creator, the holder user, the leader of the holder group or a teacher who created or supervises it, and only while the reservation is SCHEDULED) only to show or hide the button: the backend stays the authority and its errors are shown. Also the cancel error codes. Depends on the reservation entities.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -27,12 +27,12 @@ export type MyReservationsSplit = {
   past: LabReservation[]
 };
 
-/** Who asks to cancel: session user and role, the groups they lead and (teachers) the groups they supervise. */
+/** Who asks to cancel: session user and role, the groups they lead and (teachers) the groups they created or supervise (backend managesGroup). */
 export type CancelActor = {
   userId: string | null
   role: string | null
   leadGroupIds: ReadonlySet<string>
-  supervisedGroupIds: ReadonlySet<string>
+  managedGroupIds: ReadonlySet<string>
 };
 
 const startMs = (reservation: LabReservation): number => new Date(reservation.startsAt).getTime();
@@ -75,5 +75,5 @@ export function canCancelReservation(reservation: LabReservation, actor: CancelA
   }
 
   return actor.leadGroupIds.has(reservation.groupId)
-    || (actor.role === "TEACHER" && actor.supervisedGroupIds.has(reservation.groupId));
+    || (actor.role === "TEACHER" && actor.managedGroupIds.has(reservation.groupId));
 }

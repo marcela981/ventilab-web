@@ -1,0 +1,61 @@
+/*
+* Funcionalidad: NavList styles
+* Descripción: Styles of the navigation list shared by the AppShell and the PanelShell (moved from app-shell.module.css v1.6, W1 Bloque 4): the section subheader, the small status of an item (dot + text; positive = success dot, negative = warning dot, neutral = muted dot; the text carries the meaning, never the colour alone) and the collapsed variant, where the label and the indicator text are visually hidden (they stay the accessible name) and the icons are centred. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.section {
+  line-height: var(--vl-space-8);
+}
+
+.label {
+  min-width: 0;
+}
+
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  margin-inline-start: var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+  white-space: nowrap;
+}
+
+.indicatorDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--vl-color-text-disabled);
+}
+
+.indicator[data-indicator-tone="positive"] .indicatorDot {
+  background: var(--vl-color-success);
+}
+
+.indicator[data-indicator-tone="negative"] .indicatorDot {
+  background: var(--vl-color-warning);
+}
+
+/* Icons only: the texts stay in the accessibility tree. */
+.collapsed .label,
+.collapsed .indicatorText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.collapsed .indicator {
+  position: absolute;
+  inset-block-start: var(--vl-space-2);
+  inset-inline-end: var(--vl-space-2);
+  margin: 0;
+}

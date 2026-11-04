@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin operations entity tests
-* Descripción: Pure rules of the operation pages: the audit diff keeps only the changed fields (flattened dotted keys, deep comparison, added and removed keys), the audit filters round trip through the URL and become the API query with the Bogota range, the Bogota day range (exclusive end, reversed and too long ranges), the AI filters drop unknown enums and split telemetry and ratings queries, applyStatusChange writes the pushed states into the cached status, the display formatters return "—" for missing values, and the probe error message names the Retry-After wait of a 429. Depends on vitest, the api-client errors and the admin console entities. v1.1 (B4): the AI range 422 message names the client maximum (AI_ANALYTICS_MAX_RANGE_DAYS).
-* Versión: 1.1
+* Descripción: Pure rules of the operation pages: the audit diff keeps only the changed fields (flattened dotted keys, deep comparison, added and removed keys), the audit filters round trip through the URL and become the API query with the Bogota range, the Bogota day range (exclusive end, reversed and too long ranges), the AI filters drop unknown enums and split telemetry and ratings queries, applyStatusChange writes the pushed states into the cached status, the display formatters return "—" for missing values, and the probe error message names the Retry-After wait of a 429. Depends on vitest, the api-client errors and the admin console entities. v1.1 (B4): the AI range 422 message names the client maximum (AI_ANALYTICS_MAX_RANGE_DAYS); the AI surface and scope filters (URL round trip, ratings only), the contract lists (every surface, MODULE_QA) and the "unknown" group label.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,19 @@ import { ApiError } from "@shared/api-client/api-error";
 import type { SystemStatusDTO } from "../../api/dtos/admin-console.dto";
 import { getAdminConsoleErrorMessage, getProbeErrorMessage } from "./admin-console-error-messages";
 import { formatMs, formatRate, formatUsd, MISSING_VALUE } from "./admin-format";
-import { readAiFilters, toAiRatingsQuery, toAiTelemetryQuery } from "./ai-analytics.entity";
+import {
+  AI_SCOPES,
+  AI_SURFACES,
+  AI_UNKNOWN_LABEL,
+  AI_USE_CASES,
+  aiScopeLabel,
+  aiSurfaceLabel,
+  NO_AI_FILTERS,
+  readAiFilters,
+  toAiFiltersQuery,
+  toAiRatingsQuery,
+  toAiTelemetryQuery,
+} from "./ai-analytics.entity";
 import { diffAuditChanges, formatAuditValue, NO_AUDIT_FILTERS, readAuditFilters, toAuditApiQuery, toAuditFiltersQuery } from "./audit.entity";
 import { AI_ANALYTICS_MAX_RANGE_DAYS, toIsoRange } from "./date-range.entity";
 import { applyStatusChange, componentStateTone, globalStateTone } from "./system-status.entity";
@@ -83,6 +95,24 @@ describe("AI filters", () => {
     expect(filters.targetType).toBe("");
     expect(toAiTelemetryQuery(filters, {})).toEqual({ useCase: "FREE_CHAT", provider: "gemini" });
     expect(toAiRatingsQuery(filters, { from: "f" })).toEqual({ from: "f", useCase: "FREE_CHAT", provider: "gemini", promptVersion: "1.0.0" });
+  });
+
+  it("round trips the surface and scope through the URL and sends them to the ratings only", () => {
+    const filters = readAiFilters({ surface: "SIMULATOR_ASSIST", scope: "MODULE", useCase: "MODULE_QA" });
+
+    expect(filters).toEqual({ ...NO_AI_FILTERS, surface: "SIMULATOR_ASSIST", scope: "MODULE", useCase: "MODULE_QA" });
+    expect(toAiFiltersQuery(filters)).toEqual({ surface: "SIMULATOR_ASSIST", scope: "MODULE", useCase: "MODULE_QA" });
+    expect(toAiTelemetryQuery(filters, {})).toEqual({ useCase: "MODULE_QA" });
+    expect(toAiRatingsQuery(filters, {})).toEqual({ useCase: "MODULE_QA", surface: "SIMULATOR_ASSIST", scope: "MODULE" });
+    expect(readAiFilters({ surface: "SIDEBAR", scope: "COURSE" })).toEqual(NO_AI_FILTERS);
+  });
+
+  it("lists every surface of the contract, MODULE_QA among the use cases, and labels unknown groups", () => {
+    expect(AI_SURFACES).toEqual(["POPUP", "ACCORDION", "ASSISTANT", "NOTES_ANALYSIS", "EVALUATION_FEEDBACK", "SIMULATOR_ASSIST"]);
+    expect(AI_SCOPES).toEqual(["LESSON", "MODULE", "PAGE", "FREE"]);
+    expect(AI_USE_CASES).toContain("MODULE_QA");
+    expect(aiSurfaceLabel("unknown")).toBe(AI_UNKNOWN_LABEL);
+    expect(aiScopeLabel("FUTURE")).toBe("FUTURE");
   });
 });
 

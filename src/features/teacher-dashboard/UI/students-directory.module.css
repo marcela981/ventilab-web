@@ -1,0 +1,227 @@
+/*
+* Funcionalidad: Students directory styles
+* Descripción: Layout of /teacher/students: page column, Directorio / Estadísticas tab list, toolbar (debounced search, "Todos" / "Mis grupos" filter and "Conformar Grupo"), the directory table (selection column, student cell with email, progress bar, group chips, detail link column) with its pagination, the "Conformar Grupo" dialog (fields, member chips, per-student failure list) and the four statistics cards. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+/* Tabs */
+
+.tabList {
+  display: flex;
+  gap: var(--vl-space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--vl-space-2) var(--vl-space-4);
+  font: var(--mui-font-button);
+  color: var(--vl-color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--vl-color-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+  border-bottom-color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding-top: var(--vl-space-4);
+}
+
+/* Toolbar */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-3);
+  align-items: center;
+}
+
+.search {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+/* Table */
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.results:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.studentCell {
+  display: flex;
+  flex-direction: column;
+  min-width: 12rem;
+}
+
+.studentName {
+  font-weight: 600;
+  color: var(--vl-color-text);
+}
+
+.meta {
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.progressCell {
+  display: flex;
+  gap: var(--vl-space-2);
+  align-items: center;
+  min-width: 9rem;
+}
+
+.progressBar {
+  flex: 1;
+}
+
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+}
+
+.link {
+  font-weight: 600;
+  color: var(--vl-color-primary);
+}
+
+.link:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* Group builder dialog */
+
+.dialogContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+}
+
+.dialogSubtitle {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.membersTitle {
+  margin: 0 0 var(--vl-space-1);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--vl-color-text-muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.failureList {
+  margin: var(--vl-space-1) 0 0;
+  padding-left: var(--vl-space-4);
+}
+
+/* Statistics */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--vl-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--vl-color-text-muted);
+}
+
+.cardValue {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--vl-color-text);
+}
+
+.cardHint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

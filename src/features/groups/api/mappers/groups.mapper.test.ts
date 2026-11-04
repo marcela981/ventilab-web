@@ -168,6 +168,7 @@ describe("toGroupSupervision and toUserOption", () => {
       isActive: true,
       isSuperadmin: false,
       studentCode: "EST-02",
+      hasPassword: true,
       emailVerified: null,
       createdAt: "2026-01-01T00:00:00.000Z",
       updatedAt: "2026-01-01T00:00:00.000Z",

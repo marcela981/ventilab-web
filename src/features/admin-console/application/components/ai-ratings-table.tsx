@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiRatingsTable
-* Descripción: Table of the rating groups of `GET /api/admin/ai-ratings/stats` in /admin/ai: use case, provider, model, prompt version, number of ratings, helpful rate (API 0–1 rate as a percentage) and the mean of each QUEST dimension (quality, understanding, trust, expression, safety) with the n that answered it; a dimension without answers shows "—". Values exactly as returned. Depends on @shared/lib, the admin console AI analytics and format entities and CSS Module.
-* Versión: 1.0
+* Descripción: Table of the rating groups of `GET /api/admin/ai-ratings/stats` in /admin/ai: use case, provider, model, prompt version, number of ratings, helpful rate (API 0–1 rate as a percentage) and the mean of each QUEST dimension (quality, understanding, trust, expression, safety) with the n that answered it; a dimension without answers shows "—". Values exactly as returned. Depends on @shared/lib, the admin console AI analytics and format entities and CSS Module. v1.1 (B4): the groups lead with their surface (row header) and scope, the two fields the server now also groups by ("Sin dato" for "unknown").
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,13 +11,22 @@
 
 import { cx } from "@shared/lib/class-names";
 import { formatCount, formatDecimal, formatRate } from "../entities/admin-format";
-import { QUEST_DIMENSION_LABELS, QUEST_DIMENSIONS, aiUseCaseLabel } from "../entities/ai-analytics.entity";
+import {
+  aiScopeLabel,
+  aiSurfaceLabel,
+  aiUseCaseLabel,
+  QUEST_DIMENSION_LABELS,
+  QUEST_DIMENSIONS,
+  ratingGroupKey,
+} from "../entities/ai-analytics.entity";
 import type { AiRatingGroup } from "../entities/ai-analytics.entity";
 import styles from "../../UI/admin-operations.module.css";
 
 // TODO(i18n): move to an admin-console namespace in src/i18n.
 export const AI_RATINGS_TABLE_COPY = {
-  caption: "Calificaciones de IA por caso de uso, proveedor, modelo y versión del prompt",
+  caption: "Calificaciones de IA por superficie, alcance, caso de uso, proveedor, modelo y versión del prompt",
+  surface: "Superficie",
+  scope: "Alcance",
   useCase: "Caso de uso",
   provider: "Proveedor",
   model: "Modelo",
@@ -34,6 +43,8 @@ export function AiRatingsTable({ groups }: { groups: readonly AiRatingGroup[] })
         <caption className={cx(styles.visuallyHidden)}>{AI_RATINGS_TABLE_COPY.caption}</caption>
         <thead>
           <tr>
+            <th scope="col">{AI_RATINGS_TABLE_COPY.surface}</th>
+            <th scope="col">{AI_RATINGS_TABLE_COPY.scope}</th>
             <th scope="col">{AI_RATINGS_TABLE_COPY.useCase}</th>
             <th scope="col">{AI_RATINGS_TABLE_COPY.provider}</th>
             <th scope="col">{AI_RATINGS_TABLE_COPY.model}</th>
@@ -47,8 +58,10 @@ export function AiRatingsTable({ groups }: { groups: readonly AiRatingGroup[] })
         </thead>
         <tbody>
           {groups.map((group) => (
-            <tr key={`${group.useCase}|${group.provider}|${group.model}|${group.promptVersion}`}>
-              <th scope="row">{aiUseCaseLabel(group.useCase)}</th>
+            <tr key={ratingGroupKey(group)}>
+              <th scope="row">{aiSurfaceLabel(group.surface)}</th>
+              <td>{aiScopeLabel(group.scope)}</td>
+              <td>{aiUseCaseLabel(group.useCase)}</td>
               <td>{group.provider}</td>
               <td className={cx(styles.mono)}>{group.model}</td>
               <td className={cx(styles.mono)}>{group.promptVersion}</td>

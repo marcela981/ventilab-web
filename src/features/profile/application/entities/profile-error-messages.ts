@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Profile error messages
-* Descripción: Maps a failed profile save (ApiError from the backend envelope or a client network code) to field errors and/or one Spanish alert message. Backend validation (400 `validation_error`, or 422) carries translated messages without field names, so each message is assigned to the name or avatar field by keyword (nombre/name, imagen/image/foto/url); the api-client joins an array of messages into one string, so a text that mentions both fields gives each field a generic client message instead; messages that match no field go to the alert. 403, 404, 429 (Retry-After wait), timeout, network and 5xx get their own messages. Spanish copy, TODO(i18n). Depends on @shared/api-client api-error and the profile entity.
-* Versión: 1.0
+* Descripción: Maps a failed profile request (ApiError from the backend envelope or a client network code) to Spanish messages. `getCommonRequestMessage` covers what every profile action shares (timeout, network, 403, 404, 429 with the Retry-After wait, 5xx) and is reused by the photo and password actions. `getProfileSaveError` handles the name save: backend validation (400 `validation_error`, or 422) carries translated messages without field names, so a message that mentions the name goes to the name field and the rest to the alert. Spanish copy, TODO(i18n). Depends on @shared/api-client api-error and the profile entity. v1.1 (Bloque 4, W7): avatar URL field removed; common messages extracted.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,8 +10,8 @@
 */
 
 import { CLIENT_ERROR_CODES, toApiError } from "@shared/api-client/api-error";
-import { PROFILE_ERRORS } from "./profile.entity";
-import type { ProfileField, ProfileFieldErrors } from "./profile.entity";
+import type { ApiError } from "@shared/api-client/api-error";
+import type { ProfileFieldErrors } from "./profile.entity";
 
 // TODO(i18n): move to a profile namespace in src/i18n.
 export const PROFILE_SAVE_MESSAGES = {
@@ -25,20 +25,12 @@ export const PROFILE_SAVE_MESSAGES = {
   unknown: "No se pudieron guardar los cambios. Inténtalo de nuevo.",
 } as const;
 
-const GENERIC_FIELD_ERRORS: Record<ProfileField, string> = {
-  name: "Revisa el nombre ingresado.",
-  image: PROFILE_ERRORS.imageInvalid,
-};
-
 export type ProfileSaveError = {
   fieldErrors: ProfileFieldErrors
   message: string | null
 };
 
-const FIELD_KEYWORDS: ReadonlyArray<[ProfileField, RegExp]> = [
-  ["name", /\b(nombre|name)\b/i],
-  ["image", /\b(imagen|image|foto|url)\b/i],
-];
+const NAME_KEYWORD = /\b(nombre|name)\b/i;
 
 function formatWait(seconds: number): string {
   if (seconds < 60) {
@@ -48,6 +40,37 @@ function formatWait(seconds: number): string {
   const minutes = Math.ceil(seconds / 60);
 
   return `${minutes} ${minutes === 1 ? "minuto" : "minutos"}`;
+}
+
+/** Message of the failures every profile action shares; null for the ones the caller maps itself (400, 413, …). */
+export function getCommonRequestMessage(apiError: ApiError): string | null {
+  if (apiError.code === CLIENT_ERROR_CODES.networkTimeout) {
+    return PROFILE_SAVE_MESSAGES.timeout;
+  }
+
+  if (apiError.code === CLIENT_ERROR_CODES.networkUnavailable) {
+    return PROFILE_SAVE_MESSAGES.network;
+  }
+
+  if (apiError.status === 403) {
+    return PROFILE_SAVE_MESSAGES.forbidden;
+  }
+
+  if (apiError.status === 404) {
+    return PROFILE_SAVE_MESSAGES.notFound;
+  }
+
+  if (apiError.status === 429) {
+    return apiError.retryAfter === undefined
+      ? PROFILE_SAVE_MESSAGES.tooManyRequests
+      : `Demasiados intentos. Inténtalo de nuevo en ${formatWait(apiError.retryAfter)}.`;
+  }
+
+  if (apiError.status >= 500) {
+    return PROFILE_SAVE_MESSAGES.server;
+  }
+
+  return null;
 }
 
 function validationMessages(message: unknown, details: unknown): string[] {
@@ -61,62 +84,21 @@ function validationMessages(message: unknown, details: unknown): string[] {
 }
 
 function mapValidation(messages: readonly string[]): ProfileSaveError {
-  const fieldErrors: ProfileFieldErrors = {};
-  const unmatched: string[] = [];
-
-  for (const message of messages) {
-    const fields = FIELD_KEYWORDS.filter(([, pattern]) => pattern.test(message)).map(([field]) => field);
-
-    if (fields.length === 0) {
-      unmatched.push(message);
-    }
-
-    for (const field of fields) {
-      fieldErrors[field] ??= fields.length === 1 ? message : GENERIC_FIELD_ERRORS[field];
-    }
-  }
-
-  const hasFieldErrors = Object.keys(fieldErrors).length > 0;
+  const nameMessage = messages.find((message) => NAME_KEYWORD.test(message));
+  const unmatched = messages.some((message) => !NAME_KEYWORD.test(message));
 
   return {
-    fieldErrors,
-    message: unmatched.length > 0 || !hasFieldErrors ? PROFILE_SAVE_MESSAGES.invalid : null,
+    fieldErrors: nameMessage ? { name: nameMessage } : {},
+    message: unmatched || !nameMessage ? PROFILE_SAVE_MESSAGES.invalid : null,
   };
 }
 
 export function getProfileSaveError(error: unknown): ProfileSaveError {
   const apiError = toApiError(error);
-  const alert = (message: string): ProfileSaveError => ({ fieldErrors: {}, message });
-
-  if (apiError.code === CLIENT_ERROR_CODES.networkTimeout) {
-    return alert(PROFILE_SAVE_MESSAGES.timeout);
-  }
-
-  if (apiError.code === CLIENT_ERROR_CODES.networkUnavailable) {
-    return alert(PROFILE_SAVE_MESSAGES.network);
-  }
 
   if (apiError.status === 400 || apiError.status === 422) {
     return mapValidation(validationMessages(apiError.message, apiError.details));
   }
 
-  if (apiError.status === 403) {
-    return alert(PROFILE_SAVE_MESSAGES.forbidden);
-  }
-
-  if (apiError.status === 404) {
-    return alert(PROFILE_SAVE_MESSAGES.notFound);
-  }
-
-  if (apiError.status === 429) {
-    return alert(apiError.retryAfter === undefined
-      ? PROFILE_SAVE_MESSAGES.tooManyRequests
-      : `Demasiados intentos. Inténtalo de nuevo en ${formatWait(apiError.retryAfter)}.`);
-  }
-
-  if (apiError.status >= 500) {
-    return alert(PROFILE_SAVE_MESSAGES.server);
-  }
-
-  return alert(PROFILE_SAVE_MESSAGES.unknown);
+  return { fieldErrors: {}, message: getCommonRequestMessage(apiError) ?? PROFILE_SAVE_MESSAGES.unknown };
 }

@@ -88,7 +88,9 @@
  *   v3.38 (W4 Bloque 1): además del index.ts, los puntos de entrada por área de una feature
  *   (src/features/<feature>/*.entry.ts, p. ej. simulator/session.entry.ts) cuentan como su API
  *   pública (feature-index): las páginas y otras features pueden importarlos sin cargar el barrel.
- * Versión: 3.38
+ *   v3.39 (W1 Bloque 4): las rutas delgadas pages/teacher/students/index.tsx y
+ *   pages/teacher/lab/index.tsx entran en NEW_PAGE_FILES.
+ * Versión: 3.39
  * Autor: Marcela Mazo Castro
  * Proyecto: VentyLab
  * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria
@@ -160,7 +162,9 @@ const NEW_PAGE_FILES = [
   "pages/me/notes.tsx",
   "pages/me/grades.tsx",
   "pages/teacher/index.tsx",
+  "pages/teacher/students/index.tsx",
   "pages/teacher/students/[[]userId[]].tsx",
+  "pages/teacher/lab/index.tsx",
   "pages/admin/users.tsx",
   "pages/admin/settings.tsx",
   "pages/admin/audit.tsx",

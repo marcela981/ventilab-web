@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: UsersTable
-* Descripción: Table of one page of users in /admin/users: name, email, student code, role, account status (text label, never colour alone), creation date and the row actions "Cambiar rol", "Desactivar"/"Activar" and "Editar código". The signed-in admin's own row keeps its role and status actions disabled with the reason "No puedes cambiar tu propia cuenta" (the backend refuses both changes on one's own account). v1.1 (closure B2): the superadmin row comes from `UserDTO.isSuperadmin`: it is marked "Superadministrador" and its role and status actions are disabled with the protected-account reason (no backend 403 round trip); the student code column and its edit action. Depends on MUI, @shared/lib and the admin console config, entities and CSS Module.
-* Versión: 1.1
+* Descripción: Table of one page of users in /admin/users: name, email, student code, role, account status (text label, never colour alone), creation date and the row actions "Cambiar rol", "Desactivar"/"Activar" and "Editar código". The signed-in admin's own row keeps its role and status actions disabled with the reason "No puedes cambiar tu propia cuenta" (the backend refuses both changes on one's own account). v1.1 (closure B2): the superadmin row comes from `UserDTO.isSuperadmin`: it is marked "Superadministrador" and its role and status actions are disabled with the protected-account reason (no backend 403 round trip); the student code column and its edit action. v1.2 (B4): "Editar código" is disabled on the superadmin row too, with the same protected-account reason (DISENO_BLOQUE4 B1); one's own code stays editable. Depends on MUI, @shared/lib and the admin console config, entities and CSS Module.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -63,6 +63,8 @@ function UserRowView({ row, sessionUserId, onChangeRole, onChangeStatus, onEditC
   const lock = lockedReason(row, sessionUserId);
   const own = sessionUserId !== null && row.id === sessionUserId;
   const disabledProps = lock ? { disabled: true, "aria-describedby": reasonId } : {};
+  // The student code of the superadmin is locked as well; one's own code stays editable.
+  const codeDisabledProps = lock === "superadmin" ? disabledProps : {};
 
   return (
     <tr>
@@ -89,7 +91,7 @@ function UserRowView({ row, sessionUserId, onChangeRole, onChangeStatus, onEditC
           <Button size="small" color={row.isActive ? "error" : "primary"} onClick={() => onChangeStatus(row)} {...disabledProps}>
             {row.isActive ? USERS_TABLE_COPY.deactivate : USERS_TABLE_COPY.activate}
           </Button>
-          <Button size="small" onClick={() => onEditCode(row)}>{USERS_TABLE_COPY.editCode}</Button>
+          <Button size="small" onClick={() => onEditCode(row)} {...codeDisabledProps}>{USERS_TABLE_COPY.editCode}</Button>
         </div>
         {lock ? <span id={reasonId} className={cx(styles.secondary)}>{LOCK_MESSAGES[lock]}</span> : null}
       </td>

@@ -1,0 +1,34 @@
+/*
+* Funcionalidad: AvatarUploader styles
+* Descripción: Photo row (avatar + actions), action stack and hint of the profile photo block. Tokens only.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.uploader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin-bottom: var(--vl-space-2);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vl-space-3);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.hint {
+  color: var(--vl-color-text-muted);
+}

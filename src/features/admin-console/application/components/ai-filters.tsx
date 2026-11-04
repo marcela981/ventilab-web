@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AiFilters
-* Descripción: Filter bar of /admin/ai: "Desde"/"Hasta" calendar days in America/Bogota, use case, provider, model, prompt version and rated output type (the last two only filter the ratings, as the API defines). The fields are a draft that reaches the URL on "Aplicar"; "Limpiar" resets them (the server then uses its last 30 days). Depends on MUI, React, the admin console AI analytics entity and CSS Module.
-* Versión: 1.0
+* Descripción: Filter bar of /admin/ai: "Desde"/"Hasta" calendar days in America/Bogota, use case, provider, model, prompt version and rated output type (the last two only filter the ratings, as the API defines). The fields are a draft that reaches the URL on "Aplicar"; "Limpiar" resets them (the server then uses its last 30 days). Depends on MUI, React, the admin console AI analytics entity and CSS Module. v1.1 (B4): "Superficie" and "Alcance" selects (ratings only; options from the contract-typed lists of the entity).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,7 +15,17 @@ import TextField from "@mui/material/TextField";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { cx } from "@shared/lib/class-names";
-import { AI_RATING_TARGET_TYPES, AI_TARGET_TYPE_LABELS, AI_USE_CASE_LABELS, AI_USE_CASES, NO_AI_FILTERS } from "../entities/ai-analytics.entity";
+import {
+  AI_RATING_TARGET_TYPES,
+  AI_SCOPE_LABELS,
+  AI_SCOPES,
+  AI_SURFACE_LABELS,
+  AI_SURFACES,
+  AI_TARGET_TYPE_LABELS,
+  AI_USE_CASE_LABELS,
+  AI_USE_CASES,
+  NO_AI_FILTERS,
+} from "../entities/ai-analytics.entity";
 import type { AiFilters as AiFiltersValue } from "../entities/ai-analytics.entity";
 import styles from "../../UI/admin-operations.module.css";
 
@@ -29,6 +39,8 @@ export const AI_FILTERS_COPY = {
   model: "Modelo",
   promptVersion: "Versión del prompt",
   targetType: "Tipo de salida calificada",
+  surface: "Superficie",
+  scope: "Alcance",
   all: "Todos",
   ratingsOnly: "Solo calificaciones",
   apply: "Aplicar",
@@ -85,6 +97,28 @@ export function AiFilters({ value, onChange }: AiFiltersProps) {
       >
         <MenuItem value="">{AI_FILTERS_COPY.all}</MenuItem>
         {AI_RATING_TARGET_TYPES.map((type) => <MenuItem key={type} value={type}>{AI_TARGET_TYPE_LABELS[type]}</MenuItem>)}
+      </TextField>
+      <TextField
+        size="small"
+        select
+        label={AI_FILTERS_COPY.surface}
+        helperText={AI_FILTERS_COPY.ratingsOnly}
+        value={draft.surface}
+        onChange={set("surface")}
+      >
+        <MenuItem value="">{AI_FILTERS_COPY.all}</MenuItem>
+        {AI_SURFACES.map((surface) => <MenuItem key={surface} value={surface}>{AI_SURFACE_LABELS[surface]}</MenuItem>)}
+      </TextField>
+      <TextField
+        size="small"
+        select
+        label={AI_FILTERS_COPY.scope}
+        helperText={AI_FILTERS_COPY.ratingsOnly}
+        value={draft.scope}
+        onChange={set("scope")}
+      >
+        <MenuItem value="">{AI_FILTERS_COPY.all}</MenuItem>
+        {AI_SCOPES.map((scope) => <MenuItem key={scope} value={scope}>{AI_SCOPE_LABELS[scope]}</MenuItem>)}
       </TextField>
       <div className={cx(styles.filterActions)}>
         <Button type="submit" variant="contained">{AI_FILTERS_COPY.apply}</Button>

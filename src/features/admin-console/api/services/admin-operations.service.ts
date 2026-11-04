@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin operations service
-* Descripción: API paths and calls of the operation pages of the admin console: the audit log (`GET /api/audit`, `GET /api/audit/targets/{type}/{id}`, CSV `GET /api/audit/export` whose X-Export-Truncated header says when rows were left out), the AI telemetry and AI ratings stats with their CSV exports (`/api/admin/ai-telemetry/*`, `/api/admin/ai-ratings/*`), the anonymized research export (`GET /api/analytics/research/export.csv`, 503 without the anonymization key), the system status (`GET /api/system/status`), the ventilator telemetry metrics (`GET /api/ventilator/telemetry/metrics`, ADMIN) and the AI provider probe (`POST /api/system/probe/ai/{provider}`, ADMIN, 3 per minute). The CSV calls return the downloaded file and whether the server truncated it; the caller saves it. Depends on @shared/api-client. v1.1 (closure B2): the audit entry detail (`GET /api/audit/{id}`) and catalog (`GET /api/audit/catalog`: actions, target types, export row limit), and the research export data dictionary (`GET /api/analytics/research/export/dictionary`), downloaded as a CSV built from its rows. Also depends on the admin operations mapper and the research dictionary entity.
-* Versión: 1.1
+* Descripción: API paths and calls of the operation pages of the admin console: the audit log (`GET /api/audit`, `GET /api/audit/targets/{type}/{id}`, CSV `GET /api/audit/export` whose X-Export-Truncated header says when rows were left out), the AI telemetry and AI ratings stats with their CSV exports (`/api/admin/ai-telemetry/*`, `/api/admin/ai-ratings/*`), the anonymized research export (`GET /api/analytics/research/export.csv`, 503 without the anonymization key), the system status (`GET /api/system/status`), the ventilator telemetry metrics (`GET /api/ventilator/telemetry/metrics`, ADMIN) and the AI provider probe (`POST /api/system/probe/ai/{provider}`, ADMIN, 3 per minute). The CSV calls return the downloaded file and whether the server truncated it; the caller saves it. Depends on @shared/api-client. v1.1 (closure B2): the audit entry detail (`GET /api/audit/{id}`) and catalog (`GET /api/audit/catalog`: actions, target types, export row limit), and the research export data dictionary (`GET /api/analytics/research/export/dictionary`), downloaded as a CSV built from its rows. Also depends on the admin operations mapper and the research dictionary entity. v1.2 (B4): the AI CSV export queries are the generated operation queries, so the ratings CSV takes the surface and scope filters (and MODULE_QA) of the contract.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import { apiGetText, isHeaderTrue } from "@shared/api-client/api-download";
 import type { ApiTextFile } from "@shared/api-client/api-download";
 import { apiGet, apiPost } from "@shared/api-client/api-request";
+import type { operations } from "@shared/api-client/generated/schema";
 import { researchDictionaryCsv } from "../../application/entities/research-dictionary.entity";
 import type { AiProbeDTO } from "../dtos/admin-console.dto";
 import { toResearchColumn } from "../mappers/admin-operations.mapper";
@@ -46,18 +47,9 @@ export type AuditExportQuery = {
   to?: string
 };
 
-export type AiTelemetryExportQuery = {
-  from?: string
-  to?: string
-  useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST"
-  provider?: string
-  model?: string
-};
+export type AiTelemetryExportQuery = NonNullable<operations["exportAiCallLogsCsv"]["parameters"]["query"]>;
 
-export type AiRatingsExportQuery = AiTelemetryExportQuery & {
-  promptVersion?: string
-  targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST"
-};
+export type AiRatingsExportQuery = NonNullable<operations["exportAiRatingsCsv"]["parameters"]["query"]>;
 
 function exported(file: ApiTextFile): ExportedFile {
   return { file, truncated: isHeaderTrue(file, EXPORT_TRUNCATED_HEADER) };

@@ -1,0 +1,196 @@
+/*
+* Funcionalidad: Student detail styles
+* Descripción: Layout of /teacher/students/[userId] (DISENO_BLOQUE4 §2.4): profile header (avatar, name, email, code, group chips and the overall progress), the summary cards row, the tab list with the selected tab underlined, the kept-mounted panels (hidden when inactive), the gamification stats and achievements and the real ventilator recordings list. The lists, links and timeline of the panels keep the teacher dashboard styles. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+/* Header */
+
+.profile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-4);
+  align-items: center;
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+  box-shadow: var(--vl-shadow-1);
+}
+
+.avatar {
+  width: 4.5rem;
+  height: 4.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.identity {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 0;
+}
+
+.identityLine {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--vl-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-1);
+  margin: var(--vl-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0 var(--vl-space-2);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-pill);
+  background: var(--vl-color-surface-contrast);
+  font-size: 0.75rem;
+  line-height: 1.5rem;
+  color: var(--vl-color-text);
+}
+
+.overall {
+  display: flex;
+  flex: 0 1 12rem;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  min-width: 10rem;
+}
+
+.overallValue {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--vl-color-text);
+}
+
+/* Summary cards */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-3) var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: var(--vl-color-text-muted);
+}
+
+.statValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--vl-color-text);
+}
+
+/* Tabs */
+
+.tabList {
+  display: flex;
+  gap: var(--vl-space-1);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--vl-space-2) var(--vl-space-4);
+  font: var(--mui-font-button);
+  color: var(--vl-color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--vl-color-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+  border-bottom-color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-4);
+  padding: var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-lg);
+  background: var(--vl-color-surface);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+/* Gamification */
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.achievements {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.achievement {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  padding: var(--vl-space-3);
+  border: 1px solid var(--vl-color-border);
+  border-radius: var(--vl-radius-md);
+}
+
+.achievementIcon {
+  font-size: 1.5rem;
+}

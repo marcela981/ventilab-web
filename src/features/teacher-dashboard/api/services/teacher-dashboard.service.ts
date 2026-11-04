@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard service
-* Descripción: API path constants of the teacher dashboard (TEACHER, ADMIN), read with useApiQuery: groups (`GET /api/groups?type=STUDENT`, already scoped by the backend), group dashboard (`GET /api/analytics/groups/{groupId}/dashboard`), evaluation stats (`GET /api/analytics/evaluations/{evaluationId}/stats`), student timeline (`GET /api/analytics/students/{userId}/timeline?from&to`), managed assignments (`GET /api/evaluation-assignments?groupId&state=ACTIVE`), grading queue (`GET /api/evaluation-grading/queue?groupId`), reservations calendar (`GET /api/reservations?from&to`), student header (`GET /api/users/students/{id}`), progress summary (`GET /api/progress/users/{userId}/summary`) and curriculum tree (`GET /api/curriculum/tree`, titles only). exportGroupCsv downloads `GET /api/analytics/groups/{groupId}/export.csv` through the shared text download helper. Depends on @shared/api-client. v1.1 (closure B2): grading queue count (`GET /api/evaluation-grading/queue/count?groupId`), a student's grades (`GET /api/evaluation-grading/students/{userId}/grades`) and simulation sessions (`GET /api/simulation/sessions/history?userId`); stats and calendar take `groupId`, the queue takes `studentId`.
-* Versión: 1.1
+* Descripción: API path constants of the teacher dashboard (TEACHER, ADMIN), read with useApiQuery: groups (`GET /api/groups?type=STUDENT`, already scoped by the backend), group dashboard (`GET /api/analytics/groups/{groupId}/dashboard`), evaluation stats (`GET /api/analytics/evaluations/{evaluationId}/stats`), student timeline (`GET /api/analytics/students/{userId}/timeline?from&to`), managed assignments (`GET /api/evaluation-assignments?groupId&state=ACTIVE`), grading queue (`GET /api/evaluation-grading/queue?groupId`), reservations calendar (`GET /api/reservations?from&to`), student header (`GET /api/users/students/{id}`), progress summary (`GET /api/progress/users/{userId}/summary`), the admin students list (`GET /api/admin/students`, General tab and directory) and platform statistics (`GET /api/admin/statistics`, General tab and directory Estadísticas) and curriculum tree (`GET /api/curriculum/tree`, titles only). exportGroupCsv downloads `GET /api/analytics/groups/{groupId}/export.csv` through the shared text download helper. Depends on @shared/api-client. v1.1 (closure B2): grading queue count (`GET /api/evaluation-grading/queue/count?groupId`), a student's grades (`GET /api/evaluation-grading/students/{userId}/grades`) and simulation sessions (`GET /api/simulation/sessions/history?userId`); stats and calendar take `groupId`, the queue takes `studentId`. v1.2 (Bloque 4 integration): single owner of the admin students and statistics paths.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +25,8 @@ export const RESERVATIONS_PATH = "/api/reservations";
 export const STUDENT_PATH = "/api/users/students/{id}";
 export const PROGRESS_SUMMARY_PATH = "/api/progress/users/{userId}/summary";
 export const CURRICULUM_TREE_PATH = "/api/curriculum/tree";
+export const ADMIN_STUDENTS_PATH = "/api/admin/students";
+export const PLATFORM_STATISTICS_PATH = "/api/admin/statistics";
 
 /** Fallback file name when the browser cannot read Content-Disposition (CORS). */
 export function exportFileName(groupName: string | null, groupId: string): string {

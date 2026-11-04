@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users styles
-* Descripción: Layout of /admin/users: filter bar (search form, role, group and status selects wrapping on narrow screens), the users table with horizontal scroll, the account status badge (text label plus border colour, never colour alone), row actions with the own-account reason, and the role change dialog body with its list of effects. Tokens only. v1.1 (closure B2): the superadmin badge (text label plus warning border) and the student code cell.
-* Versión: 1.1
+* Descripción: Layout of /admin/users: filter bar (search form, role, group and status selects wrapping on narrow screens), the users table with horizontal scroll, the account status badge (text label plus border colour, never colour alone), row actions with the own-account reason, and the role change dialog body with its list of effects. Tokens only. v1.1 (closure B2): the superadmin badge (text label plus warning border) and the student code cell. v1.2 (B4): the tab list of /admin/users (selected tab underlined, visible focus) and the right-aligned numeric cells of the teachers table.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -127,6 +127,47 @@
   border-radius: var(--vl-radius-pill);
   font: var(--mui-font-caption);
   white-space: nowrap;
+}
+
+.table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabList {
+  display: flex;
+  gap: var(--vl-space-1);
+  margin-bottom: var(--vl-space-3);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--vl-color-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--vl-space-2) var(--vl-space-4);
+  font: var(--mui-font-button);
+  color: var(--vl-color-text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+}
+
+.tab:hover {
+  color: var(--vl-color-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--vl-color-primary);
+  border-bottom-color: var(--vl-color-primary);
+}
+
+.tab:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(-1 * var(--vl-focus-ring-width));
 }
 
 .code {

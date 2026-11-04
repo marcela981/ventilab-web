@@ -9,7 +9,8 @@
 *   the panel. Depends on vitest, Testing Library, msw, the shared SSE test helpers and the simulator test helpers.
 *   v1.1 (review of bc8a596): a longer wait for the first streamed text (deltas commit per animation frame, which lags
 *   under full-suite load), the question given back after a failure before the stream, and host-kept answers listed.
-* Versión: 1.1
+*   v1.2 (W6, Bloque 4): a rating carries the SIMULATOR_ASSIST surface.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -139,6 +140,33 @@ describe("AI assist panel", () => {
     panel = await openPanel();
     await waitFor(() => expect(within(panel).getByRole("list", { name: "Asesorías de esta sesión" })).toHaveTextContent("Vas bien: la meseta está en rango."));
     expect(within(panel).getByText("¿Te fue útil?")).toBeInTheDocument();
+  });
+
+  it("rates an answer with the SIM_ASSIST target and the SIMULATOR_ASSIST surface", async() => {
+    const ratings: unknown[] = [];
+
+    server.use(
+      http.post(ASSIST_URL, () => sseResponse([
+        deltaFrame("Revisa la PEEP."),
+        doneFrame({ aiHelpEventId: "help-9", aiCallId: "call-9", source: "LLM" }),
+      ])),
+      http.put(apiUrl("/api/ai-ratings"), async({ request }) => {
+        ratings.push(await request.json());
+
+        return HttpResponse.json(envelope(null));
+      }),
+    );
+    renderLauncher();
+
+    const panel = await openPanel();
+
+    requestAssist();
+    await within(panel).findByText("¿Te fue útil?");
+    // The widget loads the caller's previous rating first (thumbs disabled meanwhile).
+    await waitFor(() => expect(within(panel).getByRole("button", { name: "Sí, fue útil" })).toBeEnabled());
+    fireEvent.click(within(panel).getByRole("button", { name: "Sí, fue útil" }));
+
+    await waitFor(() => expect(ratings).toEqual([{ targetType: "SIM_ASSIST", targetId: "help-9", helpful: true, surface: "SIMULATOR_ASSIST" }]));
   });
 
   it("disables the button with the reason when the policy forbids or cannot be verified", () => {

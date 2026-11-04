@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin operations mapper
-* Descripción: Maps the audit rows of `GET /api/audit` and `GET /api/audit/targets/{type}/{id}` to AuditEntry (before, after and metadata read defensively as plain objects because the generated schema types them as empty records) and the AI rating stats groups to AiRatingGroup (dimension means kept optional exactly as returned). Telemetry stats and system status are read as they come. Depends on the admin console DTOs and entities. v1.1 (closure B2): the audit entry of `GET /api/audit/{id}` maps through toAuditEntry too; the audit catalog (actions, target types, export row limit) and the research export dictionary columns.
-* Versión: 1.1
+* Descripción: Maps the audit rows of `GET /api/audit` and `GET /api/audit/targets/{type}/{id}` to AuditEntry (before, after and metadata read defensively as plain objects because the generated schema types them as empty records) and the AI rating stats groups to AiRatingGroup (dimension means kept optional exactly as returned). Telemetry stats and system status are read as they come. Depends on the admin console DTOs and entities. v1.1 (closure B2): the audit entry of `GET /api/audit/{id}` maps through toAuditEntry too; the audit catalog (actions, target types, export row limit) and the research export dictionary columns. v1.2 (B4): the rating group keeps its surface and scope.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +50,8 @@ export function toAiRatingGroup(dto: AiRatingStatsGroupDTO): AiRatingGroup {
   const { quality, understanding, trust, expression, safety } = dto.dimensions;
 
   return {
+    surface: dto.surface,
+    scope: dto.scope,
     useCase: dto.useCase,
     provider: dto.provider,
     model: dto.model,

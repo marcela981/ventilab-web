@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AdminAiAnalyticsPage tests
-* Descripción: /admin/ai with msw and stubbed lazy charts: the telemetry totals render as returned with "—" for the percentiles the API leaves out, the per-day series reach the charts unchanged, the rating groups show their helpful rate and QUEST means, the URL filters reach both stats queries as the Bogota range, an invalid range sends nothing, and a failing stats request shows its error. Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (B4): a too long closed range sends nothing and its message names AI_ANALYTICS_MAX_RANGE_DAYS.
-* Versión: 1.1
+* Descripción: /admin/ai with msw and stubbed lazy charts: the telemetry totals render as returned with "—" for the percentiles the API leaves out, the per-day series reach the charts unchanged, the rating groups show their helpful rate and QUEST means, the URL filters reach both stats queries as the Bogota range, an invalid range sends nothing, and a failing stats request shows its error. Depends on Testing Library, msw, vitest and the admin console page and test helpers. v1.1 (B4): a too long closed range sends nothing and its message names AI_ANALYTICS_MAX_RANGE_DAYS. v1.2 (B4): the rating groups show their surface and scope ("Sin dato" for unknown); the URL surface and scope reach the rating stats and the ratings CSV but not the telemetry; the surface select offers every surface of the contract and the chosen filters reach the URL.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,12 +9,15 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AiHelpfulChartProps, AiTelemetryChartsProps } from "../components/ai-charts";
+import { saveTextFile } from "@shared/api-client/api-download";
+import { AI_FILTERS_COPY } from "../components/ai-filters";
 import { AI_TOTALS_COPY } from "../components/ai-telemetry-totals";
+import { AI_SCOPE_LABELS, AI_SURFACE_LABELS, AI_SURFACES, AI_UNKNOWN_LABEL } from "../entities/ai-analytics.entity";
 import { AI_ANALYTICS_MAX_RANGE_DAYS, DATE_RANGE_ERRORS } from "../entities/date-range.entity";
 import { ADMIN_AI_COPY, AdminAiAnalyticsPage } from "./admin-ai-analytics.page";
 import { apiUrl, envelope, errorResponse, renderAdminConsole } from "./admin-console-test-helpers";
@@ -32,6 +35,11 @@ const router = vi.hoisted(() => ({
 
 vi.mock("next/router", () => ({ useRouter: () => router }));
 
+vi.mock("@shared/api-client/api-download", async(importOriginal) => ({
+  ...await importOriginal<typeof import("@shared/api-client/api-download")>(),
+  saveTextFile: vi.fn(),
+}));
+
 vi.mock("../components/lazy-ai-charts", () => ({
   AiTelemetryCharts: ({ days }: AiTelemetryChartsProps) => (
     <div data-testid="telemetry-charts">{days.map((day) => `${day.day}:${day.calls}:${day.latencyP95Ms ?? "none"}`).join(",")}</div>
@@ -44,6 +52,7 @@ vi.setConfig({ testTimeout: 20_000 });
 const server = setupServer();
 let telemetryQueries: URLSearchParams[];
 let ratingsQueries: URLSearchParams[];
+let ratingsCsvQueries: URLSearchParams[];
 let telemetryStatus: number;
 
 const metrics = {
@@ -67,8 +76,11 @@ beforeAll(() => {
 beforeEach(() => {
   telemetryQueries = [];
   ratingsQueries = [];
+  ratingsCsvQueries = [];
   telemetryStatus = 200;
   router.query = {};
+  router.replace.mockClear();
+  vi.mocked(saveTextFile).mockClear();
   server.use(
     http.get(apiUrl("/api/admin/ai-telemetry/stats"), ({ request }) => {
       telemetryQueries.push(new URL(request.url).searchParams);
@@ -91,6 +103,8 @@ beforeEach(() => {
         from: "2026-09-05T00:00:00.000Z",
         to: "2026-10-05T00:00:00.000Z",
         groups: [{
+          surface: "SIMULATOR_ASSIST",
+          scope: "unknown",
           useCase: "FREE_CHAT",
           provider: "gemini",
           model: "gemini-2.0-flash",
@@ -107,6 +121,11 @@ beforeEach(() => {
           },
         }],
       }));
+    }),
+    http.get(apiUrl("/api/admin/ai-ratings/export.csv"), ({ request }) => {
+      ratingsCsvQueries.push(new URL(request.url).searchParams);
+
+      return new HttpResponse("surface,scope\nPOPUP,LESSON\n", { headers: { "Content-Type": "text/csv" } });
     }),
   );
 });
@@ -145,8 +164,10 @@ describe("AdminAiAnalyticsPage", () => {
   it("lists the rating groups with the helpful rate and QUEST means", async() => {
     renderAdminConsole(<AdminAiAnalyticsPage />);
 
-    const row = (await screen.findByRole("rowheader", { name: "Chat libre" })).closest("tr") as HTMLElement;
+    const row = (await screen.findByRole("rowheader", { name: AI_SURFACE_LABELS.SIMULATOR_ASSIST })).closest("tr") as HTMLElement;
 
+    expect(within(row).getByText(AI_UNKNOWN_LABEL)).toBeInTheDocument();
+    expect(within(row).getByText("Chat libre")).toBeInTheDocument();
     expect(within(row).getByText("85 %")).toBeInTheDocument();
     expect(within(row).getByText("4,2 (n = 18)")).toBeInTheDocument();
     expect(within(row).getByText("— (n = 0)")).toBeInTheDocument();
@@ -163,6 +184,45 @@ describe("AdminAiAnalyticsPage", () => {
     expect(telemetryQueries[0]?.get("useCase")).toBe("FREE_CHAT");
     expect(telemetryQueries[0]?.has("promptVersion")).toBe(false);
     expect(ratingsQueries[0]?.get("promptVersion")).toBe("1.0.0");
+  });
+
+  it("sends the surface and scope of the URL to the rating stats and the ratings CSV, never to the telemetry", async() => {
+    router.query = { surface: "EVALUATION_FEEDBACK", scope: "MODULE", useCase: "MODULE_QA" };
+    renderAdminConsole(<AdminAiAnalyticsPage />);
+
+    await screen.findByRole("rowheader", { name: AI_SURFACE_LABELS.SIMULATOR_ASSIST });
+    expect(ratingsQueries[0]?.get("surface")).toBe("EVALUATION_FEEDBACK");
+    expect(ratingsQueries[0]?.get("scope")).toBe("MODULE");
+    expect(ratingsQueries[0]?.get("useCase")).toBe("MODULE_QA");
+    expect(telemetryQueries[0]?.has("surface")).toBe(false);
+    expect(telemetryQueries[0]?.has("scope")).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: ADMIN_AI_COPY.exportRatings }));
+
+    await waitFor(() => expect(saveTextFile).toHaveBeenCalledTimes(1));
+    expect(ratingsCsvQueries[0]?.get("surface")).toBe("EVALUATION_FEEDBACK");
+    expect(ratingsCsvQueries[0]?.get("scope")).toBe("MODULE");
+    expect(ratingsCsvQueries[0]?.get("useCase")).toBe("MODULE_QA");
+  });
+
+  it("offers every surface of the contract and writes the chosen surface and scope to the URL", async() => {
+    renderAdminConsole(<AdminAiAnalyticsPage />);
+    await screen.findByText(AI_TOTALS_COPY.calls);
+
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: AI_FILTERS_COPY.surface }));
+    const surfaces = within(await screen.findByRole("listbox")).getAllByRole("option").map((option) => option.textContent);
+
+    expect(surfaces).toEqual([AI_FILTERS_COPY.all, ...AI_SURFACES.map((surface) => AI_SURFACE_LABELS[surface])]);
+    fireEvent.click(screen.getByRole("option", { name: AI_SURFACE_LABELS.SIMULATOR_ASSIST }));
+    fireEvent.mouseDown(screen.getByRole("combobox", { name: AI_FILTERS_COPY.scope }));
+    fireEvent.click(within(await screen.findByRole("listbox")).getByRole("option", { name: AI_SCOPE_LABELS.PAGE }));
+    fireEvent.click(screen.getByRole("button", { name: AI_FILTERS_COPY.apply }));
+
+    expect(router.replace).toHaveBeenLastCalledWith(
+      { pathname: "/admin/ai", query: { surface: "SIMULATOR_ASSIST", scope: "PAGE" } },
+      undefined,
+      { shallow: true },
+    );
   });
 
   it("sends nothing for a too long range and names the real maximum", async() => {

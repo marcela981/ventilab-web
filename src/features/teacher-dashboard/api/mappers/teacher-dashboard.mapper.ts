@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Teacher dashboard mappers
-* Descripción: DTO → view model mappers of the teacher dashboard: groups (STUDENT groups as returned), group dashboard rows (progress items, published grades, simulation, AI usage per use case, ventilator hours copied as the API sends them), evaluation stats (title, passingGrade, histogram buckets), active assignments (pending review count of the assignment), reservations calendar rows (only detail rows carry a group), grading queue rows, student header, learning progress summary and the curriculum tree reduced to titles and curriculum order. No value is computed. Depends on the teacher dashboard DTOs and entities. v1.1 (closure B2): the group relation, the row risk fields and last activity, the dashboard passingGrade, riskThresholds and moduleSummary, a student's published grades and simulation sessions are copied as the API sends them.
-* Versión: 1.1
+* Descripción: DTO → view model mappers of the teacher dashboard: groups (STUDENT groups as returned), group dashboard rows (progress items, published grades, simulation, AI usage per use case, ventilator hours copied as the API sends them), evaluation stats (title, passingGrade, histogram buckets), active assignments (pending review count of the assignment), reservations calendar rows (only detail rows carry a group), grading queue rows, learning progress summary and the curriculum tree reduced to titles and curriculum order. No value is computed. Depends on the teacher dashboard DTOs and entities. v1.1 (closure B2): the group relation, the row risk fields and last activity, the dashboard passingGrade, riskThresholds and moduleSummary, a student's published grades and simulation sessions are copied as the API sends them.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,17 +38,9 @@ import type {
   ReservationSummaryDTO,
   SimulationSessionDTO,
   StudentDashboardRowDTO,
-  StudentDTO,
   StudentGradeDTO,
   StudentTimelineDTO,
 } from "../dtos/teacher-dashboard.dto";
-
-export type StudentHeader = {
-  id: string
-  name: string | null
-  email: string
-  lastAccess: string | null
-};
 
 export function toGroupOptions(groups: readonly GroupDTO[]): GroupOption[] {
   return groups
@@ -202,10 +194,6 @@ export function toPendingAttempts(items: readonly GradingQueueItemDTO[]): Pendin
     studentId: item.student.id,
     submittedAt: item.submittedAt,
   }));
-}
-
-export function toStudentHeader(student: StudentDTO): StudentHeader {
-  return { id: student.id, name: student.name, email: student.email, lastAccess: student.stats.lastAccess };
 }
 
 export function toLearningSummary(summary: LearningProgressSummaryDTO): LearningSummary {

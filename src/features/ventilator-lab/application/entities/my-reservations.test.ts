@@ -2,7 +2,7 @@
 * Funcionalidad: My reservations entity tests
 * Descripción: Pure tests of the "Mis reservas" model: split of GET /api/reservations/mine into upcoming (scheduled, ordered by start, the one in progress flagged) and past (cancelled, preempted, completed or ended, most recent first), the status label with "En curso", the client mirror of the backend cancel permission (admin; creator; holder user; leader of the holder group; teacher supervising the holder group; only scheduled reservations that have not ended; never a limited projection) and the Spanish messages of the cancel error codes. Depends on vitest, the api-client error and the lab entities.
 *   v1.1 (W7, Bloque 1): fixtures and expectations follow the W7 contract (current reservation relation, holder student code, immediate booking, created reservation id).
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -42,7 +42,7 @@ const actor = (overrides: Partial<CancelActor> = {}): CancelActor => ({
   userId: "me",
   role: "STUDENT",
   leadGroupIds: new Set<string>(),
-  supervisedGroupIds: new Set<string>(),
+  managedGroupIds: new Set<string>(),
   ...overrides,
 });
 
@@ -81,14 +81,14 @@ describe("canCancelReservation (mirror of reservation-access-policy.canCancel)",
     expect(canCancelReservation(full("r"), actor(), NOW)).toBe(false);
   });
 
-  it("lets the leader of the holder group, and a teacher who supervises it, cancel a group reservation", () => {
+  it("lets the leader of the holder group, and a teacher who manages it (created or supervised), cancel a group reservation", () => {
     const group = full("g", { holderType: "GROUP", holderUserId: null, groupId: "g1", groupName: "Grupo A" });
 
     expect(canCancelReservation(group, actor({ leadGroupIds: new Set(["g1"]) }), NOW)).toBe(true);
     expect(canCancelReservation(group, actor(), NOW)).toBe(false);
-    expect(canCancelReservation(group, actor({ role: "TEACHER", supervisedGroupIds: new Set(["g1"]) }), NOW)).toBe(true);
-    // Supervision counts only for teachers, as in the backend policy.
-    expect(canCancelReservation(group, actor({ supervisedGroupIds: new Set(["g1"]) }), NOW)).toBe(false);
+    expect(canCancelReservation(group, actor({ role: "TEACHER", managedGroupIds: new Set(["g1"]) }), NOW)).toBe(true);
+    // Managing a group counts only for teachers, as in the backend policy.
+    expect(canCancelReservation(group, actor({ managedGroupIds: new Set(["g1"]) }), NOW)).toBe(false);
     // Leading another group does not count.
     expect(canCancelReservation(group, actor({ leadGroupIds: new Set(["g2"]) }), NOW)).toBe(false);
   });

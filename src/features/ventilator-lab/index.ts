@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: Ventilator lab public API
 * Descripción: Public surface of the ventilator-lab feature (real ventilator: reservations, live console, control, commands, recordings): the lab routes, the summary page, the reservation, device status and lab settings hooks and their entity types. v1.1 (T2): the reservations page (calendar + create) and the create request and conflict types. Later tasks add the live console and recordings pages. Depends on the feature modules it re-exports. v1.2 (T5): the real-ventilator live console adapter hook and its option type. v1.3 (T6): the live console page; the adapter hook is no longer exported here, because every /lab page imports this index and the adapter statically reaches the shared ventilator console (it is loaded only through the lazy live console of /lab/live). v1.4 (T11): the recordings list and recording playback pages (the player is lazy loaded by the playback page). v1.5 (T12): the legacy /simulador redirect helper (legacyLabRedirect) used by pages/simulador/index.js. v1.6 (B3.8, D5): the /simulador redirect moved to config/legacy-redirects.mjs (next.config redirects); legacyLabRedirect is gone. v1.7 (W4, Bloque 1): the summary and live pages moved to home.entry and live.entry (lazy loaded by the /simulador tabs without this barrel). v1.8 (W11, Bloque 1): the summary and live pages are gone (superseded by the Conexión and Monitoreo tabs) and so is LAB_LIVE_URL.
-* Versión: 1.8
+*   v1.9 (W6, Bloque 4): the reservations page props (showUpcoming) and the "Próximas reservas" copy.
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,6 +29,8 @@ export { useCurrentReservation, useMyReservations } from "./application/hooks/us
 export { useLabSettings } from "./application/hooks/use-lab-settings";
 export type { UseLabSettingsResult } from "./application/hooks/use-lab-settings";
 export { LAB_RESERVATIONS_COPY, LabReservationsPage } from "./application/pages/lab-reservations.page";
+export type { LabReservationsPageProps } from "./application/pages/lab-reservations.page";
+export { UPCOMING_RESERVATIONS_COPY } from "./application/components/upcoming-reservations";
 export type { CreateReservationRequest, ReservationConflict } from "./application/entities/create-reservation.entity";
 export { LabRecordingsPage } from "./application/pages/lab-recordings.page";
 export { LAB_RECORDING_COPY, LabRecordingPage } from "./application/pages/lab-recording.page";

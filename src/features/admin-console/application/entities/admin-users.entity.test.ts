@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin users entity tests
-* Descripción: The URL filters of /admin/users (read with defaults and invalid values dropped, written without empty keys), the `GET /api/users` query they produce, the role change effects as the backend applies them and the own-account guard. Depends on vitest and the admin users entity. v1.1 (closure B2): the locked reason (superadmin from the API flag first, then own account) and the student code rule.
-* Versión: 1.1
+* Descripción: The URL filters of /admin/users (read with defaults and invalid values dropped, written without empty keys), the `GET /api/users` query they produce, the role change effects as the backend applies them and the own-account guard. Depends on vitest and the admin users entity. v1.1 (closure B2): the locked reason (superadmin from the API flag first, then own account) and the student code rule. v1.2 (B4): withUserFiltersQuery keeps the tab and the teachers search.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,7 @@ import {
   STUDENT_CODE_COPY,
   toAdminUsersQuery,
   toUserFiltersQuery,
+  withUserFiltersQuery,
 } from "./admin-users.entity";
 
 describe("admin users filters", () => {
@@ -39,6 +40,11 @@ describe("admin users filters", () => {
   it("writes only the non-default filters back to the URL", () => {
     expect(toUserFiltersQuery({ ...NO_USER_FILTERS, role: "ADMIN" })).toEqual({ role: "ADMIN" });
     expect(toUserFiltersQuery({ ...NO_USER_FILTERS, page: 2, isActive: "true" })).toEqual({ page: "2", isActive: "true" });
+  });
+
+  it("replaces the user filters and keeps the other query keys", () => {
+    expect(withUserFiltersQuery({ tab: "usuarios", teacherSearch: "luis", search: "old", page: "3" }, { ...NO_USER_FILTERS, role: "TEACHER" }))
+      .toEqual({ tab: "usuarios", teacherSearch: "luis", role: "TEACHER" });
   });
 
   it("builds the users list query", () => {

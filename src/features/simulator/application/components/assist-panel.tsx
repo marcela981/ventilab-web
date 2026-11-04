@@ -12,7 +12,8 @@
 *   @shared/ai-conversation, @shared/ai-rating, the design-system confirm dialog, the assist service, config and
 *   entities, and the panel CSS Module. v1.1 (review of bc8a596): a request that fails before the stream starts gives
 *   the typed question back to the field.
-* Versión: 1.1
+*   v1.2 (W6, Bloque 4): the rating carries the SIMULATOR_ASSIST surface (thesis analytics by surface).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,7 +81,7 @@ function AnswerView({ turn }: { turn: AssistTurn }) {
         text={turn.answer}
         isStreaming={false}
         announce={false}
-        footer={<AiRatingWidget targetType={ASSIST_RATING_TARGET_TYPE} targetId={turn.aiHelpEventId} />}
+        footer={<AiRatingWidget targetType={ASSIST_RATING_TARGET_TYPE} targetId={turn.aiHelpEventId} surface="SIMULATOR_ASSIST" />}
       />
     </div>
   );
