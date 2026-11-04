@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Question styles
-* Descripción: Layout of the evaluation question components shared by the attempt player, the result page and the authoring preview: prompt, question media, choice options with an optional image, the open-text counter and the disabled practical (SIMULATION) placeholder card. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): hint box and immediate feedback (correct/wrong) styles.
-* Versión: 1.1
+* Descripción: Layout of the evaluation question components shared by the attempt player, the result page and the authoring preview: prompt, question media, choice options with an optional image, the open-text counter and the disabled practical (SIMULATION) placeholder card. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): hint box and immediate feedback (correct/wrong) styles. vX.x (Bloque 5): July skin: options on glass, the checked option (:has(input:checked)) with the cyan border and tint, correct/wrong feedback on green/red translucent tints, the explanation with the #00a1db left edge.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -56,9 +56,20 @@
 .option {
   margin: 0;
   padding: var(--vl-space-2) var(--vl-space-3);
-  border: 1px solid var(--vl-color-border);
+  border: 1px solid var(--vl-glass-border);
   border-radius: var(--vl-radius-md);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-bg);
+  transition: background var(--vl-duration-short) var(--vl-ease-standard), border-color var(--vl-duration-short) var(--vl-ease-standard);
+}
+
+.option:hover {
+  background: var(--vl-color-hover);
+}
+
+/* July selected option: cyan border on the cyan tint. */
+.option:has(input:checked) {
+  border-color: var(--vl-color-primary);
+  background: var(--vl-eval-selected-bg);
 }
 
 .optionLabel {
@@ -150,10 +161,12 @@
 }
 
 .feedbackCorrect {
+  background: var(--vl-eval-correct-bg);
   color: var(--vl-color-success);
 }
 
 .feedbackWrong {
+  background: var(--vl-eval-wrong-bg);
   color: var(--vl-color-error);
 }
 
@@ -162,7 +175,10 @@
   font-weight: 600;
 }
 
+/* July explanation box: #00a1db left edge. */
 .feedbackExplanation {
   margin: 0;
+  padding: var(--vl-space-1) 0 var(--vl-space-1) var(--vl-space-3);
+  border-left: 4px solid var(--vl-eval-explanation-border);
   color: var(--vl-color-text);
 }

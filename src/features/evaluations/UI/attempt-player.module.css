@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt player styles
-* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): workshop progress, quiz list and submit row, "Comprobar respuesta" row, the aria-live clock warning and the focus ring of the question heading.
-* Versión: 1.1
+* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): workshop progress, quiz list and submit row, "Comprobar respuesta" row, the aria-live clock warning and the focus ring of the question heading. vX.x (Bloque 5): July skin: question cards, navigator panel and scenario on glass (the scenario with the #00a1db edge); the sticky header stays opaque on the raised surface so the questions never show through it.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -35,7 +35,7 @@
   padding: var(--vl-space-3) var(--vl-space-4);
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-color-surface-raised);
   box-shadow: var(--vl-shadow-1);
 }
 
@@ -103,9 +103,9 @@
   flex-direction: column;
   gap: var(--vl-space-3);
   padding: var(--vl-space-4);
-  border: 1px solid var(--vl-color-border);
+  border: 1px solid var(--vl-glass-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-bg);
 }
 
 .navigatorPanelCollapsed {
@@ -206,10 +206,10 @@
   max-height: 40vh;
   overflow-y: auto;
   padding: var(--vl-space-4);
-  border: 1px solid var(--vl-color-border);
-  border-left: 4px solid var(--vl-color-info);
+  border: 1px solid var(--vl-glass-border);
+  border-left: 4px solid var(--vl-eval-explanation-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-bg);
   color: var(--vl-color-text);
 }
 
@@ -225,11 +225,10 @@
   gap: var(--vl-space-4);
   min-width: 0;
   padding: var(--vl-space-5);
-  border: 1px solid var(--vl-color-border);
+  border: 1px solid var(--vl-glass-border);
   border-radius: var(--vl-radius-lg);
-  background: var(--vl-color-surface);
+  background: var(--vl-glass-bg);
   color: var(--vl-color-text);
-  box-shadow: var(--vl-shadow-1);
 }
 
 .questionHeader {
