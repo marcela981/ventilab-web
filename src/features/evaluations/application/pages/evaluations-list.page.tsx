@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsListPage
-* Descripción: Page /evaluations: the evaluations assigned to the signed-in user (`GET /api/my-evaluations`) in three tabs by state (Activas, Próximas, Cerradas, with counts), applied on the client because the endpoint has no state filter. Each evaluation is an EvaluationCard. Loading skeleton, error with retry and an empty state per tab. The socket events evaluation:activated and grade:published revalidate the list and the grades. Depends on MUI (Tabs), next/head, next/link, the design-system states, the evaluations hooks, entities and components and the evaluations CSS Module. v1.1 (Bloque 3, W2): inside each tab the evaluations are grouped as in July — type (📝 Quizzes, 📋 Talleres, 🎓 Exámenes Finales) → track → level (EvaluationTypeSection, groupEvaluations) — instead of the type filter chips; July empty texts ("No tienes evaluaciones asignadas todavía." with nothing assigned, "Sin evaluaciones asignadas." in an empty section); optional moduleId (`?moduleId=` of the "Quiz del módulo" link) narrows the list to one curriculum module with a "Ver todas" link.
-* Versión: 1.1
+* Descripción: Page /evaluations: the evaluations assigned to the signed-in user (`GET /api/my-evaluations`) in three tabs by state (Activas, Próximas, Cerradas, with counts), applied on the client because the endpoint has no state filter. Each evaluation is an EvaluationCard. Loading skeleton, error with retry and an empty state per tab. The socket events evaluation:activated and grade:published revalidate the list and the grades. Depends on MUI (Tabs), next/head, next/link, the design-system states, the evaluations hooks, entities and components and the evaluations CSS Module. v1.1 (Bloque 3, W2): inside each tab the evaluations are grouped as in July — type (📝 Quizzes, 📋 Talleres, 🎓 Exámenes Finales) → track → level (EvaluationTypeSection, groupEvaluations) — instead of the type filter chips; July empty texts ("No tienes evaluaciones asignadas todavía." with nothing assigned, "Sin evaluaciones asignadas." in an empty section); optional moduleId (`?moduleId=` of the "Quiz del módulo" link) narrows the list to one curriculum module with a "Ver todas" link. vX.x (Bloque 5): the list spans the content width (pageWide), like the July page.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,7 +66,7 @@ export function EvaluationsListPage({ moduleId = null }: EvaluationsListPageProp
   const nothingAssigned = evaluations !== null && evaluations.length === 0;
 
   return (
-    <div className={cx(styles.page)}>
+    <div className={cx(styles.page, styles.pageWide)}>
       <Head>
         <title>{PAGE_COPY.documentTitle}</title>
       </Head>
