@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WaveformChart
-* Descripción: Single live line chart for pressure/flow/volume waveforms, shared by the simulator and the real ventilator. Chart.js is loaded lazily on mount; the chart is created once per mount and every new sample mutates its datasets and scales followed by `update("none")` (no re-creation, no animation). Colors come from the MUI palette CSS variables at runtime. Depends on chart.js (lazy), design-system and lib.
-* Versión: 1.0
+* Descripción: Single live line chart for pressure/flow/volume waveforms, shared by the simulator and the real ventilator. Chart.js is loaded lazily on mount; the chart is created once per mount and every new sample mutates its datasets and scales followed by `update("none")` (no re-creation, no animation). Colors come from the MUI palette CSS variables at runtime. Depends on chart.js (lazy), design-system and lib. v1.1 (Bloque 5, D4): pressure/flow/volume lines take the console curve tokens (--vl-console-curve-*) read with the chrome, the same source as the console canvases.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -45,7 +45,7 @@ function buildConfig(input: ChartInput, chrome: WaveformChrome): ChartConfigurat
 
   return {
     type: "line",
-    data: { datasets: toChartDatasets(input.series, input.windowSeconds, chrome.colors) },
+    data: { datasets: toChartDatasets(input.series, input.windowSeconds, chrome.colors, chrome.curves) },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -83,7 +83,7 @@ function setBounds(scale: ScaleBounds | undefined, range: WaveformRange | undefi
 }
 
 function applyInput(chart: LineChart, input: ChartInput, chrome: WaveformChrome) {
-  const next = toChartDatasets(input.series, input.windowSeconds, chrome.colors);
+  const next = toChartDatasets(input.series, input.windowSeconds, chrome.colors, chrome.curves);
   const current = chart.data.datasets;
 
   if (current.length === next.length) {

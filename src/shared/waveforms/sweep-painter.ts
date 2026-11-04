@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Sweep painter
-* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap. v1.2: span copies clamp the source rectangle to the chrome layer backing store (fractional DPR rounding never reads outside it). v1.3 (W3, Bloque 1): live painting is driven by time, not by batch arrival: a playback clock (playback-clock.ts) turns the frame time into a head a small delay behind the newest sample, and each frame draws the samples up to the head plus the point interpolated exactly at it, so the sweep (and scroll) advances at the display refresh rate between 30 Hz batches; with `delayMs` 0 the head is the newest sample (previous behaviour). The layout is cached per size, the scene object and the erase-span pool are reused and the trace loop has no closures, so live frames allocate nothing; the palette is still read only on a full repaint.
-* Versión: 1.3
+* Descripción: Canvas painting for SweepCanvas, outside React. Stacked lanes (one per channel) with gridlines, tick values and a label with units; sweep mode paints incrementally (only the new segment plus the erase bar ahead of the head, O(new samples)) and repaints in full on resize, reset, wrap with auto-range or catch-up; scroll mode repaints the window when new data arrives. Frozen snapshots and the measurement cursor are painted from a captured window. Colors come from CSS custom properties of the canvas. Depends on the ring buffer, waveform-geometry and use-waveform-renderer. v1.1: the chrome (background, grid, labels) is rendered once per full repaint (or range change) into an offscreen canvas and incremental frames copy only the erase spans from it, with a direct-paint fallback where no offscreen canvas exists; reads go into a reused window and the last point is copied in place, so live frames allocate no sample arrays; in sweep mode a frozen snapshot starts after the erase gap. v1.2: span copies clamp the source rectangle to the chrome layer backing store (fractional DPR rounding never reads outside it). v1.3 (W3, Bloque 1): live painting is driven by time, not by batch arrival: a playback clock (playback-clock.ts) turns the frame time into a head a small delay behind the newest sample, and each frame draws the samples up to the head plus the point interpolated exactly at it, so the sweep (and scroll) advances at the display refresh rate between 30 Hz batches; with `delayMs` 0 the head is the newest sample (previous behaviour). The layout is cached per size, the scene object and the erase-span pool are reused and the trace loop has no closures, so live frames allocate nothing; the palette is still read only on a full repaint. v1.4 (Bloque 5): tick values are painted with --vl-console-tick (July #919191, AA-adjusted); lane labels keep the muted console text.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,6 +59,7 @@ type SweepPalette = {
   background: string
   grid: string
   text: string
+  tick: string
   cursor: string
   font: string
   curves: string[]
@@ -125,6 +126,7 @@ function readPalette<C extends string>(frame: WaveformRenderFrame, channels: rea
     background: resolveCanvasColor(frame.ctx, styles, "--vl-console-bg"),
     grid: resolveCanvasColor(frame.ctx, styles, "--vl-console-grid"),
     text: resolveCanvasColor(frame.ctx, styles, "--vl-console-text-muted"),
+    tick: resolveCanvasColor(frame.ctx, styles, "--vl-console-tick"),
     cursor: resolveCanvasColor(frame.ctx, styles, "--vl-console-text"),
     font: resolveCanvasFont(styles),
     curves: channels.map((channel) => resolveCanvasColor(frame.ctx, styles, channel.colorVar)),
@@ -161,7 +163,6 @@ function paintChromeArea<C extends string>(ctx: CanvasRenderingContext2D, scene:
   });
 
   ctx.stroke();
-  ctx.fillStyle = palette.text;
   ctx.font = palette.font;
 
   lanes.forEach((lane, index) => {
@@ -169,12 +170,14 @@ function paintChromeArea<C extends string>(ctx: CanvasRenderingContext2D, scene:
     const channel = config.channels[index];
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
+    ctx.fillStyle = palette.tick;
 
     for (const tick of niceTicks(range, SWEEP_LAYOUT.tickCount)) {
       ctx.fillText(formatTick(tick), plot.x - 4, valueToY(tick, range, lane));
     }
 
     if (channel) {
+      ctx.fillStyle = palette.text;
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
       ctx.fillText(`${channel.label} (${channel.unit})`, plot.x + 4, lane.y + 2);

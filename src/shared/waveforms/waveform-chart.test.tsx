@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WaveformChart tests
-* Descripción: Covers the pure series-to-dataset mapping (time window, colors, labels, y-range) and the chart lifecycle of WaveformChart with a mocked Chart.js: one chart per mount, live appends update the same instance, destroy on unmount. Depends on Vitest and Testing Library.
-* Versión: 1.0
+* Descripción: Covers the pure series-to-dataset mapping (time window, colors, labels, y-range) and the chart lifecycle of WaveformChart with a mocked Chart.js: one chart per mount, live appends update the same instance, destroy on unmount. Depends on Vitest and Testing Library. v1.1 (Bloque 5, D4): the known curve keys take the console curve colors, an explicit tone still wins and a missing token falls back to a palette tone.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -54,6 +54,7 @@ vi.mock("chart.js", () => {
 });
 
 const COLORS = { primary: "c-primary", secondary: "c-secondary", error: "c-error", info: "c-info", success: "c-success", warning: "c-warning" };
+const CURVES = { pressure: "c-pressure", flow: "c-flow", volume: "c-volume" };
 
 function pressure(points: [number, number][]): WaveformSeries {
   return { key: "pressure", label: "Presión", unit: "cmH2O", points: points.map(([t, v]) => ({ t, v })) };
@@ -72,16 +73,24 @@ describe("waveform data mapping", () => {
     expect(sliceToWindow([], 2)).toEqual([]);
   });
 
-  it("maps series to labeled, colored {x,y} datasets", () => {
+  it("maps series to labeled, colored {x,y} datasets with the console curve colors (D4)", () => {
     const flow: WaveformSeries = { key: "flow", label: "Flujo", unit: "L/min", points: [{ t: 0, v: 1 }] };
     const custom: WaveformSeries = { key: "x", label: "Otra", unit: "u", tone: "warning", points: [] };
-    const datasets = toChartDatasets([pressure([[0, 5], [1, 7]]), flow, custom], 10, COLORS);
+    const toned: WaveformSeries = { key: "volume", label: "Volumen", unit: "mL", tone: "primary", points: [] };
+    const datasets = toChartDatasets([pressure([[0, 5], [1, 7]]), flow, custom, toned], 10, COLORS, CURVES);
 
     expect(datasets).toEqual([
-      expect.objectContaining({ label: "Presión (cmH2O)", data: [{ x: 0, y: 5 }, { x: 1, y: 7 }], borderColor: "c-error" }),
-      expect.objectContaining({ label: "Flujo (L/min)", data: [{ x: 0, y: 1 }], borderColor: "c-info" }),
+      expect.objectContaining({ label: "Presión (cmH2O)", data: [{ x: 0, y: 5 }, { x: 1, y: 7 }], borderColor: "c-pressure" }),
+      expect.objectContaining({ label: "Flujo (L/min)", data: [{ x: 0, y: 1 }], borderColor: "c-flow" }),
       expect.objectContaining({ label: "Otra (u)", data: [], borderColor: "c-warning" }),
+      expect.objectContaining({ label: "Volumen (mL)", borderColor: "c-primary" }),
     ]);
+  });
+
+  it("falls back to a palette tone when a curve token is missing", () => {
+    const datasets = toChartDatasets([pressure([[0, 5]])], 10, COLORS, { pressure: "" });
+
+    expect(datasets[0]?.borderColor).toBe("c-primary");
   });
 
   it("resolves the visible time range from the latest sample", () => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Waveform data mapping
-* Descripción: Pure functions that turn typed series into Chart.js line datasets: time-window slicing ending at the latest sample, `{x, y}` points (pre-parsed, as decimation needs), labels with units, tone resolution (pressure/flow/volume defaults) and the visible time range. Reads palette CSS variables at runtime for the chart colors. No Chart.js import.
-* Versión: 1.0
+* Descripción: Pure functions that turn typed series into Chart.js line datasets: time-window slicing ending at the latest sample, `{x, y}` points (pre-parsed, as decimation needs), labels with units, tone resolution (pressure/flow/volume defaults) and the visible time range. Reads palette CSS variables at runtime for the chart colors. No Chart.js import. v1.1 (Bloque 5, D4): pressure/flow/volume series without an explicit tone take the console curve tokens (--vl-console-curve-*, July red/blue/green), read with the rest of the chrome, so Chart.js and the console canvases share one source; the previous error/info/success defaults are gone (a missing token falls back to the index tone).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -19,11 +19,15 @@ export type WaveformDataset = {
   backgroundColor: string
 };
 
-const DEFAULT_TONES: Record<string, WaveformTone> = {
-  pressure: "error",
-  flow: "info",
-  volume: "success",
+/** Curve tokens of the well-known series keys: the same colors as the console canvases (D4). */
+const CURVE_COLOR_VARS: Record<string, string> = {
+  pressure: "--vl-console-curve-pressure",
+  flow: "--vl-console-curve-flow",
+  volume: "--vl-console-curve-volume",
 };
+
+/** Resolved curve colors by series key (read from the CSS tokens at runtime). */
+export type WaveformCurveColors = Partial<Record<string, string>>;
 
 export function sliceToWindow(points: readonly WaveformPoint[], windowSeconds: number): WaveformPoint[] {
   const last = points[points.length - 1];
@@ -38,7 +42,7 @@ export function sliceToWindow(points: readonly WaveformPoint[], windowSeconds: n
 }
 
 export function resolveTone(series: WaveformSeries, index: number): WaveformTone {
-  return series.tone ?? DEFAULT_TONES[series.key] ?? WAVEFORM_TONES[index % WAVEFORM_TONES.length] ?? "primary";
+  return series.tone ?? WAVEFORM_TONES[index % WAVEFORM_TONES.length] ?? "primary";
 }
 
 export function formatSeriesLabel(series: WaveformSeries): string {
@@ -49,9 +53,12 @@ export function toChartDatasets(
   series: readonly WaveformSeries[],
   windowSeconds: number,
   colors: WaveformColors,
+  curves: WaveformCurveColors = {},
 ): WaveformDataset[] {
   return series.map((item, index) => {
-    const color = colors[resolveTone(item, index)];
+    // An explicit tone wins; otherwise a known curve key takes its console token.
+    const curve = item.tone ? undefined : curves[item.key];
+    const color = curve || colors[resolveTone(item, index)];
 
     return {
       label: formatSeriesLabel(item),
@@ -80,6 +87,7 @@ export function resolveTimeRange(series: readonly WaveformSeries[], windowSecond
 
 export type WaveformChrome = {
   colors: WaveformColors
+  curves: WaveformCurveColors
   grid: string
   text: string
 };
@@ -94,8 +102,13 @@ export function readWaveformChrome(element: Element = document.documentElement):
     WAVEFORM_TONES.map((tone) => [tone, readVariable(styles, `--mui-palette-${tone}-main`)]),
   ) as WaveformColors;
 
+  const curves: WaveformCurveColors = Object.fromEntries(
+    Object.entries(CURVE_COLOR_VARS).map(([key, name]) => [key, readVariable(styles, name)]),
+  );
+
   return {
     colors,
+    curves,
     grid: readVariable(styles, "--mui-palette-divider"),
     text: readVariable(styles, "--mui-palette-text-secondary"),
   };
