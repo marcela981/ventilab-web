@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoginPage styles
-* Descripción: Card, header, divider and help links of the login page. Tokens only.
-* Versión: 1.0
+* Descripción: Card, header, divider and help links of the login page. Tokens only. v1.1 (Bloque 5, §5.3): the July login card: radius 24, elevation 10, roomy padding, the centred 60px logo, a 20px semibold title, the muted divider and the right-aligned "¿Olvidaste tu contraseña?" row; inside the light auth island.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,22 +14,32 @@
   flex-direction: column;
   gap: var(--vl-space-4);
   padding: var(--vl-space-6) var(--vl-space-5);
-  border: 1px solid var(--vl-color-border);
-  border-radius: var(--vl-radius-lg);
+  border-radius: var(--vl-radius-3xl);
   background: var(--vl-color-surface);
   color: var(--vl-color-text);
-  box-shadow: var(--vl-shadow-2);
+  box-shadow: var(--vl-auth-card-shadow);
 }
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--vl-space-1);
+  align-items: center;
+  gap: var(--vl-space-2);
   text-align: center;
 }
 
-.title {
+.logo {
+  width: auto;
+  height: 3.75rem;
+  margin-bottom: var(--vl-space-2);
+}
+
+/* One class more than the MUI Typography h4 variant: the July 20px title. */
+.header .title {
   color: var(--vl-color-text);
+  font: var(--mui-font-h6);
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .subtitle {
@@ -38,6 +48,7 @@
 
 .divider {
   color: var(--vl-color-text-muted);
+  font: var(--mui-font-body2);
 }
 
 .links {
@@ -55,7 +66,23 @@
   border-radius: var(--vl-radius-sm);
 }
 
+.links .link {
+  font-weight: 600;
+}
+
+.forgot {
+  align-self: flex-end;
+  margin-top: calc(var(--vl-space-1) * -1);
+  font: var(--mui-font-body2);
+}
+
 .link:focus-visible {
   outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
   outline-offset: var(--vl-focus-ring-offset);
+}
+
+@media (min-width: 600px) {
+  .card {
+    padding: var(--vl-space-6) 2.5rem var(--vl-space-6);
+  }
 }

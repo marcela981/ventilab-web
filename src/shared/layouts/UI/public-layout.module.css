@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PublicLayout styles
-* Descripción: Full-viewport centered column for public pages such as login. Tokens only.
-* Versión: 1.0
+* Descripción: Full-viewport centered column for public pages such as login. Tokens only. v1.1 (Bloque 5, §5.3): the auth variant: July brand gradient, a 34rem column with the light island and the white footer line (4.57:1 on the gradient).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,4 +22,27 @@
 .content {
   width: 100%;
   max-width: 28rem;
+}
+
+/* === Auth pages (D5): July brand gradient, light card island, footer === */
+.auth {
+  flex-direction: column;
+  gap: var(--vl-space-5);
+  padding: var(--vl-space-6) var(--vl-space-4);
+  background: var(--vl-auth-bg);
+}
+
+.authContent {
+  width: 100%;
+  max-width: 34rem;
+  background: transparent;
+  color: var(--vl-color-text);
+}
+
+.footer {
+  margin: 0;
+  color: var(--vl-auth-on-bg);
+  font: var(--mui-font-body2);
+  font-weight: 500;
+  text-align: center;
 }

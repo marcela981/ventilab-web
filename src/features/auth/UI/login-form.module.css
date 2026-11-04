@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoginForm styles
-* Descripción: Vertical field stack and submit spacing of the local login form. Tokens only.
-* Versión: 1.0
+* Descripción: Vertical field stack and submit spacing of the local login form. Tokens only. v1.1 (Bloque 5, §5.3): the July rounded 50px submit.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,6 +15,9 @@
   gap: var(--vl-space-2);
 }
 
-.submit {
+/* One class more than MUI Button: the July rounded submit (radius 24, 50px). */
+.form .submit {
+  min-height: 3.125rem;
   margin-top: var(--vl-space-2);
+  border-radius: var(--vl-radius-3xl);
 }
