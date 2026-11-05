@@ -10,7 +10,8 @@
 *   v1.1 (review of bc8a596): a longer wait for the first streamed text (deltas commit per animation frame, which lags
 *   under full-suite load), the question given back after a failure before the stream, and host-kept answers listed.
 *   v1.2 (W6, Bloque 4): a rating carries the SIMULATOR_ASSIST surface.
-*   v1.3 (Bloque A): a DETERMINISTIC answer shows the fallback label and no rating.
+*   v1.3 (Bloque A): a DETERMINISTIC answer shows the fallback label and no rating; the real monitor assistance posts
+*   the monitor state read at each request to /simulation/real/assist and rates the answer as an AI_CALL.
 * Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -159,6 +160,41 @@ describe("AI assist panel", () => {
     expect(within(panel).queryByText("¿Te fue útil?")).not.toBeInTheDocument();
   });
 
+  it("in real mode posts the monitor state read at the request and rates the answer as an AI_CALL (Bloque A)", async() => {
+    const bodies: unknown[] = [];
+    const ratings: unknown[] = [];
+    let spo2 = 95;
+    const realMonitor = vi.fn(() => ({ mode: "VCV", metrics: { spo2Percent: spo2 }, alarms: ["HIGH_PRESSURE"] }));
+
+    server.use(
+      http.post(apiUrl("/api/simulation/real/assist"), async({ request }) => {
+        bodies.push(await request.json());
+
+        return sseResponse([deltaFrame("Revisa la presión pico."), doneFrame({ aiCallId: "call-real", source: "LLM" })]);
+      }),
+      http.put(apiUrl("/api/ai-ratings"), async({ request }) => {
+        ratings.push(await request.json());
+
+        return HttpResponse.json(envelope(null));
+      }),
+    );
+    renderWithSwr(<AssistLauncher sessionId="" mode="FREE" active realMonitor={realMonitor} />);
+
+    const panel = await openPanel();
+
+    expect(within(panel).getByText(/nunca envía comandos al ventilador/)).toBeInTheDocument();
+    spo2 = 91;
+    fireEvent.change(within(panel).getByLabelText("Pregunta (opcional)"), { target: { value: "¿Qué reviso?" } });
+    requestAssist();
+
+    expect(await within(panel).findByText("¿Te fue útil?")).toBeInTheDocument();
+    expect(bodies).toEqual([{ state: { mode: "VCV", metrics: { spo2Percent: 91 }, alarms: ["HIGH_PRESSURE"] }, question: "¿Qué reviso?", language: "es" }]);
+    await waitFor(() => expect(within(panel).getByRole("button", { name: "Sí, fue útil" })).toBeEnabled());
+    fireEvent.click(within(panel).getByRole("button", { name: "Sí, fue útil" }));
+    await waitFor(() => expect(ratings).toHaveLength(1));
+    expect(ratings[0]).toMatchObject({ targetType: "AI_CALL", targetId: "call-real", surface: "SIMULATOR_ASSIST" });
+  });
+
   it("rates an answer with the SIM_ASSIST target and the SIMULATOR_ASSIST surface", async() => {
     const ratings: unknown[] = [];
 
@@ -289,7 +325,7 @@ describe("AI assist panel", () => {
         sessionId="s1"
         mode="FREE"
         active
-        history={[{ aiHelpEventId: "help-9", aiCallId: "call-9", source: "LLM", question: "", answer: "Respuesta guardada." }]}
+        history={[{ id: "help-9", aiHelpEventId: "help-9", aiCallId: "call-9", source: "LLM", question: "", answer: "Respuesta guardada." }]}
         onAnswered={onAnswered}
       />,
     );

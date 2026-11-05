@@ -109,6 +109,8 @@ describe("AlarmHelpPanel", () => {
     expect(screen.queryByText("Sugerencia automática (IA no disponible)")).not.toBeInTheDocument();
     expect(bodies).toEqual([{ alarmCode: "HIGH_PRESSURE", language: "es" }]);
 
+    // The widget loads the previous rating first (thumbs disabled meanwhile).
+    await vi.waitFor(() => expect(screen.getByRole("button", { name: "Sí, fue útil" })).toBeEnabled());
     fireEvent.click(screen.getByRole("button", { name: "Sí, fue útil" }));
     await vi.waitFor(() => expect(ratings).toHaveLength(1));
     expect(ratings[0]).toMatchObject({ targetType: "AI_CALL", targetId: "call-7", surface: "SIM_ALARM" });

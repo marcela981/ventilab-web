@@ -23,7 +23,9 @@
 *   imported from the console (lab-live lazy boundary).
 *   v0.3 (Bloque A): every alarm of the real console opens "¿Cómo estabilizar?" (the lazy simulator alarm help: the
 *   deterministic rules and the AI suggestion of POST /api/simulation/real/alarm-help with the monitor state of the
-*   live console). The AI only suggests; nothing it returns reaches the ventilator commands.
+*   live console) and the console has "Asesoría IA" next to the mode toggle (POST /api/simulation/real/assist with
+*   the same monitor state, rated as an AI_CALL of SIMULATOR_ASSIST). The AI only suggests; nothing it returns reaches
+*   the ventilator commands.
 * Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -32,7 +34,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { AlarmHelpPanel, realAlarmHelpRequest } from "@features/simulator/ai-help.entry";
+import { AlarmHelpPanel, RealAssistLauncher, realAlarmHelpRequest } from "@features/simulator/ai-help.entry";
 import type { RealMonitorStateDTO } from "@features/simulator/ai-help.entry";
 import { OperatorControlBar } from "@features/ventilator-lab/connection.entry";
 import {
@@ -176,6 +178,10 @@ function renderRealAlarmHelp(target: ConsoleAlarmHelpTarget, getMonitorState: ()
   return <AlarmHelpPanel target={target} availability={REAL_ALARM_HELP} buildRequest={() => realAlarmHelpRequest(target.code, getMonitorState())} />;
 }
 
+function renderRealAssist(getMonitorState: () => RealMonitorStateDTO, live: boolean) {
+  return <RealAssistLauncher getMonitorState={getMonitorState} active={live} />;
+}
+
 export function RealMonitor({ header = null, leftTop = null, statusChip = null, cards }: RealMonitorProps = {}) {
   const connection = useLabConnection();
   const { reservation, socketOnline, isOperator, canControl } = connection;
@@ -259,6 +265,7 @@ export function RealMonitor({ header = null, leftTop = null, statusChip = null, 
         cards={cards}
         placeholder={<>{header}{strip}</>}
         renderAlarmHelp={renderRealAlarmHelp}
+        renderAssist={renderRealAssist}
         {...(readOnlyReason === undefined ? {} : { readOnlyReason })}
       />
     </div>

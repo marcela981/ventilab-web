@@ -346,7 +346,7 @@ export function SimSessionHost({ sessionId, onEnded, deps, children }: SimSessio
     setAssistState((current) => {
       const turns = current.sessionId === sessionId ? current.turns : NO_TURNS;
 
-      return turns.some((item) => item.aiHelpEventId === turn.aiHelpEventId) ? current : { sessionId, turns: [...turns, turn] };
+      return turns.some((item) => item.id === turn.id) ? current : { sessionId, turns: [...turns, turn] };
     });
   }, [sessionId]);
 

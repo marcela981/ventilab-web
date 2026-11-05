@@ -9,7 +9,10 @@
 *   answer is recorded as an AI_HELP event that the score penalizes). Also the `done` metadata of the assist stream
 *   ({aiHelpEventId, aiCallId, source}) and an answered turn kept in the panel. Type-only imports of the AI
 *   conversation module, so the console chunk does not load it. Depends on the generated OpenAPI types.
-* Versión: 1.0
+*   v1.1 (Bloque A): the real monitor assistance (POST /simulation/real/assist) answers without an AI_HELP event: a
+*   turn has its own `id` (the AI_HELP event of a session, else the AI call) and `aiHelpEventId` may be null;
+*   isRealAssistDone checks its `done` ({aiCallId, source}).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,9 +73,25 @@ export function isAssistDone(value: unknown): value is AssistStreamDone {
   return typeof done.aiHelpEventId === "string" && done.aiHelpEventId !== "" && typeof done.aiCallId === "string";
 }
 
-/** One answered request of this session, listed in the panel and rated through its AI_HELP event. */
+/** `done` of POST /simulation/real/assist: no AI_HELP event, the answer is rated through its AI call. */
+export function isRealAssistDone(value: unknown): value is StreamDoneMetadata & { source: AssistStreamDone["source"] } {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const done = value as Partial<AssistStreamDone>;
+
+  return typeof done.aiCallId === "string" && done.aiCallId !== "";
+}
+
+/**
+ * One answered request, listed in the panel: a session answer is rated through its AI_HELP event, a real monitor
+ * answer (no event) through its AI call.
+ */
 export type AssistTurn = {
-  aiHelpEventId: string
+  /** The AI_HELP event id of a session answer, else the AI call id. */
+  id: string
+  aiHelpEventId: string | null
   aiCallId: string
   question: string
   answer: string
