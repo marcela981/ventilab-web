@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useMyGroup
-* Descripción: Reads the signed-in user's own groups (`GET /api/groups/mine`: the student's active student group with leader, members and supervising teacher groups, plus every membership) through useApiQuery (SWR cache of the typed api-client) and maps them to the MyGroups entity. Exposes the loading flag, the load error and `reload` (retry button). Depends on @shared/api-client and the groups mappers/service.
-* Versión: 1.0
+* Descripción: Reads the signed-in user's own groups (`GET /api/groups/mine`: the student's active student group with leader, members and supervising teacher groups, plus every membership) through useApiQuery (SWR cache of the typed api-client) and maps them to the MyGroups entity. Exposes the loading flag, the load error and `reload` (retry button). Depends on @shared/api-client and the groups mappers/service. v1.1 (ajustes D2): refetches when the socket delivers the GROUP_MEMBER_ADDED notification (@shared/realtime), so a student sees the new group without reloading.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import { useCallback, useMemo } from "react";
 import type { ApiError } from "@shared/api-client/api-error";
 import { useApiQuery } from "@shared/api-client/use-api-query";
+import { useSocketEvent } from "@shared/realtime";
 import { toMyGroups } from "../../api/mappers/groups.mapper";
 import { MY_GROUPS_PATH } from "../../api/services/groups.service";
 import type { MyGroups } from "../entities/group.entity";
@@ -30,6 +31,13 @@ export function useMyGroup(): UseMyGroupResult {
   const reload = useCallback(async() => {
     await mutate();
   }, [mutate]);
+
+  // Being added to a group arrives as a notification on the user room: show the group right away.
+  useSocketEvent("notification:new", (notification) => {
+    if (notification.type === "GROUP_MEMBER_ADDED") {
+      void mutate();
+    }
+  });
 
   return { myGroups, isLoading, error: error ?? null, reload };
 }
