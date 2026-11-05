@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: PublicLayout styles
-* Descripción: Full-viewport centered column for public pages such as login. Tokens only. v1.1 (Bloque 5, §5.3): the auth variant: July brand gradient, a 34rem column with the light island and the white footer line (4.57:1 on the gradient).
-* Versión: 1.1
+* Descripción: Full-viewport centered column for public pages such as login. Tokens only. v1.1 (Bloque 5, §5.3): the auth variant: July brand gradient, a 34rem column with the light island and the white footer line (4.57:1 on the gradient). v1.2: (Ajustes D3): auth layout of the active palette and mode: card column of 30rem and, from 1024px, the brand column (logo, tagline, features in --vl-auth-on-bg) beside it.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,19 +24,64 @@
   max-width: 28rem;
 }
 
-/* === Auth pages (D5): July brand gradient, light card island, footer === */
+/* === Auth pages (D3): brand background of the active palette and mode, brand column, card, footer === */
 .auth {
   flex-direction: column;
   gap: var(--vl-space-5);
-  padding: var(--vl-space-6) var(--vl-space-4);
+  padding: var(--vl-space-5) var(--vl-space-4);
   background: var(--vl-auth-bg);
+}
+
+.authGrid {
+  display: grid;
+  width: 100%;
+  max-width: 30rem;
+  align-items: center;
+  gap: var(--vl-space-6);
+}
+
+/* The brand column only fits beside the card from 1024px; below it the card carries the logo. */
+.brand {
+  display: none;
+  color: var(--vl-auth-on-bg);
+}
+
+.tagline {
+  margin: var(--vl-space-5) 0 var(--vl-space-4);
+  font: var(--mui-font-h5);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.features {
+  display: flex;
+  margin: 0;
+  padding-left: var(--vl-space-5);
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  font: var(--mui-font-body1);
 }
 
 .authContent {
   width: 100%;
-  max-width: 34rem;
-  background: transparent;
+  min-width: 0;
   color: var(--vl-color-text);
+}
+
+@media (min-width: 1024px) {
+  .auth {
+    padding: var(--vl-space-6) var(--vl-space-6);
+  }
+
+  .authGrid {
+    max-width: 64rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+    gap: var(--vl-space-8);
+  }
+
+  .brand {
+    display: block;
+  }
 }
 
 .footer {

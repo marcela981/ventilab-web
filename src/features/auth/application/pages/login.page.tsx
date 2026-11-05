@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoginPage
-* Descripción: Login page of the backend session (rendered inside PublicLayout by the thin route pages/auth/login): heading, an expired-session notice (`?expired=1`, sent by the legacy session expiry), the server error alert (role=alert), the local LoginForm, the Google sign-in block and links to password recovery and registration. While the session loads, or once it is authenticated, it shows a loading state and usePostLoginRedirect navigates to the safe returnTo (returnTo/returnUrl/callbackUrl) or the role home; during a login it waits until useLogin finished the NextAuth coexistence bridge (v1.1). v1.2 (T9 follow-up): when the redirect loop guard stops the redirects ("blocked") it shows an error with a "Cerrar sesión" button instead of looping. v1.3 (B3.4, D4): NextAuth removed, the login only waits for establishSession. Spanish copy, TODO(i18n). Depends on MUI, next/head, next/link, next/router, @shared/session, @shared/design-system and the auth hooks/components. v1.4 (Bloque 5, §5.3, D6): July login layout inside the auth layout (withAuthLayout: brand gradient, light card island, footer): the logo image (alt "VentyLab", not a heading) above the h1 "Iniciar sesión" (kept) and the July subtitle; then the session/error alerts, Google first (the official GIS button, unchanged), the divider "o con tu correo", the email form with "¿Olvidaste tu contraseña?" right under the password and the "¿No tienes cuenta? Regístrate" line. No "Recordarme" (it would have no effect). Expired notice, error codes, "Redirigiendo…", the loop guard and the safe returnTo are unchanged.
-* Versión: 1.4
+* Descripción: Login page of the backend session (rendered inside PublicLayout by the thin route pages/auth/login): heading, an expired-session notice (`?expired=1`, sent by the legacy session expiry), the server error alert (role=alert), the local LoginForm, the Google sign-in block and links to password recovery and registration. While the session loads, or once it is authenticated, it shows a loading state and usePostLoginRedirect navigates to the safe returnTo (returnTo/returnUrl/callbackUrl) or the role home; during a login it waits until useLogin finished the NextAuth coexistence bridge (v1.1). v1.2 (T9 follow-up): when the redirect loop guard stops the redirects ("blocked") it shows an error with a "Cerrar sesión" button instead of looping. v1.3 (B3.4, D4): NextAuth removed, the login only waits for establishSession. Spanish copy, TODO(i18n). Depends on MUI, next/head, next/link, next/router, @shared/session, @shared/design-system and the auth hooks/components. v1.4 (Bloque 5, §5.3, D6): July login layout inside the auth layout (withAuthLayout: brand gradient, light card island, footer): the logo image (alt "VentyLab", not a heading) above the h1 "Iniciar sesión" (kept) and the July subtitle; then the session/error alerts, Google first (the official GIS button, unchanged), the divider "o con tu correo", the email form with "¿Olvidaste tu contraseña?" right under the password and the "¿No tienes cuenta? Regístrate" line. No "Recordarme" (it would have no effect). Expired notice, error codes, "Redirigiendo…", the loop guard and the safe returnTo are unchanged. v1.5: (Ajustes D3): the logo is the BrandLogo of the active mode (light or dark variant) and the session and error notices live in an aria-live region; the card follows the active palette and mode (no forced light island).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,10 +14,10 @@ import Button from "@mui/material/Button";
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 import Head from "next/head";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useId } from "react";
+import { BrandLogo } from "@shared/design-system/components/brand-logo";
 import { LoadingState } from "@shared/design-system/components/loading-state";
 import { cx } from "@shared/lib/class-names";
 import { useSession } from "@shared/session";
@@ -31,10 +31,6 @@ import { usePostLoginRedirect } from "../hooks/use-post-login-redirect";
 import styles from "../../UI/login-page.module.css";
 
 // TODO(i18n): move to an auth namespace in src/i18n.
-// public/images/logo.png (708 x 353), shown 60px high as in July (index.jsx:50-75).
-const LOGO_SRC = "/images/logo.png";
-const LOGO_HEIGHT = 60;
-const LOGO_WIDTH = 120;
 
 const LOGIN_COPY = {
   documentTitle: "Iniciar sesión | VentyLab",
@@ -95,7 +91,7 @@ export function LoginPage() {
         <title>{LOGIN_COPY.documentTitle}</title>
       </Head>
       <header className={cx(styles.header)}>
-        <Image src={LOGO_SRC} alt={LOGIN_COPY.logoAlt} width={LOGO_WIDTH} height={LOGO_HEIGHT} priority className={cx(styles.logo)} />
+        <BrandLogo alt={LOGIN_COPY.logoAlt} size="auth" priority />
         <Typography id={titleId} component="h1" variant="h4" className={cx(styles.title)}>
           {LOGIN_COPY.title}
         </Typography>
@@ -103,8 +99,10 @@ export function LoginPage() {
           {LOGIN_COPY.subtitle}
         </Typography>
       </header>
-      {expired && !login.error ? <Alert severity="info">{LOGIN_COPY.expired}</Alert> : null}
-      {login.error ? <Alert severity="error">{login.error}</Alert> : null}
+      <div aria-live="polite" className={cx(styles.alerts)}>
+        {expired && !login.error ? <Alert severity="info">{LOGIN_COPY.expired}</Alert> : null}
+        {login.error ? <Alert severity="error">{login.error}</Alert> : null}
+      </div>
       <GoogleSignInButton
         clientId={readGoogleClientId()}
         pending={login.pending}

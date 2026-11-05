@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth information pages tests
-* Descripción: AccessDeniedPage (loading state, authenticated user with name, role and role-home link, visitor with a login link, the `reason` query as a warning, back navigation) and ForgotPasswordPage (notice, login and registration links). Session doubles through SessionContext and a mocked Next router. Depends on vitest, Testing Library and @shared/session. v1.1 (W1 Bloque 1): the role home of every role is /simulador.
-* Versión: 1.1
+* Descripción: AccessDeniedPage (loading state, authenticated user with name, role and role-home link, visitor with a login link, the `reason` query as a warning, back navigation) and ForgotPasswordPage (notice, login and registration links). Session doubles through SessionContext and a mocked Next router. Depends on vitest, Testing Library and @shared/session. v1.1 (W1 Bloque 1): the role home of every role is /simulador. v1.2: (Ajustes D3): the forgot password page is a real form, covered by password-recovery.pages.test.tsx.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,6 @@ import { SessionContext } from "@shared/session/session-context";
 import type { SessionContextValue } from "@shared/session/session-context";
 import type { Role, SessionStatus } from "@shared/session/session.entity";
 import { AccessDeniedPage } from "./access-denied.page";
-import { ForgotPasswordPage } from "./forgot-password.page";
 
 const router = vi.hoisted(() => ({
   query: {} as Record<string, string | string[]>,
@@ -92,16 +91,5 @@ describe("AccessDeniedPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Volver atrás" }));
 
     expect(router.back).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("ForgotPasswordPage", () => {
-  it("explains the alternatives and links to the login and the registration", () => {
-    render(<ForgotPasswordPage />);
-
-    expect(screen.getByRole("heading", { name: "Recuperar contraseña" })).toBeInTheDocument();
-    expect(screen.getByText("Funcionalidad en desarrollo")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Volver al inicio de sesión" })).toHaveAttribute("href", "/auth/login");
-    expect(screen.getByRole("link", { name: "Regístrate aquí" })).toHaveAttribute("href", "/auth/register");
   });
 });

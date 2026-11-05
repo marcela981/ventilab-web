@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Auth service
-* Descripción: Backend calls of the login and register pages through the typed api-client: local login (`POST /api/auth/login`), Google sign-in with a Google Identity Services ID token (`POST /api/auth/google`) and student self-registration (`POST /api/auth/register`, answers `data: null`; the page logs in afterwards). The three use the slow timeout (backend cold start: login and Google through SLOW_ROUTES, register per call). Errors reject with ApiError. Logout and session loading belong to @shared/session. v1.1 (B3.4, D4): registerAccount. Depends on @shared/api-client, the auth DTOs and mappers.
-* Versión: 1.1
+* Descripción: Backend calls of the login and register pages through the typed api-client: local login (`POST /api/auth/login`), Google sign-in with a Google Identity Services ID token (`POST /api/auth/google`) and student self-registration (`POST /api/auth/register`, answers `data: null`; the page logs in afterwards). The three use the slow timeout (backend cold start: login and Google through SLOW_ROUTES, register per call). Errors reject with ApiError. Logout and session loading belong to @shared/session. v1.1 (B3.4, D4): registerAccount. Depends on @shared/api-client, the auth DTOs and mappers. v1.2: (Ajustes D3): requestPasswordReset (POST /api/auth/password/forgot) and resetPassword (POST /api/auth/password/reset).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,4 +29,13 @@ export async function loginWithGoogle(idToken: string): Promise<LoginResponseDTO
 
 export async function registerAccount(registration: RegistrationData): Promise<void> {
   await apiPost("/api/auth/register", { body: toRegisterRequest(registration), timeout: "slow" });
+}
+
+// Always 202: the answer never says whether the email belongs to an account.
+export async function requestPasswordReset(email: string): Promise<void> {
+  await apiPost("/api/auth/password/forgot", { body: { email: email.trim() }, timeout: "slow" });
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  await apiPost("/api/auth/password/reset", { body: { token, newPassword }, timeout: "slow" });
 }
