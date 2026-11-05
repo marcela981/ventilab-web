@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Admin operations entity tests
-* Descripción: Pure rules of the operation pages: the audit diff keeps only the changed fields (flattened dotted keys, deep comparison, added and removed keys), the audit filters round trip through the URL and become the API query with the Bogota range, the Bogota day range (exclusive end, reversed and too long ranges), the AI filters drop unknown enums and split telemetry and ratings queries, applyStatusChange writes the pushed states into the cached status, the display formatters return "—" for missing values, and the probe error message names the Retry-After wait of a 429. Depends on vitest, the api-client errors and the admin console entities. v1.1 (B4): the AI range 422 message names the client maximum (AI_ANALYTICS_MAX_RANGE_DAYS); the AI surface and scope filters (URL round trip, ratings only), the contract lists (every surface, MODULE_QA) and the "unknown" group label.
-* Versión: 1.2
+* Descripción: Pure rules of the operation pages: the audit diff keeps only the changed fields (flattened dotted keys, deep comparison, added and removed keys), the audit filters round trip through the URL and become the API query with the Bogota range, the Bogota day range (exclusive end, reversed and too long ranges), the AI filters drop unknown enums and split telemetry and ratings queries, applyStatusChange writes the pushed states into the cached status, the display formatters return "—" for missing values, and the probe error message names the Retry-After wait of a 429. Depends on vitest, the api-client errors and the admin console entities. v1.1 (B4): the AI range 422 message names the client maximum (AI_ANALYTICS_MAX_RANGE_DAYS); the AI surface and scope filters (URL round trip, ratings only), the contract lists (every surface, MODULE_QA) and the "unknown" group label. v1.3 (Bloque A): the SIM_ALARM surface and the simulator AI use cases.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -108,7 +108,8 @@ describe("AI filters", () => {
   });
 
   it("lists every surface of the contract, MODULE_QA among the use cases, and labels unknown groups", () => {
-    expect(AI_SURFACES).toEqual(["POPUP", "ACCORDION", "ASSISTANT", "NOTES_ANALYSIS", "EVALUATION_FEEDBACK", "SIMULATOR_ASSIST"]);
+    expect(AI_SURFACES).toEqual(["POPUP", "ACCORDION", "ASSISTANT", "NOTES_ANALYSIS", "EVALUATION_FEEDBACK", "SIMULATOR_ASSIST", "SIM_ALARM"]);
+    expect(AI_USE_CASES).toEqual(expect.arrayContaining(["SIM_CASE_INTERPRETATION", "SIM_ALARM_HELP"]));
     expect(AI_SCOPES).toEqual(["LESSON", "MODULE", "PAGE", "FREE"]);
     expect(AI_USE_CASES).toContain("MODULE_QA");
     expect(aiSurfaceLabel("unknown")).toBe(AI_UNKNOWN_LABEL);
