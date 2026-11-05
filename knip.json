@@ -12,12 +12,23 @@
     "scripts/**/*.{js,mjs}"
   ],
   "vitest": {
-    "config": ["vitest.config.ts"],
-    "entry": ["src/**/*.{test,spec}.{ts,tsx}", "scripts/e2e/*.test.mjs"]
+    "config": [
+      "vitest.config.ts"
+    ],
+    "entry": [
+      "src/**/*.{test,spec}.{ts,tsx}",
+      "scripts/e2e/*.test.mjs"
+    ]
   },
   "ignore": [
     "src/shared/sim-engine/engine/**"
   ],
-  "ignoreBinaries": ["prisma", "tsx"],
-  "ignoreExportsUsedInFile": true
+  "ignoreBinaries": [
+    "prisma",
+    "tsx"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "ignoreDependencies": [
+    "sharp"
+  ]
 }

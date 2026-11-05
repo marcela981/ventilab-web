@@ -1,0 +1,40 @@
+/*
+* Funcionalidad: Brand logo styles
+* Descripción: Size of the VentyLab logo (sidebar header 40px high, auth card 64px) and the rule that shows the variant of the active mode: logo.png in dark, logo-light.png in light (data-mui-color-scheme on <html>, set before the first paint). Tokens only. Depends on tokens.css.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  --brand-logo-height: 2.5rem;
+
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  line-height: 0;
+}
+
+.root[data-size="auth"] {
+  --brand-logo-height: 4rem;
+}
+
+.image {
+  width: auto;
+  height: var(--brand-logo-height);
+}
+
+.onLight {
+  display: none;
+}
+
+:global([data-mui-color-scheme="light"]) .onLight {
+  display: block;
+}
+
+:global([data-mui-color-scheme="light"]) .onDark {
+  display: none;
+}
