@@ -1012,6 +1012,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request a password reset
+         * @description Emails a single-use link (valid for 30 minutes) to reset the password of an active account that has a local password; earlier unused links stop working. Always answers 202 without saying whether the email belongs to an account. Limited to 5 requests per minute.
+         *
+         *     **Required access:** public.
+         */
+        post: operations["forgotPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset the password with an emailed link
+         * @description Sets a new password (8 to 128 characters with an uppercase letter, a lowercase letter and a number) with the token of a password reset link, consumes the token and revokes every refresh token of the account (every session must sign in again). An unknown, expired or used token answers 400. Limited to 5 requests per minute.
+         *
+         *     **Required access:** public.
+         */
+        post: operations["resetPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/auth/refresh": {
         parameters: {
             query?: never;
@@ -6579,7 +6623,7 @@ export interface paths {
         head?: never;
         /**
          * Update own profile
-         * @description Updates the authenticated user's name or profile image URL (http(s) only; upload a photo with PUT /api/users/me/avatar)
+         * @description Updates the authenticated user's name, profile image URL (http(s) only; upload a photo with PUT /api/users/me/avatar) or appearance preference (themeMode, themePalette; returned by GET /api/auth/me)
          *
          *     **Required access:** any authenticated user (bearer token); minimum role STUDENT.
          */
@@ -9126,6 +9170,18 @@ export interface components {
              * @enum {string}
              */
             role: "STUDENT" | "TEACHER" | "ADMIN";
+            /**
+             * @description Interface mode chosen by the user, or null when none was chosen (the web follows the system mode)
+             * @example dark
+             * @enum {string|null}
+             */
+            themeMode: "light" | "dark" | null;
+            /**
+             * @description Interface palette chosen by the user, or null when none was chosen (the web uses VentyLab)
+             * @example ventylab
+             * @enum {string|null}
+             */
+            themePalette: "ventylab" | "univalle" | null;
         };
         CanDeleteLevelDTO: {
             /**
@@ -12663,6 +12719,14 @@ export interface components {
              * @example Versión simplificada
              */
             title?: string;
+        };
+        ForgotPasswordDTO: {
+            /**
+             * Format: email
+             * @description Email address of the account to recover
+             * @example student@ventylab.com
+             */
+            email: string;
         };
         GamificationStatsDTO: {
             /**
@@ -18947,6 +19011,19 @@ export interface components {
              */
             reason: string;
         };
+        ResetPasswordDTO: {
+            /**
+             * Format: password
+             * @description New password. 8 to 128 characters with at least one uppercase letter, one lowercase letter and one number.
+             * @example NewPassword456
+             */
+            newPassword: string;
+            /**
+             * @description Token of the emailed reset link (single use, valid for 30 minutes)
+             * @example q0W2kE8x1pZ3Yc5vB7nM9aS4dF6gH8jK0lP2oI4uY6t
+             */
+            token: string;
+        };
         ResetPlatformSettingDTO: {
             /**
              * @description Version of the setting the reset is based on
@@ -22205,6 +22282,18 @@ export interface components {
              * @example Ana María Pérez
              */
             name?: string;
+            /**
+             * @description Interface mode chosen by the user (the web follows the system mode until one is chosen)
+             * @example dark
+             * @enum {string}
+             */
+            themeMode?: "light" | "dark";
+            /**
+             * @description Interface palette chosen by the user (VentyLab until one is chosen)
+             * @example univalle
+             * @enum {string}
+             */
+            themePalette?: "ventylab" | "univalle";
         };
         UpdateModuleDTO: {
             /**
@@ -26787,6 +26876,112 @@ export interface operations {
                 };
             };
             /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    forgotPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForgotPasswordDTO"];
+            };
+        };
+        responses: {
+            /** @description Request accepted (whether or not the account exists) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: null;
+                    };
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many password reset requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resetPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordDTO"];
+            };
+        };
+        responses: {
+            /** @description Password reset */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: null;
+                    };
+                };
+            };
+            /** @description Validation error, or an invalid, expired or already used token */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many password reset attempts */
             429: {
                 headers: {
                     [name: string]: unknown;

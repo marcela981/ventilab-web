@@ -3448,6 +3448,32 @@
             ],
             "example": "STUDENT",
             "type": "string"
+          },
+          "themeMode": {
+            "description": "Interface mode chosen by the user, or null when none was chosen (the web follows the system mode)",
+            "enum": [
+              "light",
+              "dark",
+              null
+            ],
+            "example": "dark",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "themePalette": {
+            "description": "Interface palette chosen by the user, or null when none was chosen (the web uses VentyLab)",
+            "enum": [
+              "ventylab",
+              "univalle",
+              null
+            ],
+            "example": "ventylab",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -3455,7 +3481,9 @@
           "email",
           "name",
           "role",
-          "image"
+          "image",
+          "themeMode",
+          "themePalette"
         ],
         "type": "object"
       },
@@ -9201,6 +9229,20 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "ForgotPasswordDTO": {
+        "properties": {
+          "email": {
+            "description": "Email address of the account to recover",
+            "example": "student@ventylab.com",
+            "format": "email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
         "type": "object"
       },
       "GamificationStatsDTO": {
@@ -19501,6 +19543,29 @@
         ],
         "type": "object"
       },
+      "ResetPasswordDTO": {
+        "properties": {
+          "newPassword": {
+            "description": "New password. 8 to 128 characters with at least one uppercase letter, one lowercase letter and one number.",
+            "example": "NewPassword456",
+            "format": "password",
+            "maxLength": 128,
+            "minLength": 8,
+            "type": "string"
+          },
+          "token": {
+            "description": "Token of the emailed reset link (single use, valid for 30 minutes)",
+            "example": "q0W2kE8x1pZ3Yc5vB7nM9aS4dF6gH8jK0lP2oI4uY6t",
+            "maxLength": 256,
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ],
+        "type": "object"
+      },
       "ResetPlatformSettingDTO": {
         "properties": {
           "version": {
@@ -24911,6 +24976,24 @@
             "example": "Ana María Pérez",
             "maxLength": 100,
             "minLength": 1,
+            "type": "string"
+          },
+          "themeMode": {
+            "description": "Interface mode chosen by the user (the web follows the system mode until one is chosen)",
+            "enum": [
+              "light",
+              "dark"
+            ],
+            "example": "dark",
+            "type": "string"
+          },
+          "themePalette": {
+            "description": "Interface palette chosen by the user (VentyLab until one is chosen)",
+            "enum": [
+              "ventylab",
+              "univalle"
+            ],
+            "example": "univalle",
             "type": "string"
           }
         },
@@ -33673,6 +33756,198 @@
           "Authentication"
         ],
         "x-min-role": "STUDENT",
+        "x-required-permissions": []
+      }
+    },
+    "/api/auth/password/forgot": {
+      "post": {
+        "description": "Emails a single-use link (valid for 30 minutes) to reset the password of an active account that has a local password; earlier unused links stop working. Always answers 202 without saying whether the email belongs to an account. Limited to 5 requests per minute.\n\n**Required access:** public.",
+        "operationId": "forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Request accepted (whether or not the account exists)"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many password reset requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [],
+        "summary": "Request a password reset",
+        "tags": [
+          "Authentication"
+        ],
+        "x-min-role": "ANONYMOUS",
+        "x-required-permissions": []
+      }
+    },
+    "/api/auth/password/reset": {
+      "post": {
+        "description": "Sets a new password (8 to 128 characters with an uppercase letter, a lowercase letter and a number) with the token of a password reset link, consumes the token and revokes every refresh token of the account (every session must sign in again). An unknown, expired or used token answers 400. Limited to 5 requests per minute.\n\n**Required access:** public.",
+        "operationId": "resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "type": "null"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Password reset"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error, or an invalid, expired or already used token"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many password reset attempts"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [],
+        "summary": "Reset the password with an emailed link",
+        "tags": [
+          "Authentication"
+        ],
+        "x-min-role": "ANONYMOUS",
         "x-required-permissions": []
       }
     },
@@ -78073,7 +78348,7 @@
         "x-required-permissions": []
       },
       "patch": {
-        "description": "Updates the authenticated user's name or profile image URL (http(s) only; upload a photo with PUT /api/users/me/avatar)\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
+        "description": "Updates the authenticated user's name, profile image URL (http(s) only; upload a photo with PUT /api/users/me/avatar) or appearance preference (themeMode, themePalette; returned by GET /api/auth/me)\n\n**Required access:** any authenticated user (bearer token); minimum role STUDENT.",
         "operationId": "updateMe",
         "parameters": [],
         "requestBody": {
