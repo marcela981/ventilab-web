@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MemberSearch
-* Descripción: Adds members to a group: a labelled search field (name or email, at least 2 characters, debounced) over `GET /api/users` filtered by the platform role the group admits (v1.1, T11c: STUDENT for student groups, TEACHER for teacher groups, with the copy of each) and active accounts, a polite live region with the search state (typing hint, searching, no results, load error) and the matching users that are not members yet, each with an "Agregar" button. The parent runs the request (adding is reversible, so there is no confirmation). Depends on MUI, useUserSearch, the group entity, the groups error messages and the group detail CSS Module.
-* Versión: 1.1
+* Descripción: Adds members to a group: a labelled search field (name or email, at least 2 characters, debounced) over `GET /api/users` filtered by the platform role the group admits (v1.1, T11c: STUDENT for student groups, TEACHER for teacher groups, with the copy of each) and active accounts, a polite live region with the search state (typing hint, searching, no results, load error) and the matching users that are not members yet, each with an "Agregar" button. The parent runs the request (adding is reversible, so there is no confirmation). Depends on MUI, useUserSearch, the group entity, the groups error messages and the group detail CSS Module. v1.2 (ajustes D2): a student who already belongs to an active student group shows "Ya está en el grupo X" instead of "Agregar" (a student can belong to only one; the server answered 409 for every such student, the root cause of "no se pueden agregar miembros").
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,6 +26,7 @@ const SEARCH_COPY = {
   hint: `Escribe al menos ${USER_SEARCH_MIN_LENGTH} caracteres para buscar.`,
   results: "Resultados de la búsqueda",
   add: "Agregar",
+  alreadyGrouped: (group: string) => `Ya está en el grupo ${group}`,
 } as const;
 
 const ROLE_COPY = {
@@ -85,15 +86,19 @@ export function MemberSearch({ members, role, disabled, onAdd }: MemberSearchPro
                 <span className={cx(styles.personName)}>{personName(user)}</span>
                 <span className={cx(styles.muted)}>{user.email}</span>
               </span>
-              <Button
-                size="small"
-                startIcon={<PersonAddIcon />}
-                onClick={() => onAdd(user)}
-                disabled={disabled}
-                aria-label={`${SEARCH_COPY.add} a ${personName(user)}`}
-              >
-                {SEARCH_COPY.add}
-              </Button>
+              {user.activeGroup ? (
+                <span className={cx(styles.muted)}>{SEARCH_COPY.alreadyGrouped(user.activeGroup.name)}</span>
+              ) : (
+                <Button
+                  size="small"
+                  startIcon={<PersonAddIcon />}
+                  onClick={() => onAdd(user)}
+                  disabled={disabled}
+                  aria-label={`${SEARCH_COPY.add} a ${personName(user)}`}
+                >
+                  {SEARCH_COPY.add}
+                </Button>
+              )}
             </li>
           ))}
         </ul>

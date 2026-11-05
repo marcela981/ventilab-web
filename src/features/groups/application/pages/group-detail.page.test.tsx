@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupDetailPage tests
-* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). v1.3 (T12): the duplicate zero-supervisions test and its fixed wait were removed (the remaining one counts after the read-only view rendered) and request handlers read their own body. v1.4 (closure B1): Testing Library waits 5 s and each test 20 s (the 409 member-add test missed its button within the 1 s default under the full suite). Depends on vitest, Testing Library, msw and the groups feature.
-* Versión: 1.4
+* Descripción: Renders the group detail page against a mocked backend (msw): group facts and members, the read-only view of a teacher group for a teacher, edit with only the changed fields and the student limit validation, the member search (STUDENT role, current members excluded), add member (success and the 409/422 messages), remove member and assign leader behind a confirmation (with the previous leader text), deactivate (PATCH isActive=false), the 403 message and a missing group. v1.1 (T11c): reactivate, a rejected edit (error inside the open dialog), an edit without changes (no request), an admin managing a teacher group (teacher search, no leader), the supervisions panel (list, add excluding supervised and teacher groups, remove after a confirmation, 403) and its absence for teachers. v1.2 (T6b): the supervisions list is refetched after an add or a remove (the added group leaves the select and the selection clears; GROUP_SUPERVISIONS_PATH is one of the invalidated keys), the error-with-retry states of the supervisions and student-groups reads, and zero supervisions requests for a teacher (counted). v1.3 (T12): the duplicate zero-supervisions test and its fixed wait were removed (the remaining one counts after the read-only view rendered) and request handlers read their own body. v1.4 (closure B1): Testing Library waits 5 s and each test 20 s (the 409 member-add test missed its button within the 1 s default under the full suite). Depends on vitest, Testing Library, msw and the groups feature. v1.5 (ajustes D2): a student already in an active student group shows "Ya está en el grupo X" without "Agregar" (GET /api/groups/student-memberships).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -71,6 +71,7 @@ function useDefaultHandlers() {
 
       return HttpResponse.json(envelope(detail));
     }),
+    http.get(apiUrl("/api/groups/student-memberships"), () => HttpResponse.json(envelope([]))),
     http.get(apiUrl("/api/users"), async({ request }) => {
       await record(request);
 
@@ -219,6 +220,24 @@ describe("GroupDetailPage", () => {
     expect(query.get("role")).toBe("STUDENT");
     expect(within(results).getByText("Esteban Paz")).toBeInTheDocument();
     expect(within(results).queryByText("Eva Ruiz")).not.toBeInTheDocument();
+  });
+
+  it("marks a student who already has an active student group instead of offering Agregar (the server would answer 409)", async() => {
+    const lookups: string[] = [];
+
+    server.use(http.get(apiUrl("/api/groups/student-memberships"), ({ request }) => {
+      lookups.push(new URL(request.url).searchParams.get("userIds") ?? "");
+
+      return HttpResponse.json(envelope([{ userId: "s3", group: { id: "g9", name: "Grupo B" } }]));
+    }));
+    await renderDetail();
+    fireEvent.change(screen.getByLabelText("Buscar estudiante"), { target: { value: "esteban" } });
+
+    const results = await screen.findByRole("list", { name: "Resultados de la búsqueda" });
+
+    expect(within(results).getByText("Ya está en el grupo Grupo B")).toBeInTheDocument();
+    expect(within(results).queryByRole("button", { name: "Agregar a Esteban Paz" })).not.toBeInTheDocument();
+    expect(lookups).toEqual(["s3"]);
   });
 
   it("adds a member and refreshes the group", async() => {

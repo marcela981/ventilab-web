@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Lazy staff groups pages tests
-* Descripción: Verifies that the public GroupsPage and GroupDetailPage of the groups barrel load their page chunk on demand (a loading state first, then the real page) so the student-only /my-group route does not ship the staff code. v1.1 (T6b): a page chunk that still fails after the retries shows the RouteErrorBoundary chunk fallback with "Recargar" (retryImport mocked to reject with a ChunkLoadError on a fresh module graph). Depends on vitest, Testing Library, msw, the groups test helpers and the lazy staff pages.
-* Versión: 1.1
+* Descripción: Verifies that the public GroupsPage and GroupDetailPage of the groups barrel load their page chunk on demand (a loading state first, then the real page) so the student-only /my-group route does not ship the staff code. v1.1 (T6b): a page chunk that still fails after the retries shows the RouteErrorBoundary chunk fallback with "Recargar" (retryImport mocked to reject with a ChunkLoadError on a fresh module graph). Depends on vitest, Testing Library, msw, the groups test helpers and the lazy staff pages. v1.2 (ajustes D2): next/router is mocked (the group list opens a new group after creating it).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,8 @@ const LAZY_WAIT = { timeout: 10000 };
 const LAZY_TEST_TIMEOUT = 15000;
 
 const chunkFailure = vi.hoisted(() => ({ enabled: false }));
+
+vi.mock("next/router", () => ({ useRouter: () => ({ push: vi.fn(() => Promise.resolve(true)) }) }));
 
 vi.mock("@shared/lib/retry-import", async(importOriginal) => {
   const actual = await importOriginal<typeof import("@shared/lib/retry-import")>();

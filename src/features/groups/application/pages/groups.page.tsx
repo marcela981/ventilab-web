@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage
-* Descripción: Staff page /groups (teachers and admins): reads `GET /api/groups` (the backend decides the scope: every group for an admin, the managed, supervised and own teacher groups for a teacher) and shows them in a table with client-side filters (text, type, active state) and client-side pagination (10, 25 or 50 per page), because the endpoint has neither (decision 7, backend gap). Changing a filter returns to the first page. Empty states for no groups and for no match (with "Limpiar filtros"), a loading state and an error state with retry (403 included). v1.1 (T11b): "Crear grupo" (teachers and admins, the route is staff-only) opens GroupFormDialog for a STUDENT group (teacher groups are created by admins in slice C); `POST /api/groups` through useGroupMutation, which refreshes every groups key; server errors (403 type_creation_forbidden included) show inline in the dialog and a success shows a toast. Group names link to the detail. v1.2 (T11c): admins choose the type (STUDENT or TEACHER) in the dialog ("Crear grupo"); teachers keep the student-only dialog and always send STUDENT. Loaded on demand through lazy-staff-pages. v1.3 (T6b): the success message goes to the global design-system toast (useToast) instead of the feature-local FeedbackToast. Depends on MUI, next/head, @shared/design-system components, @shared/session, useGroups, GroupFilters, GroupsTable and the groups CSS Module.
-* Versión: 1.3
+* Descripción: Staff page /groups (teachers and admins): reads `GET /api/groups` (the backend decides the scope: every group for an admin, the managed, supervised and own teacher groups for a teacher) and shows them in a table with client-side filters (text, type, active state) and client-side pagination (10, 25 or 50 per page), because the endpoint has neither (decision 7, backend gap). Changing a filter returns to the first page. Empty states for no groups and for no match (with "Limpiar filtros"), a loading state and an error state with retry (403 included). v1.1 (T11b): "Crear grupo" (teachers and admins, the route is staff-only) opens GroupFormDialog for a STUDENT group (teacher groups are created by admins in slice C); `POST /api/groups` through useGroupMutation, which refreshes every groups key; server errors (403 type_creation_forbidden included) show inline in the dialog and a success shows a toast. Group names link to the detail. v1.2 (T11c): admins choose the type (STUDENT or TEACHER) in the dialog ("Crear grupo"); teachers keep the student-only dialog and always send STUDENT. Loaded on demand through lazy-staff-pages. v1.3 (T6b): the success message goes to the global design-system toast (useToast) instead of the feature-local FeedbackToast. Depends on MUI, next/head, @shared/design-system components, @shared/session, useGroups, GroupFilters, GroupsTable and the groups CSS Module. v1.4 (ajustes D2): after "Crear grupo" the page opens the new group (/groups/{id}) to add its members.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,6 +14,7 @@ import GroupWorkIcon from "@mui/icons-material/GroupWork";
 import Button from "@mui/material/Button";
 import TablePagination from "@mui/material/TablePagination";
 import Head from "next/head";
+import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@shared/design-system/components/empty-state";
 import { ErrorState } from "@shared/design-system/components/error-state";
@@ -124,6 +125,7 @@ function CreateGroupAction() {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
+  const router = useRouter();
 
   const submit = async(draft: GroupDraft) => {
     setError(null);
@@ -137,6 +139,8 @@ function CreateGroupAction() {
     } else if (outcome.status === "success") {
       setOpen(false);
       toast.success(PAGE_COPY.created(draft.name.trim()));
+      // Straight to the new group, where its members are added.
+      void router.push(`/groups/${encodeURIComponent(outcome.value)}`);
     }
   };
 

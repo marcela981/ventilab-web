@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GroupsPage tests
-* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. v1.3 (T12): the create-from-dialog test has a 15 s budget (it timed out at the 5 s default under full-suite load). v1.4 (closure B1): every test gets 20 s and Testing Library waits 5 s (the type-selector and teacher-group tests also timed out under the full suite). v1.5 (closure B2): the row shows the caller's relation ("Supervisado"). Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature.
-* Versión: 1.5
+* Descripción: Renders the staff group list against a mocked backend (`GET /api/groups`, msw): client-side pagination (10 per page), the text, type and status filters (which return to the first page), the no-match and no-groups empty states and the 403 error. v1.1 (T11b): the filter-reset test now proves the return to page 1 with a result that still spans several pages; group names link to the detail; "Crear grupo" creates a student group (validation, POST body, refreshed list, 403 message). v1.2 (T11c): rendered with a session role; the type selector only for admins and an admin creating a teacher group. v1.3 (T12): the create-from-dialog test has a 15 s budget (it timed out at the 5 s default under full-suite load). v1.4 (closure B1): every test gets 20 s and Testing Library waits 5 s (the type-selector and teacher-group tests also timed out under the full suite). v1.5 (closure B2): the row shows the caller's relation ("Supervisado"). Depends on vitest, Testing Library, msw, the groups test helpers and the groups feature. v1.6 (ajustes D2): after creating, the page opens the new group (mocked next/router).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +16,10 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { GroupsPage } from "./groups.page";
 import { renderWithSession } from "./groups-test-helpers";
+
+const router = vi.hoisted(() => ({ push: vi.fn(() => Promise.resolve(true)) }));
+
+vi.mock("next/router", () => ({ useRouter: () => router }));
 
 const GROUPS_URL = `${BACKEND_ORIGIN}/api/groups`;
 
@@ -176,6 +180,7 @@ describe("GroupsPage", () => {
     expect(await screen.findByText("Grupo «Aaa nuevo» creado.")).toBeInTheDocument();
     expect(bodies).toEqual([{ name: "Aaa nuevo", maxStudents: 20, type: "STUDENT" }]);
     await waitFor(() => expect(screen.getByText("1–10 de 13")).toBeInTheDocument());
+    expect(router.push).toHaveBeenCalledWith("/groups/g13");
     // Lazy page + dialog + two validation rounds: about 1.5 s alone, above the 5 s default under the full suite.
   }, 15000);
 
