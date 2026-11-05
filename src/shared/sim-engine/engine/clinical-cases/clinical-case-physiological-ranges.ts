@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Rangos fisiológicos de casos clínicos
 * Descripción: GENERATED — do not edit; run node scripts/sync-sim-engine.mjs. Vendored copy of ventylab-server/src/features/clinical-cases/domain/clinical-case-physiological-ranges.ts. Mínimo, máximo, unidad y referencia bibliográfica de cada parámetro de la definición simulable de un caso clínico; un valor fuera de rango se rechaza como fisiológicamente implausible
-* Versión: 1.0
+* Versión: 1.1 (rangos de la evolución del paciente)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,6 +40,11 @@ export type PhysiologicalParameter =
   | "deteriorationRatePerMin"
   | "maxComplianceLossFraction"
   | "maxShuntIncrease"
+  | "evolutionSeverity"
+  | "evolutionRatePerMin"
+  | "arrestAfterCriticalMin"
+  | "deathAfterArrestMin"
+  | "baselineHeartRateBpm"
   | "paco2MmHg"
   | "pao2MmHg"
   | "tidalVolumeMl"
@@ -128,6 +133,16 @@ export const CLINICAL_CASE_PHYSIOLOGICAL_RANGES: Readonly<Record<PhysiologicalPa
   deteriorationRatePerMin: { min: 0, max: 0.1, unit: "fraction/min", reference: SCENARIO_PARAMETER },
   maxComplianceLossFraction: { min: 0, max: 0.8, unit: "fraction", reference: SCENARIO_PARAMETER },
   maxShuntIncrease: { min: 0, max: 0.4, unit: "fraction", reference: SCENARIO_PARAMETER },
+  evolutionSeverity: { min: 0, max: 1, unit: "fraction", reference: `${SCENARIO_PARAMETER}; educational evolution model of the engine 2.0.0` },
+  evolutionRatePerMin: { min: 0, max: 0.2, unit: "fraction/min", reference: `${SCENARIO_PARAMETER}; educational evolution model of the engine 2.0.0` },
+  arrestAfterCriticalMin: {
+    min: 1,
+    max: 60,
+    unit: "min",
+    reference: `${SCENARIO_PARAMETER}; no validated SpO2 or duration threshold for hypoxemic arrest exists (Mort TC. J Clin Anesth 2004;16:508-16)`,
+  },
+  deathAfterArrestMin: { min: 0.5, max: 30, unit: "min", reference: `${SCENARIO_PARAMETER}; no cardiopulmonary resuscitation is simulated` },
+  baselineHeartRateBpm: { min: 40, max: 160, unit: "beats/min", reference: `Adult resting heart rate and its tachycardic response in critical illness (${MARINI_DRIES})` },
   paco2MmHg: { min: 15, max: 120, unit: "mmHg", reference: `Normal PaCO2 35-45 mmHg; severe acute hypercapnia rarely exceeds 100 mmHg (${WEST})` },
   pao2MmHg: { min: 30, max: 600, unit: "mmHg", reference: `Severe hypoxemia ~40 mmHg; ceiling set by the alveolar gas equation at FiO2 1.0 at sea level (${WEST})` },
   tidalVolumeMl: { min: 200, max: 800, unit: "mL", reference: ENGINE_LIMITS },

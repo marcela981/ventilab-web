@@ -2,7 +2,7 @@
   "generatedBy": "scripts/sync-sim-engine.mjs",
   "source": "ventylab-server",
   "note": "GENERATED - do not edit. Hashes of the LF-normalised backend sources.",
-  "sourceHash": "5dd1af1f98c25957ca807e791c911fc6efecb8c81c7c79afdd23e071dc79fd95",
+  "sourceHash": "a151386c109212b22cddbd03d67e493657a3f02840b24fc3a11631547fc7edf9",
   "files": [
     {
       "path": "src/common/domain/ventilator/ventilator-limits.ts",
@@ -10,11 +10,11 @@
     },
     {
       "path": "src/features/clinical-cases/domain/clinical-case-physiological-ranges.ts",
-      "sha256": "f8458f2a3192e66e8211694b1079f528b5374f34d16aa759dd9cf3c6eaf951de"
+      "sha256": "3872a1da8d65ac5fa04f5d05bcd7fedd7ea6bac1008361aecd33a91043f858fb"
     },
     {
       "path": "src/features/simulation/domain/engine/alarms.ts",
-      "sha256": "cb1e95236b5864ae87b5ea350c18f62cf7fa07400d1fdd59df8ca67ed2de4bf7"
+      "sha256": "dcd1a5c011b16afd48805f15f8a3e90a1700c0d126e492dcdf3401fb7300af35"
     },
     {
       "path": "src/features/simulation/domain/engine/cycle-metrics.ts",
@@ -26,7 +26,7 @@
     },
     {
       "path": "src/features/simulation/domain/engine/engine-version.ts",
-      "sha256": "db876934208abe6c3b4eb0f5d1fe6d94cf7b7b165ec35eba4399b1cf17cbfb0c"
+      "sha256": "29e912baf4404141dffb21cb143c490e85d1db0d024fcb3cff977103b2a4a2eb"
     },
     {
       "path": "src/features/simulation/domain/engine/engine.errors.ts",
@@ -34,7 +34,7 @@
     },
     {
       "path": "src/features/simulation/domain/engine/engine.types.ts",
-      "sha256": "974a07804b495745cfd3b52040cd9a619d4d7ffbaff8ae6131322479d4fb8399"
+      "sha256": "c685e6dc682b0c4063688cbfa96dc5300127720673f8eff1b2443934c67ab9b4"
     },
     {
       "path": "src/features/simulation/domain/engine/gas-exchange.ts",
@@ -46,11 +46,15 @@
     },
     {
       "path": "src/features/simulation/domain/engine/index.ts",
-      "sha256": "0eccc3568371e59adfadf3e7f976c8064afc3da85db06e20427aecbfff6240f0"
+      "sha256": "c43791256a3184cd32c7eb740337cf4b4ec3b65ade7530ddeed64b12421dbdf7"
     },
     {
       "path": "src/features/simulation/domain/engine/patient-effort.ts",
       "sha256": "74f1cc70651b33958f8ef1d7c89031b8b3fd65844f5120068de2610a994c3e24"
+    },
+    {
+      "path": "src/features/simulation/domain/engine/patient-evolution.ts",
+      "sha256": "4f52008363ea5dff9ab4d4c4b3001879e870a721604ec619b60422b6963f9c39"
     },
     {
       "path": "src/features/simulation/domain/engine/prng.ts",
@@ -62,7 +66,7 @@
     },
     {
       "path": "src/features/simulation/domain/engine/simulation.ts",
-      "sha256": "eba0ae2e797c036101b6ab7a27e609098697375bcbf28bc60ee07320d512ef2a"
+      "sha256": "cbb1ff2e012d3a6f51a11a956da3470246c98b64a73d7994c0f73c98f00f0b53"
     },
     {
       "path": "src/features/simulation/domain/engine/targets.ts",

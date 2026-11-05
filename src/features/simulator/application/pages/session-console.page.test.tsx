@@ -30,7 +30,8 @@
 *   test asserts one store publish per window and no hook re-render at all.
 *   v2.1 (Ajustes A, A1): the July console applies each edit on its own (no Confirmar / Cancelar): every stepper
 *   click is one PARAM_CHANGE at once, and Escape drops a slider change still debouncing (no event).
-* Versión: 2.0
+*   v2.2 (Bloque A): sessions, replays and worker ready messages use the bundled ENGINE_VERSION (2.0.0).
+* Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,7 +44,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
-import { replay } from "@shared/sim-engine";
+import { ENGINE_VERSION, replay } from "@shared/sim-engine";
 import type { SimBatch, SimCommand } from "@shared/sim-engine";
 import type { ConsoleSampleBatch } from "@shared/ventilator-console";
 import { RESYNC_SETTLE_TIMEOUT_MS } from "../config/sim-console.config";
@@ -175,7 +176,7 @@ function sentOfType<T extends SimCommand["type"]>(worker: FakeWorker, type: T): 
 async function startRunning(worker: FakeWorker, simTimeMs = 4321): Promise<void> {
   await waitFor(() => expect(sentOfType(worker, "init")).toHaveLength(1));
   act(() => {
-    worker.emit({ type: "ready", engineVersion: "1.0.0" });
+    worker.emit({ type: "ready", engineVersion: ENGINE_VERSION });
     worker.emit({ type: "batch", batch: buildBatch({ simTimeMs, status: "running" }) });
   });
 }
@@ -217,7 +218,7 @@ describe("SessionConsolePage", () => {
       replay: () => Promise.resolve({
         id: "s1",
         seed: 9,
-        engineVersion: "1.0.0",
+        engineVersion: ENGINE_VERSION,
         timeMultiplier: 1,
         engineCase: buildEngineCase(),
         events: [{ id: "e1", type: "PARAM_CHANGE", simTimeMs: 3000, payload: { changes: { peepCmH2O: 10 } } }],
@@ -398,7 +399,7 @@ describe("SessionConsolePage", () => {
 
   it("a refused event blocks the console as a divergence; reloading rebuilds the session from the server", async() => {
     const { worker, sendEvents, fetchReplay, createWorker } = renderPage({
-      replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: "1.0.0", timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
+      replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: ENGINE_VERSION, timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
     });
 
     sendEvents.mockRejectedValue(new ApiError({ code: "simulation.invalid_settings", message: "", status: 422 }));
@@ -432,7 +433,7 @@ describe("SessionConsolePage", () => {
         expiresAt: new Date(nowMs + 3_600_000).toISOString(),
         serverClock: { serverNowMs: nowMs, monotonicAtMs: performance.now() },
       }),
-      replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: "1.0.0", timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
+      replay: () => Promise.resolve({ id: "s1", seed: 42, engineVersion: ENGINE_VERSION, timeMultiplier: 1, engineCase: buildEngineCase(), events: [] }),
     });
 
     sendEvents.mockRejectedValue(new ApiError({ code: "simulation.event_time_ahead", message: "", status: 403 }));
@@ -440,7 +441,7 @@ describe("SessionConsolePage", () => {
     const refuseAndReload = async(boots: number): Promise<void> => {
       await waitFor(() => expect(sentOfType(worker, "init")).toHaveLength(boots));
       act(() => {
-        worker.emit({ type: "ready", engineVersion: "1.0.0" });
+        worker.emit({ type: "ready", engineVersion: ENGINE_VERSION });
         worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 6000, status: "running" }) });
       });
       increasePeep();
@@ -551,7 +552,7 @@ describe("SessionConsolePage", () => {
       replay: () => Promise.resolve({
         id: "s1",
         seed: 9,
-        engineVersion: "1.0.0",
+        engineVersion: ENGINE_VERSION,
         timeMultiplier: 1,
         engineCase: buildEngineCase(),
         events: [{ id: "e1", type: "PARAM_CHANGE", simTimeMs: 3000, payload: { changes: { peepCmH2O: 6 } } }],
@@ -569,7 +570,7 @@ describe("SessionConsolePage", () => {
       { type: "PARAM_CHANGE", simTimeMs: 3000, changes: { peepCmH2O: 6 } },
       { type: "PARAM_CHANGE", simTimeMs: 5000, changes: { peepCmH2O: 6 } },
     ]);
-    act(() => worker.emit({ type: "ready", engineVersion: "1.0.0" }));
+    act(() => worker.emit({ type: "ready", engineVersion: ENGINE_VERSION }));
     expect(sentOfType(worker, "start")).toHaveLength(0);
 
     await waitFor(() => expect(sentOfType(worker, "start")).toHaveLength(1));
@@ -736,7 +737,7 @@ describe("SessionConsolePage — EXAM flow (T9)", () => {
     await waitFor(() => expect(endSession).toHaveBeenCalledWith("s1", 0));
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/evaluations/e1/attempts/a1"));
     // The worker that boots afterwards is never started.
-    act(() => worker.emit({ type: "ready", engineVersion: "1.0.0" }));
+    act(() => worker.emit({ type: "ready", engineVersion: ENGINE_VERSION }));
     expect(sentOfType(worker, "start")).toHaveLength(0);
     expect(sentOfType(worker, "stop")).toHaveLength(1);
   });
@@ -772,7 +773,7 @@ describe("SessionConsolePage — EXAM flow (T9)", () => {
       replay: () => Promise.resolve({
         id: "s1",
         seed: 7,
-        engineVersion: "1.0.0",
+        engineVersion: ENGINE_VERSION,
         currentEngineVersion: "1.0.0",
         engineVersionMismatch: false,
         warning: null,
@@ -928,7 +929,7 @@ describe("useSimSession frame source", () => {
     const { result } = renderHook(() => useSimSession({ boot, blocked: false, deps }));
 
     act(() => {
-      worker.emit({ type: "ready", engineVersion: "1.0.0" });
+      worker.emit({ type: "ready", engineVersion: ENGINE_VERSION });
       worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1000, status: "running" }) });
     });
     act(() => result.current.adapter?.getSnapshot().onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
@@ -961,7 +962,7 @@ describe("useSimSession frame source", () => {
     const { result } = renderHook(() => useSimSession({ boot, blocked: false, deps }));
 
     act(() => {
-      worker.emit({ type: "ready", engineVersion: "1.0.0" });
+      worker.emit({ type: "ready", engineVersion: ENGINE_VERSION });
       worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 1000, status: "running" }) });
     });
     act(() => result.current.adapter?.getSnapshot().onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));

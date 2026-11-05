@@ -13,7 +13,9 @@
 *   caller folds them (cycle-flow.ts), the flow extremes of the last breath (`peakInspiratoryFlow`, `peakExpiratoryFlow`).
 *   v1.2 (Bloque 5, perf): the console values come from the light `@shared/ventilator-console/config.entry` (the barrel
 *   evaluated the whole console).
-* Versión: 1.2
+*   v1.3 (Bloque A, engine 2.0.0): Spanish labels of the patient alarms (low SpO₂ and MAP, tachycardia, bradycardia,
+*   cardiac arrest).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -48,6 +50,11 @@ export const ALARM_LABELS = {
   HIGH_RESPIRATORY_RATE: "Frecuencia respiratoria alta",
   AUTO_PEEP: "Auto-PEEP",
   DISCONNECTION: "Desconexión",
+  LOW_SPO2: "SpO₂ baja",
+  LOW_MAP: "PAM baja",
+  TACHYCARDIA: "Taquicardia",
+  BRADYCARDIA: "Bradicardia",
+  CARDIAC_ARREST: "Paro cardíaco",
 } as const satisfies Record<AlarmCode, string>;
 
 export function toConsoleSamples(samples: readonly WaveformSample[]): ConsoleSample[] {

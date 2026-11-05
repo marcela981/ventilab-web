@@ -4,8 +4,9 @@
 *   simulation worker client that records the commands it receives and lets a test emit ready/batch/error messages
 *   (jsdom has no Worker), a batch builder and an in-memory storage. Used only by tests. Depends on the sim-engine
 *   public types and the session entities. v1.1: batches carry an empty `confirmedEvents` list by default. v1.2:
-*   records carry `startedAt` (null) and boots an empty backlog and no pending events.
-* Versión: 1.2
+*   records carry `startedAt` (null) and boots an empty backlog and no pending events. v1.3 (Bloque A): records use
+*   the bundled ENGINE_VERSION (2.0.0), so an EXAM fixture is not blocked by a version mismatch.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +14,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { ENGINE_VERSION } from "@shared/sim-engine";
 import type { EngineCase, SimBatch, SimCommand, SimWorkerClient, SimWorkerListener, SimWorkerMessage } from "@shared/sim-engine";
 import type { SessionBoot, SessionRecord } from "../entities/sim-session.entity";
 import type { StorageLike } from "./session-store";
@@ -49,7 +51,7 @@ export function buildRecord(overrides: Partial<SessionRecord> = {}): SessionReco
     id: "s1",
     mode: "FREE",
     seed: 42,
-    engineVersion: "1.0.0",
+    engineVersion: ENGINE_VERSION,
     timeMultiplier: 1,
     expiresAt: null,
     startedAt: null,

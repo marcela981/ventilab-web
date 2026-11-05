@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: API pública del motor fisiológico
-* Descripción: GENERATED — do not edit; run node scripts/sync-sim-engine.mjs. Vendored copy of ventylab-server/src/features/simulation/domain/engine/simulation.ts. Crea la simulación a partir de un caso y una semilla, aplica eventos validados, avanza el tiempo simulado con paso interno fijo, entrega muestras de onda y métricas (ciclo, intercambio gaseoso, hemodinámica, alarmas, objetivos) y repite de forma exacta una secuencia de eventos
-* Versión: 1.0
+* Descripción: GENERATED — do not edit; run node scripts/sync-sim-engine.mjs. Vendored copy of ventylab-server/src/features/simulation/domain/engine/simulation.ts. Crea la simulación a partir de un caso y una semilla, aplica eventos validados, avanza el tiempo simulado con paso interno fijo, entrega muestras de onda y métricas (ciclo, intercambio gaseoso, hemodinámica, alarmas, objetivos) y repite de forma exacta una secuencia de eventos. v2.0: con un bloque de evolución en el caso, la gravedad del paciente evoluciona en ambos sentidos según la adecuación de la ventilación, se calcula la frecuencia cardíaca y el estado del paciente (hasta paro y fallecimiento), y la sobredistensión eleva el shunt y el espacio muerto; sin ese bloque el comportamiento es el de la v1
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,10 +14,11 @@ import { predictedBodyWeightKg, summarizeVentilation } from "./cycle-metrics";
 import { max, min } from "./engine-math";
 import { ENGINE_VERSION } from "./engine-version";
 import { EngineValidationError } from "./engine.errors";
-import type { Alarm, BreathState, CaseEvent, CycleMetrics, EngineCase, EngineEvent, EngineMetrics, EngineOptions, EngineState, GasExchangeProfile, GasExchangeState, LungState, ReplayOptions, ReplayResult, ResolvedEngineOptions, TargetStatus, TimeMultiplier, VentilationSummary, VentilatorSettings, WaveformBatch, WaveformRingState, WaveformSample } from "./engine.types";
+import type { Alarm, BreathState, CaseEvent, CycleMetrics, EngineCase, EngineEvent, EngineMetrics, EngineOptions, EngineState, EvolutionProfile, GasExchangeProfile, GasExchangeState, LungState, PatientState, ReplayOptions, ReplayResult, ResolvedEngineOptions, TargetStatus, TimeMultiplier, VentilationSummary, VentilatorSettings, WaveformBatch, WaveformRingState, WaveformSample } from "./engine.types";
 import { alveolarPo2, arterialPh, equilibriumPao2, equilibriumPaco2, firstOrderApproach, MAX_SHUNT_FRACTION, severinghausSaturation, shuntFractionAtPeep } from "./gas-exchange";
 import { meanArterialPressure } from "./hemodynamics";
 import { advanceEffortCycle, createEffortState, muscularPressure, updateEffortProfile } from "./patient-effort";
+import { adjustMeanArterialPressure, advancePatient, createPatientState, isDeceased, overdistensionDeadSpaceMl, overdistensionShunt, type PatientEvolutionInput, patientSnapshot, resolveEvolutionThresholds } from "./patient-evolution";
 import { normalizeSeed } from "./prng";
 import { advanceVolumeUnderPressure, airwayPressureFromFlow } from "./respiratory-mechanics";
 import { evaluateTargets, hasUnmetTarget } from "./targets";
@@ -45,6 +46,8 @@ export function createSimulation(engineCase: EngineCase, seed: number, options: 
   const complianceMlPerCmH2O: number = engineCase.mechanics.complianceMlPerCmH2O;
   const volumeAboveFrcMl: number = complianceMlPerCmH2O * settings.peepCmH2O;
   const profile: GasExchangeProfile = engineCase.gasExchange;
+  const patient: PatientState | null =
+    engineCase.evolution === undefined ? null : createPatientState(engineCase.evolution);
   const caseEvents: CaseEvent[] = [...engineCase.events].sort(
     (a: CaseEvent, b: CaseEvent): number => a.simTimeMs - b.simTimeMs,
   );
@@ -66,7 +69,7 @@ export function createSimulation(engineCase: EngineCase, seed: number, options: 
       complianceFactor: 1,
       shuntIncrease: 0,
       disconnected: false,
-      deteriorationLevel: 0,
+      deteriorationLevel: patient === null ? 0 : patient.severity,
     },
     effort: createEffortState(engineCase.effort),
     lung: {
@@ -110,10 +113,18 @@ export function createSimulation(engineCase: EngineCase, seed: number, options: 
       count: 0,
       droppedSamples: 0,
     },
+    patient,
+    evolutionThresholds:
+      engineCase.evolution === undefined ? null : resolveEvolutionThresholds(engineCase.evolution, engineCase.targets),
   };
 }
 
 export function applyEvent(state: EngineState, event: EngineEvent): void {
+  // A deceased patient no longer responds: later events are accepted and ignored so replays stay valid.
+  if (isDeceased(state.patient)) {
+    return;
+  }
+
   if (event.type === "PARAM_CHANGE") {
     applyParamChange(state, event.changes);
 
@@ -171,11 +182,8 @@ export function getMetrics(state: EngineState): EngineMetrics {
   const referenceBreathMs: number = spontaneousOnly
     ? state.schedule.lastTriggeredBreathStartMs
     : state.schedule.lastBreathStartMs;
-  const ventilation: VentilationSummary = summarizeVentilation(
-    state.breathHistory,
-    nowMs,
-    state.engineCase.gasExchange.deadSpaceMl,
-  );
+  const ventilation: VentilationSummary = summarizeVentilation(state.breathHistory, nowMs, effectiveDeadSpaceMl(state));
+  const patient: PatientState | null = state.patient;
   const alarms: Alarm[] = evaluateAlarms({
     lastCycle,
     thresholds: state.alarmThresholds,
@@ -183,6 +191,15 @@ export function getMetrics(state: EngineState): EngineMetrics {
     msSinceLastBreath: nowMs - referenceBreathMs,
     apneaTimeMs: settings.apneaTimeS * 1000,
     disconnected: state.conditions.disconnected,
+    patient:
+      patient === null
+        ? null
+        : {
+          status: patient.status,
+          spo2Percent: gas.spo2Percent,
+          meanArterialPressureMmHg: gas.meanArterialPressureMmHg,
+          heartRateBpm: patient.heartRateBpm,
+        },
   });
   const targets: TargetStatus[] = evaluateTargets(state.engineCase.targets, gas, lastCycle);
 
@@ -202,7 +219,10 @@ export function getMetrics(state: EngineState): EngineMetrics {
       shuntFraction: gas.shuntFraction,
       alveolarVentilationLpm: gas.alveolarVentilationLpm,
     },
-    hemodynamics: { meanArterialPressureMmHg: gas.meanArterialPressureMmHg },
+    hemodynamics: {
+      meanArterialPressureMmHg: gas.meanArterialPressureMmHg,
+      heartRateBpm: patient === null ? null : patient.heartRateBpm,
+    },
     conditions: {
       resistanceCmH2OPerLps: currentResistance(state),
       complianceMlPerCmH2O: currentCompliance(state),
@@ -212,6 +232,7 @@ export function getMetrics(state: EngineState): EngineMetrics {
     },
     alarms,
     targets,
+    patient: patient === null ? null : patientSnapshot(patient),
   };
 }
 
@@ -374,13 +395,21 @@ function recordWaveformSample(state: EngineState): void {
 
 function runSlowUpdate(state: EngineState): void {
   const nowMs: number = state.simTimeMs;
+
+  if (isDeceased(state.patient)) {
+    state.schedule.lastSlowUpdateAtMs = nowMs;
+    state.schedule.nextSlowUpdateAtMs = nowMs + SLOW_UPDATE_INTERVAL_MS;
+
+    return;
+  }
+
   const elapsedMs: number = nowMs - state.schedule.lastSlowUpdateAtMs;
   const multiplier: number = state.options.slowDynamicsMultiplier;
   const profile: GasExchangeProfile = state.engineCase.gasExchange;
   const gas: GasExchangeState = state.gas;
   const disconnected: boolean = state.conditions.disconnected;
   const lastCycle: CycleMetrics | null = state.lastCycle;
-  const summary: VentilationSummary = summarizeVentilation(state.breathHistory, nowMs, profile.deadSpaceMl);
+  const summary: VentilationSummary = summarizeVentilation(state.breathHistory, nowMs, effectiveDeadSpaceMl(state));
 
   gas.alveolarVentilationLpm = summary.alveolarVentilationLpm;
 
@@ -399,8 +428,13 @@ function runSlowUpdate(state: EngineState): void {
   const fio2: number = disconnected ? 0.21 : state.settings.fio2;
   const effectivePeepCmH2O: number = disconnected ? 0 : (lastCycle?.totalPeepCmH2O ?? state.settings.peepCmH2O);
   const deteriorationShunt: number = state.conditions.deteriorationLevel * state.engineCase.deterioration.maxShuntIncrease;
+  const overdistension: number =
+    state.evolutionThresholds === null || disconnected ? 0 : overdistensionShunt(lastCycle, state.evolutionThresholds);
   const shuntFraction: number =
-    shuntFractionAtPeep(profile.shuntCurve, effectivePeepCmH2O) + state.conditions.shuntIncrease + deteriorationShunt;
+    shuntFractionAtPeep(profile.shuntCurve, effectivePeepCmH2O) +
+    state.conditions.shuntIncrease +
+    deteriorationShunt +
+    overdistension;
 
   gas.shuntFraction = min(MAX_SHUNT_FRACTION, max(0, shuntFraction));
   gas.alveolarPo2MmHg = alveolarPo2(fio2, gas.paco2MmHg);
@@ -422,7 +456,17 @@ function runSlowUpdate(state: EngineState): void {
     ? 0
     : (lastCycle?.meanAirwayPressureCmH2O ?? state.settings.peepCmH2O);
 
-  gas.meanArterialPressureMmHg = meanArterialPressure(state.engineCase.hemodynamics, meanAirwayPressureCmH2O);
+  const ventilatoryMapMmHg: number = meanArterialPressure(state.engineCase.hemodynamics, meanAirwayPressureCmH2O);
+
+  if (state.patient !== null) {
+    updatePatient(state, state.patient, ventilatoryMapMmHg, (elapsedMs * multiplier) / 60000, nowMs);
+    state.schedule.lastSlowUpdateAtMs = nowMs;
+    state.schedule.nextSlowUpdateAtMs = nowMs + SLOW_UPDATE_INTERVAL_MS;
+
+    return;
+  }
+
+  gas.meanArterialPressureMmHg = ventilatoryMapMmHg;
 
   const statuses: TargetStatus[] = evaluateTargets(state.engineCase.targets, gas, lastCycle);
 
@@ -434,6 +478,57 @@ function runSlowUpdate(state: EngineState): void {
 
   state.schedule.lastSlowUpdateAtMs = nowMs;
   state.schedule.nextSlowUpdateAtMs = nowMs + SLOW_UPDATE_INTERVAL_MS;
+}
+
+// Engine 2.0.0 evolution: MAP adjusted by the patient condition, then severity, heart rate and status advance on the
+// patient clock (sim time × multiplier). Severity drives the compliance loss and shunt like the 1.0.0 deterioration level.
+function updatePatient(
+  state: EngineState,
+  patient: PatientState,
+  ventilatoryMapMmHg: number,
+  patientElapsedMin: number,
+  nowMs: number,
+): void {
+  const gas: GasExchangeState = state.gas;
+  const input: PatientEvolutionInput = {
+    spo2Percent: gas.spo2Percent,
+    ph: gas.ph,
+    paco2MmHg: gas.paco2MmHg,
+    lastCycle: state.lastCycle,
+  };
+  const profile: EvolutionProfile | undefined = state.engineCase.evolution;
+
+  if (profile === undefined || state.evolutionThresholds === null) {
+    return;
+  }
+
+  gas.meanArterialPressureMmHg = adjustMeanArterialPressure(
+    patient,
+    ventilatoryMapMmHg,
+    gas.meanArterialPressureMmHg,
+    input,
+    patientElapsedMin,
+  );
+  advancePatient(
+    patient,
+    profile,
+    state.evolutionThresholds,
+    input,
+    gas.meanArterialPressureMmHg,
+    patientElapsedMin,
+    nowMs,
+  );
+  state.conditions.deteriorationLevel = patient.severity;
+}
+
+function effectiveDeadSpaceMl(state: EngineState): number {
+  const baseMl: number = state.engineCase.gasExchange.deadSpaceMl;
+
+  if (state.evolutionThresholds === null) {
+    return baseMl;
+  }
+
+  return baseMl + overdistensionDeadSpaceMl(state.lastCycle, state.evolutionThresholds);
 }
 
 function applyDueCaseEvents(state: EngineState, nowMs: number): void {
@@ -573,6 +668,45 @@ function validateCase(engineCase: EngineCase): void {
   for (const caseEvent of engineCase.events) {
     if (!Number.isFinite(caseEvent.simTimeMs) || caseEvent.simTimeMs < 0) {
       throw new EngineValidationError("INVALID_CASE", "events.simTimeMs", "Case event times must be non-negative");
+    }
+  }
+
+  if (engineCase.evolution !== undefined) {
+    validateEvolution(engineCase.evolution);
+  }
+}
+
+function validateEvolution(evolution: EvolutionProfile): void {
+  const nonNegativeFields: ReadonlyArray<[string, number]> = [
+    ["evolution.progressionRatePerMin", evolution.progressionRatePerMin],
+    ["evolution.viliRatePerMin", evolution.viliRatePerMin],
+    ["evolution.recoveryRatePerMin", evolution.recoveryRatePerMin],
+  ];
+  const positiveFields: ReadonlyArray<[string, number]> = [
+    ["evolution.arrestAfterCriticalMin", evolution.arrestAfterCriticalMin],
+    ["evolution.deathAfterArrestMin", evolution.deathAfterArrestMin],
+    ["evolution.baselineHeartRateBpm", evolution.baselineHeartRateBpm],
+  ];
+  const fractionFields: ReadonlyArray<[string, number]> = [
+    ["evolution.initialSeverity", evolution.initialSeverity],
+    ["evolution.minSeverity", evolution.minSeverity],
+  ];
+
+  for (const [field, value] of nonNegativeFields) {
+    if (!Number.isFinite(value) || value < 0) {
+      throw new EngineValidationError("INVALID_CASE", field, `${field} must be a non-negative finite number`);
+    }
+  }
+
+  for (const [field, value] of positiveFields) {
+    if (!Number.isFinite(value) || value <= 0) {
+      throw new EngineValidationError("INVALID_CASE", field, `${field} must be a positive finite number`);
+    }
+  }
+
+  for (const [field, value] of fractionFields) {
+    if (!Number.isFinite(value) || value < 0 || value > 1) {
+      throw new EngineValidationError("INVALID_CASE", field, `${field} must be between 0 and 1`);
     }
   }
 }
