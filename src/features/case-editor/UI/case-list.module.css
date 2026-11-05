@@ -3,8 +3,9 @@
 * Descripción: Layout of the staff case list (/simulator/cases): centered column, filter bar, notes, results panel
 *   (border, radius, surface, shadow) with a scrollable table, the case title and secondary line, the row actions and
 *   the status badge colored with the semantic tokens (draft warning, published success, archived muted). Tokens only
-*   (var(--vl-*), var(--mui-*)); no hex/rgb literals.
-* Versión: 1.0
+*   (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (ajustes D1): card grid (auto-fill columns of at least
+*   18rem, one column below that; no horizontal scroll) instead of the table; the pager sits under the grid.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,55 +44,80 @@
 }
 
 .results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  min-width: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--vl-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gridItem {
+  display: flex;
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  min-width: 0;
+  padding: var(--vl-space-3);
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-lg);
   background: var(--vl-color-surface);
   box-shadow: var(--vl-shadow-1);
-  overflow: hidden;
-}
-
-.tableContainer {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: var(--vl-space-2) var(--vl-space-3);
-  border-bottom: 1px solid var(--vl-color-border);
-  text-align: left;
-  vertical-align: top;
-}
-
-.table thead th {
-  font: var(--mui-font-subtitle2);
-  color: var(--vl-color-text-muted);
-}
-
-.table tbody th {
-  font-weight: 400;
 }
 
 .caseTitle {
-  display: block;
-  font-weight: 500;
+  margin: 0;
+  font: var(--mui-font-subtitle1);
+  font-weight: 600;
   color: var(--vl-color-text);
+  overflow-wrap: anywhere;
 }
 
 .secondary {
-  display: block;
+  margin: 0;
   font: var(--mui-font-body2);
+  color: var(--vl-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2) var(--vl-space-4);
+  margin: 0;
+}
+
+.facts dt {
+  font: var(--mui-font-caption);
   color: var(--vl-color-text-muted);
 }
 
-.rowActions {
+.facts dd {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-color-text);
+}
+
+/* Pushed to the bottom so the actions line up across the cards of a row. */
+.cardActions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--vl-space-1);
+  margin-top: auto;
+  padding-top: var(--vl-space-2);
+  border-top: 1px solid var(--vl-color-border);
 }
 
 .statusBadge {

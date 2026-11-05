@@ -2864,6 +2864,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/groups/student-memberships": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the active student groups of users
+         * @description For each requested user that belongs to an active STUDENT group, that group (id and name); users without one are absent. A student can belong to only one active STUDENT group, so the member search shows who cannot be added before trying (POST /:id/members answers 409 groups.student_already_in_group)
+         *
+         *     **Required access:** bearer token holding `groups:manage_members`; minimum role TEACHER.
+         */
+        get: operations["getStudentMemberships"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/groups/{id}": {
         parameters: {
             query?: never;
@@ -13578,6 +13600,49 @@ export interface components {
              */
             id: string;
         };
+        GroupMemberAddedNotificationDTO: {
+            /**
+             * @description Body shown to the user
+             * @example Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).
+             */
+            body: string;
+            /**
+             * Format: date-time
+             * @description When the notification was created
+             * @example 2026-10-11T14:00:00.000Z
+             */
+            createdAt: string;
+            /** @description Student group the user joined */
+            data: components["schemas"]["GroupMemberAddedNotificationDataDTO"] | null;
+            /**
+             * @description Notification ID
+             * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @description When the notification was read (null while unread)
+             * @example null
+             */
+            readAt: string | null;
+            /**
+             * @description Title shown to the user
+             * @example Calificación publicada
+             */
+            title: string;
+            /**
+             * @description Notification type (enum property replaced by openapi-typescript)
+             * @enum {string}
+             */
+            type: "GROUP_MEMBER_ADDED";
+        };
+        GroupMemberAddedNotificationDataDTO: {
+            /**
+             * @description ID of the student group the user joined
+             * @example cm5group01
+             */
+            groupId: string;
+        };
         GroupMemberDTO: {
             /**
              * @description Group ID
@@ -16782,7 +16847,7 @@ export interface components {
              *       "evaluationId": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f"
              *     }
              */
-            data: (components["schemas"]["ReservationPreemptedNotificationDataDTO"] | components["schemas"]["ReservationCancelledNotificationDataDTO"] | components["schemas"]["EvaluationActivatedNotificationDataDTO"] | components["schemas"]["GradePublishedNotificationDataDTO"] | components["schemas"]["FeedbackReadyNotificationDataDTO"] | components["schemas"]["AttemptResetNotificationDataDTO"] | components["schemas"]["RoleChangedNotificationDataDTO"] | components["schemas"]["VentilatorOfflineNotificationDataDTO"]) | null;
+            data: (components["schemas"]["ReservationPreemptedNotificationDataDTO"] | components["schemas"]["ReservationCancelledNotificationDataDTO"] | components["schemas"]["EvaluationActivatedNotificationDataDTO"] | components["schemas"]["GradePublishedNotificationDataDTO"] | components["schemas"]["FeedbackReadyNotificationDataDTO"] | components["schemas"]["AttemptResetNotificationDataDTO"] | components["schemas"]["RoleChangedNotificationDataDTO"] | components["schemas"]["GroupMemberAddedNotificationDataDTO"] | components["schemas"]["VentilatorOfflineNotificationDataDTO"]) | null;
             /**
              * @description Notification ID
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
@@ -16804,7 +16869,7 @@ export interface components {
              * @example GRADE_PUBLISHED
              * @enum {string}
              */
-            type: "RESERVATION_PREEMPTED" | "RESERVATION_CANCELLED" | "EVALUATION_ACTIVATED" | "GRADE_PUBLISHED" | "FEEDBACK_READY" | "ATTEMPT_RESET" | "ROLE_CHANGED" | "VENTILATOR_OFFLINE";
+            type: "RESERVATION_PREEMPTED" | "RESERVATION_CANCELLED" | "EVALUATION_ACTIVATED" | "GRADE_PUBLISHED" | "FEEDBACK_READY" | "ATTEMPT_RESET" | "ROLE_CHANGED" | "GROUP_MEMBER_ADDED" | "VENTILATOR_OFFLINE";
         };
         OverrideDataDTO: {
             /** @description Extra cards inserted in the lesson, LESSON only */
@@ -20890,6 +20955,15 @@ export interface components {
             name: string;
             /** @description Teacher groups that supervise this group */
             supervisingGroups: components["schemas"]["GroupNameDTO"][];
+        };
+        StudentMembershipDTO: {
+            /** @description Active STUDENT group of the user */
+            group: components["schemas"]["GroupNameDTO"];
+            /**
+             * @description User ID
+             * @example cm5student01
+             */
+            userId: string;
         };
         StudentModuleProgressDTO: {
             /**
@@ -34347,6 +34421,76 @@ export interface operations {
             };
         };
     };
+    getStudentMemberships: {
+        parameters: {
+            query: {
+                /** @description Users whose active STUDENT group is read (comma-separated or repeated query parameter, at most 100) */
+                userIds: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Student memberships retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
+                        data: components["schemas"]["StudentMembershipDTO"][];
+                    };
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getGroupById: {
         parameters: {
             query?: never;
@@ -39803,7 +39947,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: (components["schemas"]["ReservationPreemptedNotificationDTO"] | components["schemas"]["ReservationCancelledNotificationDTO"] | components["schemas"]["EvaluationActivatedNotificationDTO"] | components["schemas"]["GradePublishedNotificationDTO"] | components["schemas"]["FeedbackReadyNotificationDTO"] | components["schemas"]["AttemptResetNotificationDTO"] | components["schemas"]["RoleChangedNotificationDTO"] | components["schemas"]["VentilatorOfflineNotificationDTO"])[];
+                        data: (components["schemas"]["ReservationPreemptedNotificationDTO"] | components["schemas"]["ReservationCancelledNotificationDTO"] | components["schemas"]["EvaluationActivatedNotificationDTO"] | components["schemas"]["GradePublishedNotificationDTO"] | components["schemas"]["FeedbackReadyNotificationDTO"] | components["schemas"]["AttemptResetNotificationDTO"] | components["schemas"]["RoleChangedNotificationDTO"] | components["schemas"]["GroupMemberAddedNotificationDTO"] | components["schemas"]["VentilatorOfflineNotificationDTO"])[];
                     };
                 };
             };
@@ -40030,7 +40174,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: components["schemas"]["ReservationPreemptedNotificationDTO"] | components["schemas"]["ReservationCancelledNotificationDTO"] | components["schemas"]["EvaluationActivatedNotificationDTO"] | components["schemas"]["GradePublishedNotificationDTO"] | components["schemas"]["FeedbackReadyNotificationDTO"] | components["schemas"]["AttemptResetNotificationDTO"] | components["schemas"]["RoleChangedNotificationDTO"] | components["schemas"]["VentilatorOfflineNotificationDTO"];
+                        data: components["schemas"]["ReservationPreemptedNotificationDTO"] | components["schemas"]["ReservationCancelledNotificationDTO"] | components["schemas"]["EvaluationActivatedNotificationDTO"] | components["schemas"]["GradePublishedNotificationDTO"] | components["schemas"]["FeedbackReadyNotificationDTO"] | components["schemas"]["AttemptResetNotificationDTO"] | components["schemas"]["RoleChangedNotificationDTO"] | components["schemas"]["GroupMemberAddedNotificationDTO"] | components["schemas"]["VentilatorOfflineNotificationDTO"];
                     };
                 };
             };

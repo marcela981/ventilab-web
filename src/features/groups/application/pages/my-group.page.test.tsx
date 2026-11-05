@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: MyGroupPage tests
-* Descripción: Renders the student group page against a mocked backend (`GET /api/groups/mine`, msw): group name, leader, member names, supervising teacher groups, the empty state when the student has no group and the error state with retry. Depends on vitest, Testing Library, msw, SWR and the groups feature.
-* Versión: 1.0
+* Descripción: Renders the student group page against a mocked backend (`GET /api/groups/mine`, msw): group name, leader, member names, supervising teacher groups, the empty state when the student has no group and the error state with retry. Depends on vitest, Testing Library, msw, SWR and the groups feature. v1.1 (ajustes D2): the GROUP_MEMBER_ADDED notification refetches the group (mocked socket).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,9 +13,19 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { SWRConfig } from "swr";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { act } from "react";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import { MyGroupPage } from "./my-group.page";
+
+// The socket is replaced by a registry of the handlers the page subscribes, so a test can deliver an event.
+const socketHandlers = vi.hoisted(() => new Map<string, (payload: unknown) => void>());
+
+vi.mock("@shared/realtime", () => ({
+  useSocketEvent: (event: string, handler: (payload: unknown) => void) => {
+    socketHandlers.set(event, handler);
+  },
+}));
 
 const MINE_URL = `${BACKEND_ORIGIN}/api/groups/mine`;
 
@@ -60,6 +70,17 @@ afterAll(() => {
 });
 
 describe("MyGroupPage", () => {
+  it("shows the group as soon as the notification of being added arrives, without reloading", async() => {
+    respondWith({ studentGroup: null, memberships: [] });
+    renderPage();
+    expect(await screen.findByText("Aún no perteneces a un grupo")).toBeInTheDocument();
+
+    respondWith({ studentGroup, memberships: [] });
+    act(() => socketHandlers.get("notification:new")?.({ type: "GROUP_MEMBER_ADDED", data: { groupId: "g1" } }));
+
+    expect(await screen.findByRole("heading", { name: "UCI Mañana" })).toBeInTheDocument();
+  });
+
   it("shows the group, its leader, the member names and the supervising teacher groups", async() => {
     respondWith({ studentGroup, memberships: [] });
     renderPage();

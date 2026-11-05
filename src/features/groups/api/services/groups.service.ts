@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups service
-* Descripción: Backend calls of the groups feature through the typed api-client: the SWR keys (paths) of the read endpoints used with useApiQuery (`GET /api/groups`, `/api/groups/mine`, `/api/groups/{id}`, `/api/groups/{id}/members`, `/api/groups/{id}/supervisions`, `/api/users` for the member search), GROUP_QUERY_PATHS (the keys every group mutation invalidates) and the mutations: create, update, delete or deactivate, add/remove member, assign/clear leader, add/remove supervision. Default (fast) timeout; errors reject with ApiError. Depends on @shared/api-client and the groups DTOs.
-* Versión: 1.0
+* Descripción: Backend calls of the groups feature through the typed api-client: the SWR keys (paths) of the read endpoints used with useApiQuery (`GET /api/groups`, `/api/groups/mine`, `/api/groups/{id}`, `/api/groups/{id}/members`, `/api/groups/{id}/supervisions`, `/api/users` for the member search), GROUP_QUERY_PATHS (the keys every group mutation invalidates) and the mutations: create, update, delete or deactivate, add/remove member, assign/clear leader, add/remove supervision. Default (fast) timeout; errors reject with ApiError. Depends on @shared/api-client and the groups DTOs. v1.2 (ajustes D2): path of the active student groups of users, invalidated by every group mutation.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,7 @@ export const GROUP_PATH = "/api/groups/{id}";
 export const GROUP_MEMBERS_PATH = "/api/groups/{id}/members";
 export const GROUP_SUPERVISIONS_PATH = "/api/groups/{id}/supervisions";
 export const USERS_PATH = "/api/users";
+export const STUDENT_MEMBERSHIPS_PATH = "/api/groups/student-memberships";
 
 // Every group mutation can change any of these views (counts, leader, members, supervisions).
 export const GROUP_QUERY_PATHS = [
@@ -30,6 +31,7 @@ export const GROUP_QUERY_PATHS = [
   GROUP_PATH,
   GROUP_MEMBERS_PATH,
   GROUP_SUPERVISIONS_PATH,
+  STUDENT_MEMBERSHIPS_PATH,
 ] as const;
 
 export async function createGroup(body: CreateGroupRequestDTO): Promise<string> {

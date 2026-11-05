@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentDetailPage
-* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the same profile, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); no read waits for another one. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. v2.1 (Bloque 4 integration): the code and groups come with the profile (no directory lookup); the origin is read with readStudentDetailOrigin. Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules.
-* Versión: 2.1
+* Descripción: Page /teacher/students/[userId] (TEACHER, ADMIN; DISENO_BLOQUE4 §2.4, July PanelStudentDetail with real data): header from `GET /api/users/students/{id}` (name, email, avatar, last access; a 403 `groups.student_out_of_scope` becomes the no-access state, a 404 the not-found state), the student code and active groups of the same profile, the overall progress and the cards "Módulos completados", "Evaluaciones aprobadas" x/y (hidden without published grades) and "Sesiones de simulador" ("Tiempo de estudio" is not shown: no real data). After the session check the header reads run in parallel (profile, progress summary, curriculum titles, published grades and the first page of simulation sessions, the last two shared by SWR key with their tabs); no read waits for another one. Tabs ?tab=modulos|evaluaciones|simulador|actividad|gamificacion (shared useUrlTab, default modulos) with kept-mounted lazy panels: each tab requests its own data on its first visit. Back link: /teacher/students when ?from=directory, otherwise the teacher dashboard (Grupo tab of ?groupId). The student's personal notes and AI conversations are never read. v1.1 (closure B2): the grades no longer depend on the group the page was opened from. v2.0 (W4 Bloque 4): tabs, avatar, code, groups, summary cards, Simulador with real ventilator recordings, Gamificación and the directory back link. v2.1 (Bloque 4 integration): the code and groups come with the profile (no directory lookup); the origin is read with readStudentDetailOrigin. Depends on next/head, next/link, next/router, the design-system states, @shared/lib, the teacher dashboard hooks, components, entities, routes and CSS Modules. v2.2 (ajustes D2): "Agregar a grupo" in the header opens the existing-group dialog for this student.
+* Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,9 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useMemo } from "react";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import Button from "@mui/material/Button";
+import { useMemo, useState } from "react";
 import { ErrorState } from "@shared/design-system/components/error-state";
 import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton, ListSkeleton } from "@shared/design-system/components/skeleton";
@@ -22,6 +24,7 @@ import { KeptMountedTabPanels, lazyPanel } from "@shared/lib/kept-mounted-tab-pa
 import type { LazyPanel } from "@shared/lib/kept-mounted-tab-panels";
 import { useUrlTab } from "@shared/lib/use-url-tab";
 import { StudentDetailContext } from "../components/detail/student-detail-context";
+import { AddToGroupDialog } from "../components/directory/add-to-group-dialog";
 import type { StudentDetailContextValue } from "../components/detail/student-detail-context";
 import { StudentDetailHeader } from "../components/detail/student-detail-header";
 import { StudentDetailTabs } from "../components/detail/student-detail-tabs";
@@ -45,6 +48,7 @@ import styles from "../../UI/teacher-dashboard.module.css";
 
 // TODO(i18n): move to a teacher-dashboard namespace in src/i18n.
 export const STUDENT_DETAIL_COPY = {
+  addToGroup: "Agregar a grupo",
   documentTitle: (name: string) => `${name} | Panel docente | VentyLab`,
   fallbackTitle: "Detalle del estudiante",
   backToDirectory: "Volver a la lista",
@@ -109,8 +113,16 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
     [userId, titles, summary, summaryLoading, summaryError],
   );
   const name = student ? (student.name?.trim() ? student.name : student.email) : STUDENT_DETAIL_COPY.fallbackTitle;
-  const backLink = (
-    <Link href={buildStudentDetailBackUrl(origin, groupId)} className={cx(styles.link)}>{backLabel(origin, groupId)}</Link>
+  const [addOpen, setAddOpen] = useState(false);
+  const headerActions = (
+    <>
+      {student ? (
+        <Button variant="outlined" size="small" startIcon={<PersonAddIcon />} onClick={() => setAddOpen(true)}>
+          {STUDENT_DETAIL_COPY.addToGroup}
+        </Button>
+      ) : null}
+      <Link href={buildStudentDetailBackUrl(origin, groupId)} className={cx(styles.link)}>{backLabel(origin, groupId)}</Link>
+    </>
   );
 
   const renderBlocked = () => {
@@ -164,8 +176,9 @@ export function StudentDetailPage({ userId }: StudentDetailPageProps) {
       <Head>
         <title>{STUDENT_DETAIL_COPY.documentTitle(name)}</title>
       </Head>
-      <PageHeader title={name} actions={backLink} />
+      <PageHeader title={name} actions={headerActions} />
       <div className={cx(styles.content)}>{renderContent()}</div>
+      {student && addOpen ? <AddToGroupDialog open members={[{ id: student.id, name }]} onClose={() => setAddOpen(false)} /> : null}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DirectoryPanel
-* Descripción: Container of the Directorio tab of /teacher/students (July's PanelStudents directory, DISENO_BLOQUE4 §2.3): reads the URL state (?page ?q ?sort ?scope), loads that page of `GET /api/admin/students` and writes every change back with a shallow router.replace that keeps ?tab (a new search, sort or filter returns to page 1). Owns the row selection (id → name), which is cleared whenever the page, search, sort or filter change, and opens "Conformar Grupo" with the selected students; a created group clears the selection. States: skeleton, error (a 403 names the directory) with retry, empty ("Mis grupos" without students, a search without matches, no students), an out-of-range page moved to the last page. When the dialog closes and its opener is gone, the focus goes to the results region. Depends on MUI, next/router, React, the design-system states, the students directory hooks, entity and components and CSS Module.
-* Versión: 1.0
+* Descripción: Container of the Directorio tab of /teacher/students (July's PanelStudents directory, DISENO_BLOQUE4 §2.3): reads the URL state (?page ?q ?sort ?scope), loads that page of `GET /api/admin/students` and writes every change back with a shallow router.replace that keeps ?tab (a new search, sort or filter returns to page 1). Owns the row selection (id → name), which is cleared whenever the page, search, sort or filter change, and opens "Conformar Grupo" with the selected students; a created group clears the selection. States: skeleton, error (a 403 names the directory) with retry, empty ("Mis grupos" without students, a search without matches, no students), an out-of-range page moved to the last page. When the dialog closes and its opener is gone, the focus goes to the results region. Depends on MUI, next/router, React, the design-system states, the students directory hooks, entity and components and CSS Module. v1.1 (ajustes D2): the selection can also go to an existing group ("Agregar a grupo existente"); a success clears it.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +29,7 @@ import type { DirectoryRow, DirectoryScope, DirectorySortKey, DirectoryState } f
 import type { GroupMemberCandidate } from "../../hooks/use-group-builder";
 import { useStudentsDirectory } from "../../hooks/use-students-directory";
 import { DIRECTORY_TABLE_COPY, DirectoryTable } from "./directory-table";
+import { AddToGroupDialog } from "./add-to-group-dialog";
 import { DirectoryToolbar } from "./directory-toolbar";
 import { GroupBuilderDialog } from "./group-builder-dialog";
 import styles from "../../../UI/students-directory.module.css";
@@ -66,6 +67,7 @@ export function DirectoryPanel() {
   const resultsRef = useRef<HTMLDivElement>(null);
   const [selection, setSelection] = useState<Selection>(NO_SELECTION);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
   const selectionKey = directorySelectionKey(state);
   const [selectionOwner, setSelectionOwner] = useState(selectionKey);
 
@@ -129,6 +131,15 @@ export function DirectoryPanel() {
     setBuilderOpen(false);
 
     if (created) {
+      setSelection(NO_SELECTION);
+    }
+  }, []);
+
+  const closeAdd = useCallback((added: boolean) => {
+    setAddOpen(false);
+    resultsRef.current?.focus();
+
+    if (added) {
       setSelection(NO_SELECTION);
     }
   }, []);
@@ -219,12 +230,15 @@ export function DirectoryPanel() {
         onSearch={onSearch}
         onScope={onScope}
         onBuildGroup={() => setBuilderOpen(true)}
+        onAddToGroup={() => setAddOpen(true)}
       />
       <p role="status" className={cx(styles.srOnly)}>{selection.size > 0 ? DIRECTORY_PANEL_COPY.selected(selection.size) : ""}</p>
       <div ref={resultsRef} tabIndex={-1} aria-label={DIRECTORY_TABLE_COPY.label} role="region" className={cx(styles.results)}>
         {renderResults()}
       </div>
       <GroupBuilderDialog open={builderOpen} members={members} onClose={closeBuilder} onExited={restoreFocus} />
+      {/* Mounted only while open: its group list is read on demand. */}
+      {addOpen ? <AddToGroupDialog open members={members} onClose={closeAdd} /> : null}
     </>
   );
 }

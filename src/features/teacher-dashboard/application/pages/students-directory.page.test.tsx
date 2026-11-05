@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: StudentsDirectoryPage tests
-* Descripción: Component tests of /teacher/students with MSW: the Directorio tab lists the server page (code, progress, group chips or "Sin grupo") and links to the detail with from=directory only when canView; the search reaches the URL after the debounce; Nombre/Progreso sort with aria-sort; "Mis grupos" sends myGroups=true and shows its empty state; the selection is labelled, clears when the page changes and opens "Conformar Grupo" (July texts) that creates the group, adds the members and shows July's success or the exact partial failure with the 409 reason per student; a 403 shows the directory error; the Estadísticas tab shows the four global cards (ADMIN too). Depends on Testing Library, msw, vitest, the teacher dashboard test helpers and the students directory page, components and entities.
-* Versión: 1.0
+* Descripción: Component tests of /teacher/students with MSW: the Directorio tab lists the server page (code, progress, group chips or "Sin grupo") and links to the detail with from=directory only when canView; the search reaches the URL after the debounce; Nombre/Progreso sort with aria-sort; "Mis grupos" sends myGroups=true and shows its empty state; the selection is labelled, clears when the page changes and opens "Conformar Grupo" (July texts) that creates the group, adds the members and shows July's success or the exact partial failure with the 409 reason per student; a 403 shows the directory error; the Estadísticas tab shows the four global cards (ADMIN too). Depends on Testing Library, msw, vitest, the teacher dashboard test helpers and the students directory page, components and entities. v1.1 (ajustes D2): "Agregar a grupo existente" adds the selection to a chosen student group with the partial result.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,7 +18,7 @@ import { DIRECTORY_PANEL_COPY } from "../components/directory/directory-panel";
 import { DIRECTORY_TABLE_COPY } from "../components/directory/directory-table";
 import { DIRECTORY_TOOLBAR_COPY } from "../components/directory/directory-toolbar";
 import { STATISTICS_PANEL_COPY } from "../components/directory/statistics-panel";
-import { GROUP_BUILDER_COPY, MEMBER_FAILURE_REASONS } from "../entities/group-builder.entity";
+import { ADD_TO_GROUP_COPY, GROUP_BUILDER_COPY, MEMBER_FAILURE_REASONS } from "../entities/group-builder.entity";
 import { DIRECTORY_ERROR_COPY } from "../entities/students-directory.entity";
 import { StudentsDirectoryPage } from "./students-directory.page";
 import { apiUrl, envelope, errorResponse, renderTeacherDashboard } from "./teacher-dashboard-test-helpers";
@@ -316,5 +316,38 @@ describe("StudentsDirectoryPage — Estadísticas", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Estadísticas" }));
     expect(lastReplaceQuery()).toEqual({ tab: "estadisticas" });
+  });
+});
+
+describe("StudentsDirectoryPage — Agregar a grupo existente", () => {
+  it("adds the selected students to a chosen group and reports who could not be added", async() => {
+    server.use(http.get(apiUrl("/api/groups"), () => HttpResponse.json(envelope([
+      { id: "g7", name: "Grupo UCI", type: "STUDENT", membersCount: 3, relation: "MANAGED" },
+      { id: "t1", name: "Docentes", type: "TEACHER", membersCount: 2, relation: null },
+    ]))));
+    await renderDirectory();
+
+    fireEvent.click(screen.getByRole("checkbox", { name: DIRECTORY_TABLE_COPY.selectRow("Ana Gómez") }));
+    fireEvent.click(screen.getByRole("checkbox", { name: DIRECTORY_TABLE_COPY.selectRow("Bruno Díaz") }));
+    fireEvent.click(screen.getByRole("button", { name: DIRECTORY_TOOLBAR_COPY.addToGroup(2) }));
+
+    const dialog = await screen.findByRole("dialog", { name: new RegExp(ADD_TO_GROUP_COPY.title) });
+    const select = await within(dialog).findByLabelText(new RegExp(ADD_TO_GROUP_COPY.group));
+
+    expect(within(select).queryByRole("option", { name: "Docentes" })).not.toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: ADD_TO_GROUP_COPY.add })).toBeDisabled();
+
+    fireEvent.change(select, { target: { value: "g7" } });
+    fireEvent.click(within(dialog).getByRole("button", { name: ADD_TO_GROUP_COPY.add }));
+
+    expect(await within(dialog).findByText(ADD_TO_GROUP_COPY.partialFailure(1))).toBeInTheDocument();
+    expect(within(dialog).getByRole("list", { name: ADD_TO_GROUP_COPY.failureList }))
+      .toHaveTextContent(`Bruno Díaz: ${MEMBER_FAILURE_REASONS["groups.student_already_in_group"]}`);
+    expect([...memberAdds].sort()).toEqual(["g7:u1", "g7:u2"]);
+    expect(createdBodies).toEqual([]);
+
+    fireEvent.click(within(dialog).getByRole("button", { name: ADD_TO_GROUP_COPY.close }));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: /Agregar a grupo existente/ })).not.toBeInTheDocument();
   });
 });

@@ -1,13 +1,13 @@
 /*
 * Funcionalidad: Case editor config
-* Descripción: Static configuration of the case editor (teachers and admins). The status, pathology, difficulty, sex v1.1 (B3.10): unused aliases removed (CaseListSortOrder).
+* Descripción: Static configuration of the case editor (teachers and admins). The status, pathology, difficulty, sex v1.1 (B3.10): unused aliases removed (CaseListSortOrder). v1.2 (ajustes D1): 12 cases per page (card grid).
 *   and event type keys come from the generated contract (label maps typed `satisfies Record<ContractEnum, string>`,
 *   so a contract change breaks the build instead of drifting). Every numeric field of the definition names the
 *   physiological parameter whose plausible range the backend enforces (the vendored
 *   CLINICAL_CASE_PHYSIOLOGICAL_RANGES are the only source of min/max; nothing here bounds a value), its Spanish label
 *   and its group. The event parameters per event type follow the contract field descriptions. Also the list page size
 *   and the Spanish names of the backend units. Depends on the case editor DTOs and the sim-engine public types.
-* Versión: 1.1
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -75,7 +75,8 @@ export const CASE_DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as CaseDifficult
 export const CASE_SEXES = Object.keys(SEX_LABELS) as CaseSex[];
 export const CASE_EVENT_TYPES = Object.keys(EVENT_TYPE_LABELS) as CaseEventType[];
 
-export const CASE_LIST_PAGE_SIZE = 10;
+// Divisible by 1, 2, 3 and 4: full rows at every grid width.
+export const CASE_LIST_PAGE_SIZE = 12;
 
 /** One numeric field of the definition: the DTO path, its label and the physiological range the backend enforces. */
 export type NumericFieldDefinition = {

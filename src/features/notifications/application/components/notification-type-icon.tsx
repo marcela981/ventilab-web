@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: NotificationTypeIcon
-* Descripción: Decorative icon of a notification by type (reservation preempted or cancelled, evaluation activated, grade published, feedback ready, role changed, ventilator offline); an unknown type gets the generic bell. aria-hidden: the title carries the meaning. Depends on the MUI icons. v1.1 (Bloque 3): ATTEMPT_RESET uses the replay icon.
-* Versión: 1.1
+* Descripción: Decorative icon of a notification by type (reservation preempted or cancelled, evaluation activated, grade published, feedback ready, role changed, ventilator offline); an unknown type gets the generic bell. aria-hidden: the title carries the meaning. Depends on the MUI icons. v1.1 (Bloque 3): ATTEMPT_RESET uses the replay icon. v1.2 (ajustes D2): GROUP_MEMBER_ADDED icon.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,7 @@
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined";
 import GradingOutlinedIcon from "@mui/icons-material/GradingOutlined";
+import GroupAddOutlinedIcon from "@mui/icons-material/GroupAddOutlined";
 import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import PortableWifiOffIcon from "@mui/icons-material/PortableWifiOff";
@@ -27,6 +28,7 @@ const TYPE_ICONS: Readonly<Record<string, SvgIconComponent>> = {
   FEEDBACK_READY: RateReviewOutlinedIcon,
   ATTEMPT_RESET: ReplayOutlinedIcon,
   ROLE_CHANGED: ManageAccountsOutlinedIcon,
+  GROUP_MEMBER_ADDED: GroupAddOutlinedIcon,
   VENTILATOR_OFFLINE: PortableWifiOffIcon,
 };
 

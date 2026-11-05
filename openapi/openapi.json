@@ -10814,6 +10814,86 @@
         ],
         "type": "object"
       },
+      "GroupMemberAddedNotificationDTO": {
+        "properties": {
+          "body": {
+            "description": "Body shown to the user",
+            "example": "Ya puedes consultar tu calificación: 8 de 10 puntos (aprobada).",
+            "type": "string"
+          },
+          "createdAt": {
+            "description": "When the notification was created",
+            "example": "2026-10-11T14:00:00.000Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/GroupMemberAddedNotificationDataDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Student group the user joined"
+          },
+          "id": {
+            "description": "Notification ID",
+            "example": "01932e9f-1234-7abc-9def-1a2b3c4d5e6f",
+            "type": "string"
+          },
+          "readAt": {
+            "description": "When the notification was read (null while unread)",
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "Title shown to the user",
+            "example": "Calificación publicada",
+            "type": "string"
+          },
+          "type": {
+            "description": "Notification type",
+            "enum": [
+              "GROUP_MEMBER_ADDED"
+            ],
+            "example": "GROUP_MEMBER_ADDED",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "body",
+          "readAt",
+          "createdAt",
+          "type",
+          "data"
+        ],
+        "type": "object"
+      },
+      "GroupMemberAddedNotificationDataDTO": {
+        "properties": {
+          "groupId": {
+            "description": "ID of the student group the user joined",
+            "example": "cm5group01",
+            "type": "string"
+          }
+        },
+        "required": [
+          "groupId"
+        ],
+        "type": "object"
+      },
       "GroupMemberDTO": {
         "properties": {
           "groupId": {
@@ -15982,6 +16062,9 @@
                     "$ref": "#/components/schemas/RoleChangedNotificationDataDTO"
                   },
                   {
+                    "$ref": "#/components/schemas/GroupMemberAddedNotificationDataDTO"
+                  },
+                  {
                     "$ref": "#/components/schemas/VentilatorOfflineNotificationDataDTO"
                   }
                 ]
@@ -16025,6 +16108,7 @@
               "FEEDBACK_READY",
               "ATTEMPT_RESET",
               "ROLE_CHANGED",
+              "GROUP_MEMBER_ADDED",
               "VENTILATOR_OFFLINE"
             ],
             "example": "GRADE_PUBLISHED",
@@ -22777,6 +22861,28 @@
           "leader",
           "members",
           "supervisingGroups"
+        ],
+        "type": "object"
+      },
+      "StudentMembershipDTO": {
+        "properties": {
+          "group": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/GroupNameDTO"
+              }
+            ],
+            "description": "Active STUDENT group of the user"
+          },
+          "userId": {
+            "description": "User ID",
+            "example": "cm5student01",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "group"
         ],
         "type": "object"
       },
@@ -48624,6 +48730,142 @@
         ]
       }
     },
+    "/api/groups/student-memberships": {
+      "get": {
+        "description": "For each requested user that belongs to an active STUDENT group, that group (id and name); users without one are absent. A student can belong to only one active STUDENT group, so the member search shows who cannot be added before trying (POST /:id/members answers 409 groups.student_already_in_group)\n\n**Required access:** bearer token holding `groups:manage_members`; minimum role TEACHER.",
+        "operationId": "getStudentMemberships",
+        "parameters": [
+          {
+            "description": "Users whose active STUDENT group is read (comma-separated or repeated query parameter, at most 100)",
+            "in": "query",
+            "name": "userIds",
+            "required": true,
+            "schema": {
+              "example": "cm5student01,cm5student02",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/APIResponseEnvelope"
+                    },
+                    {
+                      "properties": {
+                        "data": {
+                          "items": {
+                            "$ref": "#/components/schemas/StudentMembershipDTO"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "data"
+                      ],
+                      "type": "object"
+                    }
+                  ]
+                }
+              }
+            },
+            "description": "Student memberships retrieved successfully"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get the active student groups of users",
+        "tags": [
+          "Groups"
+        ],
+        "x-min-role": "TEACHER",
+        "x-required-permissions": [
+          "groups:manage_members"
+        ]
+      }
+    },
     "/api/groups/{id}": {
       "delete": {
         "description": "Deletes a group without subgroups when it never had activity (current or past members, activity assignments, submissions or ventilator reservations); otherwise deactivates it. The response says which happened\n\n**Required access:** bearer token holding `groups:delete`; minimum role TEACHER.",
@@ -59231,6 +59473,7 @@
                                 "EVALUATION_ACTIVATED": "#/components/schemas/EvaluationActivatedNotificationDTO",
                                 "FEEDBACK_READY": "#/components/schemas/FeedbackReadyNotificationDTO",
                                 "GRADE_PUBLISHED": "#/components/schemas/GradePublishedNotificationDTO",
+                                "GROUP_MEMBER_ADDED": "#/components/schemas/GroupMemberAddedNotificationDTO",
                                 "RESERVATION_CANCELLED": "#/components/schemas/ReservationCancelledNotificationDTO",
                                 "RESERVATION_PREEMPTED": "#/components/schemas/ReservationPreemptedNotificationDTO",
                                 "ROLE_CHANGED": "#/components/schemas/RoleChangedNotificationDTO",
@@ -59259,6 +59502,9 @@
                               },
                               {
                                 "$ref": "#/components/schemas/RoleChangedNotificationDTO"
+                              },
+                              {
+                                "$ref": "#/components/schemas/GroupMemberAddedNotificationDTO"
                               },
                               {
                                 "$ref": "#/components/schemas/VentilatorOfflineNotificationDTO"
@@ -59694,6 +59940,7 @@
                               "EVALUATION_ACTIVATED": "#/components/schemas/EvaluationActivatedNotificationDTO",
                               "FEEDBACK_READY": "#/components/schemas/FeedbackReadyNotificationDTO",
                               "GRADE_PUBLISHED": "#/components/schemas/GradePublishedNotificationDTO",
+                              "GROUP_MEMBER_ADDED": "#/components/schemas/GroupMemberAddedNotificationDTO",
                               "RESERVATION_CANCELLED": "#/components/schemas/ReservationCancelledNotificationDTO",
                               "RESERVATION_PREEMPTED": "#/components/schemas/ReservationPreemptedNotificationDTO",
                               "ROLE_CHANGED": "#/components/schemas/RoleChangedNotificationDTO",
@@ -59722,6 +59969,9 @@
                             },
                             {
                               "$ref": "#/components/schemas/RoleChangedNotificationDTO"
+                            },
+                            {
+                              "$ref": "#/components/schemas/GroupMemberAddedNotificationDTO"
                             },
                             {
                               "$ref": "#/components/schemas/VentilatorOfflineNotificationDTO"

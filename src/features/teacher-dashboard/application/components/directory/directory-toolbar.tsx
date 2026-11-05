@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: DirectoryToolbar
-* Descripción: Toolbar of the students directory (July's PanelStudents header and search): search box by name, email or student code sent to the URL 300 ms after the last keystroke (the URL stays the source of truth on back/forward), the "Todos" / "Mis grupos" filter (toggle buttons with aria-pressed) and "Conformar Grupo (N)", shown only while students are selected. Depends on MUI, React, the design-system form field, the students directory entity and CSS Module.
-* Versión: 1.0
+* Descripción: Toolbar of the students directory (July's PanelStudents header and search): search box by name, email or student code sent to the URL 300 ms after the last keystroke (the URL stays the source of truth on back/forward), the "Todos" / "Mis grupos" filter (toggle buttons with aria-pressed) and "Conformar Grupo (N)", shown only while students are selected. Depends on MUI, React, the design-system form field, the students directory entity and CSS Module. v1.1 (ajustes D2): "Agregar a grupo existente (N)" next to "Conformar Grupo (N)" while students are selected.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,6 +10,7 @@
 */
 
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import Button from "@mui/material/Button";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -26,6 +27,7 @@ export const DIRECTORY_TOOLBAR_COPY = {
   all: "Todos",
   mine: "Mis grupos",
   buildGroup: (count: number) => `Conformar Grupo (${count})`,
+  addToGroup: (count: number) => `Agregar a grupo existente (${count})`,
 } as const;
 
 export const SEARCH_DEBOUNCE_MS = 300;
@@ -37,9 +39,10 @@ export type DirectoryToolbarProps = {
   onSearch: (search: string) => void
   onScope: (scope: DirectoryScope) => void
   onBuildGroup: () => void
+  onAddToGroup: () => void
 };
 
-export function DirectoryToolbar({ search, scope, selectedCount, onSearch, onScope, onBuildGroup }: DirectoryToolbarProps) {
+export function DirectoryToolbar({ search, scope, selectedCount, onSearch, onScope, onBuildGroup, onAddToGroup }: DirectoryToolbarProps) {
   const [text, setText] = useState(search);
   const [lastSearch, setLastSearch] = useState(search);
 
@@ -91,9 +94,14 @@ export function DirectoryToolbar({ search, scope, selectedCount, onSearch, onSco
         <ToggleButton value="mine">{DIRECTORY_TOOLBAR_COPY.mine}</ToggleButton>
       </ToggleButtonGroup>
       {selectedCount > 0 ? (
-        <Button variant="contained" startIcon={<GroupAddIcon />} onClick={onBuildGroup}>
-          {DIRECTORY_TOOLBAR_COPY.buildGroup(selectedCount)}
-        </Button>
+        <>
+          <Button variant="contained" startIcon={<GroupAddIcon />} onClick={onBuildGroup}>
+            {DIRECTORY_TOOLBAR_COPY.buildGroup(selectedCount)}
+          </Button>
+          <Button variant="outlined" startIcon={<PersonAddIcon />} onClick={onAddToGroup}>
+            {DIRECTORY_TOOLBAR_COPY.addToGroup(selectedCount)}
+          </Button>
+        </>
       ) : null}
     </div>
   );
