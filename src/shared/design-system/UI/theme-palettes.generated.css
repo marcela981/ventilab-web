@@ -52,6 +52,8 @@
   --vl-glass-accent-orange-text: #fcd34d;
   --vl-console-bg: #0a112b;
   --vl-console-pending: #10aede;
+  --vl-console-accent: #10aede;
+  --vl-console-on-accent: #0a112b;
   --vl-learn-tab-indicator: #2196f3;
   --vl-learn-module-open-border: #0bbaf4;
   --vl-eval-explanation-border: #00a1db;
@@ -101,6 +103,8 @@
   --vl-glass-accent-orange-text: #b45309;
   --vl-console-bg: #0a112b;
   --vl-console-pending: #10aede;
+  --vl-console-accent: #10aede;
+  --vl-console-on-accent: #0a112b;
   --vl-learn-tab-indicator: #0b6e99;
   --vl-learn-module-open-border: #0b6e99;
   --vl-eval-explanation-border: #0b6e99;
@@ -150,6 +154,8 @@
   --vl-glass-accent-orange-text: #b45309;
   --vl-console-bg: #161616;
   --vl-console-pending: #42a8bf;
+  --vl-console-accent: #f26b73;
+  --vl-console-on-accent: #121212;
   --vl-learn-tab-indicator: #c20e1a;
   --vl-learn-module-open-border: #c20e1a;
   --vl-eval-explanation-border: #c20e1a;
@@ -251,6 +257,8 @@
   --vl-glass-accent-orange-text: #fcd34d;
   --vl-console-bg: #161616;
   --vl-console-pending: #42a8bf;
+  --vl-console-accent: #f26b73;
+  --vl-console-on-accent: #121212;
   --vl-learn-tab-indicator: #f26b73;
   --vl-learn-module-open-border: #f26b73;
   --vl-eval-explanation-border: #f26b73;

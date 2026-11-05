@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WCAG contrast of the four theme combinations
-* Descripción: Verifies WCAG 2.2 AA on theme-palettes.ts for VentyLab and Univalle × light and dark (DISENO_AJUSTES_D §6.2): normal text ≥ 4.5:1 (text, muted, link, text on primary/accent/secondary/status fills, status texts on their tints, roles, evaluation chips, sidebar, user card, staff panel, auth footer, glass accents, level tones, console texts, alarm texts) and UI components ≥ 3:1 (primary and focus ring, accent, curves, alarms and pending highlight on the console background and surface, tab indicator, panel accent). Translucent colors are composited over their background and color-mix() tokens of tokens.css are recomputed (sRGB), so the figures are the rendered ones. Depends on vitest and ./theme-palettes. v1.1: (token request of block A): the --vl-console-applied tag on the console background and surface.
-* Versión: 1.1
+* Descripción: Verifies WCAG 2.2 AA on theme-palettes.ts for VentyLab and Univalle × light and dark (DISENO_AJUSTES_D §6.2): normal text ≥ 4.5:1 (text, muted, link, text on primary/accent/secondary/status fills, status texts on their tints, roles, evaluation chips, sidebar, user card, staff panel, auth footer, glass accents, level tones, console texts, alarm texts) and UI components ≥ 3:1 (primary and focus ring, accent, curves, alarms and pending highlight on the console background and surface, tab indicator, panel accent). Translucent colors are composited over their background and color-mix() tokens of tokens.css are recomputed (sRGB), so the figures are the rendered ones. Depends on vitest and ./theme-palettes. v1.1: (token request of block A): the --vl-console-applied tag on the console background and surface. v1.2: (visual review): the July console accent on the console background and surface and its text.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -137,6 +137,7 @@ function pairsOf(scheme: SchemeDefinition): Pair[] {
   addText("console muted on surface", mix(WHITE, 70, consoleBg), consoleSurface);
   addText("console tick on surface", CONSOLE_TICK, consoleSurface);
   addText("console applied tag", CONSOLE_APPLIED, consoleBg);
+  addText("text on console accent", t["--vl-console-on-accent"], t["--vl-console-accent"]);
   addText("console applied tag on surface", CONSOLE_APPLIED, consoleSurface);
   ALARMS.forEach((alarm) => addText(`alarm text on ${alarm}`, consoleBg, alarm));
 
@@ -151,6 +152,7 @@ function pairsOf(scheme: SchemeDefinition): Pair[] {
     CURVES.forEach((curve) => addUi(`curve ${curve} on ${label}`, curve, background));
     ALARMS.forEach((alarm) => addUi(`alarm ${alarm} on ${label}`, alarm, background));
     addUi(`pending on ${label}`, t["--vl-console-pending"], background);
+    addUi(`console accent on ${label}`, t["--vl-console-accent"], background);
   }
 
   return [...text, ...ui];

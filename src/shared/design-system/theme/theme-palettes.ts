@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Theme palettes (mode × palette)
-* Descripción: Single source of the four color combinations of VentyLab (palettes VentyLab and Univalle × modes light and dark, DISENO_AJUSTES_D §6): the MUI palette of each scheme (brand, status, background, text, divider, actions) and the palette-dependent --vl-* tokens (accent, raised surface, links, shadows, sidebar, user card, auth background, staff panel, glass, console base and pending highlight, learning and evaluation brand edges). VentyLab light/dark feed the colorSchemes of the MUI theme; the generated stylesheet UI/theme-palettes.generated.css emits the --vl-* tokens of the four combinations and the --mui-palette-* overrides of Univalle under [data-palette="univalle"][data-mui-color-scheme="…"]. VentyLab dark keeps the July values of Bloque 5; Univalle uses the official colors of the Manual de Identidad Visual Corporativa (docs/cierre/paleta.md). WCAG AA is verified by theme-palettes.contrast.test.ts. Depends on ./palette.
-* Versión: 1.0
+* Descripción: Single source of the four color combinations of VentyLab (palettes VentyLab and Univalle × modes light and dark, DISENO_AJUSTES_D §6): the MUI palette of each scheme (brand, status, background, text, divider, actions) and the palette-dependent --vl-* tokens (accent, raised surface, links, shadows, sidebar, user card, auth background, staff panel, glass, console base and pending highlight, learning and evaluation brand edges). VentyLab light/dark feed the colorSchemes of the MUI theme; the generated stylesheet UI/theme-palettes.generated.css emits the --vl-* tokens of the four combinations and the --mui-palette-* overrides of Univalle under [data-palette="univalle"][data-mui-color-scheme="…"]. VentyLab dark keeps the July values of Bloque 5; Univalle uses the official colors of the Manual de Identidad Visual Corporativa (docs/cierre/paleta.md). WCAG AA is verified by theme-palettes.contrast.test.ts. Depends on ./palette. v1.1: (visual review): --vl-console-accent / --vl-console-on-accent, the primary of the July console (always dark), so the light-mode primaries never sit on the console background.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,6 +80,8 @@ export const PALETTE_TOKEN_NAMES = [
   "--vl-glass-accent-orange-text",
   "--vl-console-bg",
   "--vl-console-pending",
+  "--vl-console-accent",
+  "--vl-console-on-accent",
   "--vl-learn-tab-indicator",
   "--vl-learn-module-open-border",
   "--vl-eval-explanation-border",
@@ -150,9 +152,10 @@ const LIGHT_GLASS = {
   "--vl-level-advanced-text": "#c62828",
 } as const;
 
-const VENTYLAB_CONSOLE = { "--vl-console-bg": "#0a112b", "--vl-console-pending": "#10aede" } as const;
+// The console stays dark in every mode: its accent (primary inside the July console) is the dark-mode primary of the palette.
+const VENTYLAB_CONSOLE = { "--vl-console-bg": "#0a112b", "--vl-console-pending": "#10aede", "--vl-console-accent": "#10aede", "--vl-console-on-accent": "#0a112b" } as const;
 // Univalle: near-black grey console with the July curves (§7b-11); pending in the manual's expressive cyan.
-const UNIVALLE_CONSOLE = { "--vl-console-bg": "#161616", "--vl-console-pending": "#42a8bf" } as const;
+const UNIVALLE_CONSOLE = { "--vl-console-bg": "#161616", "--vl-console-pending": "#42a8bf", "--vl-console-accent": "#f26b73", "--vl-console-on-accent": "#121212" } as const;
 
 /** VentyLab dark: the July skin of Bloque 5 (navy, opaque glass surfaces, cyan primary). */
 const VENTYLAB_DARK: SchemeDefinition = {
