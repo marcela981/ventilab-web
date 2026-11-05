@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+<title id="t">Evolución del paciente simulado</title>
+<desc id="d">Diagrama de estados del paciente simulado: Estable, Inestable, Crítico, Paro y Fallecido, de izquierda a derecha. Pasa de Estable a Inestable cuando aparece alguna agresión: hipoxemia, acidosis, presiones de lesión, atrapamiento o hipotensión. Si las agresiones se corrigen, la gravedad baja y el paciente vuelve hacia Estable. Si persisten, la gravedad sube; con valores extremos pasa a Crítico, donde todavía es posible el rescate; si la exposición crítica se prolonga llega a Paro, que es irreversible en el simulador, y luego a Fallecido, que cierra la sesión y abre el resumen.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#1f2937"/></marker></defs>
+<rect x="16" y="60" width="118" height="60" rx="30" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<text x="46" y="96" font-size="15" font-weight="700" fill="#15803d">Estable</text>
+<rect x="160" y="60" width="118" height="60" rx="30" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="180" y="96" font-size="15" font-weight="700" fill="#1d4ed8">Inestable</text>
+<rect x="304" y="60" width="118" height="60" rx="30" fill="#fee2e2" stroke="#c2410c" stroke-width="2"/>
+<text x="336" y="96" font-size="15" font-weight="700" fill="#c2410c">Crítico</text>
+<rect x="448" y="60" width="118" height="60" rx="30" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="484" y="96" font-size="15" font-weight="700" fill="#b91c1c">Paro</text>
+<rect x="592" y="60" width="112" height="60" rx="30" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+<text x="612" y="96" font-size="15" font-weight="700">Fallecido</text>
+<line x1="134" y1="80" x2="158" y2="80" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+<line x1="278" y1="80" x2="302" y2="80" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+<line x1="422" y1="80" x2="446" y2="80" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+<line x1="566" y1="80" x2="590" y2="80" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+<path d="M219 120 C 200 160 100 160 80 124" stroke="#15803d" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<path d="M363 120 C 340 170 250 170 225 124" stroke="#15803d" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="88" y="178" font-size="13" fill="#15803d">corriges la causa: la gravedad baja</text>
+<text x="20" y="40" font-size="13">aparece una agresión</text>
+<text x="240" y="40" font-size="13">valores extremos</text>
+<text x="420" y="40" font-size="13">exposición prolongada</text>
+<text x="600" y="40" font-size="13">tras el paro</text>
+<rect x="16" y="210" width="400" height="190" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="30" y="238" font-size="15" font-weight="700">Agresiones que hacen subir la gravedad</text>
+<text x="30" y="266" font-size="14">• Hipoxemia (SpO₂ baja)</text>
+<text x="30" y="290" font-size="14">• Acidosis (pH bajo)</text>
+<text x="30" y="314" font-size="14">• Presiones de lesión (Pplat o ΔP altas)</text>
+<text x="30" y="338" font-size="14">• Atrapamiento (auto-PEEP alta)</text>
+<text x="30" y="362" font-size="14">• Hipotensión (PAM baja)</text>
+<text x="30" y="388" font-size="13" fill="#6d28d9">Umbrales del caso: modelo educativo, no clínico</text>
+<rect x="432" y="210" width="272" height="190" rx="10" fill="#fee2e2" stroke="#b91c1c"/>
+<text x="446" y="238" font-size="15" font-weight="700" fill="#b91c1c">En el simulador</text>
+<text x="446" y="266" font-size="14">• Crítico: aún hay rescate</text>
+<text x="446" y="290" font-size="14">• Paro: irreversible,</text>
+<text x="458" y="310" font-size="14">no hay RCP simulada</text>
+<text x="446" y="334" font-size="14">• Fallecido: la sesión se</text>
+<text x="458" y="354" font-size="14">cierra y se abre el</text>
+<text x="458" y="374" font-size="14">resumen con la línea de tiempo</text>
+</g>
+</svg>

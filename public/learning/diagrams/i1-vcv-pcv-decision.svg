@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="720" height="540" role="img" aria-labelledby="t d">
+<title id="t">Elegir entre VCV y PCV en el paciente complejo</title>
+<desc id="d">Diagrama de decisión. Primero se fija la meta protectora (volumen corriente según peso predicho, presión meseta y driving pressure). Si hay esfuerzo inspiratorio intenso, ningún modo lo resuelve solo y hay que tratar la causa y medir. Si el paciente está pasivo y la mecánica cambia con frecuencia, VCV fija el volumen y la presión delata el cambio. Si se prefiere limitar la presión, PCV la fija y el volumen delata el cambio; en ambos casos se ajustan las alarmas correspondientes.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/></marker></defs>
+<rect x="160" y="16" width="400" height="66" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+<text x="360" y="40" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">1. Define la meta antes que el modo</text>
+<text x="360" y="60" font-size="14" text-anchor="middle" fill="#1f2937">Vt por peso predicho, Pplat y ΔP dentro de límites</text>
+<line x1="360" y1="82" x2="360" y2="108" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr)"/>
+<rect x="185" y="110" width="350" height="50" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+<text x="360" y="134" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">2. ¿Esfuerzo inspiratorio intenso?</text>
+<line x1="185" y1="135" x2="120" y2="135" stroke="#1f2937" stroke-width="1.5"/>
+<line x1="120" y1="135" x2="120" y2="190" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="150" y="128" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">Sí</text>
+<rect x="20" y="192" width="210" height="150" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="125" y="216" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">Ningún modo basta</text>
+<text x="125" y="236" font-size="14" text-anchor="middle" fill="#1f2937">PCV: el Vt crece</text>
+<text x="125" y="256" font-size="14" text-anchor="middle" fill="#1f2937">sin techo</text>
+<text x="125" y="276" font-size="14" text-anchor="middle" fill="#1f2937">VCV: hambre de flujo</text>
+<text x="125" y="296" font-size="14" text-anchor="middle" fill="#1f2937">Trata la causa del</text>
+<text x="125" y="316" font-size="14" text-anchor="middle" fill="#1f2937">impulso y mide Vt y ΔP</text>
+<line x1="535" y1="135" x2="600" y2="135" stroke="#1f2937" stroke-width="1.5"/>
+<line x1="600" y1="135" x2="600" y2="190" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="565" y="128" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">No</text>
+<rect x="470" y="192" width="240" height="70" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+<text x="590" y="216" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">3. ¿Qué variable prefieres</text>
+<text x="590" y="236" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">fijar mientras la mecánica cambia?</text>
+<line x1="530" y1="262" x2="400" y2="300" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="650" y1="262" x2="650" y2="300" stroke="#1f2937" stroke-width="1.5" marker-end="url(#arr)"/>
+<rect x="270" y="302" width="230" height="128" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="385" y="326" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">VCV: volumen fijo</text>
+<text x="385" y="346" font-size="14" text-anchor="middle" fill="#1f2937">La presión delata</text>
+<text x="385" y="366" font-size="14" text-anchor="middle" fill="#1f2937">el cambio de mecánica</text>
+<text x="385" y="386" font-size="14" text-anchor="middle" fill="#1f2937">Alarma de presión alta</text>
+<text x="385" y="406" font-size="14" text-anchor="middle" fill="#1f2937">ajustada al caso</text>
+<rect x="512" y="302" width="198" height="128" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<text x="611" y="326" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">PCV: presión fija</text>
+<text x="611" y="346" font-size="14" text-anchor="middle" fill="#1f2937">El Vt delata el</text>
+<text x="611" y="366" font-size="14" text-anchor="middle" fill="#1f2937">cambio de mecánica</text>
+<text x="611" y="386" font-size="14" text-anchor="middle" fill="#1f2937">Alarmas de Vt y VE</text>
+<text x="611" y="406" font-size="14" text-anchor="middle" fill="#1f2937">bajos ajustadas</text>
+<rect x="20" y="448" width="690" height="76" rx="8" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+<text x="365" y="472" font-size="14" text-anchor="middle" fill="#1f2937" font-weight="bold">En cualquier modo</text>
+<text x="365" y="492" font-size="14" text-anchor="middle" fill="#1f2937">Mide Pplat con pausa, calcula ΔP y Crs, y reevalúa tras cada cambio</text>
+<text x="365" y="512" font-size="14" text-anchor="middle" fill="#1f2937">de posición, sedación, PEEP o estado del abdomen</text>
+</g>
+</svg>

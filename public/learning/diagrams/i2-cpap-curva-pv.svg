@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" width="720" height="480" role="img" aria-labelledby="t d">
+<title id="t">Efecto de la CPAP sobre la curva presión-volumen</title>
+<desc id="d">Curva presión-volumen estática esquemática con forma sigmoidea. Sin CPAP, el volumen de fin de espiración se sitúa en la parte baja y plana de la curva, donde una misma variación de presión produce poco volumen. Con CPAP, el volumen de fin de espiración sube a la parte más empinada y la misma variación de presión produce más volumen. En la parte alta la curva se aplana de nuevo, zona de sobredistensión.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/></marker></defs>
+<line x1="100" y1="40" x2="100" y2="380" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="100" y1="380" x2="660" y2="380" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="96" y1="380" x2="100" y2="380" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="93" y="385" font-size="13" text-anchor="end" fill="#1f2937">0</text>
+<line x1="96" y1="273.75" x2="100" y2="273.75" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="93" y="278.75" font-size="13" text-anchor="end" fill="#1f2937">1</text>
+<line x1="96" y1="167.5" x2="100" y2="167.5" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="93" y="172.5" font-size="13" text-anchor="end" fill="#1f2937">2</text>
+<line x1="96" y1="61.25" x2="100" y2="61.25" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="93" y="66.25" font-size="13" text-anchor="end" fill="#1f2937">3</text>
+<line x1="100" y1="380" x2="100" y2="384" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="100" y="398" font-size="13" text-anchor="middle" fill="#1f2937">0</text>
+<line x1="240" y1="380" x2="240" y2="384" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="240" y="398" font-size="13" text-anchor="middle" fill="#1f2937">10</text>
+<line x1="380" y1="380" x2="380" y2="384" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="380" y="398" font-size="13" text-anchor="middle" fill="#1f2937">20</text>
+<line x1="520" y1="380" x2="520" y2="384" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="520" y="398" font-size="13" text-anchor="middle" fill="#1f2937">30</text>
+<line x1="660" y1="380" x2="660" y2="384" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="660" y="398" font-size="13" text-anchor="middle" fill="#1f2937">40</text>
+<text x="60" y="210" font-size="13" text-anchor="middle" fill="#1f2937" transform="rotate(-90 60 210)">Volumen sobre el residual (L)</text>
+<text x="660" y="412" font-size="13" text-anchor="end" fill="#1f2937">Presión transpulmonar (cmH₂O)</text>
+<polyline fill="none" stroke="#1f2937" stroke-width="2.5" stroke-linejoin="round" points="100.0,364.9 102.8,364.3 105.6,363.7 108.4,363.1 111.2,362.4 114.0,361.7 116.8,361.0 119.6,360.3 122.4,359.5 125.2,358.8 128.0,358.0 130.8,357.1 133.6,356.3 136.4,355.4 139.2,354.4 142.0,353.5 144.8,352.5 147.6,351.5 150.4,350.4 153.2,349.3 156.0,348.2 158.8,347.0 161.6,345.8 164.4,344.6 167.2,343.3 170.0,342.0 172.8,340.6 175.6,339.2 178.4,337.8 181.2,336.3 184.0,334.8 186.8,333.2 189.6,331.6 192.4,329.9 195.2,328.2 198.0,326.5 200.8,324.7 203.6,322.8 206.4,320.9 209.2,318.9 212.0,316.9 214.8,314.9 217.6,312.8 220.4,310.7 223.2,308.5 226.0,306.2 228.8,303.9 231.6,301.6 234.4,299.2 237.2,296.8 240.0,294.3 242.8,291.7 245.6,289.2 248.4,286.5 251.2,283.9 254.0,281.2 256.8,278.4 259.6,275.6 262.4,272.8 265.2,270.0 268.0,267.1 270.8,264.1 273.6,261.2 276.4,258.2 279.2,255.1 282.0,252.1 284.8,249.0 287.6,245.9 290.4,242.8 293.2,239.7 296.0,236.5 298.8,233.3 301.6,230.2 304.4,227.0 307.2,223.8 310.0,220.6 312.8,217.4 315.6,214.3 318.4,211.1 321.2,207.9 324.0,204.7 326.8,201.6 329.6,198.5 332.4,195.3 335.2,192.2 338.0,189.2 340.8,186.1 343.6,183.1 346.4,180.1 349.2,177.1 352.0,174.2 354.8,171.3 357.6,168.4 360.4,165.6 363.2,162.8 366.0,160.1 368.8,157.4 371.6,154.7 374.4,152.1 377.2,149.5 380.0,147.0 382.8,144.5 385.6,142.1 388.4,139.7 391.2,137.3 394.0,135.0 396.8,132.8 399.6,130.6 402.4,128.4 405.2,126.4 408.0,124.3 410.8,122.3 413.6,120.4 416.4,118.5 419.2,116.6 422.0,114.8 424.8,113.0 427.6,111.3 430.4,109.7 433.2,108.0 436.0,106.5 438.8,104.9 441.6,103.4 444.4,102.0 447.2,100.6 450.0,99.2 452.8,97.9 455.6,96.6 458.4,95.4 461.2,94.2 464.0,93.0 466.8,91.9 469.6,90.8 472.4,89.8 475.2,88.7 478.0,87.8 480.8,86.8 483.6,85.9 486.4,85.0 489.2,84.1 492.0,83.3 494.8,82.5 497.6,81.7 500.4,80.9 503.2,80.2 506.0,79.5 508.8,78.8 511.6,78.2 514.4,77.6 517.2,77.0 520.0,76.4 522.8,75.8 525.6,75.3 528.4,74.7 531.2,74.2 534.0,73.7 536.8,73.3 539.6,72.8 542.4,72.4 545.2,72.0 548.0,71.5 550.8,71.2 553.6,70.8 556.4,70.4 559.2,70.1 562.0,69.7 564.8,69.4 567.6,69.1 570.4,68.8 573.2,68.5 576.0,68.2 578.8,68.0 581.6,67.7 584.4,67.5 587.2,67.2 590.0,67.0 592.8,66.8 595.6,66.5 598.4,66.3 601.2,66.1 604.0,66.0 606.8,65.8 609.6,65.6 612.4,65.4 615.2,65.3 618.0,65.1 620.8,65.0 623.6,64.8 626.4,64.7 629.2,64.6 632.0,64.4 634.8,64.3 637.6,64.2 640.4,64.1 643.2,64.0 646.0,63.9 648.8,63.8 651.6,63.7 654.4,63.6 657.2,63.5 660.0,63.4"/>
+<rect x="114.0" y="334.8" width="70.0" height="26.9" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<polyline fill="none" stroke="#b91c1c" stroke-width="4" stroke-linejoin="round" points="114.0,361.7 115.8,361.3 117.5,360.8 119.3,360.4 121.0,359.9 122.8,359.5 124.5,359.0 126.3,358.5 128.0,358.0 129.8,357.4 131.5,356.9 133.3,356.4 135.0,355.8 136.8,355.3 138.5,354.7 140.3,354.1 142.0,353.5 143.8,352.9 145.5,352.2 147.3,351.6 149.0,351.0 150.8,350.3 152.5,349.6 154.3,348.9 156.0,348.2 157.8,347.5 159.5,346.7 161.3,346.0 163.0,345.2 164.8,344.4 166.5,343.6 168.3,342.8 170.0,342.0 171.8,341.2 173.5,340.3 175.3,339.4 177.0,338.5 178.8,337.6 180.5,336.7 182.3,335.7 184.0,334.8"/>
+<text x="366" y="326.875" font-size="14" text-anchor="start" fill="#b91c1c" font-weight="bold">Sin CPAP</text>
+<text x="366" y="345.875" font-size="14" text-anchor="start" fill="#b91c1c">ΔP 5 → poco volumen</text>
+<rect x="226.0" y="236.5" width="70.0" height="69.7" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<polyline fill="none" stroke="#1d4ed8" stroke-width="4" stroke-linejoin="round" points="226.0,306.2 227.8,304.8 229.5,303.3 231.3,301.9 233.0,300.4 234.8,298.9 236.5,297.4 238.3,295.8 240.0,294.3 241.8,292.7 243.5,291.1 245.3,289.5 247.0,287.9 248.8,286.2 250.5,284.6 252.3,282.9 254.0,281.2 255.8,279.5 257.5,277.7 259.3,276.0 261.0,274.2 262.8,272.5 264.5,270.7 266.3,268.9 268.0,267.1 269.8,265.2 271.5,263.4 273.3,261.5 275.0,259.7 276.8,257.8 278.5,255.9 280.3,254.0 282.0,252.1 283.8,250.2 285.5,248.2 287.3,246.3 289.0,244.4 290.8,242.4 292.5,240.4 294.3,238.5 296.0,236.5"/>
+<text x="366" y="247.1875" font-size="14" text-anchor="start" fill="#1d4ed8" font-weight="bold">Con CPAP</text>
+<text x="366" y="266.1875" font-size="14" text-anchor="start" fill="#1d4ed8">ΔP 5 → más volumen</text>
+<text x="464" y="140.9375" font-size="14" text-anchor="start" fill="#c2410c" font-weight="bold">Sobredistensión:</text>
+<text x="464" y="159.9375" font-size="14" text-anchor="start" fill="#c2410c">la curva se aplana</text>
+<text x="380" y="450" font-size="13" text-anchor="middle" fill="#1f2937">Esquema conceptual: la CPAP eleva el volumen de fin de espiración (CRF)</text>
+<text x="380" y="468" font-size="13" text-anchor="middle" fill="#1f2937">y desplaza la respiración a la zona de mayor compliance.</text>
+</g>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 550" width="720" height="550" role="img" aria-labelledby="t d">
+  <title id="t">Definición de Berlín frente a la global</title>
+  <desc id="d">Tabla comparativa entre la definición de Berlín de 2012 y la definición global de SDRA publicada en 2024. Ambas exigen inicio en una semana y edema no explicado principalmente por causa cardíaca o sobrecarga de volumen. La global acepta además ecografía pulmonar como imagen, el cociente SpO2/FiO2 menor o igual a 315 con SpO2 de 97 % o menos, pacientes no intubados con cánula nasal de alto flujo de al menos 30 L/min o VNI/CPAP de al menos 5 cmH2O, y una variante para entornos con recursos limitados sin exigir PEEP ni gasometría.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937">
+    <rect x="16" y="16" width="688" height="44" rx="6" fill="#1f2937"/>
+    <text x="90" y="44" text-anchor="middle" fill="#ffffff" font-weight="700">Criterio</text>
+    <text x="303" y="44" text-anchor="middle" fill="#ffffff" font-weight="700">Berlín (2012)</text>
+    <text x="566" y="44" text-anchor="middle" fill="#ffffff" font-weight="700">Global (2024)</text>
+    <rect x="16" y="60" width="688" height="72" fill="#f3f4f6"/>
+    <text x="24" y="90" font-weight="700">Momento</text>
+    <text x="172" y="88">≤ 1 semana del factor de riesgo</text>
+    <text x="172" y="108">o de síntomas nuevos</text>
+    <text x="434" y="88">Igual, con factor de riesgo</text>
+    <text x="434" y="108">agudo identificado</text>
+    <rect x="16" y="132" width="688" height="72" fill="#ffffff"/>
+    <text x="24" y="162" font-weight="700">Imagen</text>
+    <text x="172" y="160">Opacidades bilaterales en</text>
+    <text x="172" y="180">radiografía o TC</text>
+    <text x="434" y="160">Radiografía, TC o ecografía</text>
+    <text x="434" y="180" fill="#15803d" font-weight="700">(líneas B o consolidaciones)</text>
+    <rect x="16" y="204" width="688" height="72" fill="#f3f4f6"/>
+    <text x="24" y="234" font-weight="700">Origen</text>
+    <text x="24" y="252" font-weight="700">del edema</text>
+    <text x="172" y="232">No explicado del todo por</text>
+    <text x="172" y="252">falla cardíaca o sobrecarga</text>
+    <text x="434" y="226">No explicado principalmente</text>
+    <text x="434" y="244">por edema cardiogénico,</text>
+    <text x="434" y="262">sobrecarga o atelectasia</text>
+    <rect x="16" y="276" width="688" height="92" fill="#ffffff"/>
+    <text x="24" y="306" font-weight="700">Intubados</text>
+    <text x="172" y="304">PaO₂/FiO₂ ≤ 300 con</text>
+    <text x="172" y="324">PEEP ≥ 5 cmH₂O</text>
+    <text x="172" y="344">(grados ≤ 300, ≤ 200, ≤ 100)</text>
+    <text x="434" y="304">PaO₂/FiO₂ ≤ 300 o</text>
+    <text x="434" y="324" fill="#15803d" font-weight="700">SpO₂/FiO₂ ≤ 315 (SpO₂ ≤ 97 %)</text>
+    <text x="434" y="344">con PEEP ≥ 5 cmH₂O</text>
+    <rect x="16" y="368" width="688" height="92" fill="#f3f4f6"/>
+    <text x="24" y="398" font-weight="700">No</text>
+    <text x="24" y="416" font-weight="700">intubados</text>
+    <text x="172" y="396">Solo grado leve con</text>
+    <text x="172" y="416">CPAP/VNI ≥ 5 cmH₂O</text>
+    <text x="434" y="396" fill="#15803d" font-weight="700">Alto flujo ≥ 30 L/min</text>
+    <text x="434" y="416" fill="#15803d" font-weight="700">o VNI/CPAP ≥ 5 cmH₂O</text>
+    <text x="434" y="436">mismos umbrales de oxigenación</text>
+    <rect x="16" y="460" width="688" height="74" fill="#ffffff"/>
+    <text x="24" y="490" font-weight="700">Recursos</text>
+    <text x="24" y="508" font-weight="700">limitados</text>
+    <text x="172" y="490">No contemplado</text>
+    <text x="434" y="488" fill="#15803d" font-weight="700">SpO₂/FiO₂ ≤ 315; sin exigir</text>
+    <text x="434" y="508" fill="#15803d" font-weight="700">PEEP, flujo ni gasometría</text>
+    <line x1="164" y1="60" x2="164" y2="534" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="426" y1="60" x2="426" y2="534" stroke="#9ca3af" stroke-width="1.5"/>
+    <rect x="16" y="16" width="688" height="518" rx="6" fill="none" stroke="#9ca3af" stroke-width="1.5"/>
+  </g>
+</svg>

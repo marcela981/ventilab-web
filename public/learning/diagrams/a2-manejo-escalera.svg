@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="720" height="520" role="img" aria-labelledby="t d">
+  <title id="t">Escalera terapéutica del SDRA</title>
+  <desc id="d">Escalera de cuatro peldaños. Peldaño 1, para todo SDRA: volumen corriente de 4 a 8 mL/kg de peso predicho y presión meseta menor de 30 cmH2O, PEEP de al menos 5, vigilancia de la driving pressure y tratamiento de la causa. Peldaño 2, moderado o grave: PEEP más alta sin maniobras de reclutamiento y decúbito prono de 16 horas o más si PaO2/FiO2 es menor de 150. Peldaño 3, grave y temprano: bloqueo neuromuscular si PaO2/FiO2 es de 100 o menos en las primeras 48 horas, según ATS; ESICM desaconseja la infusión continua rutinaria. Peldaño 4, refractario: ECMO venovenosa en un centro experto con criterios tipo EOLIA. A la izquierda, un recuadro de medidas a evitar: maniobras de reclutamiento prolongadas, oscilación de alta frecuencia rutinaria y ECCO2R fuera de ensayos.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937">
+    <text x="360" y="34" text-anchor="middle" font-size="16" font-weight="700">Escalada según gravedad y respuesta</text>
+    <rect x="20" y="400" width="680" height="100" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="36" y="426" font-weight="700" fill="#15803d">1. Todo SDRA</text>
+    <text x="36" y="450">Vt 4–8 mL/kg PBW y Pplat &lt; 30 cmH₂O (recomendación fuerte)</text>
+    <text x="36" y="472">PEEP ≥ 5 cmH₂O, vigila ΔP, trata la causa y evita la sobrecarga</text>
+    <rect x="120" y="290" width="580" height="100" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="136" y="316" font-weight="700" fill="#1d4ed8">2. Moderado o grave</text>
+    <text x="136" y="340">PEEP más alta sin reclutamiento (ATS 2024, condicional)</text>
+    <text x="136" y="362">Prono ≥ 16 h si PaO₂/FiO₂ &lt; 150 mmHg (ESICM, fuerte)</text>
+    <rect x="220" y="180" width="480" height="100" rx="8" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+    <text x="236" y="206" font-weight="700" fill="#c2410c">3. Grave y temprano</text>
+    <text x="236" y="230">BNM si PaO₂/FiO₂ ≤ 100 y &lt; 48 h (ATS, condicional)</text>
+    <text x="236" y="252">ESICM: contra la infusión continua rutinaria</text>
+    <rect x="320" y="70" width="380" height="100" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="336" y="96" font-weight="700" fill="#b91c1c">4. Hipoxemia o acidosis refractaria</text>
+    <text x="336" y="120">ECMO venovenosa en centro experto</text>
+    <text x="336" y="142">(criterios tipo EOLIA)</text>
+    <rect x="20" y="70" width="186" height="210" rx="8" fill="#ffffff" stroke="#b91c1c" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="113" y="96" text-anchor="middle" font-weight="700" fill="#b91c1c">Evitar</text>
+    <text x="32" y="122">MR prolongadas</text>
+    <text x="32" y="142">(≥ 35 cmH₂O</text>
+    <text x="32" y="162">más de 60 s)</text>
+    <text x="32" y="192">HFOV de rutina</text>
+    <text x="32" y="222">ECCO₂R fuera</text>
+    <text x="32" y="242">de ensayos clínicos</text>
+  </g>
+</svg>

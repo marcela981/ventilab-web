@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 490" width="720" height="490" role="img" aria-labelledby="t d">
+  <title id="t">Componentes de la energía por ciclo</title>
+  <desc id="d">Gráfico de presión en la vía aérea frente al volumen insuflado durante una inspiración con flujo constante, con PEEP de 10, presión resistiva de 6 y driving pressure de 14 cmH₂O y volumen corriente de 420 mL. El área bajo la línea de presión es la energía por ciclo y se divide en un rectángulo inferior debido a la PEEP, una franja debida a la presión resistiva y un triángulo superior debido a la presión elástica. La potencia mecánica es esa energía multiplicada por la frecuencia respiratoria.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <rect x="110" y="290" width="440" height="90" fill="#dbeafe"/>
+    <rect x="110" y="236" width="440" height="54" fill="#fee2e2"/>
+    <path d="M110,236 L550,110 L550,236 Z" fill="#dcfce7"/>
+    <line x1="110" y1="380" x2="620" y2="380" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="110" y1="380" x2="110" y2="80" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="104" y1="290" x2="110" y2="290" stroke="#9ca3af" stroke-width="2"/>
+    <text x="100" y="295" font-size="13" fill="#1f2937" text-anchor="end">10</text>
+    <line x1="104" y1="236" x2="110" y2="236" stroke="#9ca3af" stroke-width="2"/>
+    <text x="100" y="241" font-size="13" fill="#1f2937" text-anchor="end">16</text>
+    <line x1="104" y1="110" x2="110" y2="110" stroke="#9ca3af" stroke-width="2"/>
+    <text x="100" y="115" font-size="13" fill="#1f2937" text-anchor="end">30</text>
+    <text x="100" y="385" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <path d="M110,236 L550,110" fill="none" stroke="#1d4ed8" stroke-width="4"/>
+    <line x1="550" y1="110" x2="550" y2="380" stroke="#1f2937" stroke-width="2" stroke-dasharray="5 4"/>
+    <text x="550" y="398" font-size="13" fill="#1f2937" text-anchor="middle">Vt = 420</text>
+    <text x="330" y="340" font-size="15" fill="#1d4ed8" text-anchor="middle" font-weight="700">PEEP × Vt</text>
+    <text x="330" y="268" font-size="14" fill="#b91c1c" text-anchor="middle" font-weight="700">Resistivo: (Ppico − Pmeseta) × Vt</text>
+    <text x="445.23809523809524" y="213" font-size="14" fill="#15803d" text-anchor="middle" font-weight="700">Elástico: ½ × ΔP × Vt</text>
+    <text x="558" y="115" font-size="14" fill="#1f2937">Ppico</text>
+    <text x="130.95238095238096" y="146" font-size="14" fill="#1d4ed8">presión durante</text>
+    <text x="130.95238095238096" y="164" font-size="14" fill="#1d4ed8">la insuflación</text>
+    <text x="365" y="428" font-size="14" fill="#1f2937" text-anchor="middle">Volumen insuflado (mL)</text>
+    <text x="40" y="230" font-size="14" fill="#1f2937" text-anchor="middle" transform="rotate(-90 40 230)">Presión en la vía aérea (cmH₂O)</text>
+    <text x="365" y="465" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="700">Energía por ciclo = área total; potencia = energía × FR</text>
+  </g>
+</svg>

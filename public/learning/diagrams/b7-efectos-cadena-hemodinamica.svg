@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" width="720" height="470" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="t">Efectos hemodinámicos de la presión positiva intratorácica</title>
+  <desc id="d">Diagrama de flujo. El aumento de la presión intratorácica por PEEP, volumen corriente alto o auto-PEEP se divide en tres vías. Primera: aumenta la presión de la aurícula derecha, cae el gradiente de retorno venoso, baja la precarga y puede caer el gasto cardíaco, más si hay hipovolemia. Segunda: la sobredistensión o el colapso aumentan la resistencia vascular pulmonar y la poscarga del ventrículo derecho, que al dilatarse reduce el llenado del izquierdo. Tercera: baja la presión transmural y la poscarga del ventrículo izquierdo, lo que puede mejorar la eyección en la falla izquierda. El resultado neto depende de la volemia y de la función de ambos ventrículos.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <rect x="150" y="16" width="420" height="62" rx="10" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+  <text x="360" y="42" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2937">Aumento de la presión intratorácica</text>
+  <text x="360" y="64" text-anchor="middle" font-size="14" fill="#1f2937">PEEP, volumen corriente alto, auto-PEEP</text>
+  <g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#ah)">
+    <path d="M250,78 L130,106"/>
+    <path d="M360,78 L360,106"/>
+    <path d="M470,78 L590,106"/>
+    <path d="M130,170 L130,188"/><path d="M130,250 L130,268"/><path d="M130,330 L130,348"/>
+    <path d="M360,170 L360,188"/><path d="M360,250 L360,268"/><path d="M360,330 L360,348"/>
+    <path d="M590,170 L590,188"/><path d="M590,250 L590,268"/><path d="M590,330 L590,348"/>
+  </g>
+  <g font-size="14" fill="#1f2937" text-anchor="middle">
+    <rect x="20" y="110" width="220" height="60" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="130" y="135">↑ Presión de la</text><text x="130" y="155">aurícula derecha</text>
+    <rect x="20" y="190" width="220" height="60" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="130" y="215">↓ Gradiente de</text><text x="130" y="235">retorno venoso</text>
+    <rect x="20" y="270" width="220" height="60" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <text x="130" y="295">↓ Precarga</text><text x="130" y="315">del VD y del VI</text>
+    <rect x="20" y="350" width="220" height="60" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+    <text x="130" y="375">↓ Gasto cardíaco</text><text x="130" y="395">(mayor si hipovolemia)</text>
+
+    <rect x="250" y="110" width="220" height="60" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="360" y="135">Sobredistensión o</text><text x="360" y="155">colapso alveolar</text>
+    <rect x="250" y="190" width="220" height="60" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="360" y="215">↑ Resistencia</text><text x="360" y="235">vascular pulmonar</text>
+    <rect x="250" y="270" width="220" height="60" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="1.5"/>
+    <text x="360" y="295">↑ Poscarga del VD</text><text x="360" y="315">y dilatación del VD</text>
+    <rect x="250" y="350" width="220" height="60" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+    <text x="360" y="375">↓ Llenado del VI</text><text x="360" y="395">(interdependencia)</text>
+
+    <rect x="480" y="110" width="220" height="60" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <text x="590" y="135">↓ Presión transmural</text><text x="590" y="155">del VI</text>
+    <rect x="480" y="190" width="220" height="60" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <text x="590" y="215">↓ Poscarga</text><text x="590" y="235">del VI</text>
+    <rect x="480" y="270" width="220" height="60" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <text x="590" y="295">Mejor eyección</text><text x="590" y="315">en la falla del VI</text>
+    <rect x="480" y="350" width="220" height="60" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <text x="590" y="375">Efecto favorable</text><text x="590" y="395">(edema cardiogénico)</text>
+  </g>
+  <text x="360" y="445" text-anchor="middle" font-size="15" font-weight="600" fill="#1f2937">Resultado neto: depende de la volemia y de la función de ambos ventrículos</text>
+  <text x="360" y="464" text-anchor="middle" font-size="13" fill="#1f2937">VD: ventrículo derecho · VI: ventrículo izquierdo</text>
+</svg>

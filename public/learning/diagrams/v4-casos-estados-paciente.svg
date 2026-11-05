@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+  <title id="t">Estados del paciente simulado en el modelo de evolución</title>
+  <desc id="d">Cadena de cinco estados de izquierda a derecha: Estable, Inestable, Crítico, Paro y Paciente fallecido. Flechas de avance entre cada uno. Flechas de regreso debajo: de Inestable a Estable cuando se corrige la causa, y de Crítico a Inestable cuando se rescata al paciente antes del paro. El paro es irreversible. Debajo, una leyenda explica qué lleva a cada estado.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <rect x="22" y="40" width="116" height="52" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="80" y="71" font-size="15" font-weight="600" text-anchor="middle">Estable</text>
+    <rect x="162" y="40" width="116" height="52" rx="8" fill="#ffffff" stroke="#c2410c" stroke-width="2"/>
+    <text x="220" y="71" font-size="15" font-weight="600" text-anchor="middle">Inestable</text>
+    <rect x="302" y="40" width="116" height="52" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="360" y="71" font-size="15" font-weight="600" text-anchor="middle">Crítico</text>
+    <rect x="442" y="40" width="116" height="52" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="3"/>
+    <text x="500" y="71" font-size="15" font-weight="600" text-anchor="middle">Paro</text>
+    <rect x="582" y="40" width="116" height="52" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+    <text x="640" y="64" font-size="14" font-weight="600" text-anchor="middle">Paciente</text>
+    <text x="640" y="82" font-size="14" font-weight="600" text-anchor="middle">fallecido</text>
+
+    <line x1="138" y1="58" x2="159" y2="58" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="278" y1="58" x2="299" y2="58" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="418" y1="58" x2="439" y2="58" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="558" y1="58" x2="579" y2="58" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+
+    <path d="M220,92 C220,140 80,140 80,95" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#a)"/>
+    <text x="150" y="152" font-size="14" text-anchor="middle" fill="#15803d">se corrige la causa</text>
+    <path d="M360,92 C360,140 220,140 220,95" fill="none" stroke="#15803d" stroke-width="2" marker-end="url(#a)"/>
+    <text x="290" y="174" font-size="14" text-anchor="middle" fill="#15803d">rescate antes del paro</text>
+    <text x="570" y="128" font-size="14" text-anchor="middle" fill="#b91c1c">irreversible: no hay RCP</text>
+
+    <rect x="22" y="196" width="676" height="186" rx="8" fill="#f3f4f6"/>
+    <text x="38" y="222" font-size="14"><tspan font-weight="600">Estable:</tspan> ninguna agresión activa; la gravedad baja poco a poco.</text>
+    <text x="38" y="248" font-size="14"><tspan font-weight="600">Inestable:</tspan> al menos una agresión (hipoxemia, acidosis, presiones</text>
+    <text x="38" y="268" font-size="14">altas, atrapamiento o hipotensión); la gravedad sube mientras dure.</text>
+    <text x="38" y="294" font-size="14"><tspan font-weight="600">Crítico:</tspan> hipoxemia, acidemia o hipotensión graves; se acumula exposición.</text>
+    <text x="38" y="320" font-size="14"><tspan font-weight="600">Paro:</tspan> la exposición crítica superó el tiempo definido por el caso.</text>
+    <text x="38" y="346" font-size="14"><tspan font-weight="600">Paciente fallecido:</tspan> la fisiología se congela, la sesión se cierra</text>
+    <text x="38" y="366" font-size="14">y se abre el debriefing con la línea de tiempo.</text>
+  </g>
+</svg>

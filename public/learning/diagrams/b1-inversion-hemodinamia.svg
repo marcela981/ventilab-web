@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="t d">
+<title id="t">Efectos hemodinámicos iniciales de la presión positiva</title>
+<desc id="d">Diagrama de flujo. Desde una caja superior, presión intratorácica positiva, salen tres ramas. Primera: aumenta la presión en la aurícula derecha, disminuye el retorno venoso y cae el gasto cardíaco si hay poca reserva de precarga. Segunda: la sobredistensión alveolar aumenta la resistencia vascular pulmonar y la poscarga del ventrículo derecho. Tercera: disminuye la presión transmural y la poscarga del ventrículo izquierdo, lo que puede ser beneficioso en la insuficiencia cardíaca.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+<path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+</marker>
+</defs>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14" text-anchor="middle">
+<rect x="185" y="20" width="350" height="56" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="360" y="44" font-weight="bold">Presión intratorácica positiva</text>
+<text x="360" y="64">(insuflación y PEEP)</text>
+<g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#ah)">
+<path d="M300,76 L125,116"/>
+<path d="M360,76 L360,116"/>
+<path d="M420,76 L595,116"/>
+<path d="M125,176 L125,206"/>
+<path d="M360,176 L360,206"/>
+<path d="M595,176 L595,206"/>
+<path d="M125,266 L125,296"/>
+<path d="M360,266 L360,296"/>
+<path d="M595,266 L595,296"/>
+</g>
+<rect x="20" y="118" width="210" height="58" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="125" y="142">Sube la presión en</text>
+<text x="125" y="162">la aurícula derecha</text>
+<rect x="20" y="208" width="210" height="58" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="125" y="232">Disminuye el</text>
+<text x="125" y="252">retorno venoso</text>
+<rect x="20" y="298" width="210" height="96" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="125" y="322">Menor precarga:</text>
+<text x="125" y="342">cae el gasto cardíaco</text>
+<text x="125" y="362">si hay poca reserva</text>
+<text x="125" y="382">(hipovolemia, sedación)</text>
+<rect x="255" y="118" width="210" height="58" rx="8" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+<text x="360" y="142">Sobredistensión</text>
+<text x="360" y="162">alveolar</text>
+<rect x="255" y="208" width="210" height="58" rx="8" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+<text x="360" y="232">Compresión capilar:</text>
+<text x="360" y="252">sube la RVP</text>
+<rect x="255" y="298" width="210" height="96" rx="8" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+<text x="360" y="322">Aumenta la poscarga</text>
+<text x="360" y="342">del ventrículo</text>
+<text x="360" y="362">derecho</text>
+<rect x="490" y="118" width="210" height="58" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<text x="595" y="142">Baja la presión</text>
+<text x="595" y="162">transmural del VI</text>
+<rect x="490" y="208" width="210" height="58" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<text x="595" y="232">Disminuye la poscarga</text>
+<text x="595" y="252">del ventrículo izquierdo</text>
+<rect x="490" y="298" width="210" height="96" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<text x="595" y="322">Puede ayudar en la</text>
+<text x="595" y="342">insuficiencia cardíaca</text>
+<text x="595" y="362">y el edema pulmonar</text>
+<text x="595" y="382">cardiogénico</text>
+<text x="125" y="425" font-weight="bold" fill="#b91c1c">Efecto desfavorable</text>
+<text x="360" y="425" font-weight="bold" fill="#c2410c">Depende del volumen</text>
+<text x="595" y="425" font-weight="bold" fill="#15803d">Efecto potencialmente útil</text>
+<text x="360" y="448">RVP: resistencia vascular pulmonar. VI: ventrículo izquierdo.</text>
+</g>
+</svg>

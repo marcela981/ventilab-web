@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+<title id="t">Mecanismos de obstrucción de la vía aérea pequeña</title>
+<desc id="d">Tres cortes transversales esquemáticos de una vía aérea pequeña. A la izquierda, vía aérea normal con pared delgada, luz amplia y fijaciones alveolares que la mantienen abierta. En el centro, EPOC: pared engrosada, moco en la luz y pérdida de las fijaciones alveolares por enfisema, lo que reduce la tracción radial. A la derecha, asma en crisis: contracción del músculo liso, edema de la pared y tapón de moco que estrechan la luz de forma variable y reversible.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<text x="125" y="42" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">Normal</text>
+<text x="360" y="42" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">EPOC</text>
+<text x="595" y="42" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">Asma en crisis</text>
+<line x1="177" y1="170" x2="207" y2="170" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="215" cy="170" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="167.1" y1="200.6" x2="191.3" y2="218.2" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="197.8" cy="222.9" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="141.1" y1="219.5" x2="150.3" y2="248" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="152.8" cy="255.6" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="108.9" y1="219.5" x2="99.7" y2="248" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="97.2" cy="255.6" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="82.9" y1="200.6" x2="58.7" y2="218.2" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="52.2" cy="222.9" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="73" y1="170" x2="43" y2="170" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="35" cy="170" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="82.9" y1="139.4" x2="58.7" y2="121.8" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="52.2" cy="117.1" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="108.9" y1="120.5" x2="99.7" y2="92" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="97.2" cy="84.4" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="141.1" y1="120.5" x2="150.3" y2="92" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="152.8" cy="84.4" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="167.1" y1="139.4" x2="191.3" y2="121.8" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="197.8" cy="117.1" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<circle cx="125" cy="170" r="52" fill="#fee2e2" stroke="#1f2937" stroke-width="1.5"/>
+<circle cx="125" cy="170" r="44" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+<text x="125" y="175" font-size="14" fill="#1f2937" text-anchor="middle">luz amplia</text>
+<line x1="416" y1="170" x2="446" y2="170" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="454" cy="170" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="342.7" y1="223.3" x2="333.4" y2="251.8" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="331" cy="259.4" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="314.7" y1="202.9" x2="290.4" y2="220.5" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="284" cy="225.3" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="314.7" y1="137.1" x2="290.4" y2="119.5" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="284" cy="114.7" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="405.3" y1="137.1" x2="429.6" y2="119.5" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="436" cy="114.7" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<circle cx="360" cy="170" r="56" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<circle cx="360" cy="170" r="30" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+<ellipse cx="364" cy="184" rx="18" ry="9" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.2"/>
+<text x="360" y="162" font-size="14" fill="#1f2937" text-anchor="middle">luz</text>
+<line x1="647" y1="170" x2="677" y2="170" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="685" cy="170" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="637.1" y1="200.6" x2="661.3" y2="218.2" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="667.8" cy="222.9" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="611.1" y1="219.5" x2="620.3" y2="248" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="622.8" cy="255.6" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="578.9" y1="219.5" x2="569.7" y2="248" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="567.2" cy="255.6" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="552.9" y1="200.6" x2="528.7" y2="218.2" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="522.2" cy="222.9" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="543" y1="170" x2="513" y2="170" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="505" cy="170" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="552.9" y1="139.4" x2="528.7" y2="121.8" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="522.2" cy="117.1" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="578.9" y1="120.5" x2="569.7" y2="92" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="567.2" cy="84.4" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="611.1" y1="120.5" x2="620.3" y2="92" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="622.8" cy="84.4" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="637.1" y1="139.4" x2="661.3" y2="121.8" stroke="#1d4ed8" stroke-width="2"/>
+<circle cx="667.8" cy="117.1" r="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<circle cx="595" cy="170" r="52" fill="#fee2e2" stroke="#1f2937" stroke-width="1.5"/>
+<circle cx="595" cy="170" r="42" fill="none" stroke="#6d28d9" stroke-width="5"/>
+<path d="M620.0 170.0 L617.3 172.9 L611.9 174.5 L608.9 175.7 L610.2 178.8 L612.9 183.7 L612.7 187.7 L608.7 187.9 L603.8 185.2 L600.7 183.9 L599.5 186.9 L597.9 192.3 L595.0 195.0 L592.1 192.3 L590.5 186.9 L589.3 183.9 L586.3 185.2 L581.3 187.9 L577.3 187.7 L577.1 183.7 L579.8 178.8 L581.1 175.7 L578.1 174.5 L572.7 172.9 L570.0 170.0 L572.7 167.1 L578.1 165.5 L581.1 164.3 L579.8 161.3 L577.1 156.3 L577.3 152.3 L581.3 152.1 L586.3 154.8 L589.3 156.1 L590.5 153.1 L592.1 147.7 L595.0 145.0 L597.9 147.7 L599.5 153.1 L600.7 156.1 L603.8 154.8 L608.7 152.1 L612.7 152.3 L612.9 156.3 L610.2 161.2 L608.9 164.3 L611.9 165.5 L617.3 167.1 L620.0 170.0" fill="#ffffff" stroke="#1f2937" stroke-width="1.5" stroke-linejoin="round"/>
+<ellipse cx="597" cy="176" rx="10" ry="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.2"/>
+<text x="125" y="300" font-size="14" fill="#1f2937" text-anchor="middle">Fijaciones alveolares</text>
+<text x="125" y="320" font-size="14" fill="#1f2937" text-anchor="middle">tiran de la pared</text>
+<text x="125" y="340" font-size="14" fill="#1f2937" text-anchor="middle">hacia fuera</text>
+<text x="360" y="300" font-size="14" fill="#1f2937" text-anchor="middle">Pared engrosada y</text>
+<text x="360" y="320" font-size="14" fill="#1f2937" text-anchor="middle">remodelada, moco,</text>
+<text x="360" y="340" font-size="14" fill="#1f2937" text-anchor="middle">pérdida de fijaciones</text>
+<text x="595" y="300" font-size="14" fill="#1f2937" text-anchor="middle">Músculo liso contraído,</text>
+<text x="595" y="320" font-size="14" fill="#1f2937" text-anchor="middle">edema y tapón de moco:</text>
+<text x="595" y="340" font-size="14" fill="#1f2937" text-anchor="middle">obstrucción variable</text>
+<text x="360" y="376" font-size="13" fill="#1f2937" text-anchor="middle">Leyenda: azul = tabique alveolar; rojo claro = pared; morado = músculo liso; gris = moco</text>
+<text x="360" y="398" font-size="13" fill="#1f2937" text-anchor="middle">Esquema didáctico, no a escala</text>
+</g>
+</svg>

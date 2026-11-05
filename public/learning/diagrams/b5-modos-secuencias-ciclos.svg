@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" width="720" height="480" role="img" aria-labelledby="t d">
+<title id="t">Secuencias de ciclos: CMV, IMV y CSV</title>
+<desc id="d">Tres trazados esquemáticos de presión en la vía aérea frente al tiempo. En CMV todos los ciclos son mandatorios; algunos los dispara el tiempo y otros el esfuerzo del paciente, señalado por una pequeña deflexión negativa previa. En IMV se intercalan ciclos mandatorios con ciclos espontáneos más pequeños. En CSV todos los ciclos son espontáneos, disparados y ciclados por el paciente.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<text x="705.0" y="26.0" font-size="14" fill="#1f2937" text-anchor="end">Presión en la vía aérea (esquema) frente al tiempo</text>
+<text x="20.0" y="86.0" font-size="18" fill="#1f2937" font-weight="bold">CMV</text>
+<text x="20.0" y="108.0" font-size="14" fill="#1f2937">todos mandatorios</text>
+<line x1="150.0" y1="130.0" x2="700.0" y2="130.0" stroke="#9ca3af" stroke-width="1.2"/>
+<line x1="150.0" y1="38.0" x2="150.0" y2="142.0" stroke="#9ca3af" stroke-width="1.2"/>
+<path d="M150.0 130.0 L180.0 130.0 L186.0 60.0 L226.0 52.0 L230.0 130.0 L270.0 130.0 L276.0 130.0 L284.0 138.0 L290.0 130.0 L296.0 60.0 L336.0 52.0 L340.0 130.0 L380.0 130.0 L400.0 130.0 L406.0 60.0 L446.0 52.0 L450.0 130.0 L490.0 130.0 L496.0 130.0 L504.0 138.0 L510.0 130.0 L516.0 60.0 L556.0 52.0 L560.0 130.0 L600.0 130.0 L620.0 130.0 L626.0 60.0 L666.0 52.0 L670.0 130.0 L710.0 130.0 L700.0 130.0" fill="none" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
+<text x="206.0" y="46.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="316.0" y="46.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="426.0" y="46.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="536.0" y="46.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="646.0" y="46.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="310.0" y="160.0" font-size="14" fill="#c2410c" text-anchor="middle">disparo por el paciente</text>
+<text x="190.0" y="160.0" font-size="14" fill="#1f2937" text-anchor="middle">por tiempo</text>
+<text x="20.0" y="231.0" font-size="18" fill="#1f2937" font-weight="bold">IMV</text>
+<text x="20.0" y="253.0" font-size="14" fill="#1f2937">mandatorios</text>
+<text x="20.0" y="271.0" font-size="14" fill="#1f2937">+ espontáneos</text>
+<line x1="150.0" y1="275.0" x2="700.0" y2="275.0" stroke="#9ca3af" stroke-width="1.2"/>
+<line x1="150.0" y1="183.0" x2="150.0" y2="287.0" stroke="#9ca3af" stroke-width="1.2"/>
+<path d="M150.0 275.0 L180.0 275.0 L186.0 205.0 L226.0 197.0 L230.0 275.0 L270.0 275.0 L286.0 275.0 L294.0 283.0 L300.0 275.0 L305.0 240.0 L334.0 240.0 L338.0 275.0 L356.0 275.0 L364.0 283.0 L370.0 275.0 L375.0 240.0 L404.0 240.0 L408.0 275.0 L450.0 275.0 L456.0 205.0 L496.0 197.0 L500.0 275.0 L540.0 275.0 L556.0 275.0 L564.0 283.0 L570.0 275.0 L575.0 240.0 L604.0 240.0 L608.0 275.0 L626.0 275.0 L634.0 283.0 L640.0 275.0 L645.0 240.0 L674.0 240.0 L678.0 275.0 L700.0 275.0" fill="none" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
+<text x="206.0" y="191.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="319.0" y="233.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="389.0" y="233.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="476.0" y="191.0" font-size="14" fill="#1d4ed8" text-anchor="middle" font-weight="bold">M</text>
+<text x="589.0" y="233.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="659.0" y="233.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="20.0" y="376.0" font-size="18" fill="#1f2937" font-weight="bold">CSV</text>
+<text x="20.0" y="398.0" font-size="14" fill="#1f2937">todos espontáneos</text>
+<line x1="150.0" y1="420.0" x2="700.0" y2="420.0" stroke="#9ca3af" stroke-width="1.2"/>
+<line x1="150.0" y1="328.0" x2="150.0" y2="432.0" stroke="#9ca3af" stroke-width="1.2"/>
+<path d="M150.0 420.0 L176.0 420.0 L184.0 428.0 L190.0 420.0 L195.0 385.0 L224.0 385.0 L228.0 420.0 L266.0 420.0 L274.0 428.0 L280.0 420.0 L285.0 385.0 L314.0 385.0 L318.0 420.0 L366.0 420.0 L374.0 428.0 L380.0 420.0 L385.0 385.0 L414.0 385.0 L418.0 420.0 L456.0 420.0 L464.0 428.0 L470.0 420.0 L475.0 385.0 L504.0 385.0 L508.0 420.0 L546.0 420.0 L554.0 428.0 L560.0 420.0 L565.0 385.0 L594.0 385.0 L598.0 420.0 L636.0 420.0 L644.0 428.0 L650.0 420.0 L655.0 385.0 L684.0 385.0 L688.0 420.0 L700.0 420.0" fill="none" stroke="#1f2937" stroke-width="2" stroke-linejoin="round"/>
+<text x="209.0" y="378.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="299.0" y="378.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="399.0" y="378.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="489.0" y="378.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="579.0" y="378.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="669.0" y="378.0" font-size="14" fill="#15803d" text-anchor="middle" font-weight="bold">E</text>
+<text x="20.0" y="468.0" font-size="14" fill="#1f2937">M = mandatorio (el ventilador dispara y/o cicla)   ·   E = espontáneo (el paciente dispara y cicla)</text>
+</g>
+</svg>

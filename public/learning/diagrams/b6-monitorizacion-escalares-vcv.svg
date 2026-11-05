@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" width="720" height="560" role="img" aria-labelledby="t d">
+  <title id="t">Curvas escalares en ventilación controlada por volumen con pausa inspiratoria</title>
+  <desc id="d">Tres curvas alineadas frente al tiempo durante dos ciclos. Presión: salto inicial, rampa lineal hasta la presión pico, caída a una meseta durante la pausa inspiratoria y retorno a la PEEP en la espiración. Flujo: inspiratorio rectangular y positivo, cero durante la pausa, espiratorio negativo que decae hasta cero antes del ciclo siguiente. Volumen: aumento lineal, meseta durante la pausa y descenso hasta la línea de base.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <!-- phase shading, breath 1 -->
+    <rect x="90" y="40" width="80" height="480" fill="#dbeafe" opacity="0.6"/>
+    <rect x="170" y="40" width="25" height="480" fill="#f3f4f6"/>
+    <rect x="380" y="40" width="80" height="480" fill="#dbeafe" opacity="0.6"/>
+    <rect x="460" y="40" width="25" height="480" fill="#f3f4f6"/>
+    <text x="130" y="34" font-size="14" text-anchor="middle">Inspiración</text>
+    <text x="196" y="34" font-size="14" text-anchor="start">Pausa</text>
+    <text x="300" y="34" font-size="14" text-anchor="middle">Espiración</text>
+
+    <!-- PRESSURE PANEL -->
+    <line x1="80" y1="50" x2="80" y2="185" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="80" y1="185" x2="690" y2="185" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="22" y="118" font-size="13" transform="rotate(-90 22 118)" text-anchor="middle">Presión (cmH₂O)</text>
+    <line x1="80" y1="165" x2="690" y2="165" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 4"/>
+    <path d="M90,165 L90,148 L170,68 L176,98 L195,102 L201,150 C215,163 235,165 260,165 L380,165 L380,148 L460,68 L466,98 L485,102 L491,150 C505,163 525,165 550,165 L670,165" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <line x1="80" y1="140" x2="690" y2="140" stroke="#6d28d9" stroke-width="1.5" stroke-dasharray="8 5"/>
+    <text x="686" y="134" font-size="14" fill="#6d28d9" text-anchor="end">Pmedia</text>
+    <text x="150" y="62" font-size="14" fill="#b91c1c" text-anchor="end">Ppico</text>
+    <line x1="152" y1="62" x2="168" y2="68" stroke="#b91c1c" stroke-width="1.5"/>
+    <text x="210" y="96" font-size="14" fill="#15803d">Pplat</text>
+    <text x="300" y="160" font-size="14">PEEP</text>
+    <!-- resistive / elastic brackets breath 2 -->
+    <line x1="440" y1="68" x2="440" y2="100" stroke="#c2410c" stroke-width="2"/>
+    <text x="436" y="88" font-size="13" fill="#c2410c" text-anchor="end">resistiva</text>
+    <line x1="505" y1="100" x2="505" y2="165" stroke="#15803d" stroke-width="2"/>
+    <text x="511" y="128" font-size="13" fill="#15803d">elástica (ΔP)</text>
+
+    <!-- FLOW PANEL -->
+    <line x1="80" y1="215" x2="80" y2="375" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="80" y1="295" x2="690" y2="295" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="22" y="295" font-size="13" transform="rotate(-90 22 295)" text-anchor="middle">Flujo (L/min)</text>
+    <text x="86" y="230" font-size="13">+</text>
+    <text x="86" y="372" font-size="13">−</text>
+    <path d="M90,295 L90,245 L170,245 L170,295 L195,295 L195,360 C225,322 265,300 340,296 L380,295 L380,245 L460,245 L460,295 L485,295 L485,360 C515,322 555,300 630,296 L670,295" fill="none" stroke="#15803d" stroke-width="3"/>
+    <text x="178" y="240" font-size="14">flujo constante</text>
+    <text x="250" y="352" font-size="14">flujo espiratorio pasivo</text>
+    <text x="250" y="370" font-size="13">vuelve a cero antes del ciclo</text>
+
+    <!-- VOLUME PANEL -->
+    <line x1="80" y1="400" x2="80" y2="505" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="80" y1="505" x2="690" y2="505" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="22" y="455" font-size="13" transform="rotate(-90 22 455)" text-anchor="middle">Volumen (mL)</text>
+    <path d="M90,505 L170,420 L195,420 C225,470 265,500 340,504 L380,505 L460,420 L485,420 C515,470 555,500 630,504 L670,505" fill="none" stroke="#c2410c" stroke-width="3"/>
+    <text x="200" y="414" font-size="14">Vt</text>
+    <text x="385" y="540" font-size="13" text-anchor="middle">Tiempo (s)</text>
+  </g>
+</svg>

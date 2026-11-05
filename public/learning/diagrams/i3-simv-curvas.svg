@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" width="720" height="480" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Curvas de presión y flujo en SIMV con presión de soporte</title>
+<desc id="d">Dos paneles en el tiempo. Arriba, la presión en la vía aérea: dos ciclos mandatorios controlados por volumen con rampa hasta la presión pico y una meseta breve, alternando con dos respiraciones espontáneas apoyadas con presión de soporte, de forma cuadrada y menor amplitud. Abajo, el flujo: los ciclos mandatorios tienen flujo inspiratorio cuadrado; las espontáneas, flujo desacelerado que termina cuando cae a una fracción del pico. Una banda sombreada marca la ventana de sincronía donde el esfuerzo del paciente dispara el segundo ciclo mandatorio.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="28" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">SIMV (volumen) con presión de soporte en las respiraciones espontáneas</text>
+<!-- synchrony window shading -->
+<rect x="372" y="44" width="40" height="392" fill="#dcfce7"/>
+<text x="392" y="458" text-anchor="middle" font-size="14" fill="#15803d">ventana de sincronía</text>
+<!-- pressure panel axes -->
+<line x1="70" y1="50" x2="70" y2="210" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="70" y1="190" x2="690" y2="190" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="24" y="130" font-size="14" fill="#1f2937" transform="rotate(-90 24 130)" text-anchor="middle">Presión (cmH₂O)</text>
+<text x="676" y="182" font-size="14" fill="#1f2937" text-anchor="end">PEEP</text>
+<!-- mandatory 1: time triggered ramp, pause -->
+<path d="M70 190 L90 190 L160 72 L162 92 L174 92 L184 160 Q194 186 215 189 L262 190" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<!-- PS spontaneous 1 -->
+<path d="M262 190 L266 197 L272 132 L328 132 L334 182 Q342 190 360 190 L410 190" fill="none" stroke="#c2410c" stroke-width="2.5"/>
+<!-- mandatory 2: patient triggered (dip) -->
+<path d="M404 190 L408 197 L414 188 L478 72 L480 92 L492 92 L502 160 Q512 186 533 189 L566 190" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<!-- PS spontaneous 2 -->
+<path d="M566 190 L570 197 L576 132 L628 132 L634 182 Q642 190 660 190 L690 190" fill="none" stroke="#c2410c" stroke-width="2.5"/>
+<text x="126" y="62" text-anchor="middle" font-size="14" fill="#1d4ed8">Mandatoria (VC)</text>
+<text x="172" y="112" font-size="14" fill="#1f2937">meseta</text>
+<text x="300" y="122" text-anchor="middle" font-size="14" fill="#c2410c">Espontánea + PS</text>
+<text x="452" y="62" text-anchor="middle" font-size="14" fill="#1d4ed8">Mandatoria asistida</text>
+<text x="604" y="122" text-anchor="middle" font-size="14" fill="#c2410c">Espontánea + PS</text>
+<!-- flow panel axes -->
+<line x1="70" y1="240" x2="70" y2="436" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="70" y1="330" x2="690" y2="330" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="24" y="338" font-size="14" fill="#1f2937" transform="rotate(-90 24 338)" text-anchor="middle">Flujo (L/min)</text>
+<text x="684" y="350" font-size="14" fill="#1f2937" text-anchor="end">Tiempo (s)</text>
+<text x="78" y="254" font-size="14" fill="#1f2937">inspiración +</text>
+<text x="78" y="430" font-size="14" fill="#1f2937">espiración −</text>
+<!-- mandatory 1 flow: square, pause zero, expiration -->
+<path d="M90 330 L90 268 L160 268 L160 330 L174 330 L176 404 Q200 345 250 331 L262 330" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<!-- PS flow 1: decelerating -->
+<path d="M266 330 L272 266 Q290 296 328 312 L328 330 L334 330 L336 388 Q352 345 380 332 L404 330" fill="none" stroke="#c2410c" stroke-width="2.5"/>
+<!-- mandatory 2 flow -->
+<path d="M414 330 L414 268 L478 268 L478 330 L492 330 L494 404 Q518 345 556 331 L566 330" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<!-- PS flow 2 -->
+<path d="M570 330 L576 266 Q594 296 628 312 L628 330 L634 330 L636 388 Q652 345 676 332 L690 330" fill="none" stroke="#c2410c" stroke-width="2.5"/>
+<text x="236" y="296" font-size="14" fill="#c2410c" text-anchor="end">desacelerado</text>
+<text x="126" y="262" text-anchor="middle" font-size="14" fill="#1d4ed8">cuadrado</text>
+<line x1="328" y1="312" x2="346" y2="296" stroke="#1f2937" stroke-width="1"/>
+<text x="348" y="294" font-size="14" fill="#1f2937">ciclado por flujo</text>
+</svg>

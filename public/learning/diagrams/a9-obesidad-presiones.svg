@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="t d">
+<title id="t">Presión pleural y transpulmonar: peso normal frente a obesidad en decúbito supino</title>
+<desc id="d">Dos esquemas de tórax en decúbito supino. A la izquierda, peso normal: la presión pleural al final de la espiración es baja y la presión transpulmonar con PEEP de 5 cmH2O es positiva, de modo que los alvéolos dependientes permanecen abiertos. A la derecha, obesidad: el contenido abdominal desplaza el diafragma en sentido cefálico, la presión pleural es más alta, la capacidad residual funcional disminuye y con la misma PEEP la presión transpulmonar espiratoria puede ser cero o negativa, con colapso de las regiones dorsales.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker></defs>
+<text x="180" y="40" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="17" fill="#1f2937" text-anchor="middle" font-weight="bold">Peso normal (supino, sedado)</text>
+<rect x="50" y="60" width="260" height="230" rx="40" fill="#f3f4f6" stroke="#1f2937" stroke-width="3"/>
+<ellipse cx="125" cy="165" rx="58" ry="85" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<ellipse cx="235" cy="165" rx="58" ry="85" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<path d="M 50 290 Q 180 260 310 290" fill="none" stroke="#c2410c" stroke-width="3"/>
+<rect x="50" y="298" width="260" height="50" rx="20" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+<text x="180" y="328" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#c2410c" text-anchor="middle">Abdomen</text>
+<text x="180" y="410" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="15" fill="#1f2937" text-anchor="middle">Presión pleural al final de la espiración: baja</text>
+<text x="180" y="434" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="15" fill="#15803d" text-anchor="middle" font-weight="bold">Con PEEP 5: Ptp espiratoria positiva</text>
+<line x1="360" y1="30" x2="360" y2="440" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="540" y="40" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="17" fill="#1f2937" text-anchor="middle" font-weight="bold">Obesidad (supino, sedado)</text>
+<rect x="410" y="60" width="260" height="200" rx="40" fill="#f3f4f6" stroke="#1f2937" stroke-width="6"/>
+<ellipse cx="485" cy="140" rx="58" ry="60" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<ellipse cx="595" cy="140" rx="58" ry="60" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<path d="M 430 170 Q 485 206 540 170 Z" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<path d="M 540 170 Q 595 206 650 170 Z" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="540" y="378" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#b91c1c" text-anchor="middle">Rojo: atelectasia en zonas dependientes</text>
+<path d="M 410 260 Q 540 190 670 260" fill="none" stroke="#c2410c" stroke-width="3"/>
+<rect x="410" y="268" width="260" height="80" rx="20" fill="#fee2e2" stroke="#c2410c" stroke-width="2"/>
+<text x="540" y="305" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#c2410c" text-anchor="middle">Abdomen: empuja el diafragma</text>
+<path d="M 540 280 L 540 210" stroke="#c2410c" stroke-width="3" marker-end="url(#ar)"/>
+<text x="540" y="410" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="15" fill="#1f2937" text-anchor="middle">Presión pleural al final de la espiración: alta</text>
+<text x="540" y="434" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="15" fill="#b91c1c" text-anchor="middle" font-weight="bold">Con PEEP 5: Ptp espiratoria ≈ 0 o negativa</text>
+</svg>

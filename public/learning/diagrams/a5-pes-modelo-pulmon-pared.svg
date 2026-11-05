@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" width="720" height="480" role="img" aria-labelledby="t d">
+  <title id="t">Pulmón y pared torácica en serie</title>
+  <desc id="d">Esquema del sistema respiratorio: el pulmón, conectado a la vía aérea, está rodeado por el espacio pleural y la pared torácica. Un catéter con balón en el esófago mide una presión que estima la presión pleural. La presión transpulmonar, que distiende el pulmón, es la presión de la vía aérea menos la esofágica; la presión que distiende la pared torácica es la esofágica respecto a la atmosférica. La suma de ambas es la presión de la vía aérea.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <rect x="120" y="120" width="330" height="310" rx="60" fill="#f3f4f6" stroke="#1f2937" stroke-width="4"/>
+    <ellipse cx="270" cy="285" rx="110" ry="100" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+    <rect x="257" y="40" width="26" height="150" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+    <rect x="259" y="116" width="22" height="10" fill="#dbeafe"/>
+    <text x="270" y="282" font-size="15" fill="#1d4ed8" text-anchor="middle" font-weight="700">Pulmón</text>
+    <text x="270" y="302" font-size="14" fill="#1f2937" text-anchor="middle">presión alveolar</text>
+    <text x="292" y="62" font-size="14" fill="#1f2937">Vía aérea: Paw</text>
+    <text x="285" y="456" font-size="14" fill="#1f2937" text-anchor="middle">Pared torácica (costillas, diafragma, abdomen)</text>
+    <text x="146" y="416" font-size="14" fill="#1f2937">Espacio pleural: Ppl</text>
+    <line x1="415" y1="40" x2="415" y2="318" stroke="#c2410c" stroke-width="3"/>
+    <ellipse cx="415" cy="340" rx="11" ry="24" fill="#fee2e2" stroke="#c2410c" stroke-width="3"/>
+    <text x="424" y="40" font-size="14" fill="#1f2937">Catéter esofágico</text>
+    <text x="462" y="366" font-size="14" fill="#c2410c" font-weight="700">Balón esofágico:</text>
+    <text x="462" y="386" font-size="14" fill="#c2410c" font-weight="700">Pes ≈ Ppl</text>
+    <rect x="490" y="140" width="210" height="200" rx="10" fill="#ffffff" stroke="#9ca3af" stroke-width="2"/>
+    <text x="595" y="170" font-size="15" fill="#1f2937" text-anchor="middle" font-weight="700">Partición</text>
+    <text x="504" y="202" font-size="14" fill="#1d4ed8" font-weight="700">Pulmón:</text>
+    <text x="504" y="222" font-size="14" fill="#1f2937">Ptp = Paw − Pes</text>
+    <text x="504" y="258" font-size="14" fill="#c2410c" font-weight="700">Pared torácica:</text>
+    <text x="504" y="278" font-size="14" fill="#1f2937">Pcw = Pes − Patm</text>
+    <text x="504" y="318" font-size="14" fill="#1f2937" font-weight="700">Paw = Ptp + Pcw</text>
+  </g>
+</svg>

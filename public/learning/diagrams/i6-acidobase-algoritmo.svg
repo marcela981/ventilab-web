@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" width="720" height="560" role="img" aria-labelledby="t d">
+  <title id="t">Algoritmo de interpretación de la gasometría arterial</title>
+  <desc id="d">Diagrama de flujo vertical. Paso 0: comprobar la coherencia de la muestra y el contexto. Paso 1: valorar el pH, acidemia por debajo de 7,35 o alcalemia por encima de 7,45; un pH normal no descarta trastorno. Paso 2: identificar el trastorno primario, respiratorio o metabólico. Paso 3: si es respiratorio, decidir si es agudo o crónico. Paso 4: calcular la compensación esperada; si no coincide, hay un trastorno mixto. Paso 5: en acidosis metabólica, calcular el anión gap corregido por albúmina. Paso 6: si el anión gap está elevado, calcular el delta ratio. Final: integrar con la clínica.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <text x="360" y="32" font-size="18" font-weight="bold" text-anchor="middle">Interpretación ácido-base en seis pasos</text>
+
+    <g stroke-width="2">
+      <rect x="40" y="50" width="460" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+      <rect x="40" y="114" width="460" height="44" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+      <rect x="40" y="178" width="460" height="44" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+      <rect x="40" y="242" width="460" height="44" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+      <rect x="40" y="306" width="460" height="44" rx="8" fill="#dcfce7" stroke="#15803d"/>
+      <rect x="40" y="370" width="460" height="44" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+      <rect x="40" y="434" width="460" height="44" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+      <rect x="40" y="498" width="460" height="44" rx="8" fill="#f3f4f6" stroke="#6d28d9"/>
+    </g>
+
+    <g font-size="16" text-anchor="middle">
+      <text x="270" y="78">0. Coherencia de la muestra y del contexto</text>
+      <text x="270" y="142">1. pH: &lt; 7,35 acidemia · &gt; 7,45 alcalemia</text>
+      <text x="270" y="206">2. Trastorno primario: ¿PaCO₂ o HCO₃⁻?</text>
+      <text x="270" y="270">3. Si es respiratorio: ¿agudo o crónico?</text>
+      <text x="270" y="334">4. Compensación esperada: ¿coincide?</text>
+      <text x="270" y="398">5. Acidosis metabólica: anión gap corregido</text>
+      <text x="270" y="462">6. Anión gap elevado: delta ratio</text>
+      <text x="270" y="526" font-weight="bold">Integrar con la clínica y buscar la causa</text>
+    </g>
+
+    <g stroke="#1f2937" stroke-width="2" fill="none">
+      <line x1="270" y1="94" x2="270" y2="112"/><polyline points="264,104 270,113 276,104"/>
+      <line x1="270" y1="158" x2="270" y2="176"/><polyline points="264,168 270,177 276,168"/>
+      <line x1="270" y1="222" x2="270" y2="240"/><polyline points="264,232 270,241 276,232"/>
+      <line x1="270" y1="286" x2="270" y2="304"/><polyline points="264,296 270,305 276,296"/>
+      <line x1="270" y1="350" x2="270" y2="368"/><polyline points="264,360 270,369 276,360"/>
+      <line x1="270" y1="414" x2="270" y2="432"/><polyline points="264,424 270,433 276,424"/>
+      <line x1="270" y1="478" x2="270" y2="496"/><polyline points="264,488 270,497 276,488"/>
+    </g>
+
+    <!-- side notes -->
+    <g stroke-width="2">
+      <line x1="500" y1="136" x2="520" y2="136" stroke="#1d4ed8"/>
+      <line x1="500" y1="328" x2="520" y2="328" stroke="#15803d"/>
+      <line x1="500" y1="456" x2="520" y2="456" stroke="#b91c1c"/>
+    </g>
+    <g font-size="14">
+      <text x="526" y="131" fill="#1d4ed8">pH normal no</text>
+      <text x="526" y="149" fill="#1d4ed8">descarta trastorno</text>
+      <text x="526" y="323" fill="#15803d">No coincide:</text>
+      <text x="526" y="341" fill="#15803d">trastorno mixto</text>
+      <text x="526" y="442" fill="#b91c1c">&lt; 0,8: + AG normal</text>
+      <text x="526" y="460" fill="#b91c1c">0,8–1,2: AG pura</text>
+      <text x="526" y="478" fill="#b91c1c">&gt; 1,2: + alcalosis</text>
+    </g>
+  </g>
+</svg>

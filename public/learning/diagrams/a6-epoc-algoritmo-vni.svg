@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" width="720" height="560" role="img" aria-labelledby="t d">
+<title id="t">Algoritmo de soporte ventilatorio en la exacerbación de EPOC</title>
+<desc id="d">Diagrama de flujo. Exacerbación de EPOC con tratamiento médico óptimo y oxígeno controlado para SpO2 de 88 a 92 por ciento. Si persiste o aparece acidosis respiratoria con pH menor de 7,35 y PaCO2 elevada, se inicia VNI binivel en un área con capacidad de intubar. Se reevalúa con gasometría en 1 a 2 horas y hasta 4 horas: si mejoran el pH y la frecuencia respiratoria, se continúa la VNI; si empeoran o hay paro, imposibilidad de usar la interfaz o deterioro inmediato, se procede a intubación y ventilación invasiva.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1f2937"/></marker></defs>
+<rect x="160" y="16" width="400" height="62" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+<text x="360" y="38" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">Exacerbación de EPOC</text>
+<text x="360" y="57" font-size="14" fill="#1f2937" text-anchor="middle">tratamiento médico óptimo + O₂ para SpO₂ 88-92 %</text>
+<line x1="360" y1="78" x2="360" y2="104" stroke="#1f2937" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="160" y="106" width="400" height="62" rx="8" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+<text x="360" y="128" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">¿pH &lt; 7,35 y PaCO₂ elevada pese al</text>
+<text x="360" y="147" font-size="14" fill="#1f2937" text-anchor="middle">tratamiento médico? (gasometría arterial)</text>
+<line x1="250" y1="168" x2="150" y2="200" stroke="#1f2937" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="176" y="192" font-size="14" fill="#1f2937" text-anchor="end">no</text>
+<rect x="20" y="202" width="240" height="62" rx="8" fill="#dcfce7" stroke="#1f2937" stroke-width="1.5"/>
+<text x="140" y="224" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">Sin indicación de VNI</text>
+<text x="140" y="243" font-size="14" fill="#1f2937" text-anchor="middle">vigilar y repetir gasometría</text>
+<line x1="470" y1="168" x2="520" y2="200" stroke="#1f2937" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="510" y="190" font-size="14" fill="#1f2937">sí</text>
+<rect x="380" y="202" width="320" height="82" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="540" y="224" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">VNI binivel</text>
+<text x="540" y="243" font-size="14" fill="#1f2937" text-anchor="middle">área con acceso inmediato</text>
+<text x="540" y="262" font-size="14" fill="#1f2937" text-anchor="middle">a intubación; plan escrito si falla</text>
+<line x1="540" y1="284" x2="540" y2="310" stroke="#1f2937" stroke-width="1.6" marker-end="url(#ah)"/>
+<rect x="380" y="312" width="320" height="62" rx="8" fill="#ffffff" stroke="#1f2937" stroke-width="1.5"/>
+<text x="540" y="334" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">Reevaluar en 1-2 h (hasta 4 h)</text>
+<text x="540" y="353" font-size="14" fill="#1f2937" text-anchor="middle">pH, PaCO₂, FR, conciencia, tolerancia</text>
+<line x1="460" y1="374" x2="320" y2="416" stroke="#1f2937" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="395" y="396" font-size="14" fill="#1f2937" text-anchor="end">mejora</text>
+<rect x="60" y="418" width="280" height="62" rx="8" fill="#dcfce7" stroke="#1f2937" stroke-width="1.5"/>
+<text x="200" y="440" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">Continuar VNI</text>
+<text x="200" y="459" font-size="14" fill="#1f2937" text-anchor="middle">retirar al normalizar pH y PaCO₂</text>
+<line x1="600" y1="374" x2="600" y2="416" stroke="#1f2937" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="610" y="400" font-size="14" fill="#1f2937">empeora</text>
+<rect x="400" y="418" width="300" height="82" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+<text x="550" y="440" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">Intubación y ventilación invasiva</text>
+<text x="550" y="459" font-size="14" fill="#1f2937" text-anchor="middle">acidosis persistente o progresiva,</text>
+<text x="550" y="478" font-size="14" fill="#1f2937" text-anchor="middle">paro, interfaz imposible</text>
+<text x="360" y="528" font-size="14" fill="#1f2937" text-anchor="middle">Paro o periparo, o deterioro inmediato: intubar sin retrasar con VNI.</text>
+<text x="360" y="548" font-size="13" fill="#1f2937" text-anchor="middle">Basado en BTS/ICS 2016 y ERS/ATS 2017 (ver referencias de la lección)</text>
+</g>
+</svg>

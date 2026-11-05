@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+<title id="t">Prueba de fuga del balón</title>
+<desc id="d">Gráfico de barras con volumen en mililitros. Paciente 1: volumen inspirado 450 mL y volumen espirado medio con balón desinflado 300 mL; la fuga es de 150 mL, mayor de 110 mL. Paciente 2: volumen inspirado 450 mL y espirado 400 mL; la fuga es de 50 mL, menor de 110 mL, lo que sugiere edema laríngeo y mayor riesgo de estridor postextubación. Valores de ejemplo.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+  <text x="360" y="30" font-size="18" font-weight="600" text-anchor="middle">Fuga = volumen inspirado − volumen espirado (balón desinflado)</text>
+  <line x1="90" y1="340" x2="690" y2="340" stroke="#9ca3af" stroke-width="2"/>
+  <line x1="90" y1="340" x2="90" y2="80" stroke="#9ca3af" stroke-width="2"/>
+  <g font-size="13" text-anchor="end">
+    <text x="84" y="344">0</text>
+    <text x="84" y="244">200</text>
+    <text x="84" y="144">400</text>
+    <text x="84" y="94">500</text>
+  </g>
+  <line x1="90" y1="240" x2="690" y2="240" stroke="#f3f4f6" stroke-width="1.5"/>
+  <line x1="90" y1="140" x2="690" y2="140" stroke="#f3f4f6" stroke-width="1.5"/>
+  <text x="34" y="210" font-size="13" text-anchor="middle" transform="rotate(-90 34 210)">Volumen (mL)</text>
+  <rect x="140" y="115" width="70" height="225" fill="#1d4ed8"/>
+  <rect x="222" y="190" width="70" height="150" fill="#6d28d9"/>
+  <text x="175" y="106" font-size="14" text-anchor="middle">450</text>
+  <text x="257" y="182" font-size="14" text-anchor="middle">300</text>
+  <line x1="300" y1="115" x2="300" y2="190" stroke="#15803d" stroke-width="3"/>
+  <line x1="212" y1="115" x2="306" y2="115" stroke="#15803d" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="310" y="150" font-size="14" fill="#15803d" font-weight="600">Fuga 150 mL</text>
+  <text x="310" y="170" font-size="13" fill="#15803d">&gt; 110 mL</text>
+  <rect x="430" y="115" width="70" height="225" fill="#1d4ed8"/>
+  <rect x="512" y="140" width="70" height="200" fill="#6d28d9"/>
+  <text x="465" y="106" font-size="14" text-anchor="middle">450</text>
+  <text x="547" y="132" font-size="14" text-anchor="middle">400</text>
+  <line x1="590" y1="115" x2="590" y2="140" stroke="#b91c1c" stroke-width="3"/>
+  <line x1="502" y1="115" x2="596" y2="115" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="600" y="124" font-size="14" fill="#b91c1c" font-weight="600">Fuga 50 mL</text>
+  <text x="600" y="144" font-size="13" fill="#b91c1c">&lt; 110 mL</text>
+  <g font-size="14" text-anchor="middle">
+    <text x="216" y="362">Paciente 1</text>
+    <text x="506" y="362">Paciente 2</text>
+  </g>
+  <rect x="150" y="380" width="16" height="16" fill="#1d4ed8"/>
+  <text x="174" y="393" font-size="13">Volumen inspirado</text>
+  <rect x="330" y="380" width="16" height="16" fill="#6d28d9"/>
+  <text x="354" y="393" font-size="13">Volumen espirado medio (balón desinflado)</text>
+  <text x="360" y="414" font-size="13" text-anchor="middle">Valores de ejemplo. Una fuga menor de 110 mL sugiere edema laríngeo.</text>
+</g>
+</svg>

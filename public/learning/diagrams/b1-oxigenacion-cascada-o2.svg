@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d">
+<title id="t">Cascada del oxígeno y gradiente alveolo-arterial</title>
+<desc id="d">Gráfico de barras de presión parcial de oxígeno en mmHg, a nivel del mar con aire ambiente, con los valores del ejemplo resuelto de la lección. Aire seco unos 160 mmHg; gas inspirado humidificado unos 150 mmHg, porque el vapor de agua ocupa 47 mmHg; gas alveolar unos 100 mmHg, porque el CO₂ alveolar desplaza unos 50 mmHg; sangre arterial 75 mmHg. La diferencia entre las dos últimas barras, 25 mmHg, es el gradiente alveolo-arterial.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<text x="360" y="30" font-size="16" font-weight="bold" text-anchor="middle">Cascada del O₂ con aire ambiente a nivel del mar (ejemplo 1)</text>
+<g stroke="#9ca3af" stroke-width="1" stroke-dasharray="3 4">
+<line x1="80" y1="70" x2="690" y2="70"/>
+<line x1="80" y1="145" x2="690" y2="145"/>
+<line x1="80" y1="220" x2="690" y2="220"/>
+<line x1="80" y1="295" x2="690" y2="295"/>
+</g>
+<line x1="80" y1="60" x2="80" y2="370" stroke="#9ca3af" stroke-width="2"/>
+<line x1="80" y1="370" x2="690" y2="370" stroke="#9ca3af" stroke-width="2"/>
+<g font-size="13" text-anchor="end">
+<text x="72" y="375">0</text>
+<text x="72" y="300">50</text>
+<text x="72" y="225">100</text>
+<text x="72" y="150">150</text>
+<text x="72" y="75">200</text>
+</g>
+<text x="26" y="215" font-size="14" text-anchor="middle" transform="rotate(-90 26 215)">PO₂ (mmHg)</text>
+<rect x="105" y="130" width="100" height="240" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+<rect x="250" y="145" width="100" height="225" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<rect x="395" y="220" width="100" height="150" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<rect x="540" y="257.5" width="100" height="112.5" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<g font-size="14" text-anchor="middle" font-weight="bold">
+<text x="155" y="122">≈ 160</text>
+<text x="300" y="137">≈ 150</text>
+<text x="445" y="212">≈ 100</text>
+<text x="590" y="249">75</text>
+</g>
+<g font-size="14" text-anchor="middle">
+<text x="155" y="392">Aire seco</text>
+<text x="300" y="392">Inspirado</text>
+<text x="300" y="410">(humidificado)</text>
+<text x="445" y="392">Alveolar</text>
+<text x="445" y="410">(PAO₂)</text>
+<text x="590" y="392">Arterial</text>
+<text x="590" y="410">(PaO₂)</text>
+<text x="228" y="100" fill="#1d4ed8">− vapor de agua</text>
+<text x="405" y="182" fill="#15803d" text-anchor="start">− PaCO₂/R</text>
+</g>
+<path d="M650,220 L662,220 L662,257.5 L650,257.5" fill="none" stroke="#b91c1c" stroke-width="2"/>
+<line x1="495" y1="220" x2="650" y2="220" stroke="#15803d" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="668" y="236" font-size="14" fill="#b91c1c" font-weight="bold">A-a</text>
+<text x="668" y="254" font-size="14" fill="#b91c1c">25</text>
+</g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="720" height="520" role="img" aria-labelledby="t d">
+  <title id="t">Presión meseta y driving pressure en VCV</title>
+  <desc id="d">Dos curvas en el tiempo durante una respiración controlada por volumen con flujo constante y pausa inspiratoria. Arriba, la presión en la vía aérea sube desde la PEEP de 10 cmH2O con un pequeño escalón inicial, crece en rampa lineal hasta la presión pico de 30 cmH2O, cae a la presión meseta de 24 cmH2O durante la pausa y vuelve a la PEEP en la espiración. La diferencia entre pico y meseta corresponde al componente resistivo; la diferencia entre meseta y PEEP es la driving pressure, 14 cmH2O. Abajo, el flujo es cuadrado y positivo en la inspiración, cero durante la pausa y negativo con descenso exponencial hasta cero en la espiración.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <text x="360" y="30" font-size="16" font-weight="700" fill="#1f2937" text-anchor="middle">VCV con flujo constante y pausa inspiratoria</text>
+    <line x1="100" y1="240" x2="680" y2="240" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="100" y1="240" x2="100" y2="55" stroke="#9ca3af" stroke-width="2"/>
+    <text x="92" y="244" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <text x="92" y="199" font-size="13" fill="#1f2937" text-anchor="end">10</text>
+    <text x="92" y="154" font-size="13" fill="#1f2937" text-anchor="end">20</text>
+    <text x="92" y="109" font-size="13" fill="#1f2937" text-anchor="end">30</text>
+    <text x="92" y="64" font-size="13" fill="#1f2937" text-anchor="end">40</text>
+    <text x="34" y="150" font-size="13" fill="#1f2937" text-anchor="middle" transform="rotate(-90 34 150)">Presión (cmH₂O)</text>
+    <line x1="100" y1="195" x2="680" y2="195" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <path d="M100,195 L102,172 L255,105 L262,132 L313,132 C325,185 345,195 380,195 L680,195" fill="none" stroke="#1d4ed8" stroke-width="3.5"/>
+    <circle cx="255" cy="105" r="4.5" fill="#b91c1c"/>
+    <text x="210" y="92" font-size="14" fill="#b91c1c" font-weight="700" text-anchor="middle">Ppico 30</text>
+    <text x="284" y="153" font-size="14" fill="#6d28d9" font-weight="700" text-anchor="middle">Pplat 24</text>
+    <text x="560" y="186" font-size="14" fill="#1f2937" font-weight="700">PEEP 10</text>
+    <line x1="345" y1="132" x2="345" y2="195" stroke="#c2410c" stroke-width="2.5"/>
+    <line x1="338" y1="132" x2="352" y2="132" stroke="#c2410c" stroke-width="2.5"/>
+    <line x1="338" y1="195" x2="352" y2="195" stroke="#c2410c" stroke-width="2.5"/>
+    <text x="360" y="155" font-size="14" fill="#c2410c" font-weight="700">ΔP = Pplat − PEEP = 14</text>
+    <text x="360" y="174" font-size="14" fill="#1f2937">componente elástico</text>
+    <line x1="300" y1="105" x2="300" y2="132" stroke="#1f2937" stroke-width="2"/>
+    <line x1="294" y1="105" x2="306" y2="105" stroke="#1f2937" stroke-width="2"/>
+    <text x="360" y="100" font-size="14" fill="#1f2937">Ppico − Pplat = 6: componente resistivo</text>
+    <line x1="255" y1="225" x2="313" y2="225" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="284" y="219" font-size="13" fill="#1f2937" text-anchor="middle">pausa</text>
+    <line x1="100" y1="390" x2="680" y2="390" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="100" y1="290" x2="100" y2="480" stroke="#9ca3af" stroke-width="2"/>
+    <text x="92" y="394" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <text x="34" y="390" font-size="13" fill="#1f2937" text-anchor="middle" transform="rotate(-90 34 390)">Flujo (L/min)</text>
+    <path d="M100,390 L100,325 L255,325 L255,390 L313,390 L313,465 C345,420 400,395 520,391 L680,390" fill="none" stroke="#15803d" stroke-width="3.5"/>
+    <text x="178" y="316" font-size="14" fill="#15803d" font-weight="700" text-anchor="middle">flujo constante</text>
+    <text x="420" y="452" font-size="14" fill="#15803d" font-weight="700">espiración pasiva</text>
+    <text x="390" y="507" font-size="13" fill="#1f2937" text-anchor="middle">Tiempo (s) — valores ilustrativos</text>
+  </g>
+</svg>

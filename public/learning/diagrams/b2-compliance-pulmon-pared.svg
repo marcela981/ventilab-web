@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d">
+<title id="t">Reparto de la presión entre pulmón y pared torácica</title>
+<desc id="d">Dos barras apiladas que representan una driving pressure del sistema respiratorio de 15 cmH2O en dos pacientes. En el paciente A, con pulmón rígido, 12 cmH2O corresponden al pulmón y 3 a la pared torácica. En el paciente B, con pared torácica rígida por un abdomen tenso, solo 6 cmH2O distienden el pulmón y 9 se gastan en la pared. Los valores son ilustrativos.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/></marker>
+</defs>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+<text x="360" y="30" font-size="17" text-anchor="middle" font-weight="700">Misma driving pressure, distinto reparto entre pulmón y pared</text>
+<line x1="100" y1="330" x2="640" y2="330" stroke="#9ca3af" stroke-width="1.5"/>
+<rect x="150" y="162" width="120" height="168" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<rect x="150" y="120" width="120" height="42" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="210" y="251" text-anchor="middle" fill="#15803d" font-weight="700">pulmón 12</text>
+<text x="210" y="146" text-anchor="middle" fill="#1d4ed8" font-weight="700">pared 3</text>
+<text x="210" y="354" text-anchor="middle" font-weight="700">Paciente A</text>
+<text x="210" y="374" font-size="13" text-anchor="middle">pulmón rígido (neumonía)</text>
+<text x="285" y="125" font-size="13">ΔP total = 15</text>
+<rect x="450" y="246" width="120" height="84" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<rect x="450" y="120" width="120" height="126" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="510" y="293" text-anchor="middle" fill="#15803d" font-weight="700">pulmón 6</text>
+<text x="510" y="188" text-anchor="middle" fill="#1d4ed8" font-weight="700">pared 9</text>
+<text x="510" y="354" text-anchor="middle" font-weight="700">Paciente B</text>
+<text x="510" y="374" font-size="13" text-anchor="middle">pared rígida (abdomen tenso)</text>
+<text x="585" y="125" font-size="13">ΔP total = 15</text>
+<text x="360" y="402" font-size="13" text-anchor="middle">Valores en cmH₂O, ilustrativos. ΔP del sistema = ΔP transpulmonar + ΔP de la pared torácica.</text>
+<text x="360" y="422" font-size="13" text-anchor="middle">Solo la porción pulmonar distiende el pulmón; separarlas requiere presión esofágica.</text>
+</g>
+</svg>

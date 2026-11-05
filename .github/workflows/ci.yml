@@ -19,7 +19,11 @@
 #   v1.4 (Bloque 5): el job e2e suma los E2E del Monitoreo de julio (disposición digital, tarjetas persistentes,
 #   drawer de Asesoría IA y teclado) y del sidebar colapsable. monitoreo-orden y capturas quedan fuera (reserva del
 #   ventilador y capturas solo con E2E_CAPTURES=1).
-# Versión: 1.4
+#   v1.5 (ajustes B): el job e2e usa la rama homónima del backend si existe (PRs cruzados; si no, main), importa el
+#   currículo con prisma/import-curriculum.ts cuando el backend lo trae y suma los E2E del currículo y de la auditoría de
+#   render de lecciones (se omiten solos si el backend no tiene el currículo importado). THROTTLE_LIMIT global sube a
+#   1000/min porque todas las specs comparten la IP del runner; el límite de inicio de sesión no cambia.
+# Versión: 1.5
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -137,7 +141,8 @@ jobs:
       FRONTEND_URL: http://localhost:3000
       PRODUCTION_URL: https://ventylab.vercel.app
       THROTTLE_TTL: "60000"
-      THROTTLE_LIMIT: "100"
+      # Global per-IP limit: every spec shares the runner IP, and the curriculum walks read hundreds of pages (the 5/min sign-in limit is separate and unchanged).
+      THROTTLE_LIMIT: "1000"
       SWAGGER_ALLOWED_IPS: "*"
       SMTP_HOST: localhost
       SMTP_PORT: "1025"
@@ -156,11 +161,23 @@ jobs:
         with:
           path: web
 
+      - name: Resolve backend branch
+        id: backend-ref
+        env:
+          TOKEN: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          if git ls-remote --exit-code --heads "https://x-access-token:${TOKEN}@github.com/marcela981/ventylab-server.git" "$BRANCH" > /dev/null 2>&1; then
+            echo "ref=$BRANCH" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout backend
         uses: actions/checkout@v4
         with:
           repository: marcela981/ventylab-server
-          ref: main
+          ref: ${{ steps.backend-ref.outputs.ref }}
           path: server
           token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
           persist-credentials: false
@@ -190,6 +207,7 @@ jobs:
           npm run demo:seed
           npx tsx prisma/seed-clinical-cases.ts
           npx tsx prisma/seed-evaluation.ts
+          if [ -f prisma/import-curriculum.ts ]; then npx tsx prisma/import-curriculum.ts --apply --author ana.torres@ventylab.demo; fi
 
       - name: Build backend
         working-directory: server
@@ -241,6 +259,8 @@ jobs:
           e2e/bloque5/monitoreo-ia.spec.ts
           e2e/bloque5/monitoreo-teclado.spec.ts
           e2e/bloque5/sidebar.spec.ts
+          e2e/ajustes-b/curriculum-content.spec.ts
+          e2e/ajustes-b/render-audit.spec.ts
 
       - name: Stack logs
         if: failure()

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" width="720" height="560" role="img" aria-labelledby="t d">
+  <title id="t">Algoritmo de ventilación protectora ARDSNet</title>
+  <desc id="d">Diagrama de flujo del protocolo de la red ARDSNet. Paso 1: calcular el peso corporal predicho. Paso 2: iniciar con 8 mL/kg y reducir 1 mL/kg cada dos horas o menos hasta 6 mL/kg. Paso 3: frecuencia inicial que aproxime la ventilación minuto basal, sin superar 35 por minuto. Paso 4: medir la presión meseta con pausa de 0,5 segundos. Si la meseta supera 30 cmH2O, reducir el volumen 1 mL/kg hasta un mínimo de 4. Si es menor de 25 y el volumen es menor de 6 mL/kg, aumentarlo. Si está en rango, mantener. Paso 5: meta de pH entre 7,30 y 7,45 ajustando la frecuencia.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937">
+    <rect x="160" y="18" width="400" height="44" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="45" text-anchor="middle">1. Calcula el peso corporal predicho (PBW)</text>
+    <line x1="360" y1="62" x2="360" y2="80" stroke="#1f2937" stroke-width="2"/>
+    <path d="M354,74 L360,82 L366,74 Z" fill="#1f2937"/>
+    <rect x="110" y="82" width="500" height="56" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="105" text-anchor="middle">2. Vt inicial 8 mL/kg PBW; reduce 1 mL/kg</text>
+    <text x="360" y="125" text-anchor="middle">cada 2 h o menos hasta 6 mL/kg PBW</text>
+    <line x1="360" y1="138" x2="360" y2="156" stroke="#1f2937" stroke-width="2"/>
+    <path d="M354,150 L360,158 L366,150 Z" fill="#1f2937"/>
+    <rect x="110" y="158" width="500" height="44" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="185" text-anchor="middle">3. FR inicial ≈ ventilación minuto basal (máximo 35/min)</text>
+    <line x1="360" y1="202" x2="360" y2="220" stroke="#1f2937" stroke-width="2"/>
+    <path d="M354,214 L360,222 L366,214 Z" fill="#1f2937"/>
+    <rect x="110" y="222" width="500" height="56" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="360" y="245" text-anchor="middle" font-weight="700" fill="#6d28d9">4. Mide la presión meseta (pausa de 0,5 s)</text>
+    <text x="360" y="265" text-anchor="middle">al menos cada 4 h y tras cada cambio de PEEP o Vt</text>
+    <path d="M360,278 L360,296 L125,296 L125,314" fill="none" stroke="#1f2937" stroke-width="2"/>
+    <path d="M360,296 L595,296 L595,314" fill="none" stroke="#1f2937" stroke-width="2"/>
+    <line x1="360" y1="296" x2="360" y2="314" stroke="#1f2937" stroke-width="2"/>
+    <path d="M119,308 L125,316 L131,308 Z" fill="#1f2937"/>
+    <path d="M354,308 L360,316 L366,308 Z" fill="#1f2937"/>
+    <path d="M589,308 L595,316 L601,308 Z" fill="#1f2937"/>
+    <rect x="20" y="316" width="210" height="100" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="125" y="340" text-anchor="middle" font-weight="700" fill="#b91c1c">Pplat &gt; 30 cmH₂O</text>
+    <text x="125" y="362" text-anchor="middle">baja Vt 1 mL/kg</text>
+    <text x="125" y="382" text-anchor="middle">por paso</text>
+    <text x="125" y="402" text-anchor="middle">(mínimo 4 mL/kg)</text>
+    <rect x="255" y="316" width="210" height="100" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="360" y="340" text-anchor="middle" font-weight="700" fill="#15803d">Pplat ≤ 30 cmH₂O</text>
+    <text x="360" y="362" text-anchor="middle">con Vt en 6 mL/kg:</text>
+    <text x="360" y="382" text-anchor="middle">mantén y vuelve</text>
+    <text x="360" y="402" text-anchor="middle">a medir</text>
+    <rect x="490" y="316" width="210" height="100" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="595" y="340" text-anchor="middle" font-weight="700" fill="#1d4ed8">Pplat &lt; 25 y Vt &lt; 6</text>
+    <text x="595" y="362" text-anchor="middle">sube 1 mL/kg hasta</text>
+    <text x="595" y="382" text-anchor="middle">Pplat &gt; 25 cmH₂O</text>
+    <text x="595" y="402" text-anchor="middle">o Vt = 6 mL/kg</text>
+    <path d="M125,416 L125,436 L595,436 L595,416" fill="none" stroke="#1f2937" stroke-width="2"/>
+    <line x1="360" y1="416" x2="360" y2="456" stroke="#1f2937" stroke-width="2"/>
+    <path d="M354,450 L360,458 L366,450 Z" fill="#1f2937"/>
+    <rect x="60" y="458" width="600" height="86" rx="8" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+    <text x="360" y="482" text-anchor="middle" font-weight="700" fill="#c2410c">5. Meta de pH 7,30–7,45</text>
+    <text x="360" y="504" text-anchor="middle">pH 7,15–7,30: aumenta la FR (máximo 35/min)</text>
+    <text x="360" y="526" text-anchor="middle">pH &lt; 7,15 con FR 35: se permite subir Vt aunque Pplat supere 30</text>
+  </g>
+</svg>

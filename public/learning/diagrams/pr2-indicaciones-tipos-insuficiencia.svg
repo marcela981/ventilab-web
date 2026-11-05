@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d">
+<title id="t">Los dos mecanismos de la insuficiencia respiratoria aguda</title>
+<desc id="d">Diagrama de flujo. La insuficiencia respiratoria aguda se divide en falla del pulmón y falla de la bomba ventilatoria. La falla del pulmón produce hipoxemia con PaCO₂ normal o baja, por shunt, alteración de la relación ventilación-perfusión o de la difusión; ejemplos: neumonía, SDRA, edema pulmonar. La falla de la bomba produce hipoventilación alveolar con PaCO₂ alta y acidosis, por depresión del centro respiratorio, debilidad neuromuscular o fatiga ante una carga excesiva; ejemplos: exacerbación de EPOC, opioides, enfermedad neuromuscular. Una línea discontinua entre ambas ramas indica que pueden coexistir.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+  <rect x="210" y="20" width="300" height="44" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+  <text x="360" y="47" text-anchor="middle" font-weight="600">Insuficiencia respiratoria aguda</text>
+  <line x1="300" y1="64" x2="190" y2="96" stroke="#1f2937" stroke-width="2"/>
+  <polygon points="186,98 196,90 198,100" fill="#1f2937"/>
+  <line x1="420" y1="64" x2="530" y2="96" stroke="#1f2937" stroke-width="2"/>
+  <polygon points="534,98 522,100 524,90" fill="#1f2937"/>
+
+  <!-- left branch -->
+  <rect x="30" y="100" width="300" height="48" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="180" y="122" text-anchor="middle" font-weight="600">Falla del pulmón</text>
+  <text x="180" y="140" text-anchor="middle">(intercambio gaseoso)</text>
+  <rect x="30" y="170" width="300" height="66" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="180" y="194" text-anchor="middle" font-weight="600">Hipoxemia (tipo 1)</text>
+  <text x="180" y="214" text-anchor="middle">PaO₂ baja</text>
+  <text x="180" y="230" text-anchor="middle">PaCO₂ normal o baja</text>
+  <rect x="30" y="258" width="300" height="66" rx="8" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="180" y="282" text-anchor="middle" font-weight="600">Mecanismos</text>
+  <text x="180" y="302" text-anchor="middle">Shunt, alteración V/Q,</text>
+  <text x="180" y="318" text-anchor="middle">trastorno de la difusión</text>
+  <text x="180" y="352" text-anchor="middle">Ejemplos: neumonía, SDRA,</text>
+  <text x="180" y="370" text-anchor="middle">edema pulmonar</text>
+  <line x1="180" y1="148" x2="180" y2="168" stroke="#1d4ed8" stroke-width="2"/>
+  <line x1="180" y1="236" x2="180" y2="256" stroke="#1d4ed8" stroke-width="2"/>
+
+  <!-- right branch -->
+  <rect x="390" y="100" width="300" height="48" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+  <text x="540" y="122" text-anchor="middle" font-weight="600">Falla de la bomba</text>
+  <text x="540" y="140" text-anchor="middle">(ventilación)</text>
+  <rect x="390" y="170" width="300" height="66" rx="8" fill="#ffffff" stroke="#b91c1c" stroke-width="2"/>
+  <text x="540" y="194" text-anchor="middle" font-weight="600">Hipercapnia (tipo 2)</text>
+  <text x="540" y="214" text-anchor="middle">PaCO₂ alta por hipoventilación</text>
+  <text x="540" y="230" text-anchor="middle">alveolar, con acidosis si es aguda</text>
+  <rect x="390" y="258" width="300" height="66" rx="8" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="540" y="282" text-anchor="middle" font-weight="600">Mecanismos</text>
+  <text x="540" y="302" text-anchor="middle">Centro deprimido, debilidad</text>
+  <text x="540" y="318" text-anchor="middle">neuromuscular, carga &gt; capacidad</text>
+  <text x="540" y="352" text-anchor="middle">Ejemplos: exacerbación de EPOC,</text>
+  <text x="540" y="370" text-anchor="middle">opioides, enfermedad neuromuscular</text>
+  <line x1="540" y1="148" x2="540" y2="168" stroke="#b91c1c" stroke-width="2"/>
+  <line x1="540" y1="236" x2="540" y2="256" stroke="#b91c1c" stroke-width="2"/>
+
+  <!-- coexistence -->
+  <line x1="330" y1="203" x2="390" y2="203" stroke="#6d28d9" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="360" y="412" text-anchor="middle" fill="#6d28d9">Ambos mecanismos pueden coexistir en el mismo paciente</text>
+</g>
+</svg>

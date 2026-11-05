@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Bucles flujo-volumen: normal, obstrucción y secreciones</title>
+<desc id="d">Tres bucles flujo-volumen con el volumen en el eje horizontal y el flujo en el vertical, inspiración por encima del eje y espiración por debajo. En el normal, la rama espiratoria tiene un pico rápido y desciende de forma casi lineal hasta flujo cero al final del volumen. En la obstrucción, el pico espiratorio es menor, la rama espiratoria tiene una concavidad marcada y el flujo no llega a cero cuando empieza la siguiente inspiración, lo que sugiere atrapamiento. Con secreciones, la rama espiratoria y a veces la inspiratoria muestran oscilaciones en dientes de sierra.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="28" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">Bucle flujo-volumen: tres patrones frecuentes</text>
+<g font-size="15" font-weight="600" text-anchor="middle">
+<text x="130" y="60" fill="#15803d">Normal</text>
+<text x="360" y="60" fill="#b91c1c">Obstrucción</text>
+<text x="590" y="60" fill="#c2410c">Secreciones</text>
+</g>
+<g stroke="#9ca3af" stroke-width="1.5">
+<line x1="40" y1="180" x2="220" y2="180"/><line x1="40" y1="80" x2="40" y2="310"/>
+<line x1="270" y1="180" x2="450" y2="180"/><line x1="270" y1="80" x2="270" y2="310"/>
+<line x1="500" y1="180" x2="680" y2="180"/><line x1="500" y1="80" x2="500" y2="310"/>
+</g>
+<!-- normal: inspiration above (square-ish VCV), expiration below -->
+<path d="M40 180 L44 120 L196 120 L200 180 L196 270 Q120 232 40 180 Z" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>
+<!-- obstruction: lower PEF, scooped, ends before zero -->
+<path d="M290 180 L294 120 L430 120 L430 180 L426 240 Q360 200 300 196 Z" fill="#fee2e2" stroke="#b91c1c" stroke-width="2.5"/>
+<text x="296" y="214" font-size="14" fill="#b91c1c">no llega a 0</text>
+<text x="380" y="262" text-anchor="middle" font-size="14" fill="#b91c1c">concavidad</text>
+<!-- secretions: sawtooth -->
+<path d="M500 180 L504 120 L520 112 L536 124 L552 112 L568 124 L584 112 L600 124 L616 112 L632 124 L648 112 L656 120 L660 180 L656 270 L644 256 L632 266 L620 248 L608 256 L596 238 L584 244 L572 226 L560 230 L548 214 L536 216 L524 200 L512 198 L500 180" fill="#f3f4f6" stroke="#c2410c" stroke-width="2.5"/>
+<text x="590" y="296" text-anchor="middle" font-size="14" fill="#c2410c">dientes de sierra</text>
+<g font-size="14" fill="#1f2937">
+<text x="224" y="176" text-anchor="end">Volumen</text>
+<text x="46" y="96">insp. +</text>
+<text x="46" y="306">esp. −</text>
+<text x="276" y="96">insp. +</text>
+<text x="506" y="96">insp. +</text>
+</g>
+<text x="360" y="344" text-anchor="middle" font-size="14" fill="#1f2937">Flujo (L/min) frente a volumen (mL); la convención de signos varía entre equipos</text>
+</svg>

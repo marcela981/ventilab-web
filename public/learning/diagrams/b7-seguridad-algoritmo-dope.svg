@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="720" height="540" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="t">Algoritmo DOPE ante el deterioro agudo del paciente ventilado</title>
+  <desc id="d">Algoritmo. Ante un deterioro brusco con desaturación, alarmas o hipotensión: pedir ayuda, desconectar del ventilador y ventilar con bolsa y oxígeno al 100 por ciento. Si el paciente mejora con la bolsa, el problema probable es el equipo: revisar ventilador, fuente de gas, circuito y fugas. Si no mejora, revisar en orden: desplazamiento del tubo con capnografía y marca, obstrucción pasando la sonda de aspiración, neumotórax con auscultación y ecografía, y atrapamiento aéreo dejando espirar y midiendo auto-PEEP.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <g font-size="14" fill="#1f2937" text-anchor="middle">
+    <rect x="160" y="16" width="400" height="56" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="360" y="40" font-weight="700" font-size="16">Deterioro brusco</text>
+    <text x="360" y="60">desaturación, alarmas, hipotensión</text>
+
+    <rect x="160" y="96" width="400" height="76" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="120" font-weight="700" font-size="15">1. Pide ayuda</text>
+    <text x="360" y="141">2. Desconecta del ventilador</text>
+    <text x="360" y="162">3. Ventila con bolsa y O₂ al 100 %</text>
+
+    <path d="M360,196 L470,236 L360,276 L250,236 Z" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+    <text x="360" y="241" font-weight="700">¿Mejora con la bolsa?</text>
+  </g>
+  <g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#ah)">
+    <path d="M360,72 L360,93"/>
+    <path d="M360,172 L360,193"/>
+    <path d="M250,236 L150,236 L150,293"/>
+    <path d="M470,236 L530,236 L530,293"/>
+    <path d="M530,346 L530,355"/>
+    <path d="M530,408 L530,417"/>
+    <path d="M530,470 L530,479"/>
+  </g>
+  <g font-size="14" fill="#1f2937">
+    <text x="200" y="228" font-weight="700" fill="#15803d">Sí</text>
+    <text x="490" y="228" font-weight="700" fill="#b91c1c">No</text>
+
+    <rect x="30" y="296" width="250" height="120" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="46" y="322" font-weight="700" font-size="15">E: Equipo</text>
+    <text x="46" y="346">Revisa ventilador, fuente</text>
+    <text x="46" y="366">de gas, circuito y fugas</text>
+    <text x="46" y="392">Sigue con la bolsa hasta</text>
+    <text x="46" y="410">corregir o cambiar equipo</text>
+
+    <rect x="340" y="296" width="350" height="50" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="356" y="318" font-weight="700">D: Desplazamiento</text>
+    <text x="356" y="338">capnografía y marca del tubo</text>
+    <rect x="340" y="358" width="350" height="50" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="356" y="380" font-weight="700">O: Obstrucción</text>
+    <text x="356" y="400">pasa la sonda de aspiración</text>
+    <rect x="340" y="420" width="350" height="50" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="356" y="442" font-weight="700">P: Neumotórax</text>
+    <text x="356" y="462">ausculta, explora, ecografía</text>
+    <rect x="340" y="482" width="350" height="50" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="356" y="504" font-weight="700">S: Atrapamiento aéreo</text>
+    <text x="356" y="524">deja espirar, mide auto-PEEP</text>
+
+    <text x="30" y="456" font-size="13">Ventila con frecuencia baja</text>
+    <text x="30" y="474" font-size="13">y deja tiempo para espirar</text>
+  </g>
+</svg>

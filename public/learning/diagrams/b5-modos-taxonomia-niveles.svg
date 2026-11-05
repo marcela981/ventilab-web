@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="720" height="520" role="img" aria-labelledby="t d">
+<title id="t">Clasificación de un modo ventilatorio en tres niveles</title>
+<desc id="d">Diagrama en tres niveles para clasificar un modo. Nivel 1, variable de control: volumen (VC) o presión (PC). Nivel 2, secuencia de ciclos: CMV, IMV o CSV. Nivel 3, esquema de control del objetivo: punto fijo, dual, servo, adaptativo, biovariable, óptimo o inteligente. Abajo, ejemplos de etiquetas que combinan los tres niveles y el nombre comercial con que suelen aparecer.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<text x="360.0" y="32.0" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">¿Cómo se nombra un modo? Tres preguntas en orden</text>
+<rect x="20" y="50" width="680" height="90" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="360.0" y="74.0" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">1. Variable de control: ¿qué fija el ventilador en la inspiración?</text>
+<text x="360.0" y="95.0" font-size="14" fill="#1f2937" text-anchor="middle">VC = control de volumen (Vt y flujo preestablecidos)</text>
+<text x="360.0" y="116.0" font-size="14" fill="#1f2937" text-anchor="middle">PC = control de presión (presión preestablecida; Vt y flujo resultan)</text>
+<rect x="20" y="158" width="680" height="90" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+<text x="360.0" y="182.0" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">2. Secuencia: ¿qué tipos de ciclo se permiten?</text>
+<text x="360.0" y="203.0" font-size="14" fill="#1f2937" text-anchor="middle">CMV: todos mandatorios · IMV: mandatorios y espontáneos</text>
+<text x="360.0" y="224.0" font-size="14" fill="#1f2937" text-anchor="middle">CSV: todos espontáneos (solo posible con control de presión)</text>
+<rect x="20" y="266" width="680" height="90" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="1.5"/>
+<text x="360.0" y="290.0" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="bold">3. Esquema de control del objetivo (targeting)</text>
+<text x="360.0" y="311.0" font-size="14" fill="#1f2937" text-anchor="middle">s punto fijo · d dual · r servo · a adaptativo</text>
+<text x="360.0" y="332.0" font-size="14" fill="#1f2937" text-anchor="middle">b biovariable · o óptimo · i inteligente</text>
+<path d="M360 140 L360 156" stroke="#1f2937" stroke-width="2"/>
+<path d="M354 149 L360 156 L366 149" fill="none" stroke="#1f2937" stroke-width="2"/>
+<path d="M360 248 L360 264" stroke="#1f2937" stroke-width="2"/>
+<path d="M354 257 L360 264 L366 257" fill="none" stroke="#1f2937" stroke-width="2"/>
+<text x="360.0" y="388.0" font-size="15" fill="#1f2937" text-anchor="middle" font-weight="bold">Ejemplos de etiqueta taxonómica y nombre comercial frecuente</text>
+<text x="250.0" y="414.0" font-size="14" fill="#1d4ed8" text-anchor="end" font-weight="bold">VC-CMVs</text>
+<text x="266.0" y="414.0" font-size="14" fill="#1f2937">→ «A/C por volumen», «VCV»</text>
+<text x="250.0" y="437.0" font-size="14" fill="#1d4ed8" text-anchor="end" font-weight="bold">PC-CMVs</text>
+<text x="266.0" y="437.0" font-size="14" fill="#1f2937">→ «A/C por presión», «PCV»</text>
+<text x="250.0" y="460.0" font-size="14" fill="#1d4ed8" text-anchor="end" font-weight="bold">PC-CMVa</text>
+<text x="266.0" y="460.0" font-size="14" fill="#1f2937">→ «PRVC», «VC+», «CMV + AutoFlow»</text>
+<text x="250.0" y="483.0" font-size="14" fill="#1d4ed8" text-anchor="end" font-weight="bold">PC-CSVs</text>
+<text x="266.0" y="483.0" font-size="14" fill="#1f2937">→ «PSV», «CPAP»</text>
+<text x="360.0" y="508.0" font-size="14" fill="#1f2937" text-anchor="middle">Basado en Chatburn et al. (2014) y Fajardo-Campoverdi et al. (2025)</text>
+</g>
+</svg>

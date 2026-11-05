@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+<title id="t">Modelo unicompartimental del sistema respiratorio</title>
+<desc id="d">Esquema del sistema respiratorio como un tubo con resistencia conectado a un globo elástico. El ventilador aplica la presión en la vía aérea; una parte se gasta en vencer la resistencia del tubo (resistencia por flujo) y otra en distender el globo (volumen dividido por compliance). La PEEP total es la presión de partida al final de la espiración y la presión muscular del paciente suma fuerza desde afuera del globo.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/></marker>
+</defs>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+<text x="360" y="34" font-size="18" text-anchor="middle" font-weight="700">El sistema respiratorio como tubo + globo</text>
+<rect x="30" y="120" width="130" height="90" rx="10" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+<text x="95" y="160" text-anchor="middle" font-weight="700">Ventilador</text>
+<text x="95" y="182" text-anchor="middle">aplica Paw</text>
+<rect x="160" y="152" width="250" height="26" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<path d="M190,165 L210,165 L220,155 L235,175 L250,155 L265,175 L280,155 L295,175 L305,165 L380,165" fill="none" stroke="#1d4ed8" stroke-width="2.5" stroke-linejoin="round"/>
+<text x="285" y="140" text-anchor="middle" fill="#1d4ed8" font-weight="700">Resistencia (R)</text>
+<text x="285" y="205" text-anchor="middle" fill="#1d4ed8">presión resistiva = R · flujo</text>
+<line x1="175" y1="252" x2="395" y2="252" stroke="#1f2937" stroke-width="2" marker-end="url(#ah)"/>
+<text x="270" y="274" font-size="13" text-anchor="middle">flujo (V̇) hacia el alvéolo</text>
+<ellipse cx="520" cy="165" rx="105" ry="85" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>
+<text x="520" y="150" text-anchor="middle" fill="#15803d" font-weight="700">Globo elástico</text>
+<text x="520" y="172" text-anchor="middle" fill="#15803d">Compliance (C)</text>
+<text x="520" y="194" text-anchor="middle" fill="#15803d">presión elástica = V / C</text>
+<line x1="660" y1="110" x2="628" y2="135" stroke="#6d28d9" stroke-width="2.5" marker-end="url(#ah)"/>
+<line x1="660" y1="220" x2="628" y2="195" stroke="#6d28d9" stroke-width="2.5" marker-end="url(#ah)"/>
+<text x="690" y="170" text-anchor="middle" fill="#6d28d9" font-weight="700">Pmus</text>
+<text x="545" y="274" font-size="13" text-anchor="middle">PEEP total: presión basal del globo</text>
+<rect x="40" y="300" width="640" height="80" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="360" y="330" font-size="18" text-anchor="middle" font-weight="700">Paw + Pmus  =  V / C  +  R · V̇  +  PEEP total</text>
+<text x="360" y="360" font-size="14" text-anchor="middle">presión aplicada  =  componente elástico  +  componente resistivo  +  presión basal</text>
+</g>
+</svg>

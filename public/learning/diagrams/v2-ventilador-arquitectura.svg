@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="t d">
+<title id="t">Arquitectura del ventilador VentyLab</title>
+<desc id="d">Esquema en cuatro bloques de izquierda a derecha: el ventilador físico conectado a un pulmón de prueba; el broker MQTT que recibe la telemetría y entrega los comandos; el servidor VentyLab con tres módulos, reservas, telemetría y comandos; y el navegador con la consola de la pestaña Monitoreo en modo Real. Las flechas superiores muestran la telemetría que va del equipo al navegador en lotes de unos 33 ms; las inferiores, el comando que va del navegador al equipo pasando por la validación del servidor. Debajo, en recuadro aparte, el simulador digital, cuyo motor fisiológico corre en el propio navegador.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#1f2937"/></marker></defs>
+<rect x="16" y="40" width="150" height="190" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="30" y="68" font-size="15" font-weight="700">Ventilador físico</text>
+<text x="30" y="92" font-size="13">sensores de presión,</text>
+<text x="30" y="110" font-size="13">flujo y volumen</text>
+<rect x="30" y="140" width="122" height="70" rx="30" fill="#fee2e2" stroke="#b91c1c"/>
+<text x="46" y="172" font-size="14">Pulmón de</text>
+<text x="62" y="192" font-size="14">prueba</text>
+<rect x="196" y="40" width="130" height="190" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="210" y="68" font-size="15" font-weight="700">Broker MQTT</text>
+<text x="210" y="92" font-size="13">tema de telemetría</text>
+<text x="210" y="112" font-size="13">tema de comandos</text>
+<rect x="356" y="40" width="170" height="190" rx="10" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="370" y="68" font-size="15" font-weight="700">Servidor VentyLab</text>
+<text x="370" y="96" font-size="14">• Reservas</text>
+<text x="370" y="120" font-size="14">• Telemetría</text>
+<text x="370" y="144" font-size="14">• Comandos</text>
+<text x="370" y="176" font-size="13">valida rangos seguros,</text>
+<text x="370" y="196" font-size="13">un solo operador</text>
+<rect x="556" y="40" width="148" height="190" rx="10" fill="#dcfce7" stroke="#15803d"/>
+<text x="570" y="68" font-size="15" font-weight="700">Navegador</text>
+<text x="570" y="96" font-size="13">Monitoreo · Real</text>
+<text x="570" y="120" font-size="13">curvas, tarjetas,</text>
+<text x="570" y="140" font-size="13">alarmas y controles</text>
+<line x1="166" y1="20" x2="704" y2="20" stroke="#15803d" stroke-width="2" marker-end="url(#a)"/>
+<text x="250" y="14" font-size="13" fill="#15803d">Telemetría: presión, flujo, volumen, ajustes informados (lotes de ~33 ms)</text>
+<line x1="704" y1="252" x2="166" y2="252" stroke="#c2410c" stroke-width="2" marker-end="url(#a)"/>
+<text x="250" y="274" font-size="13" fill="#c2410c">Comando: modo y parámetros completos, solo del operador</text>
+<line x1="166" y1="135" x2="194" y2="135" stroke="#1f2937" stroke-width="2"/>
+<line x1="326" y1="135" x2="354" y2="135" stroke="#1f2937" stroke-width="2"/>
+<line x1="526" y1="135" x2="554" y2="135" stroke="#1f2937" stroke-width="2"/>
+<text x="530" y="160" font-size="13">Socket.io</text>
+<rect x="356" y="304" width="348" height="136" rx="10" fill="#ffffff" stroke="#6d28d9" stroke-dasharray="6 4"/>
+<text x="370" y="332" font-size="15" font-weight="700" fill="#6d28d9">Simulador digital (modo Digital)</text>
+<text x="370" y="358" font-size="14">El motor fisiológico corre en el navegador:</text>
+<text x="370" y="380" font-size="14">no usa broker ni equipo; el servidor guarda</text>
+<text x="370" y="402" font-size="14">la sesión y la vuelve a reproducir para</text>
+<text x="370" y="424" font-size="14">calcular la nota.</text>
+<rect x="16" y="304" width="320" height="136" rx="10" fill="#fee2e2" stroke="#b91c1c"/>
+<text x="30" y="332" font-size="15" font-weight="700" fill="#b91c1c">Seguridad</text>
+<text x="30" y="358" font-size="14">El equipo se conecta a un pulmón de</text>
+<text x="30" y="380" font-size="14">prueba, nunca a una persona.</text>
+<text x="30" y="402" font-size="14">No hay parada de emergencia en el</text>
+<text x="30" y="424" font-size="14">software: se detiene en el equipo.</text>
+</g>
+</svg>

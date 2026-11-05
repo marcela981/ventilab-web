@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Curvas de presión, flujo y volumen en VCV y en PCV</title>
+<desc id="d">Comparación en dos columnas. En VCV con flujo constante, la presión sube en rampa hasta la presión pico, cae a la presión meseta durante la pausa inspiratoria y luego desciende a la PEEP; el flujo inspiratorio es cuadrado; el volumen sube de forma lineal. En PCV, la presión es cuadrada; el flujo inspiratorio es máximo al inicio y desacelera de forma exponencial; el volumen sube de forma curva y se aplana. En ambas, el flujo espiratorio es negativo y vuelve a cero antes del siguiente ciclo.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="200" y="30" text-anchor="middle" font-size="17" font-weight="600" fill="#1d4ed8">VCV (flujo constante)</text>
+<text x="540" y="30" text-anchor="middle" font-size="17" font-weight="600" fill="#6d28d9">PCV</text>
+<g font-size="14" fill="#1f2937" text-anchor="middle">
+<text x="22" y="105" transform="rotate(-90 22 105)">Presión (cmH₂O)</text>
+<text x="22" y="255" transform="rotate(-90 22 255)">Flujo (L/min)</text>
+<text x="22" y="410" transform="rotate(-90 22 410)">Volumen (mL)</text>
+</g>
+<g stroke="#9ca3af" stroke-width="1.5">
+<line x1="50" y1="45" x2="50" y2="160"/><line x1="50" y1="150" x2="350" y2="150"/>
+<line x1="50" y1="190" x2="50" y2="320"/><line x1="50" y1="255" x2="350" y2="255"/>
+<line x1="50" y1="350" x2="50" y2="465"/><line x1="50" y1="460" x2="350" y2="460"/>
+<line x1="390" y1="45" x2="390" y2="160"/><line x1="390" y1="150" x2="690" y2="150"/>
+<line x1="390" y1="190" x2="390" y2="320"/><line x1="390" y1="255" x2="690" y2="255"/>
+<line x1="390" y1="350" x2="390" y2="465"/><line x1="390" y1="460" x2="690" y2="460"/>
+</g>
+<!-- VCV pressure -->
+<path d="M50 135 L70 135 L74 112 L160 58 L164 82 L184 82 L194 120 Q206 134 240 135 L350 135" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<text x="150" y="54" text-anchor="end" font-size="14" fill="#1f2937">Ppico</text>
+<text x="188" y="76" font-size="14" fill="#1f2937">Pplat</text>
+<text x="300" y="129" font-size="14" fill="#1f2937">PEEP</text>
+<!-- VCV flow -->
+<path d="M50 255 L70 255 L70 205 L160 205 L160 255 L184 255 L186 312 Q210 262 270 256 L350 255" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<text x="115" y="199" text-anchor="middle" font-size="14" fill="#1f2937">cuadrado</text>
+<text x="220" y="250" font-size="14" fill="#1f2937">pausa: flujo 0</text>
+<!-- VCV volume -->
+<path d="M50 460 L70 460 L160 372 L184 372 L194 410 Q215 455 270 459 L350 460" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<text x="110" y="400" font-size="14" fill="#1f2937">rampa lineal</text>
+<!-- PCV pressure -->
+<path d="M390 135 L410 135 L414 72 L520 72 L524 120 Q536 134 570 135 L690 135" fill="none" stroke="#6d28d9" stroke-width="2.5"/>
+<text x="467" y="64" text-anchor="middle" font-size="14" fill="#1f2937">presión cuadrada</text>
+<text x="640" y="129" font-size="14" fill="#1f2937">PEEP</text>
+<!-- PCV flow -->
+<path d="M390 255 L410 255 L414 198 Q440 236 520 250 L520 255 L524 255 L526 312 Q550 262 610 256 L690 255" fill="none" stroke="#6d28d9" stroke-width="2.5"/>
+<text x="470" y="214" font-size="14" fill="#1f2937">desacelerado</text>
+<!-- PCV volume -->
+<path d="M390 460 L410 460 Q440 384 520 372 L524 372 L530 410 Q550 455 610 459 L690 460" fill="none" stroke="#6d28d9" stroke-width="2.5"/>
+<text x="452" y="365" font-size="14" fill="#1f2937">curva que se aplana</text>
+<text x="360" y="488" text-anchor="middle" font-size="14" fill="#1f2937">Tiempo (s) · el flujo espiratorio (por debajo de cero) es pasivo en ambos modos</text>
+</svg>

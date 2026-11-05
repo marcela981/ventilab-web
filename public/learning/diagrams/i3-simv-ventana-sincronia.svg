@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Lógica del ciclo SIMV: periodo mandatorio y periodo espontáneo</title>
+<desc id="d">Esquema de dos escenarios en una línea de tiempo dividida en ciclos SIMV de duración igual a 60 segundos entre la frecuencia mandatoria. Cada ciclo empieza con un periodo mandatorio y sigue con un periodo espontáneo. En el escenario A el paciente hace un esfuerzo dentro del periodo mandatorio y recibe un ciclo mandatorio sincronizado; sus esfuerzos posteriores reciben respiraciones espontáneas con presión de soporte. En el escenario B el paciente no hace esfuerzos y el ventilador entrega el ciclo mandatorio por tiempo al final del periodo mandatorio.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="30" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">Cómo decide SIMV qué tipo de ciclo entregar</text>
+<text x="360" y="52" text-anchor="middle" font-size="14" fill="#1f2937">Duración del ciclo SIMV = 60 / FR mandatoria (el algoritmo exacto varía según el fabricante)</text>
+<!-- Scenario A -->
+<text x="40" y="96" font-size="15" font-weight="600" fill="#1f2937">A. Paciente con esfuerzos</text>
+<rect x="60" y="110" width="130" height="40" fill="#dbeafe" stroke="#1d4ed8"/>
+<rect x="190" y="110" width="170" height="40" fill="#f3f4f6" stroke="#9ca3af"/>
+<rect x="360" y="110" width="130" height="40" fill="#dbeafe" stroke="#1d4ed8"/>
+<rect x="490" y="110" width="170" height="40" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="125" y="135" text-anchor="middle" font-size="14" fill="#1d4ed8">periodo mandatorio</text>
+<text x="275" y="135" text-anchor="middle" font-size="14" fill="#1f2937">periodo espontáneo</text>
+<text x="425" y="135" text-anchor="middle" font-size="14" fill="#1d4ed8">periodo mandatorio</text>
+<text x="575" y="135" text-anchor="middle" font-size="14" fill="#1f2937">periodo espontáneo</text>
+<!-- effort markers A -->
+<g stroke="#1f2937" stroke-width="2">
+<line x1="110" y1="160" x2="110" y2="176"/><line x1="250" y1="160" x2="250" y2="176"/><line x1="320" y1="160" x2="320" y2="176"/>
+<line x1="400" y1="160" x2="400" y2="176"/><line x1="560" y1="160" x2="560" y2="176"/>
+</g>
+<text x="110" y="196" text-anchor="middle" font-size="14" fill="#1d4ed8">mandatoria</text>
+<text x="110" y="212" text-anchor="middle" font-size="14" fill="#1d4ed8">sincronizada</text>
+<text x="285" y="196" text-anchor="middle" font-size="14" fill="#c2410c">espontáneas + PS</text>
+<text x="400" y="196" text-anchor="middle" font-size="14" fill="#1d4ed8">mandatoria</text>
+<text x="400" y="212" text-anchor="middle" font-size="14" fill="#1d4ed8">sincronizada</text>
+<text x="560" y="196" text-anchor="middle" font-size="14" fill="#c2410c">espontánea + PS</text>
+<!-- Scenario B -->
+<text x="40" y="256" font-size="15" font-weight="600" fill="#1f2937">B. Paciente sin esfuerzos (apnea, sedación profunda)</text>
+<rect x="60" y="270" width="130" height="40" fill="#dbeafe" stroke="#1d4ed8"/>
+<rect x="190" y="270" width="170" height="40" fill="#f3f4f6" stroke="#9ca3af"/>
+<rect x="360" y="270" width="130" height="40" fill="#dbeafe" stroke="#1d4ed8"/>
+<rect x="490" y="270" width="170" height="40" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="125" y="295" text-anchor="middle" font-size="14" fill="#1d4ed8">periodo mandatorio</text>
+<text x="275" y="295" text-anchor="middle" font-size="14" fill="#1f2937">sin ciclos</text>
+<text x="425" y="295" text-anchor="middle" font-size="14" fill="#1d4ed8">periodo mandatorio</text>
+<text x="575" y="295" text-anchor="middle" font-size="14" fill="#1f2937">sin ciclos</text>
+<g stroke="#b91c1c" stroke-width="2.5">
+<line x1="190" y1="316" x2="190" y2="336"/><line x1="490" y1="316" x2="490" y2="336"/>
+</g>
+<text x="190" y="356" text-anchor="middle" font-size="14" fill="#b91c1c">mandatoria por tiempo</text>
+<text x="490" y="356" text-anchor="middle" font-size="14" fill="#b91c1c">mandatoria por tiempo</text>
+<text x="360" y="386" text-anchor="middle" font-size="14" fill="#1f2937">Marca negra: esfuerzo detectado por el trigger · Marca roja: disparo por tiempo</text>
+</svg>

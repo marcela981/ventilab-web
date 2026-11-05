@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 340" width="720" height="340" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Curva de presión en APRV</title>
+<desc id="d">Presión en la vía aérea frente al tiempo en ventilación con liberación de presión. La presión permanece la mayor parte del tiempo en un nivel alto (P alta) durante un tiempo largo (T alto), con pequeñas ondulaciones que representan respiraciones espontáneas del paciente. A intervalos regulares la presión cae brevemente a un nivel bajo (P baja) durante un tiempo corto (T bajo), lo que produce la liberación y la salida de CO₂, y luego vuelve a P alta.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="28" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">APRV: CPAP alta con liberaciones breves y periódicas</text>
+<line x1="80" y1="50" x2="80" y2="280" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="80" y1="280" x2="690" y2="280" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="32" y="165" font-size="14" fill="#1f2937" transform="rotate(-90 32 165)" text-anchor="middle">Presión (cmH₂O)</text>
+<text x="686" y="300" text-anchor="end" font-size="14" fill="#1f2937">Tiempo (s)</text>
+<line x1="80" y1="100" x2="690" y2="100" stroke="#9ca3af" stroke-dasharray="4 4"/>
+<line x1="80" y1="250" x2="690" y2="250" stroke="#9ca3af" stroke-dasharray="4 4"/>
+<text x="76" y="105" text-anchor="end" font-size="14" fill="#1f2937">P alta</text>
+<text x="76" y="255" text-anchor="end" font-size="14" fill="#1f2937">P baja</text>
+<path d="M80 250 L86 100 Q100 94 114 100 Q128 106 142 100 Q156 94 170 100 Q184 106 198 100 Q212 94 226 100 L262 100 L266 250 L282 250 L288 100 Q302 94 316 100 Q330 106 344 100 Q358 94 372 100 Q386 106 400 100 Q414 94 428 100 L462 100 L466 250 L482 250 L488 100 Q502 94 516 100 Q530 106 544 100 Q558 94 572 100 Q586 106 600 100 Q614 94 628 100 L662 100 L666 250 L682 250 L688 100" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<text x="160" y="84" text-anchor="middle" font-size="14" fill="#c2410c">respiraciones espontáneas</text>
+<line x1="88" y1="140" x2="262" y2="140" stroke="#15803d" stroke-width="1.5"/>
+<text x="175" y="160" text-anchor="middle" font-size="14" fill="#15803d">T alto (largo)</text>
+<line x1="264" y1="200" x2="284" y2="200" stroke="#b91c1c" stroke-width="2"/>
+<text x="300" y="206" font-size="14" fill="#b91c1c">T bajo (breve): liberación</text>
+<text x="360" y="326" text-anchor="middle" font-size="14" fill="#1f2937">El volumen liberado depende de la compliance, la resistencia y T bajo</text>
+</svg>

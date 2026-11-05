@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+<title id="t">Relación entre ventilación alveolar y PaCO₂</title>
+<desc id="d">Hipérbola descendente de PaCO₂ frente a ventilación alveolar con una producción de CO₂ constante de 200 mL/min. Se marcan dos puntos del ejemplo de la lección: 4,8 L/min con unos 36 mmHg y 3,6 L/min con unos 48 mmHg. En la zona de baja ventilación, pequeñas reducciones elevan mucho la PaCO₂.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<text x="360" y="30" font-size="16" font-weight="bold" text-anchor="middle">PaCO₂ y ventilación alveolar (producción de CO₂: 200 mL/min)</text>
+<g stroke="#9ca3af" stroke-width="1">
+<line x1="90" y1="50" x2="680" y2="50" stroke-dasharray="3 4"/>
+<line x1="90" y1="125" x2="680" y2="125" stroke-dasharray="3 4"/>
+<line x1="90" y1="200" x2="680" y2="200" stroke-dasharray="3 4"/>
+<line x1="90" y1="275" x2="680" y2="275" stroke-dasharray="3 4"/>
+</g>
+<line x1="90" y1="50" x2="90" y2="350" stroke="#9ca3af" stroke-width="2"/>
+<line x1="90" y1="350" x2="690" y2="350" stroke="#9ca3af" stroke-width="2"/>
+<g font-size="13" text-anchor="end">
+<text x="82" y="355">0</text>
+<text x="82" y="280">30</text>
+<text x="82" y="205">60</text>
+<text x="82" y="130">90</text>
+<text x="82" y="55">120</text>
+</g>
+<g font-size="13" text-anchor="middle">
+<text x="90" y="370">0</text>
+<text x="208" y="370">2</text>
+<text x="326" y="370">4</text>
+<text x="444" y="370">6</text>
+<text x="562" y="370">8</text>
+<text x="680" y="370">10</text>
+</g>
+<text x="385" y="400" font-size="14" text-anchor="middle">Ventilación alveolar (L/min)</text>
+<text x="28" y="200" font-size="14" text-anchor="middle" transform="rotate(-90 28 200)">PaCO₂ (mmHg)</text>
+<polyline fill="none" stroke="#1d4ed8" stroke-width="3" points="178.5,62.3 193.3,103.4 208.0,134.3 222.8,158.2 237.5,177.4 252.3,193.1 267.0,206.2 281.8,217.2 296.5,226.7 311.3,234.9 326.0,242.1 340.8,248.5 355.5,254.1 370.3,259.2 385.0,263.7 399.8,267.8 414.5,271.5 429.3,275.0 444.0,278.1 458.8,281.0 473.5,283.6 488.3,286.1 503.0,288.4 517.8,290.5 532.5,292.5 547.3,294.3 562.0,296.1 576.8,297.7 591.5,299.2 606.3,300.7 621.0,302.1 635.8,303.4 650.5,304.6 665.3,305.7 680.0,306.9"/>
+<circle cx="373.2" cy="260" r="6" fill="#15803d"/>
+<circle cx="302.4" cy="230" r="6" fill="#b91c1c"/>
+<line x1="373.2" y1="260" x2="373.2" y2="350" stroke="#15803d" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="302.4" y1="230" x2="302.4" y2="350" stroke="#b91c1c" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="385" y="245" font-size="14" fill="#15803d">Vt 450 mL × 16/min: 4,8 L/min → ≈ 36 mmHg</text>
+<text x="315" y="212" font-size="14" fill="#b91c1c">Vt 300 mL × 24/min: 3,6 L/min → ≈ 48 mmHg</text>
+<text x="200" y="90" font-size="14" fill="#1d4ed8">Zona de baja ventilación:</text>
+<text x="200" y="108" font-size="14" fill="#1d4ed8">pequeños descensos, grandes aumentos</text>
+<text x="520" y="330" font-size="14" text-anchor="middle">Mismo volumen minuto (7,2 L/min) en ambos puntos</text>
+</g>
+</svg>

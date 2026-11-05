@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+  <title id="t">Flujo para preparar un paciente en la pestaña Simular Paciente</title>
+  <desc id="d">Esquema de cajas. A la izquierda, tres maneras de llenar el formulario: Cargar caso (un caso clínico publicado, con filtros de patología y dificultad), Aleatorio (un paciente plausible) o llenarlo a mano. En el centro, el formulario de dos pasos: Paciente y Condición, y Estado Actual y Resumen, con los botones Siguiente y Atrás. A la derecha, el botón Enviar al Monitoreo inicia una sesión de práctica libre que se abre en la pestaña Monitoreo con curvas, alarmas y el cajón del caso clínico.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <text x="120" y="34" font-size="15" font-weight="600" text-anchor="middle">Pestaña Simular Paciente</text>
+    <rect x="20" y="52" width="200" height="74" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="120" y="78" font-size="15" font-weight="600" text-anchor="middle">Cargar caso</text>
+    <text x="120" y="98" font-size="14" text-anchor="middle">caso clínico publicado</text>
+    <text x="120" y="116" font-size="14" text-anchor="middle">filtros: Patología, Dificultad</text>
+    <rect x="20" y="146" width="200" height="56" rx="8" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+    <text x="120" y="170" font-size="15" font-weight="600" text-anchor="middle">Aleatorio</text>
+    <text x="120" y="190" font-size="14" text-anchor="middle">paciente plausible</text>
+    <rect x="20" y="222" width="200" height="56" rx="8" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+    <text x="120" y="246" font-size="15" font-weight="600" text-anchor="middle">Llenar a mano</text>
+    <text x="120" y="266" font-size="14" text-anchor="middle">paciente propio</text>
+
+    <rect x="255" y="96" width="220" height="140" rx="8" fill="#ffffff" stroke="#6d28d9" stroke-width="2"/>
+    <text x="365" y="122" font-size="15" font-weight="600" text-anchor="middle">Formulario</text>
+    <text x="270" y="150" font-size="14">1. Paciente y Condición</text>
+    <text x="270" y="174" font-size="14">2. Estado Actual y Resumen</text>
+    <text x="270" y="204" font-size="14">Siguiente → / ← Atrás</text>
+    <text x="270" y="224" font-size="14">Limpiar</text>
+
+    <line x1="220" y1="89" x2="252" y2="130" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="220" y1="174" x2="252" y2="170" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="220" y1="250" x2="252" y2="212" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="508" y="96" width="192" height="56" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="604" y="122" font-size="15" font-weight="600" text-anchor="middle">Enviar al Monitoreo</text>
+    <text x="604" y="141" font-size="14" text-anchor="middle">valida ambos pasos</text>
+    <line x1="475" y1="124" x2="505" y2="124" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="508" y="196" width="192" height="98" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="2"/>
+    <text x="604" y="222" font-size="15" font-weight="600" text-anchor="middle">Pestaña Monitoreo</text>
+    <text x="604" y="244" font-size="14" text-anchor="middle">Práctica libre en curso</text>
+    <text x="604" y="264" font-size="14" text-anchor="middle">curvas y alarmas</text>
+    <text x="604" y="284" font-size="14" text-anchor="middle">cajón «Caso clínico»</text>
+    <line x1="604" y1="152" x2="604" y2="193" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="20" y="318" width="680" height="62" rx="8" fill="#f3f4f6"/>
+    <text x="36" y="343" font-size="14">Con «Cargar caso», la sesión usa ese caso como base (mecánica, objetivos y eventos).</text>
+    <text x="36" y="366" font-size="14">Sin caso cargado, el servidor elige el caso base de la condición principal.</text>
+  </g>
+</svg>

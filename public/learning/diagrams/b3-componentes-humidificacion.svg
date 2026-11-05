@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380" role="img" aria-labelledby="t d">
+  <title id="t">Humidificación activa frente a intercambiador de calor y humedad</title>
+  <desc id="d">Dos configuraciones del circuito. A la izquierda, humidificación activa: el humidificador calentado está en la rama inspiratoria, lejos del paciente, y entre la pieza en Y y el tubo no se añade volumen; el espacio muerto del equipo es mínimo. A la derecha, intercambiador de calor y humedad (HME): el dispositivo se coloca entre la pieza en Y y el tubo endotraqueal; ese volumen interno se suma al espacio muerto y también añade resistencia al flujo en ambas direcciones.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <line x1="360" y1="20" x2="360" y2="360" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <text x="180" y="40" font-size="16" font-weight="600" text-anchor="middle">A. Humidificación activa</text>
+    <text x="540" y="40" font-size="16" font-weight="600" text-anchor="middle">B. HME (pasivo)</text>
+
+    <!-- Panel A -->
+    <rect x="30" y="70" width="90" height="44" rx="6" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+    <text x="75" y="97" font-size="14" text-anchor="middle">Ventilador</text>
+    <path d="M120,84 L300,84 L300,170" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <rect x="160" y="62" width="110" height="38" rx="6" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="215" y="78" font-size="14" text-anchor="middle">Humidificador</text>
+    <text x="215" y="94" font-size="14" text-anchor="middle">calentado</text>
+    <path d="M120,108 L240,108 L240,170" fill="none" stroke="#15803d" stroke-width="3"/>
+    <text x="130" y="140" font-size="14" fill="#15803d">espiratoria</text>
+    <text x="306" y="130" font-size="14" fill="#1d4ed8">insp.</text>
+    <path d="M240,170 L300,170" fill="none" stroke="#1f2937" stroke-width="3"/>
+    <circle cx="270" cy="170" r="8" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
+    <text x="270" y="196" font-size="14" text-anchor="middle">Y</text>
+    <line x1="270" y1="178" x2="270" y2="250" stroke="#c2410c" stroke-width="5"/>
+    <rect x="215" y="250" width="110" height="40" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="270" y="275" font-size="14" text-anchor="middle">Paciente</text>
+    <text x="30" y="320" font-size="14">Sin volumen añadido tras la Y</text>
+    <text x="30" y="340" font-size="14">Gas calentado y saturado de agua</text>
+
+    <!-- Panel B -->
+    <rect x="390" y="70" width="90" height="44" rx="6" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+    <text x="435" y="97" font-size="14" text-anchor="middle">Ventilador</text>
+    <path d="M480,84 L660,84 L660,150" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <path d="M480,108 L600,108 L600,150" fill="none" stroke="#15803d" stroke-width="3"/>
+    <text x="490" y="140" font-size="14" fill="#15803d">espiratoria</text>
+    <text x="666" y="120" font-size="14" fill="#1d4ed8">insp.</text>
+    <path d="M600,150 L660,150" fill="none" stroke="#1f2937" stroke-width="3"/>
+    <circle cx="630" cy="150" r="8" fill="#ffffff" stroke="#1f2937" stroke-width="2"/>
+    <text x="645" y="176" font-size="14">Y</text>
+    <line x1="630" y1="158" x2="630" y2="180" stroke="#c2410c" stroke-width="5"/>
+    <rect x="600" y="180" width="60" height="44" rx="6" fill="#dcfce7" stroke="#c2410c" stroke-width="2.5"/>
+    <text x="630" y="207" font-size="14" text-anchor="middle">HME</text>
+    <line x1="630" y1="224" x2="630" y2="250" stroke="#c2410c" stroke-width="5"/>
+    <rect x="575" y="250" width="110" height="40" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="630" y="275" font-size="14" text-anchor="middle">Paciente</text>
+    <path d="M592,186 L560,186" stroke="#c2410c" stroke-width="2" fill="none"/>
+    <text x="555" y="182" font-size="14" fill="#c2410c" text-anchor="end">+ espacio muerto</text>
+    <text x="555" y="202" font-size="14" fill="#c2410c" text-anchor="end">+ resistencia</text>
+    <text x="390" y="320" font-size="14">El volumen interno del HME se</text>
+    <text x="390" y="340" font-size="14">reinhala en cada ciclo</text>
+  </g>
+</svg>

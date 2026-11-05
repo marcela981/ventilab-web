@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+<title id="t">Presión barométrica y presión inspirada de oxígeno a nivel del mar y en altitud</title>
+<desc id="d">Gráfico de barras. A nivel del mar la presión barométrica es 760 mmHg y la presión inspirada de oxígeno respirando aire es de unos 149 mmHg. A 2600 metros la presión barométrica estimada es de unos 563 mmHg y la presión inspirada de oxígeno de unos 108 mmHg. La fracción inspirada de oxígeno es 21 por ciento en ambos casos.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+  <text x="360" y="30" font-size="16" text-anchor="middle" font-weight="600">Misma FiO₂ (0,21), distinta presión inspirada de O₂</text>
+  <!-- axes: y 0..800 mmHg mapped to 360..60 (0.375 px/mmHg) -->
+  <line x1="100" y1="60" x2="100" y2="360" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="100" y1="360" x2="680" y2="360" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="100" y1="285" x2="680" y2="285" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="3 5"/>
+  <line x1="100" y1="210" x2="680" y2="210" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="3 5"/>
+  <line x1="100" y1="135" x2="680" y2="135" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="3 5"/>
+  <line x1="100" y1="60" x2="680" y2="60" stroke="#9ca3af" stroke-width="0.8" stroke-dasharray="3 5"/>
+  <text x="92" y="364" font-size="13" text-anchor="end">0</text>
+  <text x="92" y="289" font-size="13" text-anchor="end">200</text>
+  <text x="92" y="214" font-size="13" text-anchor="end">400</text>
+  <text x="92" y="139" font-size="13" text-anchor="end">600</text>
+  <text x="92" y="64" font-size="13" text-anchor="end">800</text>
+  <text x="28" y="210" font-size="13" text-anchor="middle" transform="rotate(-90 28 210)">Presión (mmHg)</text>
+
+  <!-- sea level -->
+  <rect x="150" y="75" width="90" height="285" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="195" y="68" font-size="14" text-anchor="middle">760</text>
+  <rect x="250" y="304" width="90" height="56" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+  <text x="295" y="297" font-size="14" text-anchor="middle">≈ 149</text>
+  <text x="245" y="384" font-size="14" text-anchor="middle">Nivel del mar</text>
+
+  <!-- altitude -->
+  <rect x="430" y="149" width="90" height="211" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="475" y="142" font-size="14" text-anchor="middle">≈ 563</text>
+  <rect x="530" y="320" width="90" height="40" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+  <text x="575" y="313" font-size="14" text-anchor="middle">≈ 108</text>
+  <text x="525" y="384" font-size="14" text-anchor="middle">2600 m de altitud</text>
+
+  <!-- legend -->
+  <rect x="150" y="396" width="16" height="16" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="172" y="409" font-size="14">Presión barométrica (PB)</text>
+  <rect x="400" y="396" width="16" height="16" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+  <text x="422" y="409" font-size="14">PIO₂ = FiO₂ × (PB − 47)</text>
+</g>
+</svg>
