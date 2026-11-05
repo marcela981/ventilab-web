@@ -16,6 +16,7 @@
     "perf:bundle": "node ./scripts/perf/bundle-sizes.mjs",
     "generate:api": "node ./scripts/generate-api.mjs",
     "check:api": "node ./scripts/check-api-contract.mjs",
+    "generate:palettes": "vitest run src/shared/design-system/theme/theme-palettes.css.test.ts -u",
     "validate:lessons": "node ./scripts/validate-lessons.mjs",
     "validate:lessons:fix": "node ./scripts/validate-lessons.mjs --fix",
     "validate:curriculum": "node ./scripts/validate-curriculum.mjs",

@@ -3,7 +3,8 @@
 * Descripción: Covers the canvas renderers in jsdom: accessible names, freeze snapshot with the measurement cursor (pointer, arrow keys, PageUp/PageDown, Home/End) and its readout (described, not aria-live), unfreeze, and the paint loop with a mocked 2D context and a manual requestAnimationFrame (DPR-scaled backing store, colors read from CSS custom properties, incremental sweep frames that copy only the erase spans from the chrome layer, two spans across the wrap, palette re-read only on full repaints and theme changes, sweep snapshot after the erase gap, unmount cleanup, 30 fps throttle, loop polyline with pen lifts). Depends on Vitest and Testing Library.
 *   v1.2 (W3, Bloque 1): with a playback delay and the display frame rate the live trace is drawn on (almost) every
 *   frame between data batches.
-* Versión: 1.2
+*   v1.3 (Ajustes D4): the theme change that forces a repaint is the palette attribute (`data-palette`) on <html>.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -245,12 +246,12 @@ describe("SweepCanvas paint loop", () => {
     runFrame(1_040);
     expect(styles.mock.calls.length).toBe(afterFirst);
 
-    document.documentElement.setAttribute("data-theme", "dark");
+    document.documentElement.setAttribute("data-palette", "univalle");
     await new Promise((resolve) => {
       setTimeout(resolve, 0);
     });
     runFrame(1_080);
-    document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-palette");
 
     expect(styles.mock.calls.length).toBeGreaterThan(afterFirst);
   });
