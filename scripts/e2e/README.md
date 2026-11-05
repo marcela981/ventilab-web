@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Fake ventilator usage
-* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E. v1.5 (cierre IA): fault injection modes of the fake LLM (per request, runtime and start mode) and the deterministic fallback E2E of Profundizar.
-* Versión: 1.5
+* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E. v1.5 (cierre IA): fault injection modes of the fake LLM (per request, runtime and start mode) and the deterministic fallback E2E of Profundizar. v1.6 (Bloque A): the fake LLM answers the simulator case interpretation; Bloque A E2E (e2e/bloque-a) with the stack on its own ports, a TEST Mosquitto broker and the fake ventilator for the real mode.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -100,7 +100,9 @@ OPENAI_BASE_URL=http://127.0.0.1:4910/v1 OPENAI_API_KEY=local node dist/main
 | `--mode <mode>` | `ok` (`FAKE_LLM_MODE`) | Start fault injection mode (see below). |
 | `--retry-after <s>` | 30 (`FAKE_LLM_RETRY_AFTER`) | `Retry-After` seconds sent by the `429` mode. |
 
-What it answers: a grade feedback prompt (it asks for `{"overall": …, "perQuestion": …}`) gets a parseable grade
+What it answers: the simulator case interpretation prompt (its `<parametros_curados>` block, sent when a FREE
+session starts) gets a strict JSON that echoes every curated value with `"trajectory": "STABLE"`, so the backend
+accepts it (source LLM) and the session runs the curated physiology; a grade feedback prompt (it asks for `{"overall": …, "perQuestion": …}`) gets a parseable grade
 feedback whose overall text says "proveedor falso de E2E" (so the evaluation result shows LLM feedback, not the
 deterministic fallback); otherwise a streamed request gets a fixed Spanish markdown answer ("Respuesta de prueba (proveedor falso de
 E2E)…") in deltas of 24 characters, then a usage chunk and `[DONE]`; a full or JSON-format request gets
@@ -176,3 +178,33 @@ Each scenario creates a brand-new STUDENT group of `ana.torres@ventylab.demo` wi
 evaluations through the API (closed and archived at the end), so it runs again without resetting the database. The
 exam scenario waits for its one-minute timer in real time. The image step of the builder scenario runs only when
 `GET /api/system/status` reports file storage `up` (Supabase configured); otherwise it is skipped with an annotation.
+
+Block A E2E (simulator adjustments, `e2e/bloque-a/`; helpers in `e2e/support/bloque-a.ts`):
+
+| Spec | Covers | CI |
+| --- | --- | --- |
+| `aplicacion-automatica` | Digital: a PEEP change applies with no confirm button and reaches the stored session events | yes |
+| `paciente-fallecido` | `engine-ards-unstable` ("SDRA grave inestable") at ×4 left alone: Inestable → Crítico, the session ends on its own and the debrief shows "Paciente fallecido" and the "Línea de tiempo" (≈ 40 s) | yes |
+| `mejoria` | Same case with PEEP 12, FiO2 80 % and Vt 380 mL: the status chip reaches Estable and the SpO2 card rises; the debrief lists the decisions | yes |
+| `alarma-ayuda` | "¿Cómo estabilizar? SpO₂ baja": rules with their source, the fake LLM suggestion and its AI_CALL / SIM_ALARM rating | yes |
+| `repeticion` | The vendored engine replays the stored events in Node and equals the server `finalMetrics`; the live status chip equals the server outcome; the browser replay shows no mismatch note | yes |
+| `modo-real` | Real mode with the fake ventilator: three quick PEEP steps go out as one command after the 500 ms debounce ("Enviando" → "Aplicado"), nothing is sent beyond the safe maximum, "Deshacer último cambio" restores the previous PEEP | no (needs MQTT) |
+
+Local run on the Block A ports (database `ventylab_a`, backend :4110, web :3110, fake LLM :4911, TEST broker :1893):
+
+```bash
+node scripts/e2e/fake-llm.mjs --port 4911
+MSYS_NO_PATHCONV=1 docker run -d --name ventylab-a-mosquitto -p 1893:1883 eclipse-mosquitto:2 mosquitto -c /mosquitto-no-auth.conf
+# backend (wt-a-server, after npm run build): the usual variables plus
+#   OPENAI_BASE_URL=http://127.0.0.1:4911/v1 OPENAI_API_KEY=local
+#   MQTT_BROKER_URL=mqtt://localhost:1893 MQTT_TELEMETRY_TOPIC=test/ventylab/ventynet/data
+#   MQTT_COMMAND_TOPIC=test/ventylab/ventilab/device/001/command MQTT_COMMAND_ACK_TOPIC=test/ventylab/ventilab/device/001/ack
+node scripts/e2e/fake-ventilator.mjs --broker mqtt://localhost:1893 --server-dir ../wt-a-server --ack-topic test/ventylab/ventilab/device/001/ack --rate 30
+NEXT_PUBLIC_BACKEND_URL=http://localhost:4110 npm run build && npx next start -p 3110
+E2E_BASE_URL=http://localhost:3110 E2E_API_URL=http://localhost:4110 npx playwright test --project=e2e e2e/bloque-a
+```
+
+`modo-real` needs the broker and the fake ventilator; it brings the fake device back to PEEP 5 when an earlier run
+left it elsewhere. While the fake ventilator streams, `e2e/bloque5/monitoreo-orden.spec.ts` fails by design (it
+expects "Equipo sin datos"): run it with the fake ventilator stopped. Not covered end to end: the "¿Cómo estabilizar?"
+help of a real device alarm (the fake ventilator raises no alarm; the panel and the state builder have unit tests).

@@ -25,7 +25,10 @@
 #   1000/min porque todas las specs comparten la IP del runner; el límite de inicio de sesión no cambia.
 #   v1.6 (ajustes C): el job e2e suma la liberación de resultados (C4) y la auditoría visual de evaluación por rol
 #   a 375, 1280 y 1920 px (C2).
-# Versión: 1.6
+#   v1.7 (Bloque A): suma los E2E digitales del simulador de e2e/bloque-a (aplicación automática, paciente fallecido
+#   con el caso inestable a ×4, mejoría con el ajuste correcto, ayuda de alarma con el LLM falso y repetición igual a
+#   la sesión en vivo). modo-real queda fuera: necesita un broker MQTT de prueba y el ventilador falso.
+# Versión: 1.7
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -265,6 +268,11 @@ jobs:
           e2e/ajustes-b/render-audit.spec.ts
           e2e/ajustes-c/results-release.spec.ts
           e2e/ajustes-c/visual-audit.spec.ts
+          e2e/bloque-a/aplicacion-automatica.spec.ts
+          e2e/bloque-a/paciente-fallecido.spec.ts
+          e2e/bloque-a/mejoria.spec.ts
+          e2e/bloque-a/alarma-ayuda.spec.ts
+          e2e/bloque-a/repeticion.spec.ts
 
       - name: Stack logs
         if: failure()
