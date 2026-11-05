@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationTypeSection
-* Descripción: One July accordion of the student evaluation list ("📝 Quizzes", "📋 Talleres", "🎓 Exámenes Finales"): a heading with a disclosure button (aria-expanded, aria-controls, count) and a region labelled by it that holds the tracks (h3) and their levels, each level a list of EvaluationCards (title h4). Open by default when it holds evaluations; an empty section says "Sin evaluaciones asignadas.". The region stays rendered with `hidden` while collapsed. Depends on React, MUI icons, the evaluation grouping entities, EvaluationCard and the evaluations CSS Module.
-* Versión: 1.0
+* Descripción: One July accordion of the student evaluation list ("📝 Quizzes", "📋 Talleres", "🎓 Exámenes Finales"): a heading with a disclosure button (aria-expanded, aria-controls, count) and a region labelled by it that holds the tracks (h3) and their levels, each level a list of EvaluationCards (title h4). Open by default when it holds evaluations; an empty section says "Sin evaluaciones asignadas.". The region stays rendered with `hidden` while collapsed. Depends on React, MUI icons, the evaluation grouping entities, EvaluationCard and the evaluations CSS Module. v1.1 (ajustes C2): evaluations without track nor level show the "Otras" heading once (the level label repeated the track title).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useId, useState } from "react";
 import { cx } from "@shared/lib/class-names";
 import type { TypeSection } from "../entities/group-evaluations";
-import { GROUP_COPY } from "../entities/group-evaluations";
+import { GROUP_COPY, OTHER_KEY } from "../entities/group-evaluations";
 import { EvaluationCard } from "./evaluation-card";
 import styles from "../../UI/evaluations.module.css";
 
@@ -49,7 +49,7 @@ export function EvaluationTypeSection({ section }: EvaluationTypeSectionProps) {
             <h3 className={cx(styles.trackTitle)}>{track.label}</h3>
             {track.levels.map((level) => (
               <div key={level.key} className={cx(styles.levelGroup)}>
-                <p className={cx(styles.levelLabel)}>{level.label}</p>
+                {track.key === OTHER_KEY && level.key === OTHER_KEY ? null : <p className={cx(styles.levelLabel)}>{level.label}</p>}
                 <ul className={cx(styles.grid)} aria-label={`${section.label} · ${track.label} · ${level.label}`}>
                   {level.evaluations.map((evaluation) => (
                     <li key={evaluation.assignmentId}>
