@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WCAG contrast of the four theme combinations
-* Descripción: Verifies WCAG 2.2 AA on theme-palettes.ts for VentyLab and Univalle × light and dark (DISENO_AJUSTES_D §6.2): normal text ≥ 4.5:1 (text, muted, link, text on primary/accent/secondary/status fills, status texts on their tints, roles, evaluation chips, sidebar, user card, staff panel, auth footer, glass accents, level tones, console texts, alarm texts) and UI components ≥ 3:1 (primary and focus ring, accent, curves, alarms and pending highlight on the console background and surface, tab indicator, panel accent). Translucent colors are composited over their background and color-mix() tokens of tokens.css are recomputed (sRGB), so the figures are the rendered ones. Depends on vitest and ./theme-palettes.
-* Versión: 1.0
+* Descripción: Verifies WCAG 2.2 AA on theme-palettes.ts for VentyLab and Univalle × light and dark (DISENO_AJUSTES_D §6.2): normal text ≥ 4.5:1 (text, muted, link, text on primary/accent/secondary/status fills, status texts on their tints, roles, evaluation chips, sidebar, user card, staff panel, auth footer, glass accents, level tones, console texts, alarm texts) and UI components ≥ 3:1 (primary and focus ring, accent, curves, alarms and pending highlight on the console background and surface, tab indicator, panel accent). Translucent colors are composited over their background and color-mix() tokens of tokens.css are recomputed (sRGB), so the figures are the rendered ones. Depends on vitest and ./theme-palettes. v1.1: (token request of block A): the --vl-console-applied tag on the console background and surface.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +25,7 @@ const EVAL_CHIPS = ["#1565c0", "#cf4900", "#6a1b9a"];
 const CURVES = ["#ef5350", "#42a5f5", "#66bb6a"];
 const CONSOLE_TICK = "#919191";
 const ALARMS = ["#f44336", "#ff9800", "#10aede"];
+const CONSOLE_APPLIED = "#81c784";
 
 function parse(color: string): Rgba {
   const hex = /^#([0-9a-f]{6})$/i.exec(color.trim());
@@ -135,6 +136,8 @@ function pairsOf(scheme: SchemeDefinition): Pair[] {
   addText("console text", WHITE, consoleBg);
   addText("console muted on surface", mix(WHITE, 70, consoleBg), consoleSurface);
   addText("console tick on surface", CONSOLE_TICK, consoleSurface);
+  addText("console applied tag", CONSOLE_APPLIED, consoleBg);
+  addText("console applied tag on surface", CONSOLE_APPLIED, consoleSurface);
   ALARMS.forEach((alarm) => addText(`alarm text on ${alarm}`, consoleBg, alarm));
 
   addUi("primary on bg", mui.primary.main, bg);
