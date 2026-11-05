@@ -8,7 +8,8 @@
 *   "Aleatorio" starting without a case, the send disabled while pending and a start failure shown in Spanish.
 *   Depends on vitest, Testing Library, msw, SWR and the workspace test helpers.
 *   v0.2 (W7 integration): the live lab connection controller is mocked idle.
-* Versión: 0.2
+*   v0.3 (Bloque A): `?case=<id>` loads that catalog case into the form without starting it; an unknown id is ignored.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -255,6 +256,36 @@ describe("PatientFormPanel", () => {
       },
     }]);
     expect(await screen.findByText("monitoring panel")).toBeVisible();
+  });
+
+  it("opens the catalog case of ?case= in the form without starting it (Bloque A)", async() => {
+    routerStore.reset({ tab: "simular", case: CASE_ID });
+    renderPanel();
+
+    expect(await screen.findByText(`Caso base: ${CASE_TITLE}`)).toBeVisible();
+    expect(screen.getByText(`Historia clínica "${CASE_TITLE}" cargada.`)).toBeVisible();
+    expect(field(/^Edad/)).toHaveValue(60);
+    expect(select(/^Condición Principal/)).toHaveValue("PNEUMONIA");
+    expect(startBodies).toEqual([]);
+    expect(routerStore.query).toEqual({ tab: "simular", case: CASE_ID });
+  });
+
+  it("ignores an unknown ?case= id (Bloque A)", async() => {
+    const requested = vi.fn();
+
+    server.use(http.get(apiUrl("/api/clinical-cases/nope"), () => {
+      requested();
+
+      return HttpResponse.json({ success: false, message: "No encontrado", code: "clinical_cases.not_found", data: null }, { status: 404 });
+    }));
+    routerStore.reset({ tab: "simular", case: "nope" });
+    renderPanel();
+
+    expect(await screen.findByRole("heading", { name: "Configuración del Paciente" })).toBeVisible();
+    await waitFor(() => expect(requested).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText(/Caso base:/)).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(field(/^Edad/)).toHaveValue(null);
   });
 
   it("starts a random patient without a case and disables the send while pending", async() => {
