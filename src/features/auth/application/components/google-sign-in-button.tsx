@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: GoogleSignInButton
-* Descripción: Google sign-in block of the login page: the official Google Identity Services button rendered into a container (useGoogleIdentity), a loading note while the script loads, and accessible fallbacks: a disabled "Continuar con Google" button with an explanation when NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing, or an error note when the script cannot load. While a login is pending the container is inert. Spanish copy, TODO(i18n). Depends on MUI, the GIS hook and UI/google-sign-in.module.css.
-* Versión: 1.0
+* Descripción: Google sign-in block of the login page: the official Google Identity Services button rendered into a container (useGoogleIdentity), a loading note while the script loads, and accessible fallbacks: a disabled "Continuar con Google" button with an explanation when NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing, or an error note when the script cannot load. While a login is pending the container is inert. Spanish copy, TODO(i18n). Depends on MUI, the GIS hook and UI/google-sign-in.module.css. v1.1: (Ajustes D3): the official GIS button follows the active mode (filled_black in dark, outline in light).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,6 +13,7 @@ import GoogleIcon from "@mui/icons-material/Google";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { useId, useRef } from "react";
+import { useThemeAppearance } from "@shared/design-system/theme/theme-preference";
 import { cx } from "@shared/lib/class-names";
 import { useGoogleIdentity } from "../hooks/use-google-identity";
 import styles from "../../UI/google-sign-in.module.css";
@@ -34,7 +35,8 @@ const GOOGLE_COPY = {
 export function GoogleSignInButton({ clientId, pending, onCredential }: GoogleSignInButtonProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const noteId = useId();
-  const status = useGoogleIdentity({ clientId, containerRef, onCredential });
+  const { mode } = useThemeAppearance();
+  const status = useGoogleIdentity({ clientId, containerRef, onCredential, theme: mode === "dark" ? "filled_black" : "outline" });
 
   if (status === "unconfigured" || status === "error") {
     return (

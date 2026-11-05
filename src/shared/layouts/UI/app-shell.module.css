@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AppShell styles
-* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only. v1.1 (G1 grading): visuallyHidden keeps the screen-reader text of a navigation badge count. v1.2 (T12 ventilator-lab): navIndicator / navIndicatorDot, the small status of a navigation item (success dot when online, muted otherwise; the text carries the meaning, never the colour alone). v1.3 (T12 review fix W1): generic tones of the nav-indicators registry: positive (success dot), negative (warning dot), neutral (muted dot). v1.4 (O5 operation): navSection, the subheader of a navigation section. v1.5 (review): the navSection comment cites this file's own version (v1.4), not v1.7. v1.6 (B4): visuallyHidden removed (the badge count is now in the item's accessible name). v1.7 (W1 Bloque 4): the navigation list styles (navIndicator, navIndicatorDot, navSection) and the header control styles (realtime, userInfo) moved to nav-list.module.css and shell-controls.module.css. v1.8 (Bloque 5, §5.1): the July global sidebar: 15rem / 4rem permanent drawer with a width transition (none with reduced motion), 64px header with the brand and the toggle (ringed when collapsed), scrollable navigation, the tools row above the user card (a column when collapsed), the version line, the 15rem mobile drawer, the thin mobile bar (hidden from 900px) and the main region on --vl-color-bg-gradient.
-* Versión: 1.8
+* Descripción: Responsive shell layout: permanent navigation drawer from the md breakpoint (900px, MUI default) and a header menu button below it, sticky header, main content region and a skip link that is visually hidden until focused. Classes are applied to elements the shell owns or to MUI slots where MUI sets no conflicting property (drawer paper width, header border). Tokens only. v1.1 (G1 grading): visuallyHidden keeps the screen-reader text of a navigation badge count. v1.2 (T12 ventilator-lab): navIndicator / navIndicatorDot, the small status of a navigation item (success dot when online, muted otherwise; the text carries the meaning, never the colour alone). v1.3 (T12 review fix W1): generic tones of the nav-indicators registry: positive (success dot), negative (warning dot), neutral (muted dot). v1.4 (O5 operation): navSection, the subheader of a navigation section. v1.5 (review): the navSection comment cites this file's own version (v1.4), not v1.7. v1.6 (B4): visuallyHidden removed (the badge count is now in the item's accessible name). v1.7 (W1 Bloque 4): the navigation list styles (navIndicator, navIndicatorDot, navSection) and the header control styles (realtime, userInfo) moved to nav-list.module.css and shell-controls.module.css. v1.8 (Bloque 5, §5.1): the July global sidebar: 15rem / 4rem permanent drawer with a width transition (none with reduced motion), 64px header with the brand and the toggle (ringed when collapsed), scrollable navigation, the tools row above the user card (a column when collapsed), the version line, the 15rem mobile drawer, the thin mobile bar (hidden from 900px) and the main region on --vl-color-bg-gradient. v1.9: (Ajustes D4): the sidebar paints --vl-sidebar-bg (per palette and mode) and the brand link holds the logo image.
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,6 +66,7 @@
   display: flex;
   min-height: 100%;
   flex-direction: column;
+  background: var(--vl-sidebar-bg);
   color: var(--vl-sidebar-text);
 }
 
@@ -80,12 +81,11 @@
 }
 
 .brand {
+  display: inline-flex;
   overflow: hidden;
+  border-radius: var(--vl-radius-md);
   color: var(--vl-sidebar-text);
-  font: var(--mui-font-h6);
-  font-weight: 700;
   text-decoration: none;
-  white-space: nowrap;
 }
 
 .sidebarHeader .toggle {

@@ -1,0 +1,106 @@
+/*
+* Funcionalidad: Appearance controls styles
+* Descripción: The "Apariencia" group of the sidebars (appearance-controls.tsx): caption title, two full-width toggle groups (mode, palette) with the sidebar text and the active item tint of each sidebar (global sidebar or staff panel, data-variant), the collapsed trigger centered like the other icons and the menu section headers. Tokens only. Depends on tokens.css and the generated palette tokens.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.root {
+  --appearance-text: var(--vl-sidebar-text);
+  --appearance-muted: var(--vl-color-text-muted);
+  --appearance-active-bg: var(--vl-sidebar-item-active-bg);
+  --appearance-active-text: var(--vl-sidebar-text);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: var(--vl-space-1) var(--vl-space-4) 0;
+}
+
+.root[data-variant="panel"] {
+  --appearance-text: var(--vl-panel-sidebar-text);
+  --appearance-muted: var(--vl-panel-sidebar-muted);
+  --appearance-active-bg: var(--vl-panel-item-active-bg);
+  --appearance-active-text: var(--vl-panel-sidebar-text);
+}
+
+.title {
+  color: var(--appearance-muted);
+  font: var(--mui-font-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.group {
+  border-radius: var(--vl-radius-md);
+}
+
+/* One class more than MUI ToggleButton (text and border follow the sidebar, not the global text tokens). */
+.group .option {
+  gap: var(--vl-space-1);
+  padding: 2px var(--vl-space-2);
+  border-color: var(--vl-color-border);
+  color: var(--appearance-muted);
+  font: var(--mui-font-caption);
+  font-weight: 600;
+  text-transform: none;
+}
+
+.group .option:hover {
+  background: var(--vl-color-hover);
+  color: var(--appearance-text);
+}
+
+.group .option:global(.Mui-selected),
+.group .option:global(.Mui-selected):hover {
+  background: var(--appearance-active-bg);
+  color: var(--appearance-active-text);
+}
+
+.group .option:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-focus-ring-color);
+  outline-offset: calc(var(--vl-focus-ring-width) * -1);
+}
+
+.optionLabel {
+  white-space: nowrap;
+}
+
+.collapsed {
+  align-items: center;
+  margin: var(--vl-space-1) 0 0;
+}
+
+.collapsed .trigger {
+  color: var(--appearance-text);
+}
+
+.menuHeader {
+  line-height: 2.25;
+  background: transparent;
+  font: var(--mui-font-caption);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Short desktop viewports (1280x720): the staff panel admin list must keep fitting without its inner scroll. */
+@media (min-width: 900px) and (max-height: 959.95px) {
+  .root {
+    gap: 2px;
+    margin-top: 0;
+  }
+
+  .title {
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
+
+  .group .option {
+    padding: 0 var(--vl-space-2);
+  }
+}

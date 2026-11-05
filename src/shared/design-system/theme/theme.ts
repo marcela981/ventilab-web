@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab MUI theme
-* Descripción: VentyLab identity as an MUI v7 theme with cssVariables enabled, so CSS Modules can read var(--mui-palette-*), var(--mui-shadows-*), var(--mui-font-*) and friends. Reproduces the previous src/theme/theme.js values (palette incl. custom keys, typography, spacing, shape, breakpoints, transitions, shadows, component overrides) and wires the self-hosted Roboto. Depends on @mui/material, ./palette and ./roboto. v1.1 (Bloque 5): adds colorSchemes.dark (the July dark skin, darkColors of ./palette) as the default color scheme (D1), selected by the [data-mui-color-scheme] attribute on <html> (the dark scheme also owns :root); the light scheme is kept with its AA fixes and no visible selector. Both schemes come from one palette builder; primary.contrastText is navy (D2). Typography, the Card border, the LinearProgress track and the Tooltip read the active scheme through the MUI CSS variables (or applyStyles) instead of light literals. v1.2 (Bloque 5): fontWeightLight is 400, a weight roboto.ts actually loads (300 was declared but never downloaded, so the browser synthesized it; D3).
-* Versión: 1.2
+* Descripción: VentyLab identity as an MUI v7 theme with cssVariables enabled, so CSS Modules can read var(--mui-palette-*), var(--mui-shadows-*), var(--mui-font-*) and friends. Reproduces the previous src/theme/theme.js values (palette incl. custom keys, typography, spacing, shape, breakpoints, transitions, shadows, component overrides) and wires the self-hosted Roboto. Depends on @mui/material, ./palette and ./roboto. v1.1 (Bloque 5): adds colorSchemes.dark (the July dark skin, darkColors of ./palette) as the default color scheme (D1), selected by the [data-mui-color-scheme] attribute on <html> (the dark scheme also owns :root); the light scheme is kept with its AA fixes and no visible selector. Both schemes come from one palette builder; primary.contrastText is navy (D2). Typography, the Card border, the LinearProgress track and the Tooltip read the active scheme through the MUI CSS variables (or applyStyles) instead of light literals. v1.2 (Bloque 5): fontWeightLight is 400, a weight roboto.ts actually loads (300 was declared but never downloaded, so the browser synthesized it; D3). v1.3 (Ajustes D4): the scheme palettes come from theme-palettes.ts (single source of the four mode × palette combinations) through buildSchemePalette; the VentyLab light scheme is the AA blue-and-green one (§6.1).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,9 @@
 */
 
 import { createTheme, type Shadows } from "@mui/material/styles";
-import { colors, darkColors, getColorWithOpacity, levelColors } from "./palette";
+import { colors, darkColors, getColorWithOpacity } from "./palette";
+import { buildSchemePalette } from "./scheme-palette";
+import { THEME_SCHEMES } from "./theme-palettes";
 import { fontFamily } from "./roboto";
 
 const EASE_STANDARD = "cubic-bezier(0.4, 0, 0.2, 1)";
@@ -29,92 +31,6 @@ const shadows = [
   ...Array<string>(19).fill(SHADOW_LEVEL_3),
 ] as Shadows;
 
-type SchemeColors = {
-  backgroundDefault: string, backgroundPaper: string, backgroundContrast: string,
-  textPrimary: string, textSecondary: string, textDisabled: string, textHint: string,
-  border: string, hover: string, selected: string, disabledBackground: string,
-};
-
-const LIGHT_SCHEME: SchemeColors = {
-  backgroundDefault: colors.backgroundDefault,
-  backgroundPaper: colors.backgroundPaper,
-  backgroundContrast: colors.backgroundContrast,
-  textPrimary: colors.textPrimary,
-  textSecondary: colors.textSecondary,
-  textDisabled: colors.textDisabled,
-  textHint: colors.textHint,
-  border: colors.borderLight,
-  hover: getColorWithOpacity(colors.primary, 0.08),
-  selected: getColorWithOpacity(colors.primary, 0.12),
-  disabledBackground: colors.borderLight,
-};
-
-/** One color scheme: brand and status colors are shared, surfaces, text and actions vary. */
-const schemePalette = (mode: "light" | "dark", scheme: SchemeColors) => ({
-  mode,
-  primary: {
-    main: colors.primary,
-    light: colors.accent,
-    dark: colors.secondary,
-    contrastText: colors.onPrimary,
-  },
-  secondary: {
-    main: colors.secondary,
-    light: colors.accent,
-    dark: "#0a112b",
-    contrastText: "#ffffff",
-  },
-  success: {
-    main: colors.success,
-    light: "#81c784",
-    dark: "#388e3c",
-    contrastText: "#ffffff",
-  },
-  warning: {
-    main: colors.warning,
-    light: "#ffb74d",
-    dark: "#f57c00",
-    contrastText: "#ffffff",
-  },
-  error: {
-    main: colors.error,
-    light: "#e57373",
-    dark: "#d32f2f",
-    contrastText: "#ffffff",
-  },
-  info: {
-    main: colors.info,
-    light: colors.accent,
-    dark: colors.secondary,
-    contrastText: "#ffffff",
-  },
-  background: {
-    default: scheme.backgroundDefault,
-    paper: scheme.backgroundPaper,
-    contrast: scheme.backgroundContrast,
-  },
-  text: {
-    primary: scheme.textPrimary,
-    secondary: scheme.textSecondary,
-    disabled: scheme.textDisabled,
-    hint: scheme.textHint,
-  },
-  divider: scheme.border,
-  action: {
-    active: colors.primary,
-    hover: scheme.hover,
-    selected: scheme.selected,
-    disabled: scheme.textDisabled,
-    disabledBackground: scheme.disabledBackground,
-    focus: getColorWithOpacity(colors.primary, 0.12),
-  },
-  curriculum: {
-    beginner: levelColors.beginner,
-    intermediate: levelColors.intermediate,
-    advanced: levelColors.advanced,
-  },
-});
-
 // Typography colors follow the active scheme through the MUI CSS variables.
 const TEXT_PRIMARY = "var(--mui-palette-text-primary)";
 const TEXT_SECONDARY = "var(--mui-palette-text-secondary)";
@@ -126,8 +42,9 @@ export const theme = createTheme({
   },
   defaultColorScheme: "dark",
   colorSchemes: {
-    dark: { palette: schemePalette("dark", darkColors) },
-    light: { palette: schemePalette("light", LIGHT_SCHEME) },
+    // VentyLab palette; Univalle overrides the --mui-palette-* variables (UI/theme-palettes.generated.css).
+    dark: { palette: buildSchemePalette("dark", THEME_SCHEMES.ventylab.dark) },
+    light: { palette: buildSchemePalette("light", THEME_SCHEMES.ventylab.light) },
   },
 
   typography: {
@@ -209,7 +126,8 @@ export const theme = createTheme({
         },
         contained: {
           boxShadow: "none",
-          "&:hover": { boxShadow: "0 4px 12px rgba(16, 174, 222, 0.3)" },
+          // Tinted with the active palette's primary (cyan in VentyLab, red in Univalle).
+          "&:hover": { boxShadow: "0 4px 12px rgba(var(--mui-palette-primary-mainChannel) / 0.3)" },
         },
         outlined: {
           borderWidth: "1px",

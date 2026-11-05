@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Forgot password route
-* Descripción: Thin route for /auth/forgot-password: composes the public layout (no session guard) with the informational ForgotPasswordPage of the auth feature. Replaces the legacy MUI `sx` page rendered without the shell (B3.7). Depends on @features/auth and @shared/layouts/public-layout. v1.1 (Bloque 5, D5): uses withAuthLayout (July brand background and light card island of the /auth/* pages).
-* Versión: 1.1
+* Descripción: Thin route for /auth/forgot-password: composes the public layout (no session guard) with the informational ForgotPasswordPage of the auth feature. Replaces the legacy MUI `sx` page rendered without the shell (B3.7). Depends on @features/auth and @shared/layouts/public-layout. v1.1 (Bloque 5, D5): uses withAuthLayout (July brand background and light card island of the /auth/* pages). v1.2: (Ajustes D3): the page is the real password recovery form (POST /api/auth/password/forgot).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useWaveformRenderer
-* Descripción: Canvas plumbing shared by SweepCanvas and LoopCanvas: a requestAnimationFrame loop throttled to a target fps, devicePixelRatio-aware backing store sized by a ResizeObserver, and a `full` flag that tells the frame callback when it must repaint everything (first frame, resize, DPR change, explicit invalidate). Also resolves canvas colors and fonts from CSS custom properties of the canvas element. Depends on React only; degrades to a no-op when there is no 2D context (jsdom). v1.1: a theme change (`data-theme` on <html> or `prefers-color-scheme`) forces a full repaint so painters re-read their palette, and `onResize` reports the canvas CSS size. v1.2 (W3, Bloque 1): `fps` accepts DISPLAY_REFRESH_FPS (Infinity: draw on every animation frame, the display refresh rate) besides a numeric cap; the 30 fps default is kept for generic charts, the console curves opt into the display rate.
-* Versión: 1.2
+* Descripción: Canvas plumbing shared by SweepCanvas and LoopCanvas: a requestAnimationFrame loop throttled to a target fps, devicePixelRatio-aware backing store sized by a ResizeObserver, and a `full` flag that tells the frame callback when it must repaint everything (first frame, resize, DPR change, explicit invalidate). Also resolves canvas colors and fonts from CSS custom properties of the canvas element. Depends on React only; degrades to a no-op when there is no 2D context (jsdom). v1.1: a theme change (`data-theme` on <html> or `prefers-color-scheme`) forces a full repaint so painters re-read their palette, and `onResize` reports the canvas CSS size. v1.2 (W3, Bloque 1): `fps` accepts DISPLAY_REFRESH_FPS (Infinity: draw on every animation frame, the display refresh rate) besides a numeric cap; the 30 fps default is kept for generic charts, the console curves opt into the display rate. v1.3 (Ajustes D4): the theme watcher observes the mode (`data-mui-color-scheme`) and the palette (`data-palette`) attributes of <html> instead of the unused `data-theme`.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -35,10 +35,10 @@ export type WaveformRendererOptions = {
   fps?: number | undefined
 };
 
-/** Marks the canvas dirty when the app theme (`data-theme` on <html>) or the OS color scheme changes. */
+/** Marks the canvas dirty when the app mode or palette (attributes on <html>) or the OS color scheme changes. */
 function watchTheme(onChange: () => void): () => void {
   const observer = typeof MutationObserver === "function" ? new MutationObserver(onChange) : null;
-  observer?.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  observer?.observe(document.documentElement, { attributes: true, attributeFilter: ["data-mui-color-scheme", "data-palette"] });
   const media = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
   media?.addEventListener("change", onChange);
 

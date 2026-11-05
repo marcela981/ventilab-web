@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab app-level design tokens
-* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only. v1.2 (O4b admin-console): --vl-color-status-{ok,degraded,down,idle} and their -bg tints for service health badges, mapped to the success, warning and error aliases (idle to the muted text). v1.3 (review): the status ok/degraded/down text tokens are darkened (55% mix with the primary text color) so badge and probe-result text reaches WCAG AA (>=4.5:1) on their tints and on the surface. v1.4 (B6): --vl-text-block-gap (bottom margin of bare headings and paragraphs, 16px; 12px up to 768px), --vl-color-field-focus-halo and the --vl-scrollbar-* colors used by global.css (the legacy App.css/index.css/theme.css values, expressed with the palette channels: black 10% track, white 20%/30% thumb). v1.5 (Bloque 5): the July dark scheme is the default (D1). The semantic aliases keep their names and follow the --mui-* variables of the active scheme (dark on :root and [data-mui-color-scheme="dark"], light under [data-mui-color-scheme="light"]); per-scheme blocks add what MUI has no variable for: --vl-color-bg-gradient, --vl-color-surface-raised, --vl-color-link / -link-hover (cyan in dark, the 60% black mix in light), the July dark --vl-shadow-1..3 and the scrollbar thumb (black 25% in light, it was invisible). --vl-console-bg is pinned to the navy literal (background.contrast is inverted in dark, R2) and --vl-color-status-idle-bg uses the raised surface instead of the inverted one. v1.6 (Bloque 5): new July skin tokens, still without consumers (DISENO_BLOQUE5 §4.1 "Tokens nuevos"): --vl-radius-xl/2xl/3xl and -nav-item, global sidebar geometry and colors (+ user card, version line), staff panel geometry, indigo sidebar, accent and navy content gradient, glass surfaces and accents, user role colors (D15, AA-adjusted), the auth gradient (D5), the simulator tab bar, learning section icons and evaluation cards/chips. v1.7 (Bloque 5, D4): the July curve colors (pressure #ef5350, flow #42a5f5, volume #66bb6a) are the single source of every console canvas and of the Chart.js waveforms; new --vl-console-tick (#919191) for the tick values of the sweep and loop axes. v1.8 (Bloque 5, D9): surface scopes. [data-surface="panel"] (PanelShell and its portals) sets the navy July panel surfaces on the --mui-* variables MUI reads and re-declares the --vl-* aliases and their derived tints so they resolve inside the subtree. v1.9 (Bloque 5, D5): [data-surface="auth"] (the light card island of the /auth/* pages, with data-mui-color-scheme="light") re-declares the aliases over the light scheme; --vl-auth-on-bg (footer text on the gradient) and --vl-auth-card-shadow (July elevation 10). v2.0 (Bloque 5, W4-1): curriculum level tones (--vl-level-*: palette.curriculum plus the prerequisite grey and an AA title tone for advanced) and the July module card open border and green action (--vl-learn-module-*). W4-2: the /learn tab tint and #2196F3 underline (--vl-learn-tab-*). W4-4: attempt option and verdict tints and the #00a1db explanation edge (--vl-eval-selected-bg, -correct-bg, -wrong-bg, -explanation-border).
-* Versión: 2.0
+* Descripción: Global --vl-* tokens (spacing scale, radii, shadows, z-index, transitions, focus ring, semantic color aliases) layered on top of the MUI cssVariables theme (--mui-*). Imported ONLY from pages/_app.js. CSS Modules consume var(--vl-*) / var(--mui-*) and never hex/rgb literals. Depends on src/shared/design-system/theme (it emits the --mui-* variables on :root). v1.1 (T1 simulation): adds the --vl-console-* variant, a dark high-contrast surface for the ventilator console (surfaces, border, grid, text, per-curve colors, alarm priorities with their on-colors, pending and out-of-range highlights), derived from the identity palette with var()/color-mix only. v1.2 (O4b admin-console): --vl-color-status-{ok,degraded,down,idle} and their -bg tints for service health badges, mapped to the success, warning and error aliases (idle to the muted text). v1.3 (review): the status ok/degraded/down text tokens are darkened (55% mix with the primary text color) so badge and probe-result text reaches WCAG AA (>=4.5:1) on their tints and on the surface. v1.4 (B6): --vl-text-block-gap (bottom margin of bare headings and paragraphs, 16px; 12px up to 768px), --vl-color-field-focus-halo and the --vl-scrollbar-* colors used by global.css (the legacy App.css/index.css/theme.css values, expressed with the palette channels: black 10% track, white 20%/30% thumb). v1.5 (Bloque 5): the July dark scheme is the default (D1). The semantic aliases keep their names and follow the --mui-* variables of the active scheme (dark on :root and [data-mui-color-scheme="dark"], light under [data-mui-color-scheme="light"]); per-scheme blocks add what MUI has no variable for: --vl-color-bg-gradient, --vl-color-surface-raised, --vl-color-link / -link-hover (cyan in dark, the 60% black mix in light), the July dark --vl-shadow-1..3 and the scrollbar thumb (black 25% in light, it was invisible). --vl-console-bg is pinned to the navy literal (background.contrast is inverted in dark, R2) and --vl-color-status-idle-bg uses the raised surface instead of the inverted one. v1.6 (Bloque 5): new July skin tokens, still without consumers (DISENO_BLOQUE5 §4.1 "Tokens nuevos"): --vl-radius-xl/2xl/3xl and -nav-item, global sidebar geometry and colors (+ user card, version line), staff panel geometry, indigo sidebar, accent and navy content gradient, glass surfaces and accents, user role colors (D15, AA-adjusted), the auth gradient (D5), the simulator tab bar, learning section icons and evaluation cards/chips. v1.7 (Bloque 5, D4): the July curve colors (pressure #ef5350, flow #42a5f5, volume #66bb6a) are the single source of every console canvas and of the Chart.js waveforms; new --vl-console-tick (#919191) for the tick values of the sweep and loop axes. v1.8 (Bloque 5, D9): surface scopes. [data-surface="panel"] (PanelShell and its portals) sets the navy July panel surfaces on the --mui-* variables MUI reads and re-declares the --vl-* aliases and their derived tints so they resolve inside the subtree. v1.9 (Bloque 5, D5): [data-surface="auth"] (the light card island of the /auth/* pages, with data-mui-color-scheme="light") re-declares the aliases over the light scheme; --vl-auth-on-bg (footer text on the gradient) and --vl-auth-card-shadow (July elevation 10). v2.0 (Bloque 5, W4-1): curriculum level tones (--vl-level-*: palette.curriculum plus the prerequisite grey and an AA title tone for advanced) and the July module card open border and green action (--vl-learn-module-*). W4-2: the /learn tab tint and #2196F3 underline (--vl-learn-tab-*). W4-4: attempt option and verdict tints and the #00a1db explanation edge (--vl-eval-selected-bg, -correct-bg, -wrong-bg, -explanation-border). v2.1 (Ajustes D4): the palette- and mode-dependent values (raised surface, links, shadows, scrollbar thumb, sidebar, user card, auth background, staff panel and its surfaces, glass tints and accent texts, console base and pending highlight, learning and evaluation brand edges, level text tones) moved to theme-palettes.ts and come from the generated UI/theme-palettes.generated.css, so the per-scheme blocks are gone; token names do not change. New --vl-color-accent / --vl-color-on-accent. [data-surface="panel"] reads the panel surfaces of the active combination. Console alarm fills are pinned to their July hues (the light schemes darken the MUI status mains). Ajustes D3: the [data-surface="auth"] light island is gone (the auth pages follow the active palette and mode). Visual review: inside the July console --vl-color-primary / -on-primary are the palette console accent (--vl-console-accent). Token request of block A: --vl-console-applied (the "Aplicado" tag of the Real console, the July success light).
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -102,7 +102,10 @@
   --vl-color-status-idle-bg: var(--vl-color-surface-raised);
   --vl-color-hover: var(--mui-palette-action-hover);
   --vl-color-selected: var(--mui-palette-action-selected);
-  /* --vl-color-link, -link-hover, -surface-raised and -bg-gradient are per scheme (blocks below). */
+  /*
+   * Per palette and mode (UI/theme-palettes.generated.css, from theme-palettes.ts): --vl-color-accent and
+   * --vl-color-on-accent (secondary brand accent and its text), -link, -link-hover, -surface-raised, -bg-gradient.
+   */
   /* Focus halo of bare text fields (legacy rgba(primary / 0.2)). */
   --vl-color-field-focus-halo: color-mix(in srgb, var(--mui-palette-primary-main) 20%, transparent);
 
@@ -122,11 +125,9 @@
   --vl-sidebar-width-collapsed: 4rem;
   --vl-sidebar-header-height: 4rem;
   --vl-sidebar-item-height: 3rem;
-  /* Sidebar colors follow the scheme (dark: #161d36, white 12% border, white 15% active item). */
-  --vl-sidebar-bg: var(--mui-palette-background-paper);
+  /* Sidebar colors: --vl-sidebar-bg, -item-active-bg and -version come per palette and mode (theme-palettes). */
   --vl-sidebar-border: var(--vl-color-border);
   --vl-sidebar-text: var(--vl-color-text);
-  --vl-sidebar-item-active-bg: var(--mui-palette-action-selected);
   /* Staff panel geometry (unchanged 260px / 72px, separate collapse key, D13). */
   --vl-panel-sidebar-width: 16.25rem;
   --vl-panel-sidebar-width-collapsed: 4.5rem;
@@ -137,39 +138,27 @@
   --vl-role-admin: #e81c0d; /* 4.56:1 (July #f44336) */
   --vl-on-role: var(--mui-palette-common-white);
 
-  /* Staff panel (July PanelSidebar.jsx:145-250, PanelLayout.jsx:61): flat indigo sidebar, navy content. */
-  --vl-panel-sidebar-bg: #1a237e;
-  --vl-panel-sidebar-text: #e8eaf6; /* 11.06:1 */
-  --vl-panel-sidebar-muted: color-mix(in srgb, var(--mui-palette-common-white) 70%, transparent);
-  --vl-panel-sidebar-faint: color-mix(in srgb, var(--mui-palette-common-white) 55%, transparent); /* version: 40% failed AA */
-  --vl-panel-accent: #8457ff; /* header icon, 3.02:1 (July #7c4dff, 2.75:1) */
-  --vl-panel-item-active-bg: rgba(124, 77, 255, 0.3); /* white text 9.90:1 */
-  --vl-panel-item-active-hover-bg: rgba(124, 77, 255, 0.4);
-  --vl-panel-item-active-icon: #b388ff; /* 3.71:1 */
-  --vl-panel-content-bg: linear-gradient(160deg, #080d1a 0%, #0f1c35 55%, #0a1220 100%);
+  /*
+   * Staff panel (July PanelSidebar.jsx:145-250, PanelLayout.jsx:61): --vl-panel-sidebar-*, -accent, -item-active-*,
+   * -content-bg and the panel surfaces (-bg, -paper, -divider, -raised) come per palette and mode (theme-palettes).
+   */
 
-  /* Glass (July GlassStatCard.jsx:11-38, DashboardHero.jsx:36-52); blur only on containers (R4). */
-  --vl-glass-bg: color-mix(in srgb, var(--mui-palette-common-white) 5%, transparent);
-  --vl-glass-bg-hover: color-mix(in srgb, var(--mui-palette-common-white) 9%, transparent);
-  --vl-glass-border: color-mix(in srgb, var(--mui-palette-common-white) 10%, transparent);
+  /*
+   * Glass (July GlassStatCard.jsx:11-38, DashboardHero.jsx:36-52); blur only on containers (R4). The tints
+   * (--vl-glass-bg, -bg-hover, -border) and the accent texts come per palette and mode (theme-palettes).
+   */
   --vl-glass-blur: 10px;
   --vl-glass-blur-hero: 12px;
   --vl-glass-accent-cyan: rgba(16, 174, 222, 0.25);
   --vl-glass-accent-cyan-border: rgba(16, 174, 222, 0.4);
-  --vl-glass-accent-cyan-text: #7dd3fc; /* 8.91:1 */
   --vl-glass-accent-green: rgba(76, 175, 80, 0.25);
   --vl-glass-accent-green-border: rgba(76, 175, 80, 0.4);
-  --vl-glass-accent-green-text: #86efac;
   --vl-glass-accent-violet: rgba(124, 77, 255, 0.25);
   --vl-glass-accent-violet-border: rgba(124, 77, 255, 0.4);
-  --vl-glass-accent-violet-text: #d1c4e9;
   --vl-glass-accent-orange: rgba(255, 152, 0, 0.25);
   --vl-glass-accent-orange-border: rgba(255, 152, 0, 0.4);
-  --vl-glass-accent-orange-text: #fcd34d;
 
-  /* Auth pages (D5): July violet gradient with the first stop AA-adjusted (#667eea failed with the footer). */
-  --vl-auth-bg: linear-gradient(135deg, #506be7 0%, #764ba2 100%); /* white footer 4.57:1 */
-  --vl-auth-on-bg: var(--mui-palette-common-white);
+  /* Auth pages (D3): --vl-auth-bg and --vl-auth-on-bg come per palette and mode (theme-palettes). */
   /* July login card: elevation 10 (index.jsx:264-272). */
   --vl-auth-card-shadow: var(--mui-shadows-10);
 
@@ -183,18 +172,14 @@
   --vl-learn-section-prereq: #757575; /* 3.32:1 */
   --vl-learn-section-mechanics: #176dd0; /* 3.01:1 (July #1565C0, 2.66:1) */
   /* Curriculum level tones (July LevelStepper.jsx:28-34): marker, title and bar of each stepper level. */
-  --vl-level-prereq: #9e9e9e; /* 6.0:1 on the raised surface */
   --vl-level-beginner: var(--mui-palette-curriculum-beginner-main);
   --vl-level-intermediate: var(--mui-palette-curriculum-intermediate-main);
   --vl-level-advanced: var(--mui-palette-curriculum-advanced-main);
-  --vl-level-advanced-text: #ff6659; /* 5.5:1 as title text (#f44336 is 4.29:1) */
   /* Module cards (July ModuleCard.jsx:244, ModuleCardFooter.jsx:20-21): open border and green action (navy text 8.2:1). */
-  --vl-learn-module-open-border: #0bbaf4;
   --vl-learn-module-go: #22c55e;
   --vl-learn-module-go-hover: #16a34a;
   /* /learn tabs (July TeachingTabs.jsx:100-114): selected tab tint and underline. */
   --vl-learn-tab-active-bg: color-mix(in srgb, var(--mui-palette-primary-main) 12%, transparent);
-  --vl-learn-tab-indicator: #2196f3; /* 5.2:1 on navy */
 
   /* Evaluation cards and type chips (July evaluation.module.css:482-689), white chip text. */
   --vl-eval-card-bg: color-mix(in srgb, var(--mui-palette-primary-main) 10%, transparent);
@@ -208,7 +193,6 @@
   --vl-eval-selected-bg: color-mix(in srgb, var(--mui-palette-primary-main) 12%, transparent);
   --vl-eval-correct-bg: color-mix(in srgb, var(--mui-palette-success-main) 12%, transparent);
   --vl-eval-wrong-bg: color-mix(in srgb, var(--mui-palette-error-main) 12%, transparent);
-  --vl-eval-explanation-border: #00a1db;
 
   /*
    * === VENTILATOR CONSOLE VARIANT ===
@@ -219,7 +203,7 @@
    * Contrast on --vl-console-bg (WCAG, computed): text 18.6:1, text-muted 9.4:1 (curve figures below). Alarm fills carry navy text: high 5.1:1, medium 8.6:1,
    * low 7.2:1.
    */
-  --vl-console-bg: #0a112b;
+  /* --vl-console-bg and --vl-console-pending come per palette (navy VentyLab, near-black grey Univalle). */
   --vl-console-surface: color-mix(in srgb, var(--mui-palette-common-white) 5%, var(--vl-console-bg));
   --vl-console-surface-raised: color-mix(in srgb, var(--mui-palette-common-white) 10%, var(--vl-console-bg));
   --vl-console-border: color-mix(in srgb, var(--mui-palette-common-white) 22%, var(--vl-console-bg));
@@ -240,65 +224,21 @@
   --vl-console-tick: #919191;
 
   /* Alarm priorities (fill) and the text drawn on top of each fill. */
-  --vl-console-alarm-high: var(--mui-palette-error-main);
+  /* Pinned literals (IEC 60601-1-8 hues, the July dark mains): the light schemes darken the MUI status mains. */
+  --vl-console-alarm-high: #f44336;
   --vl-console-on-alarm-high: var(--vl-console-bg);
-  --vl-console-alarm-medium: var(--mui-palette-warning-main);
+  --vl-console-alarm-medium: #ff9800;
   --vl-console-on-alarm-medium: var(--vl-console-bg);
-  --vl-console-alarm-low: var(--mui-palette-info-main);
+  --vl-console-alarm-low: #10aede;
   --vl-console-on-alarm-low: var(--vl-console-bg);
 
+  /* Automatic send of the Real console (block A): "Aplicado" tag text and border; 9.4:1 on navy, 9.8:1 on the Univalle grey. */
+  --vl-console-applied: #81c784;
+
   /* A control value edited but not yet confirmed, and a value outside its allowed range. */
-  --vl-console-pending: var(--mui-palette-primary-main);
-  --vl-console-pending-bg: color-mix(in srgb, var(--mui-palette-primary-main) 20%, var(--vl-console-bg));
-  --vl-console-out-of-range: var(--mui-palette-error-main);
-  --vl-console-out-of-range-bg: color-mix(in srgb, var(--mui-palette-error-main) 20%, var(--vl-console-bg));
-}
-
-/*
- * === DARK SCHEME (default, July skin, Bloque 5 D1) ===
- * The aliases above follow the --mui-* variables, which the theme emits for the dark scheme on
- * :root and [data-mui-color-scheme="dark"]. Here live the values MUI has no variable for.
- * Order matters: this block must stay before the light one, which overrides it.
- */
-:root,
-[data-mui-color-scheme="dark"] {
-  --vl-color-bg-gradient: linear-gradient(180deg, #0a112b 0%, #0a0f26 100%);
-  /* Opaque equivalent of July's glass 8% over navy (secondary text on it: 7.42:1). */
-  --vl-color-surface-raised: #1e243c;
-  /* July link: the cyan itself reaches 7.21:1 on navy. */
-  --vl-color-link: var(--mui-palette-primary-main);
-  --vl-color-link-hover: var(--mui-palette-primary-light);
-  /* July dark shadows (theme.css:46-48): the light .08 shadows vanish on navy. */
-  --vl-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-  --vl-shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  --vl-shadow-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-  --vl-scrollbar-thumb: color-mix(in srgb, var(--mui-palette-common-white) 20%, transparent);
-  --vl-scrollbar-thumb-hover: color-mix(in srgb, var(--mui-palette-common-white) 30%, transparent);
-  /* Global sidebar and user card (July Sidebar.jsx:127-176, SidebarUserCard.jsx:192-201). */
-  --vl-sidebar-version: color-mix(in srgb, var(--mui-palette-common-white) 50%, transparent); /* 5.09:1 */
-  --vl-user-card-bg: color-mix(in srgb, var(--mui-palette-common-white) 8%, transparent);
-  --vl-user-card-bg-hover: color-mix(in srgb, var(--mui-palette-common-white) 12%, transparent);
-}
-
-/* === LIGHT SCHEME (kept with its AA fixes, no visible selector in Bloque 5) === */
-[data-mui-color-scheme="light"] {
-  --vl-color-bg-gradient: none;
-  --vl-color-surface-raised: var(--mui-palette-background-default);
-  /*
-   * AA-safe link color: primary.main on white is 2.58:1 (fails WCAG AA); mixing it 60% with
-   * black gives about 6.3:1 on background and 6.0:1 on paper. The primary color is NOT changed.
-   */
-  --vl-color-link: color-mix(in srgb, var(--mui-palette-primary-main) 60%, var(--mui-palette-common-black));
-  --vl-color-link-hover: var(--vl-color-link);
-  --vl-shadow-1: var(--mui-shadows-1);
-  --vl-shadow-2: var(--mui-shadows-2);
-  --vl-shadow-3: var(--mui-shadows-3);
-  /* Black 25%: the white 20% thumb inherited from July was invisible on white. */
-  --vl-scrollbar-thumb: color-mix(in srgb, var(--mui-palette-common-black) 25%, transparent);
-  --vl-scrollbar-thumb-hover: color-mix(in srgb, var(--mui-palette-common-black) 35%, transparent);
-  --vl-sidebar-version: var(--vl-color-text-muted);
-  --vl-user-card-bg: var(--mui-palette-background-default);
-  --vl-user-card-bg-hover: var(--vl-color-hover);
+  --vl-console-pending-bg: color-mix(in srgb, var(--vl-console-pending) 20%, var(--vl-console-bg));
+  --vl-console-out-of-range: var(--vl-console-alarm-high);
+  --vl-console-out-of-range-bg: color-mix(in srgb, var(--vl-console-alarm-high) 20%, var(--vl-console-bg));
 }
 
 /*
@@ -310,15 +250,18 @@
  * MUI portals render in <body>: the shells put the same data-surface on the portal roots they own.
  */
 
-/* Staff panel (D9): PanelShell .root and its portals. Navy surfaces of the July panel (PanelLayout.jsx:61). */
+/*
+ * Staff panel (D9): PanelShell .root and its portals. The panel surfaces of the active palette and mode
+ * (theme-palettes: navy July panel in VentyLab dark, PanelLayout.jsx:61).
+ */
 [data-surface="panel"] {
-  --mui-palette-background-default: #0a1220;
-  --mui-palette-background-paper: #19253d; /* glass 4% over the #0f1c35 stop */
-  --mui-palette-divider: rgba(255, 255, 255, 0.09);
+  --mui-palette-background-default: var(--vl-panel-bg);
+  --mui-palette-background-paper: var(--vl-panel-paper);
+  --mui-palette-divider: var(--vl-panel-divider);
   --vl-color-bg: var(--mui-palette-background-default);
   --vl-color-surface: var(--mui-palette-background-paper);
   --vl-color-border: var(--mui-palette-divider);
-  --vl-color-surface-raised: #222e47;
+  --vl-color-surface-raised: var(--vl-panel-raised);
   --vl-color-status-ok-bg: color-mix(in srgb, var(--vl-color-success) 12%, var(--vl-color-surface));
   --vl-color-status-degraded-bg: color-mix(in srgb, var(--vl-color-warning) 14%, var(--vl-color-surface));
   --vl-color-status-down-bg: color-mix(in srgb, var(--vl-color-error) 12%, var(--vl-color-surface));
@@ -326,37 +269,12 @@
 }
 
 /*
- * Auth pages (D5): the light card island of July's login on the brand gradient. The same element
- * carries data-mui-color-scheme="light", so MUI and the light block above already provide the light
- * --mui-* values, --vl-color-link and --vl-color-surface-raised; the aliases are re-declared here.
+ * July console (data-layout="july", always dark): its controls read the primary aliases, so inside it they are the
+ * console accent of the palette (the light-mode primaries are below 3:1 on the console background).
  */
-[data-surface="auth"] {
-  color-scheme: light;
-  --vl-color-bg: var(--mui-palette-background-default);
-  --vl-color-surface: var(--mui-palette-background-paper);
-  --vl-color-surface-contrast: var(--mui-palette-background-contrast);
-  --vl-color-text: var(--mui-palette-text-primary);
-  --vl-color-text-muted: var(--mui-palette-text-secondary);
-  --vl-color-text-disabled: var(--mui-palette-text-disabled);
-  --vl-color-border: var(--mui-palette-divider);
-  --vl-color-primary: var(--mui-palette-primary-main);
-  --vl-color-on-primary: var(--mui-palette-primary-contrastText);
-  --vl-color-success: var(--mui-palette-success-main);
-  --vl-color-warning: var(--mui-palette-warning-main);
-  --vl-color-error: var(--mui-palette-error-main);
-  --vl-color-info: var(--mui-palette-info-main);
-  --vl-color-hover: var(--mui-palette-action-hover);
-  --vl-color-selected: var(--mui-palette-action-selected);
-  --vl-color-status-ok: color-mix(in srgb, var(--vl-color-success) 55%, var(--vl-color-text));
-  --vl-color-status-degraded: color-mix(in srgb, var(--vl-color-warning) 55%, var(--vl-color-text));
-  --vl-color-status-down: color-mix(in srgb, var(--vl-color-error) 55%, var(--vl-color-text));
-  --vl-color-status-idle: var(--vl-color-text-muted);
-  --vl-color-status-ok-bg: color-mix(in srgb, var(--vl-color-success) 12%, var(--vl-color-surface));
-  --vl-color-status-degraded-bg: color-mix(in srgb, var(--vl-color-warning) 14%, var(--vl-color-surface));
-  --vl-color-status-down-bg: color-mix(in srgb, var(--vl-color-error) 12%, var(--vl-color-surface));
-  --vl-color-status-idle-bg: var(--vl-color-surface-raised);
-  --vl-color-field-focus-halo: color-mix(in srgb, var(--mui-palette-primary-main) 20%, transparent);
-  --vl-focus-ring-color: var(--mui-palette-primary-main);
+[data-layout="july"] {
+  --vl-color-primary: var(--vl-console-accent);
+  --vl-color-on-primary: var(--vl-console-on-accent);
 }
 
 @media (max-width: 768px) {

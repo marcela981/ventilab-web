@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useGoogleIdentity
-* Descripción: Loads Google Identity Services on demand (only when a client ID is configured), initializes it with the client ID and a callback that forwards the ID token, and renders the official Google button into the given container. Status: unconfigured, loading, ready or error. The latest credential handler is kept in a ref so re-renders do not re-initialize GIS. Depends on react and the GIS loader service.
-* Versión: 1.0
+* Descripción: Loads Google Identity Services on demand (only when a client ID is configured), initializes it with the client ID and a callback that forwards the ID token, and renders the official Google button into the given container. Status: unconfigured, loading, ready or error. The latest credential handler is kept in a ref so re-renders do not re-initialize GIS. Depends on react and the GIS loader service. v1.1: (Ajustes D3): the button theme is a parameter (filled_black in dark, outline in light) and the button is rendered again when it changes.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -15,10 +15,14 @@ import { loadGoogleIdentity } from "../../api/services/google-identity.service";
 
 export type GoogleIdentityStatus = "unconfigured" | "loading" | "ready" | "error";
 
+export type GoogleButtonTheme = "outline" | "filled_black";
+
 export type UseGoogleIdentityOptions = {
   clientId: string
   containerRef: RefObject<HTMLDivElement | null>
   onCredential: (idToken: string) => void
+  // "filled_black" on the dark mode, "outline" on the light one (re-rendered when it changes).
+  theme?: GoogleButtonTheme
 };
 
 // GIS accepts a button width between 200 and 400 px.
@@ -31,7 +35,7 @@ function buttonWidth(container: HTMLElement): number {
   return width > 0 ? Math.min(MAX_BUTTON_WIDTH, Math.max(MIN_BUTTON_WIDTH, width)) : MAX_BUTTON_WIDTH;
 }
 
-export function useGoogleIdentity({ clientId, containerRef, onCredential }: UseGoogleIdentityOptions): GoogleIdentityStatus {
+export function useGoogleIdentity({ clientId, containerRef, onCredential, theme = "outline" }: UseGoogleIdentityOptions): GoogleIdentityStatus {
   // Outcome of the last load, keyed by client ID; "loading" and "unconfigured" are derived.
   const [outcome, setOutcome] = useState<{ clientId: string, status: "ready" | "error" } | null>(null);
   const onCredentialRef = useRef(onCredential);
@@ -69,7 +73,7 @@ export function useGoogleIdentity({ clientId, containerRef, onCredential }: UseG
         });
         google.renderButton(container, {
           type: "standard",
-          theme: "outline",
+          theme,
           size: "large",
           text: "continue_with",
           shape: "rectangular",
@@ -88,7 +92,7 @@ export function useGoogleIdentity({ clientId, containerRef, onCredential }: UseG
     return () => {
       active = false;
     };
-  }, [clientId, containerRef]);
+  }, [clientId, containerRef, theme]);
 
   if (!clientId) {
     return "unconfigured";

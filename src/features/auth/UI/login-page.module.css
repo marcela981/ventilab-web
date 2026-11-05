@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: LoginPage styles
-* Descripción: Card, header, divider and help links of the login page. Tokens only. v1.1 (Bloque 5, §5.3): the July login card: radius 24, elevation 10, roomy padding, the centred 60px logo, a 20px semibold title, the muted divider and the right-aligned "¿Olvidaste tu contraseña?" row; inside the light auth island.
-* Versión: 1.1
+* Descripción: Card, header, divider and help links of the login page. Tokens only. v1.1 (Bloque 5, §5.3): the July login card: radius 24, elevation 10, roomy padding, the centred 60px logo, a 20px semibold title, the muted divider and the right-aligned "¿Olvidaste tu contraseña?" row; inside the light auth island. v1.2: (Ajustes D3): card with the active palette surface and border, the aria-live notices block, the rounded primary action of the recovery pages and, from 1024px, the logo moves to the brand column of the auth layout.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--vl-space-4);
-  padding: var(--vl-space-6) var(--vl-space-5);
+  padding: var(--vl-space-5) var(--vl-space-4);
+  border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-3xl);
   background: var(--vl-color-surface);
   color: var(--vl-color-text);
@@ -28,10 +29,21 @@
   text-align: center;
 }
 
-.logo {
-  width: auto;
-  height: 3.75rem;
-  margin-bottom: var(--vl-space-2);
+/* The session, error and result notices (aria-live); no gap while empty. */
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.alerts:empty {
+  display: none;
+}
+
+/* One class more than MUI Button: the rounded primary action of the auth cards (as the login submit). */
+.card .primaryAction {
+  min-height: 3.125rem;
+  border-radius: var(--vl-radius-3xl);
 }
 
 /* One class more than the MUI Typography h4 variant: the July 20px title. */
@@ -85,5 +97,12 @@
 @media (min-width: 600px) {
   .card {
     padding: var(--vl-space-6) 2.5rem var(--vl-space-6);
+  }
+}
+
+/* The logo sits in the brand column of the auth layout from 1024px; the card keeps the title. */
+@media (min-width: 1024px) {
+  .header > :first-child {
+    display: none;
   }
 }

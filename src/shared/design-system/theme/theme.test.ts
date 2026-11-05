@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentyLab MUI theme tests
-* Descripción: Verifies the cssVariables theme keeps the official light identity: CSS variables enabled, primary.main, shape radius, custom palette keys, the CSS variables tokens.css relies on, and the legacy color helpers. next/font is mocked because it only runs inside the Next compiler. Depends on vitest. v1.1 (Bloque 5): the July dark scheme is the default (selector [data-mui-color-scheme]), the light scheme keeps its values with the AA fix of the secondary text, and both draw navy text on the primary (D2). v1.2 (Bloque 5): the declared font weights are only the loaded ones (light = 400, D3).
-* Versión: 1.2
+* Descripción: Verifies the cssVariables theme keeps the official light identity: CSS variables enabled, primary.main, shape radius, custom palette keys, the CSS variables tokens.css relies on, and the legacy color helpers. next/font is mocked because it only runs inside the Next compiler. Depends on vitest. v1.1 (Bloque 5): the July dark scheme is the default (selector [data-mui-color-scheme]), the light scheme keeps its values with the AA fix of the secondary text, and both draw navy text on the primary (D2). v1.2 (Bloque 5): the declared font weights are only the loaded ones (light = 400, D3). v1.3 (Ajustes D4): the VentyLab light scheme is the AA blue-and-green one of theme-palettes.ts (white text on the darkened brand blue); dark keeps the July values with navy text on every fill.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -48,19 +48,23 @@ describe("design-system theme", () => {
     expect(schemed.getColorSchemeSelector("light")).toBe('[data-mui-color-scheme="light"] &');
   });
 
-  it("keeps the official light palette with its AA fixes as the second scheme", () => {
+  it("uses the VentyLab light scheme of theme-palettes (blues and greens, AA) as the second scheme", () => {
     const light = schemed.colorSchemes.light?.palette;
     expect(light?.mode).toBe("light");
-    expect(light?.primary.main).toBe("#10aede");
-    expect(light?.secondary.main).toBe("#3d98cc");
-    expect(light?.background.default).toBe("#ffffff");
+    expect(light?.primary.main).toBe("#0b6e99");
+    expect(light?.primary.contrastText).toBe("#ffffff");
+    expect(light?.secondary.main).toBe("#3b7a1e");
+    expect(light?.background.default).toBe("#f5f9fc");
+    expect(light?.background.paper).toBe("#ffffff");
     expect(light?.text.primary).toBe("#0a112b");
-    expect(light?.text.secondary).toBe("#6b747c");
+    expect(light?.text.secondary).toBe("#5b6472");
   });
 
-  it("draws navy text on the cyan primary in both schemes (D2)", () => {
-    expect(schemed.colorSchemes.dark?.palette.primary.contrastText).toBe("#0a112b");
-    expect(schemed.colorSchemes.light?.palette.primary.contrastText).toBe("#0a112b");
+  it("draws navy text on the cyan primary and the status fills of the dark scheme (D2)", () => {
+    const dark = schemed.colorSchemes.dark?.palette;
+    expect(dark?.primary.contrastText).toBe("#0a112b");
+    expect(dark?.error.contrastText).toBe("#0a112b");
+    expect(dark?.warning.contrastText).toBe("#0a112b");
   });
 
   it("keeps shape, spacing and custom breakpoints", () => {
@@ -75,7 +79,7 @@ describe("design-system theme", () => {
     expect(theme.palette.curriculum.advanced.opacity10).toBe("rgba(244, 67, 54, 0.1)");
     expect(theme.palette.background.contrast).toBe("#e8f4fd");
     expect(schemed.colorSchemes.light?.palette.background.contrast).toBe("#0a112b");
-    expect(schemed.colorSchemes.light?.palette.text.hint).toBe("#bdbdbd");
+    expect(schemed.colorSchemes.light?.palette.text.hint).toBe("rgba(10, 17, 43, 0.45)");
   });
 
   it("emits the CSS variables that tokens.css references", () => {

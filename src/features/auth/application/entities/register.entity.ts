@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Register entities
-* Descripción: Registration form entities: the data the user types (name, email, password and its confirmation), the per-field validation errors and the pure validation used before calling `POST /api/auth/register`. The rules mirror the backend RegisterDTO: name 2–100 characters, a valid email, a password of 8–128 characters with at least one uppercase letter, one lowercase letter and one number; the confirmation must match. Spanish copy, TODO(i18n). No dependencies.
-* Versión: 1.0
+* Descripción: Registration form entities: the data the user types (name, email, password and its confirmation), the per-field validation errors and the pure validation used before calling `POST /api/auth/register`. The rules mirror the backend RegisterDTO: name 2–100 characters, a valid email, a password of 8–128 characters with at least one uppercase letter, one lowercase letter and one number; the confirmation must match. Spanish copy, TODO(i18n). No dependencies. v1.1: (Ajustes D3): the email and new password rules are exported (emailFieldError, newPasswordErrors) for the password recovery forms.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,10 +43,40 @@ export const REGISTER_VALIDATION_MESSAGES = {
 
 export const PASSWORD_HINT = `Mínimo ${PASSWORD_MIN_LENGTH} caracteres, con mayúscula, minúscula y número.`;
 
+/** Email field rule shared by the registration and the password recovery forms. */
+export function emailFieldError(value: string): string | undefined {
+  const email = value.trim();
+
+  if (email === "") {
+    return REGISTER_VALIDATION_MESSAGES.emailRequired;
+  }
+
+  return EMAIL_PATTERN.test(email) ? undefined : REGISTER_VALIDATION_MESSAGES.emailInvalid;
+}
+
+/** New password and confirmation rules shared by the registration and the password reset forms. */
+export function newPasswordErrors(password: string, confirmPassword: string): Pick<RegisterFieldErrors, "password" | "confirmPassword"> {
+  const errors: Pick<RegisterFieldErrors, "password" | "confirmPassword"> = {};
+
+  if (password === "") {
+    errors.password = REGISTER_VALIDATION_MESSAGES.passwordRequired;
+  } else if (!PASSWORD_PATTERN.test(password)) {
+    errors.password = REGISTER_VALIDATION_MESSAGES.passwordWeak;
+  }
+
+  if (confirmPassword === "") {
+    errors.confirmPassword = REGISTER_VALIDATION_MESSAGES.confirmRequired;
+  } else if (confirmPassword !== password) {
+    errors.confirmPassword = REGISTER_VALIDATION_MESSAGES.confirmMismatch;
+  }
+
+  return errors;
+}
+
 export function validateRegistration(data: RegistrationData): RegisterFieldErrors {
   const errors: RegisterFieldErrors = {};
   const name = data.name.trim();
-  const email = data.email.trim();
+  const emailError = emailFieldError(data.email);
 
   if (name === "") {
     errors.name = REGISTER_VALIDATION_MESSAGES.nameRequired;
@@ -54,23 +84,9 @@ export function validateRegistration(data: RegistrationData): RegisterFieldError
     errors.name = REGISTER_VALIDATION_MESSAGES.nameLength;
   }
 
-  if (email === "") {
-    errors.email = REGISTER_VALIDATION_MESSAGES.emailRequired;
-  } else if (!EMAIL_PATTERN.test(email)) {
-    errors.email = REGISTER_VALIDATION_MESSAGES.emailInvalid;
+  if (emailError) {
+    errors.email = emailError;
   }
 
-  if (data.password === "") {
-    errors.password = REGISTER_VALIDATION_MESSAGES.passwordRequired;
-  } else if (!PASSWORD_PATTERN.test(data.password)) {
-    errors.password = REGISTER_VALIDATION_MESSAGES.passwordWeak;
-  }
-
-  if (data.confirmPassword === "") {
-    errors.confirmPassword = REGISTER_VALIDATION_MESSAGES.confirmRequired;
-  } else if (data.confirmPassword !== data.password) {
-    errors.confirmPassword = REGISTER_VALIDATION_MESSAGES.confirmMismatch;
-  }
-
-  return errors;
+  return { ...errors, ...newPasswordErrors(data.password, data.confirmPassword) };
 }
