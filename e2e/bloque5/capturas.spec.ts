@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Screenshots of Block 5 (visual regression against July)
-* Descripción: Only with E2E_CAPTURES=1. (1) Writes PNG screenshots to docs/bloque5/capturas/ (E2E_CAPTURES_DIR overrides) of the screens of docs/bloque5/propuesta/lado-a-lado/, with the same names, at the size of the July references of docs/bloque5/referencias-julio/ (1280×720 and 1920×1080, deviceScaleFactor 1, viewport captures), so each one pairs with its July capture and its mock-up render: login (no session), the expanded sidebar of the student (/learn, Inicio) and of the teacher (/learn), the collapsed sidebar of both with the tooltip of an item, Monitoreo digital (FREE session "Aleatorio" after a few breaths, with one pending change of the rate) and Real (reservation, connected with control, no device data on the local stack), the "Asesoría IA" drawer (July 08), the curriculum (/learn Currículo), the student evaluations (/evaluations), the staff panel dashboard (/teacher) and the profile (July 14). (2) Regenerates the Monitoreo captures of Block 1 in docs/bloque1/capturas/ (E2E_CAPTURES_B1_DIR overrides) with the July layout: the long case with the case drawer open at 1280, 1440 and 1920, the case hidden at 1920, the Real monitor at 1280, 1440 and 1920, and the 1920 set "nuevo-monitoreo-*" (empty guide, digital "Pulmón normal: postoperatorio inmediato", the session result, Real without data). The ventilator is freed through the admin API before reserving and the reservation is released afterwards. It asserts only what it needs to frame each capture. v0.1 (Bloque 5, W5-2): first version. Depends on @playwright/test and the auth, backend API, panel and simulator e2e helpers.
-* Versión: 0.1
+* Descripción: Only with E2E_CAPTURES=1. (1) Writes PNG screenshots to docs/bloque5/capturas/ (E2E_CAPTURES_DIR overrides) of the screens of docs/bloque5/propuesta/lado-a-lado/, with the same names, at the size of the July references of docs/bloque5/referencias-julio/ (1280×720 and 1920×1080, deviceScaleFactor 1, viewport captures), so each one pairs with its July capture and its mock-up render: login (no session), the expanded sidebar of the student (/learn, Inicio) and of the teacher (/learn), the collapsed sidebar of both with the tooltip of an item, Monitoreo digital (FREE session "Aleatorio" after a few breaths, with one pending change of the rate) and Real (reservation, connected with control, no device data on the local stack), the "Asesoría IA" drawer (July 08), the curriculum (/learn Currículo), the student evaluations (/evaluations), the staff panel dashboard (/teacher) and the profile (July 14). (2) Regenerates the Monitoreo captures of Block 1 in docs/bloque1/capturas/ (E2E_CAPTURES_B1_DIR overrides) with the July layout: the long case with the case drawer open at 1280, 1440 and 1920, the case hidden at 1920, the Real monitor at 1280, 1440 and 1920, and the 1920 set "nuevo-monitoreo-*" (empty guide, digital "Pulmón normal: postoperatorio inmediato", the session result, Real without data). The ventilator is freed through the admin API before reserving and the reservation is released afterwards. It asserts only what it needs to frame each capture. v0.1 (Bloque 5, W5-2): first version. Depends on @playwright/test and the auth, backend API, panel and simulator e2e helpers. v0.2 (Ajustes A, A1): the digital Monitoreo capture shows the rate change applied on its own (no pending counter any more).
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -148,15 +148,16 @@ for (const viewport of VIEWPORTS) {
     const context = await contextOf(browser, STUDENT_STORAGE_STATE, viewport);
     const page = await context.newPage();
 
-    // Digital with one pending change of the rate (two steps up).
+    // Digital after a change of the rate (two steps up, applied on its own since Ajustes A).
     await startPatientSession(page);
     await waitForBreaths(page);
     const rate = page.getByRole("complementary", { name: "Controles" }).getByRole("spinbutton", { name: "Frecuencia respiratoria" });
+    const initialRate = Number(await rate.getAttribute("aria-valuenow"));
 
     await rate.focus();
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("ArrowUp");
-    await expect(page.getByRole("region", { name: "Valores" }).getByRole("status").filter({ hasText: "1 cambio pendiente" })).toBeVisible();
+    await expect.poll(async () => Number(await rate.getAttribute("aria-valuenow"))).toBe(initialRate + 2);
     await page.mouse.move(viewport.width / 2, 8);
     await shot(page, OUT_DIR, `05-monitoreo-digital-${size}`);
     await page.keyboard.press("Escape");
