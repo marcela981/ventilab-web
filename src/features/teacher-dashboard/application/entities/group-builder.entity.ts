@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Group builder entity
-* Descripción: Pure model of "Conformar grupo" (July's GroupBuilderModal): the July texts (title, fields and placeholders, "Integrantes", actions, success and the exact partial failure message `Grupo creado, pero ${n} estudiante(s) no pudieron agregarse.`), settleWithConcurrency (Promise.allSettled semantics with at most N tasks in flight, results in input order; the members are added 4 at a time) and the Spanish reason of a member that could not be added (409 → already in an active student group, role not allowed, full group, no permission). Depends on the shared API error helpers.
-* Versión: 1.0
+* Descripción: Pure model of "Conformar grupo" (July's GroupBuilderModal): the July texts (title, fields and placeholders, "Integrantes", actions, success and the exact partial failure message `Grupo creado, pero ${n} estudiante(s) no pudieron agregarse.`), settleWithConcurrency (Promise.allSettled semantics with at most N tasks in flight, results in input order; the members are added 4 at a time) and the Spanish reason of a member that could not be added (409 → already in an active student group, role not allowed, full group, no permission). Depends on the shared API error helpers. v1.1 (ajustes D2): copy of the "Agregar a grupo existente" dialog.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,6 +33,23 @@ export const GROUP_BUILDER_COPY = {
   failureList: "Estudiantes que no se agregaron",
   failureItem: (name: string, reason: string) => `${name}: ${reason}`,
   createFailed: "No se pudo crear el grupo.",
+} as const;
+
+export const ADD_TO_GROUP_COPY = {
+  title: "Agregar a grupo existente",
+  group: "Grupo",
+  chooseGroup: "Elige un grupo",
+  noGroups: "No tienes grupos de estudiantes. Usa «Conformar Grupo» para crear uno.",
+  loadingGroups: "Cargando grupos…",
+  loadGroupsFailed: "No se pudieron cargar tus grupos.",
+  members: "Estudiantes",
+  cancel: "Cancelar",
+  close: "Cerrar",
+  add: "Agregar",
+  adding: "Agregando…",
+  success: (group: string) => `Se agregaron al grupo «${group}».`,
+  partialFailure: (count: number) => `${count} estudiante(s) no pudieron agregarse.`,
+  failureList: "Estudiantes que no se agregaron",
 } as const;
 
 export const MEMBER_FAILURE_REASONS = {
