@@ -22,7 +22,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { ENGINE_VERSION } from "@shared/sim-engine";
+import { ENGINE_VERSION, engineReplaysVersion } from "@shared/sim-engine";
 import type { EngineCase, ParamChangeEvent, VentilatorSettings } from "@shared/sim-engine";
 import { DEFAULT_TIME_MULTIPLIER, TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { SimulationMode, TimeMultiplier } from "../config/simulator.config";
@@ -132,7 +132,8 @@ export const ENGINE_VERSION_COPY = {
 
 /** FREE runs with a visible warning on a mismatch; EXAM is blocked before the worker starts. */
 export function checkEngineVersion(mode: SimulationMode, sessionVersion: string, bundledVersion: string = ENGINE_VERSION): EngineVersionCheck {
-  if (sessionVersion === bundledVersion) {
+  // A session the bundled engine reproduces exactly (same version, or a 1.x session on the 2.x engine) is a match.
+  if (engineReplaysVersion(sessionVersion, bundledVersion)) {
     return { status: "match" };
   }
 

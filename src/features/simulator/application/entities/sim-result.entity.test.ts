@@ -171,5 +171,7 @@ describe("replay marks", () => {
     expect(replayVersionWarning({ engineVersion: ENGINE_VERSION, currentEngineVersion: ENGINE_VERSION, engineVersionMismatch: false, warning: null })).toBeNull();
     expect(replayVersionWarning({ engineVersion: "0.9.0", currentEngineVersion: ENGINE_VERSION, engineVersionMismatch: true, warning: "Versión distinta" })).toBe("Versión distinta");
     expect(replayVersionWarning({ engineVersion: "0.9.0", engineVersionMismatch: false })).toContain("0.9.0");
+    // The 2.x engine reproduces 1.x sessions exactly: no warning.
+    expect(replayVersionWarning({ engineVersion: "1.0.0", engineVersionMismatch: false }, "2.0.0")).toBeNull();
   });
 });

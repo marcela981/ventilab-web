@@ -2,7 +2,7 @@
   "generatedBy": "scripts/sync-sim-engine.mjs",
   "source": "ventylab-server",
   "note": "GENERATED - do not edit. Hashes of the LF-normalised backend sources.",
-  "sourceHash": "a151386c109212b22cddbd03d67e493657a3f02840b24fc3a11631547fc7edf9",
+  "sourceHash": "41653574b0f0052aa41fbf861dcd63bf44711a7e75cbcd958ec3953013361abf",
   "files": [
     {
       "path": "src/common/domain/ventilator/ventilator-limits.ts",
@@ -26,7 +26,7 @@
     },
     {
       "path": "src/features/simulation/domain/engine/engine-version.ts",
-      "sha256": "29e912baf4404141dffb21cb143c490e85d1db0d024fcb3cff977103b2a4a2eb"
+      "sha256": "2d02f4c4f676bddcccb6d712a7b8d47617c93f62eef819211c853868800fc0f7"
     },
     {
       "path": "src/features/simulation/domain/engine/engine.errors.ts",
