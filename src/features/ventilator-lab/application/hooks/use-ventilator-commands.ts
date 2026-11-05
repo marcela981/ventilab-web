@@ -34,7 +34,11 @@
 *   accepted mode change abandoned with «Usar los valores que informa el equipo» (`carriedMode`, part of the key); a
 *   report that moves between the warning and the repeat changes the key and warns again. S1 the hook never dispatches
 *   the reducer `reset`: the state stays while `canSend` toggles, and a new reservation reads a fresh state.
-* Versión: 1.5
+*   v1.6 (Ajustes A, A2): the same send path for the auto-send queue of the July console: `submit` is onConfirm with
+*   its result (sent with its local id and mapped command, busy while no command may be sent, refused with the
+*   message), `outcomeOf` says how a submitted command ended, `reportedValueOf` / `reportedMode` read the device
+*   report, and `activeLocalId`, `canSubmitNow`, `rateLimitReason` and `blockReason` tell the queue when it may move.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,7 +74,9 @@ import {
   commandRefusalMessage,
   mapConfirmationToCommand,
   reduceDeviceReport,
+  reportedConsoleValue,
 } from "../entities/command-mapper";
+import type { MappedCommand } from "../entities/command-mapper";
 import { describeSendCommandError, SEND_COMMAND_ERROR_CODES } from "../entities/command-messages";
 import {
   canSubmitCommand,
@@ -78,16 +84,20 @@ import {
   carriedMode,
   carriedValues,
   carryKey,
+  commandBlockReason,
   commandBusyReason,
   commandInFlight,
   commandNoticeView,
+  commandOutcomeFor,
+  commandRateLimitReason,
   commandReducer,
+  COMMAND_STATE_COPY,
   INITIAL_COMMAND_STATE,
   isTerminalCommandStatus,
   mergeRecentCommands,
   REPORT_WAIT_MS,
 } from "../entities/command-state";
-import type { CommandAction, CommandNotice, CommandUiState, LabCommandRecord, RecentCommandItem } from "../entities/command-state";
+import type { CommandAction, CommandNotice, CommandOutcome, CommandUiState, LabCommandRecord, RecentCommandItem } from "../entities/command-state";
 import type { LabSettings } from "../entities/lab-settings.entity";
 
 /** Margin over commands.ackTimeoutMs before a command without a terminal status is looked up. */
@@ -99,6 +109,12 @@ export const COMMAND_LOOKUP_BACKOFF_MAX_MS = 8000;
 const TICK_MS = 1000;
 
 type KeyedState = { reservationId: string, ui: CommandUiState };
+
+/** Ajustes A (A2): what a submit did: sent (with its local id and mapped command), waiting (busy) or refused. */
+export type CommandSubmitResult =
+  | { sent: true, localId: string, command: MappedCommand }
+  | { sent: false, busy: true }
+  | { sent: false, busy: false, message: string };
 
 export type UseVentilatorCommandsOptions = {
   reservationId: string
@@ -115,6 +131,21 @@ export type VentilatorCommands = {
   /** Why no command can be sent now (one in flight, 429 wait), or null. */
   busyReason: string | null
   onConfirm: (confirmation: ConsoleConfirmation) => void
+  /** Ajustes A (A2): onConfirm with its result, for the auto-send queue. */
+  submit: (confirmation: ConsoleConfirmation) => CommandSubmitResult
+  /** Ajustes A (A2): how the command `localId` ended (null while it is the active one). */
+  outcomeOf: (localId: string, command: MappedCommand) => CommandOutcome | null
+  /** Ajustes A (A2): the device values (console units) and mode right now. */
+  reportedValueOf: (parameter: string) => number | null
+  reportedMode: () => string | null
+  /** Ajustes A (A2): local id of the command in flight; a change means the queue may move. */
+  activeLocalId: string | null
+  /** Ajustes A (A2): the caller may send and the command machine accepts a command now. */
+  canSubmitNow: boolean
+  /** Ajustes A (A2): the 429 wait alone (the auto-send console is read-only only then). */
+  rateLimitReason: string | null
+  /** Ajustes A (A2): an uncertain send, an unreported change or the 429 wait (not the plain one in flight). */
+  blockReason: string | null
   /** W5: an unreported block can be lifted now with «Usar los valores que informa el equipo». */
   canUseReported: boolean
   onUseReported: () => void
@@ -318,19 +349,21 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
     };
   }, [uncertainLocalId, ackTimeoutMs, reservationId, dispatch, revalidateHistory]);
 
-  const onConfirm = useCallback((confirmation: ConsoleConfirmation) => {
+  const submit = useCallback((confirmation: ConsoleConfirmation): CommandSubmitResult => {
     const at = Date.now();
 
     if (!canSend || !canSubmitCommand(latest(), at)) {
-      return;
+      return { sent: false, busy: true };
     }
 
     const mapping = mapConfirmationToCommand(confirmation, latest().report, { limits, settings });
 
     if (!mapping.ok) {
-      dispatch({ type: "refused", message: commandRefusalMessage(mapping.refusal) });
+      const message = commandRefusalMessage(mapping.refusal);
 
-      return;
+      dispatch({ type: "refused", message });
+
+      return { sent: false, busy: false, message };
     }
 
     // Fix 3 (W1): a value that would silently replace an accepted one is listed; only an identical repeat sends it.
@@ -345,7 +378,7 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
       if (current.carryAcknowledged !== key) {
         dispatch({ type: "carry-warned", key, carried, mode });
 
-        return;
+        return { sent: false, busy: false, message: COMMAND_STATE_COPY.notSent };
       }
     }
 
@@ -375,7 +408,17 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
         }
       },
     );
+
+    return { sent: true, localId, command: mapping.command };
   }, [canSend, limits, settings, reservationId, callerId, latest, dispatch, revalidateHistory, swrMutate]);
+
+  const onConfirm = useCallback((confirmation: ConsoleConfirmation) => {
+    submit(confirmation);
+  }, [submit]);
+
+  const outcomeOf = useCallback((localId: string, command: MappedCommand) => commandOutcomeFor(latest(), localId, command), [latest]);
+  const reportedValueOf = useCallback((parameter: string) => reportedConsoleValue(latest().report, parameter), [latest]);
+  const reportedMode = useCallback(() => latest().report.mode, [latest]);
 
   // W5: «Usar los valores que informa el equipo» lifts the unreported block (only while the caller may send).
   const onUseReported = useCallback(() => {
@@ -395,6 +438,14 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
     inFlight,
     busyReason: commandBusyReason(state, now),
     onConfirm,
+    submit,
+    outcomeOf,
+    reportedValueOf,
+    reportedMode,
+    activeLocalId: state.active?.localId ?? null,
+    canSubmitNow: canSend && canSubmitCommand(state, now),
+    rateLimitReason: commandRateLimitReason(state, now),
+    blockReason: commandBlockReason(state, now),
     canUseReported: canSend && canUseReportedValues(state),
     onUseReported,
     notice,

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console controls tests
-* Descripción: Behaviour of the July controls over one adapter store and one pending store: the placement per mode (input row, timing, rate, "Más parámetros"), the timing math (I:E, Te, slider range), the input row order and range validation, VOL CTRL / PRES CTRL and "Más modos" (pending until Confirmar), the Insp/Esp slider setting Ti from the cycle, the disabled expiratory pause, the rate slider, "Más parámetros" opening with a pending edit, Confirmar / Cancelar, Enter / Escape through the console key handler (only inside console controls, never from buttons), the Real summary (every change listed, Escape keeps the edits, "Enviar al ventilador" emits once) and the isolation of an edit (other parameters do not re-render). v0.1 (Bloque 5, C2): first version. v0.2 (Ajustes A, A1): the harness takes the console apply mode (default `auto`, as the July console); the pending / Confirmar tests run in `confirm` mode, and the automatic application is covered: no Confirmar, Cancelar nor counter, the stepper, keys and modes apply at once, sliders and the wheel 300 ms after the last change, Enter applies and Escape drops what is debouncing (and asks the source through onApplyNow / onCancel), nothing while read-only. Depends on Vitest, Testing Library, the July controls and the auto apply scheduler.
-* Versión: 0.2
+* Descripción: Behaviour of the July controls over one adapter store and one pending store: the placement per mode (input row, timing, rate, "Más parámetros"), the timing math (I:E, Te, slider range), the input row order and range validation, VOL CTRL / PRES CTRL and "Más modos" (pending until Confirmar), the Insp/Esp slider setting Ti from the cycle, the disabled expiratory pause, the rate slider, "Más parámetros" opening with a pending edit, Confirmar / Cancelar, Enter / Escape through the console key handler (only inside console controls, never from buttons), the Real summary (every change listed, Escape keeps the edits, "Enviar al ventilador" emits once) and the isolation of an edit (other parameters do not re-render). v0.1 (Bloque 5, C2): first version. v0.2 (Ajustes A, A1): the harness takes the console apply mode (default `auto`, as the July console); the pending / Confirmar tests run in `confirm` mode, and the automatic application is covered: no Confirmar, Cancelar nor counter, the stepper, keys and modes apply at once, sliders and the wheel 300 ms after the last change, Enter applies and Escape drops what is debouncing (and asks the source through onApplyNow / onCancel), nothing while read-only. v0.3 (Ajustes A, A2): the source send status ("Enviando", "Rechazado: <motivo>") next to each control in a polite live region, never blocking the edit. Depends on Vitest, Testing Library, the July controls and the auto apply scheduler.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -371,6 +371,20 @@ describe("July controls with automatic application (default)", () => {
       vi.advanceTimersByTime(300);
     });
     expect(adapter.onConfirm).toHaveBeenCalledWith({ mode: null, changes: [{ parameter: "peep", value: 7 }] });
+  });
+
+  it("shows the send status of a source next to the control, politely, without blocking the edit", () => {
+    const { adapter } = setup({ settings: { current: VALUES, applied: VALUES, sendStatus: { peep: { status: "rejected", message: "fuera del rango seguro" }, fio2: { status: "sending" } } } });
+    const status = (parameter: string) => document.querySelector(`[data-parameter="${parameter}"] [aria-live="polite"]`);
+
+    expect(status("peep")).toHaveTextContent("Rechazado: fuera del rango seguro");
+    expect(status("peep")).toHaveAttribute("data-send-status", "rejected");
+    expect(status("fio2")).toHaveTextContent("Enviando");
+    expect(status("tidalVolume")).toBeEmptyDOMElement();
+    expect(status("tidalVolume")).not.toHaveAttribute("data-send-status");
+
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar FiO2" }));
+    expect(adapter.onConfirm).toHaveBeenCalledWith({ mode: null, changes: [{ parameter: "fio2", value: 41 }] });
   });
 
   it("applies nothing when read-only", () => {

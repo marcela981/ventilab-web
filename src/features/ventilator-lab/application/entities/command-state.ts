@@ -54,8 +54,12 @@
 *   such as Vt 450 → 460 is not taken as reported by 450). S2 a later ACKED/APPLIED supersedes only the abandoned values
 *   whose field its request carried (e.g. an unreported optional sensitivity stays). S1 `reset` is reducer-only: the
 *   hook never dispatches it (it keeps the state while `canSend` toggles, and a new reservation reads a fresh state);
-*   it is kept as the documented semantics of a console reset within a reservation.
-* Versión: 1.4
+*   it is kept as the documented semantics of a console reset within a reservation. v1.5 (Ajustes A, A2): selectors
+*   for the auto-send of the July console: `commandOutcomeFor` (how a submitted command ended per parameter: rejected
+*   with its warning, accepted but not reported yet, mode applied), `commandRateLimitReason` (the 429 wait alone, the
+*   only read-only state left) and `commandBlockReason` (an uncertain send, an unreported change or the 429 wait, not
+*   the plain one-in-flight the queue waits for on its own). The reducer is unchanged.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -686,6 +690,59 @@ export function commandBusyReason(state: CommandUiState, at: number): string | n
   }
 
   return null;
+}
+
+/** Ajustes A (A2): the 429 wait alone, the only command state that makes the auto-send console read-only. */
+export function commandRateLimitReason(state: CommandUiState, at: number): string | null {
+  return state.retryAt !== null && at < state.retryAt ? COMMAND_STATE_COPY.rateLimited(Math.ceil((state.retryAt - at) / 1000)) : null;
+}
+
+/**
+ * Ajustes A (A2): why queued changes cannot go out yet, without the plain "one in flight" (the auto-send queue waits
+ * for it on its own): an uncertain send, an unreported change or the 429 wait; null otherwise.
+ */
+export function commandBlockReason(state: CommandUiState, at: number): string | null {
+  return state.active !== null && state.active.phase !== "uncertain" ? null : commandBusyReason(state, at);
+}
+
+/** Ajustes A (A2): how a submitted command ended, per console parameter; null while it is still the active one. */
+export type CommandOutcome = {
+  /** Parameter → reason: rejected, not sent, timed out or with an unknown outcome. */
+  rejected: Readonly<Record<string, string>>
+  /** Parameter → note of an accepted value the device does not report yet. */
+  notes: Readonly<Record<string, string>>
+  /** The command changed the mode and the device runs it (or accepted it and has not reported it yet). */
+  modeApplied: boolean
+};
+
+export function commandOutcomeFor(state: CommandUiState, localId: string, command: MappedCommand): CommandOutcome | null {
+  if (state.active?.localId === localId) {
+    return null;
+  }
+
+  const rejected: Record<string, string> = {};
+  const notes: Record<string, string> = {};
+  const { unreported } = state;
+  const waiting = new Set(unreported?.targets.map((target) => target.parameter) ?? []);
+
+  command.targets.forEach(({ parameter }) => {
+    const warning = state.warnings[parameter];
+
+    if (warning !== undefined) {
+      rejected[parameter] = warning;
+    } else if (waiting.has(parameter)) {
+      if (unreported?.accepted) {
+        notes[parameter] = COMMAND_STATE_COPY.unreportedTag;
+      } else {
+        rejected[parameter] = COMMAND_STATE_COPY.unconfirmedTag;
+      }
+    }
+  });
+
+  const modeShown = reportedMode(state.report) === command.mode;
+  const modeAccepted = unreported?.modeChanged === true && unreported.accepted && unreported.mode === command.mode;
+
+  return { rejected, notes, modeApplied: command.modeChanged && (modeShown || modeAccepted) };
 }
 
 /** The console `settings.inFlight`: the active command's parameters, else the last warning per parameter. */

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls styles
-* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token). v1.2 (Bloque 5, C2): the compact July field (`data-layout="july"`): label on its own line, value and unit, smaller stepper and range. vX.x (Bloque 5, Ola 4): the July field label spans the value and the free top of the stepper column and wraps when it is still longer (it was cut with an ellipsis: "Volumen (..." at 1280).
-* Versión: 1.3
+* Descripción: Styles of the ventilator console mode selector, parameter controls and confirm bar on the dark console surface: pressed mode buttons, parameter rows with the value, the +/- stepper, the pending highlight (pending token + "Pendiente" text), the selected outline, the limit range and the CONFIRMAR/CANCELAR bar. Console and design-system tokens only. v1.1: the in-flight tag of a confirmed change the source has not applied yet (rejected in the out-of-range token). v1.2 (Bloque 5, C2): the compact July field (`data-layout="july"`): label on its own line, value and unit, smaller stepper and range. vX.x (Bloque 5, Ola 4): the July field label spans the value and the free top of the stepper column and wraps when it is still longer (it was cut with an ellipsis: "Volumen (..." at 1280). v1.4 (Ajustes A, A2): `.sendTag`, the automatic send status of a July control (sending dashed, applied in the success color, rejected in the out-of-range color; hidden while empty).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -198,6 +198,31 @@
   color: var(--vl-console-text);
   border: 1px dashed var(--vl-console-pending);
   border-radius: var(--vl-radius-pill);
+}
+
+/* Ajustes A (A2): automatic send status of the July controls (empty while there is none). */
+.sendTag:empty {
+  display: none;
+}
+
+.sendTag {
+  padding: 0 var(--vl-space-1);
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text);
+  border: 1px dashed var(--vl-console-pending);
+  border-radius: var(--vl-radius-pill);
+}
+
+.sendTag[data-send-status="applied"] {
+  color: var(--vl-color-success);
+  border-style: solid;
+  border-color: var(--vl-color-success);
+}
+
+.sendTag[data-send-status="rejected"] {
+  color: var(--vl-console-out-of-range);
+  border-style: solid;
+  border-color: var(--vl-console-out-of-range);
 }
 
 .inFlightTag[data-status="rejected"] {
