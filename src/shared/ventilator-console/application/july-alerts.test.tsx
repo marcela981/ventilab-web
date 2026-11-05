@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July alerts tests
-* Descripción: The alerts of the July console (C9): "Estado de la mecánica" with the derived Cst / Cdin, "Alertas (n)" counting only sourced validation alerts (metrics outside their range, unconfirmed edits, rejected changes), "Ver alertas detalladas" and "Historial de alarmas" opening the same 380 px "Alertas detalladas" drawer (validation, alarm history, limits only when the source has them), Escape closing it and giving the focus back to the button that opened it, and the icon-only alarm actions keeping their accessible names. v0.1 (Bloque 5, C9): first version. Depends on Vitest, Testing Library and the console.
-* Versión: 0.2
+* Descripción: The alerts of the July console (C9): "Estado de la mecánica" with the derived Cst / Cdin, "Alertas (n)" counting only sourced validation alerts (metrics outside their range, unconfirmed edits, rejected changes), "Ver alertas detalladas" and "Historial de alarmas" opening the same 380 px "Alertas detalladas" drawer (validation, alarm history, limits only when the source has them), Escape closing it and giving the focus back to the button that opened it, and the icon-only alarm actions keeping their accessible names. v0.1 (Bloque 5, C9): first version. v0.3 (Bloque A): with a host `renderAlarmHelp` every alarm (bar and drawer history onsets) is a button "¿Cómo estabilizar? <alarma>" that opens the exclusive "¿Cómo estabilizar?" drawer with the host help of that alarm (another alarm replaces it; Escape closes it and gives the focus back); without it the alarms stay plain text. Depends on Vitest, Testing Library and the console.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -104,6 +104,45 @@ describe("July alerts", () => {
     fireEvent.click(within(drawer()!).getByRole("button", { name: "Ocultar alertas" }));
     expect(drawer()).toBeNull();
     expect(history).toHaveFocus();
+  });
+
+  it("opens the host stabilisation help of an alarm in its own exclusive drawer (Bloque A)", () => {
+    const alarms = [
+      { id: "HIGH_PRESSURE", type: "HIGH_PRESSURE", priority: "high" as const, message: "Presión alta: 42 (límite 40)", label: "Presión alta", since: 0 },
+      { id: "LOW_SPO2", type: "LOW_SPO2", priority: "high" as const, message: "SpO₂ baja: 85 (límite 90)", since: 0 },
+    ];
+    const renderAlarmHelp = vi.fn((target: { code: string, label: string }) => <p>{`Ayuda de ${target.code} (${target.label})`}</p>);
+
+    render(<VentilatorConsole adapter={makeAdapter({ alarms })} layout="july" renderAlarmHelp={renderAlarmHelp} />);
+    const help = () => screen.queryByRole("complementary", { name: "¿Cómo estabilizar?" });
+    const highPressure = screen.getByRole("button", { name: "¿Cómo estabilizar? Presión alta" });
+
+    highPressure.focus();
+    fireEvent.click(highPressure);
+    expect(within(help()!).getByText("Ayuda de HIGH_PRESSURE (Presión alta)")).toBeInTheDocument();
+
+    // The label falls back to the message before its colon; another alarm replaces the help.
+    fireEvent.click(screen.getByRole("button", { name: "¿Cómo estabilizar? SpO₂ baja" }));
+    expect(within(help()!).getByText("Ayuda de LOW_SPO2 (SpO₂ baja)")).toBeInTheDocument();
+
+    // Exclusive with "Alertas detalladas"; its history onsets open the help too.
+    fireEvent.click(screen.getByRole("button", { name: "Ver alertas detalladas" }));
+    expect(help()).toBeNull();
+    fireEvent.click(within(drawer()!).getAllByRole("button", { name: "¿Cómo estabilizar? Presión alta" })[0]!);
+    expect(drawer()).toBeNull();
+    expect(within(help()!).getByText("Ayuda de HIGH_PRESSURE (Presión alta)")).toBeInTheDocument();
+
+    fireEvent.keyDown(help()!, { key: "Escape" });
+    expect(help()).toBeNull();
+  });
+
+  it("keeps the alarms as plain text without a host help", () => {
+    const alarms = [{ id: "APNEA", type: "APNEA", priority: "high" as const, message: "Apnea: 21 (límite 20)", since: 0 }];
+
+    render(<VentilatorConsole adapter={makeAdapter({ alarms })} layout="july" />);
+
+    expect(screen.getByText("Apnea: 21 (límite 20)")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /¿Cómo estabilizar\?/ })).not.toBeInTheDocument();
   });
 
   it("puts the alarm limits in the drawer when the source offers them", () => {

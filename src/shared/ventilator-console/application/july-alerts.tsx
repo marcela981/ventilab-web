@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July alerts (alarms bar, mechanics and detailed alerts drawer)
-* Descripción: The alerts of the July Monitoreo layout (DISENO_BLOQUE5 §6.3, §6.9, D23, D26). JulyAlarmsZone renders the alarms bar in its July variant ("Historial de alarmas" and "Límites" open the drawer; icon-only at 1280) and, while open, the "Alertas detalladas" drawer (380 px, non-modal, one of the console drawers): the validation alerts, the session alarm history and the alarm limits panel (only when the source offers limits). JulyMechanicsAlerts is the bottom of the right column: region "Estado de la mecánica" with Cst = Vte / (Pplat − PEEP) and Cdin = Vte / (Ppico − PEEP), both marked "derivada", then "Alertas (n)" and "Ver alertas detalladas" / "Ocultar alertas". The validation alerts come only from sourced data, never from clinical rules without a source (D23): console metrics outside their normal range (config defaults < console props < adapter ranges), confirmed changes the source rejected or has not applied yet, and the unconfirmed edits of the pending store. Each zone reads only its slices (compared by content), so new snapshots re-render them only when what they show changes. v0.1 (Bloque 5, C9): first version. v0.2 (Ajustes A, A1): the "cambios pendientes sin confirmar" alert only in confirm mode (`pendingAlert`); the automatic application has nothing to confirm. Depends on React, MUI icons, the console stores, config, format helpers, the alarms bar, the alarm limits panel, the console drawers and the July alerts styles.
-* Versión: 0.2
+* Descripción: The alerts of the July Monitoreo layout (DISENO_BLOQUE5 §6.3, §6.9, D23, D26). JulyAlarmsZone renders the alarms bar in its July variant ("Historial de alarmas" and "Límites" open the drawer; icon-only at 1280) and, while open, the "Alertas detalladas" drawer (380 px, non-modal, one of the console drawers): the validation alerts, the session alarm history and the alarm limits panel (only when the source offers limits). JulyMechanicsAlerts is the bottom of the right column: region "Estado de la mecánica" with Cst = Vte / (Pplat − PEEP) and Cdin = Vte / (Ppico − PEEP), both marked "derivada", then "Alertas (n)" and "Ver alertas detalladas" / "Ocultar alertas". The validation alerts come only from sourced data, never from clinical rules without a source (D23): console metrics outside their normal range (config defaults < console props < adapter ranges), confirmed changes the source rejected or has not applied yet, and the unconfirmed edits of the pending store. Each zone reads only its slices (compared by content), so new snapshots re-render them only when what they show changes. v0.1 (Bloque 5, C9): first version. v0.2 (Ajustes A, A1): the "cambios pendientes sin confirmar" alert only in confirm mode (`pendingAlert`); the automatic application has nothing to confirm. v0.3 (Bloque A): with a host `renderAlarmHelp`, every alarm of the bar and every onset of the drawer history is a button "¿Cómo estabilizar? <alarma>" that opens the "¿Cómo estabilizar?" drawer (380 px, one of the console drawers, so it closes the others) with the host help of that alarm; another alarm while it is open replaces its content (remounted per alarm). Depends on React, MUI icons, the console stores, config, format helpers, the alarms bar, the alarm limits panel, the console drawers and the July alerts styles.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,8 @@
 
 import ReportProblemOutlinedIcon from "@mui/icons-material/ReportProblemOutlined";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { memo, useCallback, useId, useMemo } from "react";
+import { memo, useCallback, useId, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_METRICS } from "./config/console.config";
 import type { ConsoleMetricId, NormalRange, ValueDefinition } from "./config/console.config";
@@ -29,7 +30,7 @@ import { sameData, useStoreSelector } from "./console-store";
 import type { ConsoleAdapterStore } from "./console-store";
 import type { AlarmBeeperFactory, ConsoleClock } from "./use-console-alarms";
 import { metricNumber } from "./ventilator-console.entity";
-import type { VentilatorConsoleAdapter } from "./ventilator-console.entity";
+import type { ConsoleAlarmHelpTarget, VentilatorConsoleAdapter } from "./ventilator-console.entity";
 import styles from "../UI/july-alerts.module.css";
 
 // TODO(i18n): move to an i18next namespace once src/i18n is in scope.
@@ -50,10 +51,18 @@ export const JULY_ALERTS_COPY = {
   rejected: (label: string, message: string | undefined) => `${label}: el equipo rechazó el cambio${message ? ` — ${message}` : ""}`,
   inFlight: (label: string) => `${label}: cambio enviado, esperando que la fuente lo aplique`,
   pending: (count: number) => (count === 1 ? "1 cambio pendiente sin confirmar" : `${count} cambios pendientes sin confirmar`),
+  helpTitle: "¿Cómo estabilizar?",
+  helpClose: "Cerrar ¿Cómo estabilizar?",
 } as const;
 
 /** Key of the details drawer among the console drawers. */
 const ALERTS_DRAWER_KEY = "alerts";
+
+/** Key of the "¿Cómo estabilizar?" drawer among the console drawers. */
+const ALARM_HELP_DRAWER_KEY = "alarm-help";
+
+/** v0.3: the host help of one alarm (rules and AI suggestion), rendered inside the "¿Cómo estabilizar?" drawer. */
+export type AlarmHelpRenderer = (target: ConsoleAlarmHelpTarget) => ReactNode;
 
 type ValidationAlert = { id: string, tone: "warning" | "error" | "info", text: string };
 
@@ -156,6 +165,8 @@ type JulyAlertsZoneProps = {
 };
 
 type JulyAlarmsZoneProps = JulyAlertsZoneProps & {
+  /** v0.3: makes the alarms buttons that open their "¿Cómo estabilizar?" help. */
+  renderAlarmHelp?: AlarmHelpRenderer | undefined
   readOnly: boolean
   clock: ConsoleClock | undefined
   beeperFactory: AlarmBeeperFactory | undefined
@@ -179,42 +190,60 @@ function ValidationList({ alerts }: { alerts: readonly ValidationAlert[] }) {
 }
 
 /** The July alarms bar and, while open, the "Alertas detalladas" drawer (it owns the session alarm history). */
-export const JulyAlarmsZone = memo(function JulyAlarmsZone({ store, pending, metricRanges, drawerId, pendingAlert, readOnly, clock, beeperFactory }: JulyAlarmsZoneProps) {
+export const JulyAlarmsZone = memo(function JulyAlarmsZone({ store, pending, metricRanges, drawerId, pendingAlert, readOnly, clock, beeperFactory, renderAlarmHelp }: JulyAlarmsZoneProps) {
   const alarms = useStoreSelector(store, selectAlarms);
   const sourceHistory = useStoreSelector(store, selectAlarmHistory);
   const limits = useStoreSelector(store, selectAlarmLimits);
   const onLimitsChange = useStoreSelector(store, selectOnAlarmLimitsChange);
   const { open, toggle, close } = useConsoleDrawer(ALERTS_DRAWER_KEY);
+  const help = useConsoleDrawer(ALARM_HELP_DRAWER_KEY);
+  const [helpTarget, setHelpTarget] = useState<ConsoleAlarmHelpTarget | null>(null);
+  const helpId = useId();
   const historyId = useId();
   const validationId = useId();
+  const { setOpen: setHelpOpen } = help;
+  const onAlarmHelp = useCallback((target: ConsoleAlarmHelpTarget) => {
+    setHelpTarget(target);
+    setHelpOpen(true);
+  }, [setHelpOpen]);
+  const helpHandler = renderAlarmHelp ? onAlarmHelp : undefined;
 
   return (
-    <AlarmsBar
-      alarms={alarms}
-      history={sourceHistory}
-      limits={limits}
-      onLimitsChange={onLimitsChange}
-      readOnly={readOnly}
-      clock={clock}
-      beeperFactory={beeperFactory}
-      variant="july"
-      onOpenDetails={toggle}
-      detailsOpen={open}
-      detailsId={drawerId}
-      renderDetails={(events) => (open ? (
-        <ConsoleDrawer id={drawerId} title={JULY_ALERTS_COPY.drawerTitle} closeLabel={JULY_ALERTS_COPY.hide} onClose={() => close()}>
-          <section className={cx(styles.section)} aria-labelledby={validationId}>
-            <h3 id={validationId} className={cx(styles.heading)}>{JULY_ALERTS_COPY.validation}</h3>
-            <DrawerValidation store={store} pending={pending} metricRanges={metricRanges} pendingAlert={pendingAlert} />
-          </section>
-          <section className={cx(styles.section)} aria-labelledby={historyId}>
-            <h3 id={historyId} className={cx(styles.heading)}>{`${ALARMS_COPY.history} (${events.length})`}</h3>
-            <AlarmHistoryList events={events} />
-          </section>
-          {limits && limits.length > 0 ? <AlarmLimitsPanel limits={limits} onChange={onLimitsChange} readOnly={readOnly} /> : null}
+    <>
+      <AlarmsBar
+        alarms={alarms}
+        history={sourceHistory}
+        limits={limits}
+        onLimitsChange={onLimitsChange}
+        readOnly={readOnly}
+        clock={clock}
+        beeperFactory={beeperFactory}
+        variant="july"
+        onOpenDetails={toggle}
+        detailsOpen={open}
+        detailsId={drawerId}
+        onAlarmHelp={helpHandler}
+        renderDetails={(events) => (open ? (
+          <ConsoleDrawer id={drawerId} title={JULY_ALERTS_COPY.drawerTitle} closeLabel={JULY_ALERTS_COPY.hide} onClose={() => close()}>
+            <section className={cx(styles.section)} aria-labelledby={validationId}>
+              <h3 id={validationId} className={cx(styles.heading)}>{JULY_ALERTS_COPY.validation}</h3>
+              <DrawerValidation store={store} pending={pending} metricRanges={metricRanges} pendingAlert={pendingAlert} />
+            </section>
+            <section className={cx(styles.section)} aria-labelledby={historyId}>
+              <h3 id={historyId} className={cx(styles.heading)}>{`${ALARMS_COPY.history} (${events.length})`}</h3>
+              <AlarmHistoryList events={events} onAlarmHelp={helpHandler} />
+            </section>
+            {limits && limits.length > 0 ? <AlarmLimitsPanel limits={limits} onChange={onLimitsChange} readOnly={readOnly} /> : null}
+          </ConsoleDrawer>
+        ) : null)}
+      />
+      {renderAlarmHelp && help.open && helpTarget ? (
+        <ConsoleDrawer id={helpId} title={JULY_ALERTS_COPY.helpTitle} closeLabel={JULY_ALERTS_COPY.helpClose} onClose={() => help.close()}>
+          {/* Keyed per alarm: another alarm starts its own help (and aborts the previous request). */}
+          <div key={helpTarget.code} className={cx(styles.section)}>{renderAlarmHelp(helpTarget)}</div>
         </ConsoleDrawer>
-      ) : null)}
-    />
+      ) : null}
+    </>
   );
 });
 

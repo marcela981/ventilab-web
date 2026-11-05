@@ -15,7 +15,8 @@
 *   evaluated the whole console).
 *   v1.3 (Bloque A, engine 2.0.0): Spanish labels of the patient alarms (low SpO₂ and MAP, tachycardia, bradycardia,
 *   cardiac arrest) and the heart rate vital (`hr`, from `hemodynamics.heartRateBpm`; absent without patient evolution).
-* Versión: 1.3
+*   v1.4 (Bloque A): every console alarm carries its short `label` (the "¿Cómo estabilizar?" help names it).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -188,6 +189,7 @@ export function toConsoleAlarms(alarms: readonly Alarm[], simTimeMs: number, pre
     type: alarm.code,
     priority: priorityOf(alarm),
     message: alarmMessage(alarm),
+    label: ALARM_LABELS[alarm.code] ?? alarm.code,
     since: since.get(alarm.code) ?? simTimeMs,
   }));
 }

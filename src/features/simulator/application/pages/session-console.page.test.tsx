@@ -32,7 +32,8 @@
 *   click is one PARAM_CHANGE at once, and Escape drops a slider change still debouncing (no event).
 *   v2.2 (Bloque A): sessions, replays and worker ready messages use the bundled ENGINE_VERSION (2.0.0); a deceased
 *   patient shows "Paciente fallecido" in the status area and ends the session on its own (no confirmation, one
-*   POST /end, then the result); EXAM leaves the live objectives out of the case drawer.
+*   POST /end, then the result); EXAM leaves the live objectives out of the case drawer; an alarm opens
+*   "¿Cómo estabilizar?", and in an EXAM without a known assistance policy it shows only the alarm (no request).
 * Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -41,7 +42,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { act, configure, fireEvent, renderHook, screen, waitFor } from "@testing-library/react";
+import { act, configure, fireEvent, renderHook, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -440,6 +441,25 @@ describe("SessionConsolePage", () => {
 
     expect(screen.getByText("Velocidad fija ×2 (examen, sin pausa)")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Pausar" })).not.toBeInTheDocument();
+  });
+
+  it("an EXAM alarm without a known assistance policy opens its help without any request (Bloque A)", async() => {
+    const { worker } = renderPage({ record: { mode: "EXAM" } });
+
+    await startRunning(worker);
+
+    const { final } = replay(buildEngineCase(), 42, [], 2000);
+
+    act(() => worker.emit({
+      type: "batch",
+      batch: buildBatch({ simTimeMs: 5000, status: "running", metrics: final, alarms: [{ code: "HIGH_PRESSURE", severity: "HIGH", value: 42, threshold: 40 }] }),
+    }));
+    fireEvent.click(await screen.findByRole("button", { name: "¿Cómo estabilizar? Presión alta" }));
+
+    const help = await screen.findByRole("complementary", { name: "¿Cómo estabilizar?" });
+
+    expect(await within(help).findByRole("note")).toHaveTextContent("Ayuda no disponible durante el examen");
+    expect(within(help).getByText("Presión alta: 42 (límite 40)")).toBeInTheDocument();
   });
 
   it("EXAM leaves the live objectives out of the case drawer (Bloque A)", async() => {

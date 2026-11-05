@@ -7,7 +7,8 @@
 *   objectives and the PBW (Devine) patient summary. v1.1: an event confirmed between batches by a real sim loop is
 *   enqueued with exactly the effective time the loop used; a rejected event is never enqueued. Depends on vitest,
 *   the engine replay, the sim loop and the adapter. v1.2 (Bloque A): with patient evolution (engine 2.0.0) the vitals
-*   carry the heart rate and the patient alarms get their Spanish labels; without it there is no FC.
+*   carry the heart rate and the patient alarms get their Spanish labels; without it there is no FC. Every console
+*   alarm carries its short label (the "¿Cómo estabilizar?" help names it).
 * Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -106,7 +107,7 @@ describe("worker output → console", () => {
     const medium: Alarm = { code: "AUTO_PEEP", severity: "MEDIUM", value: 6, threshold: 5 };
     const first = toConsoleAlarms([high], 1000);
 
-    expect(first).toEqual([{ id: "HIGH_PRESSURE", type: "HIGH_PRESSURE", priority: "high", message: "Presión alta: 42.3 (límite 40)", since: 1000 }]);
+    expect(first).toEqual([{ id: "HIGH_PRESSURE", type: "HIGH_PRESSURE", priority: "high", message: "Presión alta: 42.3 (límite 40)", since: 1000, label: "Presión alta" }]);
 
     const second = toConsoleAlarms([high, medium], 2000, first);
 

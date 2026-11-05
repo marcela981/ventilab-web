@@ -15,7 +15,9 @@
 *   v1.2 (W6, Bloque 4): the rating carries the SIMULATOR_ASSIST surface (thesis analytics by surface).
 *   v1.3 (Bloque 5, C6): a console drawer of 380 px that takes the focus when it opens; Escape inside the panel closes it (a dialog inside it closes
 *   first: MUI stops that Escape).
-* Versión: 1.3
+*   v1.4 (Bloque A): an answer whose `done.source` is DETERMINISTIC (no provider answered) carries the shared label
+*   "Respuesta automática (IA no disponible)" and is not rated (the ratings measure the language model).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,7 +35,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
   AI_ERROR_CODES,
+  AiFallbackLabel,
   COMPOSER_COPY,
+  isFallbackSource,
   isNearLimit,
   MessageBubble,
   MessageList,
@@ -83,7 +87,9 @@ function AnswerView({ turn }: { turn: AssistTurn }) {
         text={turn.answer}
         isStreaming={false}
         announce={false}
-        footer={<AiRatingWidget targetType={ASSIST_RATING_TARGET_TYPE} targetId={turn.aiHelpEventId} surface="SIMULATOR_ASSIST" />}
+        footer={isFallbackSource(turn.source)
+          ? <AiFallbackLabel />
+          : <AiRatingWidget targetType={ASSIST_RATING_TARGET_TYPE} targetId={turn.aiHelpEventId} surface="SIMULATOR_ASSIST" />}
       />
     </div>
   );

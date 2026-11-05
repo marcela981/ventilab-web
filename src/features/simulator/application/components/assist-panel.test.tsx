@@ -10,7 +10,8 @@
 *   v1.1 (review of bc8a596): a longer wait for the first streamed text (deltas commit per animation frame, which lags
 *   under full-suite load), the question given back after a failure before the stream, and host-kept answers listed.
 *   v1.2 (W6, Bloque 4): a rating carries the SIMULATOR_ASSIST surface.
-* Versión: 1.2
+*   v1.3 (Bloque A): a DETERMINISTIC answer shows the fallback label and no rating.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -142,6 +143,22 @@ describe("AI assist panel", () => {
     expect(within(panel).getByText("¿Te fue útil?")).toBeInTheDocument();
   });
 
+  it("labels a DETERMINISTIC answer as automatic and does not offer the rating (Bloque A)", async() => {
+    server.use(http.post(ASSIST_URL, () => sseResponse([
+      deltaFrame("Revisa la PEEP y la FiO2."),
+      doneFrame({ aiHelpEventId: "help-2", aiCallId: "call-2", source: "DETERMINISTIC" }),
+    ])));
+    renderLauncher();
+
+    const panel = await openPanel();
+
+    requestAssist();
+
+    expect(await within(panel).findByText("Respuesta automática (IA no disponible)")).toBeInTheDocument();
+    expect(await within(panel).findByText("Revisa la PEEP y la FiO2.")).toBeInTheDocument();
+    expect(within(panel).queryByText("¿Te fue útil?")).not.toBeInTheDocument();
+  });
+
   it("rates an answer with the SIM_ASSIST target and the SIMULATOR_ASSIST surface", async() => {
     const ratings: unknown[] = [];
 
@@ -187,7 +204,7 @@ describe("AI assist panel", () => {
     server.use(http.post(ASSIST_URL, () => {
       requests += 1;
 
-      return sseResponse([deltaFrame(`Respuesta ${requests}.`), doneFrame({ aiHelpEventId: `help-${requests}`, aiCallId: `call-${requests}`, source: "DETERMINISTIC" })]);
+      return sseResponse([deltaFrame(`Respuesta ${requests}.`), doneFrame({ aiHelpEventId: `help-${requests}`, aiCallId: `call-${requests}`, source: "LLM" })]);
     }));
     renderLauncher({ mode: "EXAM", policy: "ALLOWED_WITH_PENALTY" });
 

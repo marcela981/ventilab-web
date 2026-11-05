@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse
-* Descripción: Generic state of one streamed AI answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts and resolves with the outcome: done (the route's `done` metadata: aiCallId, messageId, optional sources and extra fields such as conversationId), error (ApiError: errors before the stream such as 404/429/503 with `streamStarted` false, an `event: error` frame or a connection lost mid-stream with `streamStarted` true) or aborted. Deltas are buffered and committed once per animation frame, so a fast stream re-renders per frame, not per token; the buffer is flushed on done, error and abort. `abort()` keeps the partial text and sets status aborted; later frames are ignored. A terminal frame (done or error) ends the read loop, so frames after it are ignored. Unmounting aborts the running stream. Status: idle | streaming | done | error | aborted. Calling `start` again (e.g. a retry after an error) resets text, error and done. Depends on react and @shared/api-client. v1.2 (A3 ai-chat): the aborted outcome carries `streamStarted` (true once any frame arrived, even a delta still buffered for the next frame), so callers know whether the backend stored the turn without waiting for a render. v1.3 (B5): the interrupted-stream message is the Spanish CLIENT_ERROR_MESSAGES.streamInterrupted. v1.4 (W7, Bloque 2): the early `start` frame of the AI tutor routes ({conversationId, messageId}, sent once the turn is stored) is kept as `announced` in the state and in the error and aborted outcomes, so a stopped or failed answer still knows its conversation and assistant message; it counts as a received frame (streamStarted).
-* Versión: 1.4
+* Descripción: Generic state of one streamed AI answer over the shared SSE helper (postEventStream). `start({path, body})` opens the stream (aborting any running one), accumulates the `delta` texts and resolves with the outcome: done (the route's `done` metadata: aiCallId, messageId, optional sources and extra fields such as conversationId), error (ApiError: errors before the stream such as 404/429/503 with `streamStarted` false, an `event: error` frame or a connection lost mid-stream with `streamStarted` true) or aborted. Deltas are buffered and committed once per animation frame, so a fast stream re-renders per frame, not per token; the buffer is flushed on done, error and abort. `abort()` keeps the partial text and sets status aborted; later frames are ignored. A terminal frame (done or error) ends the read loop, so frames after it are ignored. Unmounting aborts the running stream. Status: idle | streaming | done | error | aborted. Calling `start` again (e.g. a retry after an error) resets text, error and done. Depends on react and @shared/api-client. v1.2 (A3 ai-chat): the aborted outcome carries `streamStarted` (true once any frame arrived, even a delta still buffered for the next frame), so callers know whether the backend stored the turn without waiting for a render. v1.3 (B5): the interrupted-stream message is the Spanish CLIENT_ERROR_MESSAGES.streamInterrupted. v1.4 (W7, Bloque 2): the early `start` frame of the AI tutor routes ({conversationId, messageId}, sent once the turn is stored) is kept as `announced` in the state and in the error and aborted outcomes, so a stopped or failed answer still knows its conversation and assistant message; it counts as a received frame (streamStarted). v1.5 (Bloque A): the `rules` frame of the simulator alarm help (deterministic rules sent before the AI text) is kept as `rules` in the state (raw payload, checked by the caller); it counts as a received frame and survives an error after it.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,6 +41,8 @@ export type StreamingResponseState<TDone extends StreamDoneMetadata = DefaultStr
   error: ApiError | null
   // Conversation and assistant message announced by the `start` frame (AI tutor routes); null until it arrives.
   announced: TutorStreamStart | null
+  // Raw payload of the `rules` frame (simulator alarm help); null until it arrives.
+  rules: Readonly<Record<string, unknown>> | null
 };
 
 export type StreamingResponse<TDone extends StreamDoneMetadata = DefaultStreamDone> = StreamingResponseState<TDone> & {
@@ -65,7 +67,7 @@ function scheduleFrame(callback: () => void): () => void {
 }
 
 export function useStreamingResponse<TDone extends StreamDoneMetadata = DefaultStreamDone>(): StreamingResponse<TDone> {
-  const [state, setState] = useState<StreamingResponseState<TDone>>({ status: "idle", text: "", done: null, error: null, announced: null });
+  const [state, setState] = useState<StreamingResponseState<TDone>>({ status: "idle", text: "", done: null, error: null, announced: null, rules: null });
   // The controller of the running stream; null once it finished, was aborted or was replaced.
   const controllerRef = useRef<AbortController | null>(null);
   // Delta text received since the last commit, and the canceller of the scheduled commit.
@@ -119,7 +121,7 @@ export function useStreamingResponse<TDone extends StreamDoneMetadata = DefaultS
     const isCurrent = () => controllerRef.current === controller;
 
     controllerRef.current = controller;
-    setState({ status: "streaming", text: "", done: null, error: null, announced: null });
+    setState({ status: "streaming", text: "", done: null, error: null, announced: null, rules: null });
 
     let outcome: StreamingOutcome<TDone> | null = null;
     let streamStarted = false;
@@ -144,6 +146,10 @@ export function useStreamingResponse<TDone extends StreamDoneMetadata = DefaultS
 
           announced = started;
           setState((current) => ({ ...current, announced: started }));
+        } else if (event.type === "rules") {
+          const rules = event.data;
+
+          setState((current) => ({ ...current, rules }));
         } else if (event.type === "delta") {
           pendingRef.current += event.text;
           cancelFrameRef.current ??= scheduleFrame(commitFrame);
@@ -189,7 +195,7 @@ export function useStreamingResponse<TDone extends StreamDoneMetadata = DefaultS
     controllerRef.current?.abort();
     controllerRef.current = null;
     takePending();
-    setState({ status: "idle", text: "", done: null, error: null, announced: null });
+    setState({ status: "idle", text: "", done: null, error: null, announced: null, rules: null });
   }, [takePending]);
 
   useEffect(() => () => {

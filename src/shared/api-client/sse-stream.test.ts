@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: SSE stream helper tests
-* Descripción: Tests of the text/event-stream parser (frames split mid-line and mid-frame, CRLF, comments, multi-line data) and of postEventStream/runEventStream against msw: delta/done/error events, bearer token, single refresh + retry on 401, abort, truncated streams and the mapping of 429 (Retry-After header or body), 503 and 404 to ApiError. Depends on vitest, msw and the api-client modules. v1.1 (B5): the stream request sends Accept-Language: es. v1.2 (W7, Bloque 2): the early `start` frame is yielded as a non-terminal event and dispatched to onStart; a malformed start frame is ignored.
-* Versión: 1.2
+* Descripción: Tests of the text/event-stream parser (frames split mid-line and mid-frame, CRLF, comments, multi-line data) and of postEventStream/runEventStream against msw: delta/done/error events, bearer token, single refresh + retry on 401, abort, truncated streams and the mapping of 429 (Retry-After header or body), 503 and 404 to ApiError. Depends on vitest, msw and the api-client modules. v1.1 (B5): the stream request sends Accept-Language: es. v1.2 (W7, Bloque 2): the early `start` frame is yielded as a non-terminal event and dispatched to onStart; a malformed start frame is ignored. v1.3 (Bloque A): the `rules` event of the alarm help.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -170,6 +170,27 @@ describe("postEventStream", () => {
 
     expect(events).toEqual([
       { type: "start", data: { conversationId: "conv-1", messageId: "msg-1" } },
+      { type: "delta", text: "Hola" },
+      { type: "done", data: DONE },
+    ]);
+  });
+
+  it("yields the rules event of the alarm help without ending the stream and ignores a malformed one (Bloque A)", async() => {
+    const rules = { alarmCode: "LOW_SPO2", rules: [{ id: "r1", text: "Sube la FiO2.", reference: "ARDSNet 2000" }] };
+
+    server.use(
+      http.post(url(STREAM_PATH), () => sseResponse([
+        "event: rules\ndata: [1,2]\n\n",
+        `event: rules\ndata: ${JSON.stringify(rules)}\n\n`,
+        "event: delta\ndata: {\"text\":\"Hola\"}\n\n",
+        `event: done\ndata: ${JSON.stringify(DONE)}\n\n`,
+      ])),
+    );
+
+    const events = await collect(postEventStream(STREAM_PATH, {}));
+
+    expect(events).toEqual([
+      { type: "rules", data: rules },
       { type: "delta", text: "Hola" },
       { type: "done", data: DONE },
     ]);

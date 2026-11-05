@@ -21,7 +21,10 @@
 *   of the curves toolbar; "Comandos recientes" collapsed under the curves; the user value cards preference. The
 *   host top row (`header`) shows instead while there is no reservation or the console is loading. Only types are
 *   imported from the console (lab-live lazy boundary).
-* Versión: 0.2
+*   v0.3 (Bloque A): every alarm of the real console opens "¿Cómo estabilizar?" (the lazy simulator alarm help: the
+*   deterministic rules and the AI suggestion of POST /api/simulation/real/alarm-help with the monitor state of the
+*   live console). The AI only suggests; nothing it returns reaches the ventilator commands.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +32,8 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
+import { AlarmHelpPanel, realAlarmHelpRequest } from "@features/simulator/ai-help.entry";
+import type { RealMonitorStateDTO } from "@features/simulator/ai-help.entry";
 import { OperatorControlBar } from "@features/ventilator-lab/connection.entry";
 import {
   CONTROL_COPY,
@@ -49,7 +54,7 @@ import type { ServerClock } from "@features/ventilator-lab/live.entry";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
-import type { MonitorCardsController } from "@shared/ventilator-console";
+import type { ConsoleAlarmHelpTarget, MonitorCardsController } from "@shared/ventilator-console";
 import type { LabConnectionValue } from "../../../entities/lab-connection.entity";
 import { useLabConnection } from "../../lab-connection-provider";
 import styles from "../../../../UI/monitoring/real-monitor.module.css";
@@ -164,6 +169,13 @@ function ReservationStatus({ reservation }: { reservation: LabConnectionValue["r
   );
 }
 
+/** The real monitor always offers the help (no exam policy applies to the physical ventilator). */
+const REAL_ALARM_HELP = { status: "available" } as const;
+
+function renderRealAlarmHelp(target: ConsoleAlarmHelpTarget, getMonitorState: () => RealMonitorStateDTO) {
+  return <AlarmHelpPanel target={target} availability={REAL_ALARM_HELP} buildRequest={() => realAlarmHelpRequest(target.code, getMonitorState())} />;
+}
+
 export function RealMonitor({ header = null, leftTop = null, statusChip = null, cards }: RealMonitorProps = {}) {
   const connection = useLabConnection();
   const { reservation, socketOnline, isOperator, canControl } = connection;
@@ -246,6 +258,7 @@ export function RealMonitor({ header = null, leftTop = null, statusChip = null, 
         curvesToolbarStart={statusChip}
         cards={cards}
         placeholder={<>{header}{strip}</>}
+        renderAlarmHelp={renderRealAlarmHelp}
         {...(readOnlyReason === undefined ? {} : { readOnlyReason })}
       />
     </div>

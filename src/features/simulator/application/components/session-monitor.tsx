@@ -22,7 +22,9 @@
 *   (D28).
 *   v0.3 (Bloque A): the patient status area also shows the engine patient status and severity ("Inestable ·
 *   gravedad 45 %", "Paciente fallecido") from the session store (re-rendered only when the text changes, no extra
-*   sampling), and in EXAM the case drawer leaves out the live objectives (they reveal the correction).
+*   sampling), and in EXAM the case drawer leaves out the live objectives (they reveal the correction). Every alarm of
+*   the console opens "¿Cómo estabilizar?" (rules + AI suggestion of POST /simulation/sessions/{id}/alarm-help) under
+*   the assistance policy of the session (EXAM DISABLED or unknown: only the alarm description, no request).
 * Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -39,12 +41,15 @@ import { useApiQuery } from "@shared/api-client/use-api-query";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
 import { VentilatorConsole } from "@shared/ventilator-console";
-import type { MonitorCardsController } from "@shared/ventilator-console";
+import type { ConsoleAlarmHelpTarget, MonitorCardsController } from "@shared/ventilator-console";
+import { sessionAlarmHelpRequest } from "../../api/services/simulation-alarm-help.service";
 import { CLINICAL_CASE_PATH } from "../../api/services/clinical-cases.service";
 import { EVENT_PENDING_WARNING_COUNT } from "../config/sim-console.config";
 import { DEADLINE_WARNING_MS } from "../config/sim-exam.config";
 import { buildSessionResultUrl, SIMULATOR_URL } from "../config/simulator.routes";
 import type { SimulationMode } from "../config/simulator.config";
+import { alarmHelpAvailability } from "../entities/sim-alarm-help.entity";
+import { resolveAssistPolicy } from "../entities/sim-assist.entity";
 import type { AssistancePolicyValue } from "../entities/sim-assist.entity";
 import { formatCountdown } from "../entities/sim-exam.entity";
 import { patientConditionText } from "../entities/sim-debrief.entity";
@@ -53,6 +58,7 @@ import type { SessionBoot } from "../entities/sim-session.entity";
 import { useExamDeadline } from "../hooks/use-exam-deadline";
 import { useSimSessionSlice } from "../hooks/use-sim-session";
 import type { SimSessionSnapshot, SimSessionStore } from "../hooks/use-sim-session";
+import { AlarmHelpPanel } from "./lazy-alarm-help-panel";
 import { AssistLauncher } from "./assist-launcher";
 import { DivergenceDialog } from "./divergence-dialog";
 import { LiveCasePanel, SessionAssistSlot, SessionTimeControls } from "./live-session-widgets";
@@ -235,6 +241,15 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
       />
     );
   }, [assistActive, assistHistory, onAssistAnswered, policy, record.mode, renderAssist, renderHostAssist, sessionId, store]);
+  // "¿Cómo estabilizar?": the alarm help follows the same assistance policy as "Asesoría IA" (A-9).
+  const alarmHelp = useMemo(() => alarmHelpAvailability(resolveAssistPolicy(record.mode, policy)), [policy, record.mode]);
+  const renderAlarmHelp = useCallback((target: ConsoleAlarmHelpTarget) => (
+    <AlarmHelpPanel
+      target={target}
+      availability={alarmHelp}
+      buildRequest={alarmHelp.status === "unavailable" ? null : () => sessionAlarmHelpRequest(sessionId, target.code)}
+    />
+  ), [alarmHelp, sessionId]);
   const left = useMemo(() => (
     <>
       {leftTop}
@@ -313,6 +328,7 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
             assistSlot={assist}
             curvesToolbarStart={curvesToolbarStart}
             cards={cards}
+            renderAlarmHelp={renderAlarmHelp}
             {...(exam ? { cardsLockedReason: SESSION_PAGE_COPY.cardsLocked } : {})}
             {...applicability}
           />
