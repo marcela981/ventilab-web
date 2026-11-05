@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationGradingPage tests
-* Descripción: Renders the unified grading screen with a mocked next/router and backend (msw): the Revisar tab lists every attempt with the July header "Total · Entregadas · Calificadas", the status chips write `?status=`, choosing an attempt writes `?attempt=` with a shallow replace and `?attempt=` opens the review pane; "Reiniciar intento" requires a reason, posts it and handles 409 evaluation.assignment_not_active (window and link to the builder section) and 409 evaluation.attempt_in_progress; the tabs switch with `?tab=` and the back link opens the Calificar tab. Depends on vitest, Testing Library, msw and the grading test helpers. v1.1 (ajustes C1): the attempts list shows the release state of each graded attempt ("Sin liberar", "Nota liberada", "Nota y respuestas liberadas").
-* Versión: 1.1
+* Descripción: Renders the unified grading screen with a mocked next/router and backend (msw): the Revisar tab lists every attempt with the July header "Total · Entregadas · Calificadas", the status chips write `?status=`, choosing an attempt writes `?attempt=` with a shallow replace and `?attempt=` opens the review pane; "Reiniciar intento" requires a reason, posts it and handles 409 evaluation.assignment_not_active (window and link to the builder section) and 409 evaluation.attempt_in_progress; the tabs switch with `?tab=` and the back link opens the Calificar tab. Depends on vitest, Testing Library, msw and the grading test helpers. v1.1 (ajustes C1): the attempts list shows the release state of each graded attempt ("Sin liberar", "Nota liberada", "Nota y respuestas liberadas"). v1.2 (ajustes C1): the cold first render waits up to 18 s (the lazy grading chunks under a loaded parallel run).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -112,7 +112,7 @@ describe("EvaluationGradingPage — Revisar", () => {
 
     expect(screen.getByRole("tab", { name: "Revisar" })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("link", { name: "Volver a Calificar" })).toHaveAttribute("href", "/evaluations?tab=calificar");
-    expect(await screen.findByText("Total 10 · Entregadas 9 · Calificadas 4", {}, { timeout: 10_000 })).toBeInTheDocument();
+    expect(await screen.findByText("Total 10 · Entregadas 9 · Calificadas 4", {}, { timeout: 18_000 })).toBeInTheDocument();
     expect(listQueries[0]?.get("evaluationId")).toBe("ev-1");
 
     const list = screen.getByRole("list", { name: "Intentos de la evaluación" });
@@ -140,7 +140,7 @@ describe("EvaluationGradingPage — Revisar", () => {
     router.query = { evaluationId: "ev-1", attempt: "a1", status: "GRADED" };
     renderPage();
 
-    expect(await screen.findByRole("heading", { level: 2, name: "Estudiante a1 · Intento #2" }, { timeout: 10_000 })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 2, name: "Estudiante a1 · Intento #2" }, { timeout: 18_000 })).toBeInTheDocument();
     await waitFor(() => expect(listQueries.some((query) => query.get("status") === "GRADED")).toBe(true));
     expect(screen.getByRole("button", { name: "Calificado" })).toHaveAttribute("aria-pressed", "true");
 
