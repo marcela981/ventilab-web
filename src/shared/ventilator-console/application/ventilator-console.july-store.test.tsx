@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole July layout render isolation tests
-* Descripción: With a store adapter, the July layout keeps the zones isolated: a pending edit (a click on a control) re-renders neither the curves zone nor the value cards, and a new metrics snapshot does not re-render the shell, so neither the curves nor the cards host are re-rendered from above (the real cards subscribe to the metrics on their own). The curves zone and the value cards are mocked as render counters. v0.1 (Bloque 5, C3): first version. Depends on Vitest, Testing Library and the console.
-* Versión: 0.1
+* Descripción: With a store adapter, the July layout keeps the zones isolated: v0.2 (Ajustes A, A1): the edit applies on its own through adapter.onConfirm. An edit (a click on a control) re-renders neither the curves zone nor the value cards, and a new metrics snapshot does not re-render the shell, so neither the curves nor the cards host are re-rendered from above (the real cards subscribe to the metrics on their own). The curves zone and the value cards are mocked as render counters. v0.1 (Bloque 5, C3): first version. Depends on Vitest, Testing Library and the console.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,7 +46,7 @@ function adapter(peakPressure: number): VentilatorConsoleAdapter {
     alarms: [],
     permissions: { canControl: true },
     limits: { peep: { min: 0, max: 20, step: 1, unit: "cmH2O" }, fio2: { min: 21, max: 100, step: 1, unit: "%" } },
-    onConfirm: () => undefined,
+    onConfirm: confirmed,
   };
 }
 
@@ -54,6 +54,8 @@ beforeEach(() => {
   counts.curves = 0;
   counts.cards = 0;
 });
+
+const confirmed = vi.fn();
 
 describe("VentilatorConsole layout=\"july\" with a store adapter", () => {
   it("re-renders neither the curves nor the cards host on an edit or on new metrics", () => {
@@ -65,7 +67,8 @@ describe("VentilatorConsole layout=\"july\" with a store adapter", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
-    expect(screen.getByText("1 cambio pendiente")).toBeInTheDocument();
+    // Applied on its own, through the adapter, each time (Ajustes A).
+    expect(confirmed).toHaveBeenCalledTimes(2);
     expect(counts).toEqual(mounted);
 
     act(() => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole July layout tests
-* Descripción: The opt-in July layout of the console: the three regions (Valores, Curvas, Controles) in DOM order with the left column order of the E2E contract (logos, leftTop slot, Confirmar, Cancelar, pending status, value cards), the input row above the alarms and the curves, the right column (mode head, toggle with the assist slot, timing, rate), the value cards (15 metrics + the provided vitals, none without a patient monitor), the slots (leftTop, assistSlot, curvesToolbarStart, curvesFooter, rightFooter, header), Enter / Escape on the console root, the Real summary (`confirmSummary`), `controlsSlot={null}` (no July controls), the zoom buttons over the time windows, the classic layout untouched by default. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C9): the rightFooter probe button has its own name (the console now renders "Ver alertas detalladas" itself). Depends on Vitest, Testing Library and the console.
-* Versión: 0.2
+* Descripción: The opt-in July layout of the console: the three regions (Valores, Curvas, Controles) in DOM order with the left column order of the E2E contract (logos, leftTop slot, Confirmar, Cancelar, pending status, value cards), the input row above the alarms and the curves, the right column (mode head, toggle with the assist slot, timing, rate), the value cards (15 metrics + the provided vitals, none without a patient monitor), the slots (leftTop, assistSlot, curvesToolbarStart, curvesFooter, rightFooter, header), Enter / Escape on the console root, the Real summary (`confirmSummary`), `controlsSlot={null}` (no July controls), the zoom buttons over the time windows, the classic layout untouched by default. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C9): the rightFooter probe button has its own name (the console now renders "Ver alertas detalladas" itself). v0.3 (Ajustes A, A1): the July default applies on its own: no Confirmar, Cancelar, counter nor hint in the left column; edits go through adapter.onConfirm at once (sliders after 300 ms), Enter applies and Escape drops what debounces, per-source delays, a console turned read-only drops what still debounced; Enter / Escape with Confirmar and the Real summary run in `applyMode="confirm"`. Depends on Vitest, Testing Library and the console.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -9,7 +9,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CONSOLE_METRIC_IDS, CYCLE_EXTRA_METRIC_IDS } from "./config/console.config";
 import { stepWindow } from "./curves-zone";
@@ -46,6 +46,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 /** Elements in document order. */
@@ -66,11 +67,13 @@ describe("VentilatorConsole layout=\"july\"", () => {
       within(values).getByRole("img", { name: "VentyLab" }),
       within(values).getByRole("img", { name: "Univalle" }),
       within(values).getByRole("group", { name: "Modo del monitor" }),
-      within(values).getByRole("button", { name: "Confirmar" }),
-      within(values).getByRole("button", { name: "Cancelar" }),
-      within(values).getByText("Sin cambios pendientes"),
       within(values).getByRole("list", { name: "Valores del monitor" }),
     )).toBe(true);
+    // Automatic application (Ajustes A): nothing to confirm, cancel or count.
+    expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cancelar" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/cambios? pendientes?/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Esc: cancelar · Enter: confirmar")).not.toBeInTheDocument();
     expect(inOrder(
       screen.getByRole("spinbutton", { name: "Fracción inspirada de oxígeno" }),
       screen.getByRole("spinbutton", { name: "Volumen corriente" }),
@@ -132,10 +135,57 @@ describe("VentilatorConsole layout=\"july\"", () => {
     expect(within(controls).getByRole("button", { name: "Pie de la columna" })).toBeInTheDocument();
   });
 
-  it("confirms with Enter and cancels with Escape on the console", () => {
+  it("applies each edit through adapter.onConfirm, sliders after 300 ms, Enter now and Escape drops the wait", () => {
+    vi.useFakeTimers();
     const adapter = makeAdapter();
 
     render(<VentilatorConsole adapter={adapter} layout="july" />);
+    const peep = screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
+    const rate = screen.getByRole("slider", { name: "Frecuencia respiratoria" });
+
+    fireEvent.keyDown(peep, { key: "ArrowUp" });
+    expect(adapter.onConfirm).toHaveBeenLastCalledWith({ mode: null, changes: [{ parameter: "peep", value: 6 }] });
+
+    fireEvent.change(rate, { target: { value: "18" } });
+    expect(adapter.onConfirm).toHaveBeenCalledTimes(1);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(adapter.onConfirm).toHaveBeenLastCalledWith({ mode: null, changes: [{ parameter: "respiratoryRate", value: 18 }] });
+
+    fireEvent.change(rate, { target: { value: "20" } });
+    fireEvent.keyDown(rate, { key: "Enter" });
+    expect(adapter.onConfirm).toHaveBeenLastCalledWith({ mode: null, changes: [{ parameter: "respiratoryRate", value: 20 }] });
+
+    fireEvent.change(rate, { target: { value: "22" } });
+    fireEvent.keyDown(rate, { key: "Escape" });
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(adapter.onCancel).toHaveBeenCalledTimes(1);
+    expect(adapter.onConfirm).toHaveBeenCalledTimes(3);
+    expect(rate).toHaveValue("15");
+  });
+
+  it("takes the delays per source and drops what debounces when the console turns read-only", () => {
+    vi.useFakeTimers();
+    const adapter = makeAdapter();
+    const { rerender } = render(<VentilatorConsole adapter={adapter} layout="july" autoApplyDelays={{ discrete: 500 }} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    expect(adapter.onConfirm).not.toHaveBeenCalled();
+    rerender(<VentilatorConsole adapter={{ ...adapter, permissions: { canControl: false } }} layout="july" autoApplyDelays={{ discrete: 500 }} />);
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+    expect(adapter.onConfirm).not.toHaveBeenCalled();
+    expect(screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" })).toHaveAttribute("aria-valuenow", "5");
+  });
+
+  it("confirms with Enter and cancels with Escape on the console (confirm mode)", () => {
+    const adapter = makeAdapter();
+
+    render(<VentilatorConsole adapter={adapter} layout="july" applyMode="confirm" />);
     const peep = screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
 
     fireEvent.keyDown(peep, { key: "ArrowUp" });
@@ -149,10 +199,10 @@ describe("VentilatorConsole layout=\"july\"", () => {
     expect(screen.getByText("Sin cambios pendientes")).toBeInTheDocument();
   });
 
-  it("asks for the summary first with confirmSummary", async () => {
+  it("asks for the summary first with confirmSummary (confirm mode)", async () => {
     const adapter = makeAdapter();
 
-    render(<VentilatorConsole adapter={adapter} layout="july" confirmSummary />);
+    render(<VentilatorConsole adapter={adapter} layout="july" applyMode="confirm" confirmSummary />);
     fireEvent.keyDown(screen.getByRole("spinbutton", { name: "Fracción inspirada de oxígeno" }), { key: "ArrowUp" });
     fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
 
@@ -165,7 +215,7 @@ describe("VentilatorConsole layout=\"july\"", () => {
   });
 
   it("drops the July controls with controlsSlot={null} and stays read-only without control", () => {
-    const { unmount } = render(<VentilatorConsole adapter={makeAdapter()} layout="july" controlsSlot={null} />);
+    const { unmount } = render(<VentilatorConsole adapter={makeAdapter()} layout="july" applyMode="confirm" controlsSlot={null} />);
 
     expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "Modo ventilatorio" })).not.toBeInTheDocument();

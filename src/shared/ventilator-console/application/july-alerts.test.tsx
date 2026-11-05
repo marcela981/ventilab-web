@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July alerts tests
 * Descripción: The alerts of the July console (C9): "Estado de la mecánica" with the derived Cst / Cdin, "Alertas (n)" counting only sourced validation alerts (metrics outside their range, unconfirmed edits, rejected changes), "Ver alertas detalladas" and "Historial de alarmas" opening the same 380 px "Alertas detalladas" drawer (validation, alarm history, limits only when the source has them), Escape closing it and giving the focus back to the button that opened it, and the icon-only alarm actions keeping their accessible names. v0.1 (Bloque 5, C9): first version. Depends on Vitest, Testing Library and the console.
-* Versión: 0.1
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,6 +58,14 @@ describe("July alerts", () => {
     expect(within(mechanics).getAllByText("derivada")).toHaveLength(2);
     // Ppico 40 > 35 is the only out-of-range metric.
     expect(screen.getByText("Alertas (1)")).toBeInTheDocument();
+
+    // The automatic application leaves nothing unconfirmed to warn about.
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    expect(screen.getByText("Alertas (1)")).toBeInTheDocument();
+  });
+
+  it("counts the unconfirmed edits as a validation alert only in confirm mode", () => {
+    render(<VentilatorConsole adapter={makeAdapter()} layout="july" applyMode="confirm" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
     expect(screen.getByText("Alertas (2)")).toBeInTheDocument();

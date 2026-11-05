@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console parameter control
-* Descripción: One adjustable ventilator parameter of the console: a spinbutton with the value and unit, the +/- stepper, the wheel over the selected value (native non-passive listener, a zero vertical delta is ignored) and the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max), the "Pendiente" and in-flight tags, the applied value while pending and the limit range. A parameter without a reported value shows "—" and cannot be adjusted; without a valid step grid +/-, the wheel and the step keys are disabled; a change being sent or awaiting the source blocks re-editing. Emits adjustments only (the owner decides what they do). v1.0 (Bloque 5, C2): extracted unchanged from ConsoleControls so the July layout reuses it; optional `element` (`li` in the classic list, `div` elsewhere), `layout="july"` (compact field styles), a visible `label` override (the accessible name stays the definition description) and `children` after the range (e.g. the computed Te). Every interactive element carries `data-console-control`, which the July console keyboard handler filters on. Depends on React, MUI icons, the controls reducer helpers and the controls styles.
-* Versión: 1.0
+* Descripción: One adjustable ventilator parameter of the console: a spinbutton with the value and unit, the +/- stepper, the wheel over the selected value (native non-passive listener, a zero vertical delta is ignored) and the keyboard (arrows = step, PageUp/PageDown = 10 steps, Home/End = min/max), the "Pendiente" and in-flight tags, the applied value while pending and the limit range. A parameter without a reported value shows "—" and cannot be adjusted; without a valid step grid +/-, the wheel and the step keys are disabled; a change being sent or awaiting the source blocks re-editing. Emits adjustments only (the owner decides what they do). v1.0 (Bloque 5, C2): extracted unchanged from ConsoleControls so the July layout reuses it; optional `element` (`li` in the classic list, `div` elsewhere), `layout="july"` (compact field styles), a visible `label` override (the accessible name stays the definition description) and `children` after the range (e.g. the computed Te). Every interactive element carries `data-console-control`, which the July console keyboard handler filters on. v1.1 (Ajustes A, A1): `onAdjust` also receives the kind of input (`continuous` for the wheel, `discrete` for the stepper and the keys) so the July console can debounce the automatic application; the classic owner ignores it. Depends on React, MUI icons, the controls reducer helpers, the auto apply input type and the controls styles.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,7 @@ import { cx } from "@shared/lib/class-names";
 import type { ConsoleParameterDefinition } from "./config/console-controls.config";
 import { hasStepGrid, keyToAdjustment, stepDecimals } from "./console-controls.reducer";
 import type { Adjustment } from "./console-controls.reducer";
+import type { AutoApplyInput } from "./july-auto-apply";
 import type { ConsoleInFlight, ParameterLimit } from "./ventilator-console.entity";
 import styles from "../UI/console-controls.module.css";
 
@@ -64,7 +65,8 @@ export type ParameterControlProps = {
   selected: boolean
   disabled: boolean
   describedBy: string | undefined
-  onAdjust: (adjustment: Adjustment) => void
+  /** `input`: `continuous` for the wheel, `discrete` for the stepper and the keys. */
+  onAdjust: (adjustment: Adjustment, input: AutoApplyInput) => void
   onSelect: () => void
   /** Root element: `li` inside the classic parameter list (default), `div` anywhere else. */
   element?: "li" | "div"
@@ -117,7 +119,7 @@ export function ParameterControl({
       }
 
       event.preventDefault();
-      onAdjust({ kind: "steps", steps: event.deltaY < 0 ? 1 : -1 });
+      onAdjust({ kind: "steps", steps: event.deltaY < 0 ? 1 : -1 }, "continuous");
     };
     node.addEventListener("wheel", onWheel, { passive: false });
 
@@ -129,7 +131,7 @@ export function ParameterControl({
 
     if (adjustment !== null && !disabled) {
       event.preventDefault();
-      onAdjust(adjustment);
+      onAdjust(adjustment, "discrete");
     }
   };
 
@@ -172,7 +174,7 @@ export function ParameterControl({
           aria-describedby={describedBy}
           data-console-control=""
           disabled={disabled || !stepping || value <= limit.min}
-          onClick={() => onAdjust({ kind: "steps", steps: -1 })}
+          onClick={() => onAdjust({ kind: "steps", steps: -1 }, "discrete")}
         >
           <RemoveIcon aria-hidden />
         </button>
@@ -183,7 +185,7 @@ export function ParameterControl({
           aria-describedby={describedBy}
           data-console-control=""
           disabled={disabled || !stepping || value >= limit.max}
-          onClick={() => onAdjust({ kind: "steps", steps: 1 })}
+          onClick={() => onAdjust({ kind: "steps", steps: 1 }, "discrete")}
         >
           <AddIcon aria-hidden />
         </button>

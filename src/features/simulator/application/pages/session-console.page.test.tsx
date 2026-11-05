@@ -28,6 +28,8 @@
 *   v1.9 (W1 Bloque 1): "Volver al simulador" opens the Simular tab of the workspace (/simulador?tab=simular).
 *   v2.0 (W2 Bloque 1): the hook exposes a store adapter (read through getSnapshot) and a session store; the throttle
 *   test asserts one store publish per window and no hook re-render at all.
+*   v2.1 (Ajustes A, A1): the July console applies each edit on its own (no Confirmar / Cancelar): every stepper
+*   click is one PARAM_CHANGE at once, and Escape drops a slider change still debouncing (no event).
 * Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -231,19 +233,15 @@ describe("SessionConsolePage", () => {
     expect(screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" })).toHaveAttribute("aria-valuenow", "10");
   });
 
-  it("pending → CONFIRMAR sends one PARAM_CHANGE with its id and no time; it is enqueued with the acknowledged time", async() => {
+  it("an edit applies on its own: one PARAM_CHANGE with its id and no time, enqueued with the acknowledged time", async() => {
     const { worker, sendEvents, endSession } = renderPage();
 
     await startRunning(worker);
+    expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
     increasePeep();
-    increasePeep();
-    increasePeep();
-    expect(sentOfType(worker, "applyEvent")).toHaveLength(0);
-
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
 
     expect(sentOfType(worker, "applyEvent")).toEqual([
-      { type: "applyEvent", event: { type: "PARAM_CHANGE", changes: { peepCmH2O: 8 }, id: "evt-1" } },
+      { type: "applyEvent", event: { type: "PARAM_CHANGE", changes: { peepCmH2O: 6 }, id: "evt-1" } },
     ]);
 
     act(() => worker.emit({
@@ -260,7 +258,7 @@ describe("SessionConsolePage", () => {
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulator/sessions/s1/result"));
     expect(sendEvents).toHaveBeenCalledTimes(1);
     expect(sendEvents).toHaveBeenCalledWith("s1", [
-      { id: "evt-1", simTimeMs: 4321, type: "PARAM_CHANGE", payload: { changes: { peepCmH2O: 8 } } },
+      { id: "evt-1", simTimeMs: 4321, type: "PARAM_CHANGE", payload: { changes: { peepCmH2O: 6 } } },
     ]);
     expect(endSession).toHaveBeenCalledWith("s1", 4400);
     expect(sentOfType(worker, "stop")).toHaveLength(1);
@@ -271,7 +269,6 @@ describe("SessionConsolePage", () => {
 
     await startRunning(worker);
     increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     fireEvent.click(screen.getByRole("button", { name: "Finalizar sesión" }));
     fireEvent.click(await screen.findByRole("button", { name: "Finalizar" }));
 
@@ -294,7 +291,6 @@ describe("SessionConsolePage", () => {
 
     await startRunning(worker);
     increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
 
     const peep = () => screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
 
@@ -316,13 +312,14 @@ describe("SessionConsolePage", () => {
     expect(sendEvents).not.toHaveBeenCalled();
   });
 
-  it("CANCELAR (or a pending edit never confirmed) produces no event", async() => {
+  it("Escape drops a slider change still debouncing: it produces no event", async() => {
     const { worker, sendEvents } = renderPage();
 
     await startRunning(worker);
-    increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
-    increasePeep();
+    const rate = screen.getByRole("slider", { name: "Frecuencia respiratoria" }) as HTMLInputElement;
+
+    fireEvent.change(rate, { target: { value: String(Number(rate.value) + 2) } });
+    fireEvent.keyDown(rate, { key: "Escape" });
     await endThroughDialog(worker);
 
     await waitFor(() => expect(router.push).toHaveBeenCalled());
@@ -407,7 +404,6 @@ describe("SessionConsolePage", () => {
     sendEvents.mockRejectedValue(new ApiError({ code: "simulation.invalid_settings", message: "", status: 422 }));
     await startRunning(worker);
     increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     act(() => worker.emit({
       type: "batch",
       batch: buildBatch({ simTimeMs: 4354, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
@@ -448,7 +444,6 @@ describe("SessionConsolePage", () => {
         worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 6000, status: "running" }) });
       });
       increasePeep();
-      fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
       act(() => worker.emit({
         type: "batch",
         batch: buildBatch({ simTimeMs: 6100, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 6050 }] }),
@@ -525,7 +520,6 @@ describe("SessionConsolePage", () => {
     }));
     await startRunning(worker);
     increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     act(() => worker.emit({
       type: "batch",
       batch: buildBatch({ simTimeMs: 4354, status: "running", confirmedEvents: [{ id: "evt-1", effectiveSimTimeMs: 4321 }] }),
@@ -645,7 +639,6 @@ describe("SessionConsolePage — EXAM flow (T9)", () => {
     expect(screen.getByText("Velocidad fija ×1 (examen, sin pausa)")).toBeInTheDocument();
 
     increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     act(() => {
       vi.advanceTimersByTime(61_000);
     });
@@ -679,7 +672,6 @@ describe("SessionConsolePage — EXAM flow (T9)", () => {
     sendEvents.mockImplementation(() => new Promise(() => undefined));
     await startRunning(worker);
     increasePeep();
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
     act(() => {
       vi.advanceTimersByTime(11_000);
     });

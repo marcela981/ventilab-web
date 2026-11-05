@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console controls
-* Descripción: The ventilator controls of the July layout, spread over the console zones and sharing the per-console pending store (console-pending-store.ts): the input row above the curves (FiO2 | Volumen (VCV) / PIP (PCV) / Presión de soporte | PEEP, each with its range validation, i.e. the same clamp/snap of the controls reducer), the VOL CTRL / PRES CTRL mode toggle with an optional assist slot to its right and a discreet "Más modos" menu (menuitemradio) for the other adapter modes (D20 option A; the mode stays pending until Confirmar), the timing block (Insp/Esp slider that sets Ti from the cycle, read-only I:E and Te, inspiratory time and pause, and the expiratory pause disabled with "No disponible en este simulador", D21), the rate block (spinbutton + slider) and "Más parámetros" with every other applicable parameter (open while one of them is pending). No new engine parameter (no I:E, no expiratory pause, no "Q Max", D22). Each piece is a memo zone that reads only its slices of the adapter store and of the pending store, so an edit re-renders the touched control, never the metrics or the curves; the handlers read the snapshots at event time. Every interactive element carries `data-console-control` for the console Enter/Esc handler (july-confirm.tsx). v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" lists the short mode names on one line ("Más modos (PSV, CPAP, SIMV)", "Más modos PSV"), as mockup 05. Depends on React, MUI (Menu), the console stores, the controls config, the placement config, the timing math and the July styles. vX.x (Bloque 5, Ola 4): the "Más modos" arrow sits inside the mode list, so in a narrow column the list and its arrow move together under "Más modos" (nothing is cut; same text and name).
-* Versión: 0.3
+* Descripción: The ventilator controls of the July layout, spread over the console zones and sharing the per-console pending store (console-pending-store.ts): the input row above the curves (FiO2 | Volumen (VCV) / PIP (PCV) / Presión de soporte | PEEP, each with its range validation, i.e. the same clamp/snap of the controls reducer), the VOL CTRL / PRES CTRL mode toggle with an optional assist slot to its right and a discreet "Más modos" menu (menuitemradio) for the other adapter modes (D20 option A; the mode stays pending until Confirmar), the timing block (Insp/Esp slider that sets Ti from the cycle, read-only I:E and Te, inspiratory time and pause, and the expiratory pause disabled with "No disponible en este simulador", D21), the rate block (spinbutton + slider) and "Más parámetros" with every other applicable parameter (open while one of them is pending). No new engine parameter (no I:E, no expiratory pause, no "Q Max", D22). Each piece is a memo zone that reads only its slices of the adapter store and of the pending store, so an edit re-renders the touched control, never the metrics or the curves; the handlers read the snapshots at event time. Every interactive element carries `data-console-control` for the console Enter/Esc handler (july-confirm.tsx). v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" lists the short mode names on one line ("Más modos (PSV, CPAP, SIMV)", "Más modos PSV"), as mockup 05. Depends on React, MUI (Menu), the console stores, the controls config, the placement config, the timing math and the July styles. vX.x (Bloque 5, Ola 4): the "Más modos" arrow sits inside the mode list, so in a narrow column the list and its arrow move together under "Más modos" (nothing is cut; same text and name). v0.4 (Ajustes A, A1): with `applyMode="auto"` every edit is reported to the zone's `onEdit` with its kind of input (stepper, keys, the mode toggle and "Más modos" are discrete; the sliders and the wheel continuous), which applies it through the console scheduler; there is no "Modo pendiente" note in auto mode.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,6 +43,7 @@ import {
   inspiratoryPercentRange,
   inspiratoryTimeFromPercent,
 } from "./july-timing";
+import type { AutoApplyInput, ConsoleApplyMode } from "./july-auto-apply";
 import { ParameterControl } from "./parameter-control";
 import type { ConsoleMode, VentilatorConsoleAdapter } from "./ventilator-console.entity";
 import styles from "../UI/july-controls.module.css";
@@ -75,6 +76,10 @@ export type JulyZoneProps = {
   /** Id of the read-only reason, referenced by every disabled control. */
   describedBy: string | undefined
   applicability: ModeParameterTable | undefined
+  /** `auto`: every edit is reported to `onEdit`, which applies it (no pending mode note). */
+  applyMode: ConsoleApplyMode
+  /** Auto apply: an edit of this kind of input entered the pending store. */
+  onEdit?: ((input: AutoApplyInput) => void) | undefined
 };
 
 const selectMode = (adapter: VentilatorConsoleAdapter): ConsoleMode => adapter.mode;
@@ -109,24 +114,26 @@ export function useEffectiveValue(store: ConsoleAdapterStore, pending: PendingCo
   return pendingValue ?? reported ?? null;
 }
 
-/** Applies an adjustment from the snapshots of the moment (no stale closure over a render). */
-function adjustNow(store: ConsoleAdapterStore, pending: PendingControlsStore, parameter: string, adjustment: Adjustment): void {
+type EditReport = { onEdit?: ((input: AutoApplyInput) => void) | undefined, input: AutoApplyInput };
+
+/** Applies an adjustment from the snapshots of the moment (no stale closure over a render), then reports the edit. */
+function adjustNow(store: ConsoleAdapterStore, pending: PendingControlsStore, parameter: string, adjustment: Adjustment, { onEdit, input }: EditReport): void {
   const adapter = store.getSnapshot();
   const limit = adapter.limits[parameter];
 
-  if (limit !== undefined) {
-    adjustPending(pending, { parameter, limit, adjustment, settings: adapter.settings, onProposeChange: adapter.onProposeChange });
+  if (limit !== undefined && adjustPending(pending, { parameter, limit, adjustment, settings: adapter.settings, onProposeChange: adapter.onProposeChange })) {
+    onEdit?.(input);
   }
 }
 
-type JulyParameterProps = Omit<JulyZoneProps, "applicability"> & {
+type JulyParameterProps = Omit<JulyZoneProps, "applicability" | "applyMode"> & {
   parameter: string
   label?: string | undefined
   children?: ReactNode
 };
 
 /** One parameter of the July layout; re-renders only for its own limit, reported values, in-flight state and edits. */
-export const JulyParameter = memo(function JulyParameter({ store, pending, parameter, readOnly, describedBy, label, children }: JulyParameterProps) {
+export const JulyParameter = memo(function JulyParameter({ store, pending, parameter, readOnly, describedBy, onEdit, label, children }: JulyParameterProps) {
   const selectLimit = useCallback((adapter: VentilatorConsoleAdapter) => adapter.limits[parameter], [parameter]);
   const selectApplied = useCallback((adapter: VentilatorConsoleAdapter) => adapter.settings.applied[parameter], [parameter]);
   const selectCurrent = useCallback((adapter: VentilatorConsoleAdapter) => adapter.settings.current[parameter], [parameter]);
@@ -137,11 +144,11 @@ export const JulyParameter = memo(function JulyParameter({ store, pending, param
   const inFlight = useStoreSelector(store, selectInFlight, sameData);
   const pendingValue = useStoreSelector(pending, pendingValueSelector(parameter));
   const selected = useStoreSelector(pending, isSelectedSelector(parameter));
-  const onAdjust = useCallback((adjustment: Adjustment) => {
+  const onAdjust = useCallback((adjustment: Adjustment, input: AutoApplyInput) => {
     if (!readOnly) {
-      adjustNow(store, pending, parameter, adjustment);
+      adjustNow(store, pending, parameter, adjustment, { onEdit, input });
     }
-  }, [store, pending, parameter, readOnly]);
+  }, [store, pending, parameter, readOnly, onEdit]);
   const onSelect = useCallback(() => {
     pending.dispatch({ type: "select", parameter });
   }, [pending, parameter]);
@@ -189,6 +196,7 @@ export const JulyInputRow = memo(function JulyInputRow(props: JulyZoneProps) {
           parameter={parameter}
           readOnly={props.readOnly}
           describedBy={props.describedBy}
+          onEdit={props.onEdit}
           label={julyLabel(parameter, placement.effective)}
         />
       )))}
@@ -206,8 +214,8 @@ function shortModeLabel(option: { id: string, label: string }): string {
   return option.label.split(" — ")[0]?.trim() || option.id;
 }
 
-/** VOL CTRL / PRES CTRL (+ assist slot) and the "Más modos" menu; the selected mode stays pending until Confirmar. */
-export const JulyModeToggle = memo(function JulyModeToggle({ store, pending, readOnly, describedBy, applicability, assist }: JulyModeToggleProps) {
+/** VOL CTRL / PRES CTRL (+ assist slot) and the "Más modos" menu; the selected mode applies at once (auto) or stays pending until Confirmar. */
+export const JulyModeToggle = memo(function JulyModeToggle({ store, pending, readOnly, describedBy, applicability, applyMode, onEdit, assist }: JulyModeToggleProps) {
   const { mode, pendingMode, effective } = useEffectiveMode(store, pending);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const menuId = useId();
@@ -225,6 +233,7 @@ export const JulyModeToggle = memo(function JulyModeToggle({ store, pending, rea
     const adapter = store.getSnapshot();
 
     selectPendingMode(pending, modeId, adapter.mode, adapter.limits, applicability);
+    onEdit?.("discrete");
   };
 
   return (
@@ -297,7 +306,7 @@ export const JulyModeToggle = memo(function JulyModeToggle({ store, pending, rea
           </Menu>
         </>
       ) : null}
-      {pendingMode !== null ? <p className={cx(styles.pendingNote)}>{JULY_CONTROLS_COPY.modePending(pendingLabel ?? "")}</p> : null}
+      {pendingMode !== null && applyMode === "confirm" ? <p className={cx(styles.pendingNote)}>{JULY_CONTROLS_COPY.modePending(pendingLabel ?? "")}</p> : null}
     </div>
   );
 });
@@ -335,7 +344,7 @@ function JulySlider({ label, min, max, step, value, valueText, disabled, describ
 
 /** Insp/Esp slider, I:E, Ti with Te, inspiratory pause and the (unavailable) expiratory pause. */
 export const JulyTiming = memo(function JulyTiming(props: JulyZoneProps) {
-  const { store, pending, readOnly, describedBy } = props;
+  const { store, pending, readOnly, describedBy, onEdit } = props;
   const placement = useJulyPlacement(props);
   const ti = useEffectiveValue(store, pending, JULY_INSPIRATORY_TIME);
   const rate = useEffectiveValue(store, pending, JULY_RATE);
@@ -351,7 +360,7 @@ export const JulyTiming = memo(function JulyTiming(props: JulyZoneProps) {
     const next = inspiratoryTimeFromPercent(value, rate);
 
     if (!readOnly && next !== null) {
-      adjustNow(store, pending, JULY_INSPIRATORY_TIME, { kind: "value", value: next });
+      adjustNow(store, pending, JULY_INSPIRATORY_TIME, { kind: "value", value: next }, { onEdit, input: "continuous" });
     }
   };
 
@@ -388,6 +397,7 @@ export const JulyTiming = memo(function JulyTiming(props: JulyZoneProps) {
             parameter={JULY_INSPIRATORY_TIME}
             readOnly={readOnly}
             describedBy={describedBy}
+            onEdit={onEdit}
             label={julyLabel(JULY_INSPIRATORY_TIME, placement.effective)}
           >
             <span role="status" aria-label={JULY_CONTROLS_COPY.expiratoryTime}>
@@ -403,6 +413,7 @@ export const JulyTiming = memo(function JulyTiming(props: JulyZoneProps) {
           parameter={JULY_INSPIRATORY_PAUSE}
           readOnly={readOnly}
           describedBy={describedBy}
+          onEdit={onEdit}
           label={julyLabel(JULY_INSPIRATORY_PAUSE, placement.effective)}
         />
       ) : null}
@@ -426,7 +437,7 @@ export const JulyTiming = memo(function JulyTiming(props: JulyZoneProps) {
 
 /** Respiratory rate: spinbutton and slider over the same limit (the console limits, not July's 0-24). */
 export const JulyRate = memo(function JulyRate(props: JulyZoneProps) {
-  const { store, pending, readOnly, describedBy } = props;
+  const { store, pending, readOnly, describedBy, onEdit } = props;
   const placement = useJulyPlacement(props);
   const rate = useEffectiveValue(store, pending, JULY_RATE);
   const selectRateLimit = useCallback((adapter: VentilatorConsoleAdapter) => adapter.limits[JULY_RATE], []);
@@ -444,6 +455,7 @@ export const JulyRate = memo(function JulyRate(props: JulyZoneProps) {
         parameter={JULY_RATE}
         readOnly={readOnly}
         describedBy={describedBy}
+        onEdit={onEdit}
         label={julyLabel(JULY_RATE, placement.effective)}
       />
       {limit !== undefined && rate !== null ? (
@@ -458,7 +470,7 @@ export const JulyRate = memo(function JulyRate(props: JulyZoneProps) {
           describedBy={describedBy}
           onChange={(value) => {
             if (!readOnly) {
-              adjustNow(store, pending, JULY_RATE, { kind: "value", value });
+              adjustNow(store, pending, JULY_RATE, { kind: "value", value }, { onEdit, input: "continuous" });
             }
           }}
         />
@@ -469,7 +481,7 @@ export const JulyRate = memo(function JulyRate(props: JulyZoneProps) {
 
 /** Every other applicable parameter, collapsed; open while one of them is pending. */
 export const JulyMoreParameters = memo(function JulyMoreParameters(props: JulyZoneProps) {
-  const { store, pending, readOnly, describedBy } = props;
+  const { store, pending, readOnly, describedBy, onEdit } = props;
   const placement = useJulyPlacement(props);
   const [userOpen, setUserOpen] = useState(false);
   const panelId = useId();
@@ -497,7 +509,7 @@ export const JulyMoreParameters = memo(function JulyMoreParameters(props: JulyZo
       {open ? (
         <div id={panelId} className={cx(styles.moreList)}>
           {more.map((parameter) => (
-            <JulyParameter key={parameter} store={store} pending={pending} parameter={parameter} readOnly={readOnly} describedBy={describedBy} />
+            <JulyParameter key={parameter} store={store} pending={pending} parameter={parameter} readOnly={readOnly} describedBy={describedBy} onEdit={onEdit} />
           ))}
         </div>
       ) : null}
