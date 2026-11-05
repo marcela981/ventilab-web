@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation results styles
-* Descripción: Layout of the staff results page /grading/evaluations/[evaluationId]: centered column, header actions, the KPI grid, the chart cards (side by side on wide screens, stacked below), the group filter, the sections with their tables, the student and grade cells (pass/fail with the semantic success/error tokens from the API flag) and focus rings. Tokens only (var(--vl-*), var(--mui-*)). v1.1 (ajustes C1): .scopeChoice, the release scope radio group on its own row.
-* Versión: 1.1
+* Descripción: Layout of the staff results page /grading/evaluations/[evaluationId]: centered column, header actions, the KPI grid, the chart cards (side by side on wide screens, stacked below), the group filter, the sections with their tables, the student and grade cells (pass/fail with the semantic success/error tokens from the API flag) and focus rings. Tokens only (var(--vl-*), var(--mui-*)). v1.1 (ajustes C1): .scopeChoice, the release scope radio group on its own row. v1.2 (ajustes C2): .countsTable, a minimum width for the attempts-per-group table.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -105,6 +105,11 @@
   border: 1px solid var(--vl-color-border);
   border-radius: var(--vl-radius-lg);
   background: var(--vl-color-surface);
+}
+
+/* Seven columns: scroll inside .tableContainer on narrow screens instead of wrapping the window into many lines. */
+.countsTable {
+  min-width: 44rem;
 }
 
 .primary {
