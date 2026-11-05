@@ -6,7 +6,9 @@
 *   v1.3 (W6, Bloque 1): the own patient of a FREE session is kept (checked by parseSessionPatient) in the session
 *   state, replay and history; the started session carries the patient of the start request (not echoed by the server).
 *   v1.4 (W8, Bloque 1): the patient preset of a clinical case detail ("Cargar caso" of the Simular Paciente form).
-* Versión: 1.4
+*   v1.5 (Bloque A): the summary score is nullable (an EXAM student before the teacher release) and carries
+*   `resultsWithheld`.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -157,6 +159,7 @@ export function toSessionSummary(dto: SimulationSessionSummaryDTO): SessionSumma
     targets: targets.flatMap(toTargetStatus),
     score: dto.score,
     breakdown: breakdown.flatMap(toScoreCriterion),
+    resultsWithheld: dto.resultsWithheld === true,
     aiHelpCount: dto.aiHelpCount,
   };
 }

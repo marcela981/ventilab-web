@@ -5653,6 +5653,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/simulation/real/alarm-help": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * How to stabilize an alarm of the physical ventilator
+         * @description Deterministic rules for the alarm with the recent telemetry sent by the client, then an AI suggestion. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
+         *
+         *     **Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.
+         */
+        post: operations["realAlarmHelp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/simulation/real/assist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * AI assistance on the physical ventilator
+         * @description Guidance on the recent telemetry sent by the client and the loaded case, optionally answering a question. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
+         *
+         *     **Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.
+         */
+        post: operations["realAssist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/simulation/reserve": {
         parameters: {
             query?: never;
@@ -5769,6 +5813,28 @@ export interface paths {
         get: operations["getSimulationSessions"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/simulation/sessions/{id}/alarm-help": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * How to stabilize an alarm of my active simulation session
+         * @description Deterministic rules for the alarm in the current context, then an AI suggestion. EXAM sessions follow the assistance policy of the evaluation (ALLOWED_WITH_PENALTY only); every completed answer is recorded as an AI_HELP event of kind ALARM_HELP. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
+         *
+         *     **Required access:** bearer token holding `simulation:control`; minimum role STUDENT.
+         */
+        post: operations["alarmHelp"];
         delete?: never;
         options?: never;
         head?: never;
@@ -8435,7 +8501,7 @@ export interface components {
              * @example POPUP
              * @enum {string}
              */
-            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
+            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST" | "SIM_ALARM";
             /**
              * @description Rated output id
              * @example cm1x2y3z40000abcd1234efgh
@@ -8446,7 +8512,7 @@ export interface components {
              * @example MESSAGE
              * @enum {string}
              */
-            targetType: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+            targetType: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST" | "AI_CALL";
             /**
              * @description Trust and confidence in the answer (1–5)
              * @example 3
@@ -18353,6 +18419,191 @@ export interface components {
              */
             status: "ready" | "not_ready";
         };
+        RealAlarmHelpDTO: {
+            /**
+             * @description Alarm code (engine or ventilator), e.g. HIGH_PRESSURE, LOW_SPO2
+             * @example HIGH_PRESSURE
+             */
+            alarmCode: string;
+            /**
+             * @description Answer language; defaults to the request language
+             * @example es
+             * @enum {string}
+             */
+            language?: "en" | "es";
+            state: components["schemas"]["RealMonitorStateDTO"];
+        };
+        RealAssistDTO: {
+            /**
+             * @description Answer language; defaults to the request language
+             * @example es
+             * @enum {string}
+             */
+            language?: "en" | "es";
+            /**
+             * @description User question
+             * @example ¿Qué reviso primero?
+             */
+            question?: string;
+            state: components["schemas"]["RealMonitorStateDTO"];
+        };
+        RealMonitorLimitsDTO: {
+            /**
+             * @description Client high pressure limit (cmH2O)
+             * @example 40
+             */
+            highPressureCmH2O?: number;
+            /**
+             * @description Client high respiratory rate limit (breaths/min)
+             * @example 35
+             */
+            highRespiratoryRateBpm?: number;
+            /**
+             * @description Client high exhaled volume limit (mL)
+             * @example 800
+             */
+            highTidalVolumeMl?: number;
+            /**
+             * @description Client low exhaled volume limit (mL)
+             * @example 200
+             */
+            lowTidalVolumeMl?: number;
+        };
+        RealMonitorMetricsDTO: {
+            /**
+             * @description Auto-PEEP (cmH2O)
+             * @example 1
+             */
+            autoPeepCmH2O?: number;
+            /**
+             * @description End-tidal CO2 (mmHg)
+             * @example 38
+             */
+            etco2MmHg?: number;
+            /**
+             * @description Exhaled tidal volume (mL)
+             * @example 440
+             */
+            exhaledTidalVolumeMl?: number;
+            /**
+             * @description Measured respiratory rate (breaths/min)
+             * @example 16
+             */
+            measuredRespiratoryRateBpm?: number;
+            /**
+             * @description Minute volume (L/min)
+             * @example 7
+             */
+            minuteVolumeLpm?: number;
+            /**
+             * @description Peak pressure of the last breath (cmH2O)
+             * @example 28
+             */
+            peakPressureCmH2O?: number;
+            /**
+             * @description Plateau pressure (cmH2O)
+             * @example 24
+             */
+            plateauPressureCmH2O?: number;
+            /**
+             * @description SpO2 (%)
+             * @example 94
+             */
+            spo2Percent?: number;
+            /**
+             * @description Total PEEP (cmH2O)
+             * @example 9
+             */
+            totalPeepCmH2O?: number;
+        };
+        RealMonitorSettingsDTO: {
+            /**
+             * @description Reported FiO2 (fraction)
+             * @example 0.5
+             */
+            fio2?: number;
+            /**
+             * @description Reported inspiratory pressure (cmH2O above PEEP)
+             * @example 15
+             */
+            inspiratoryPressureCmH2O?: number;
+            /**
+             * @description Reported inspiratory time (s)
+             * @example 1
+             */
+            inspiratoryTimeS?: number;
+            /**
+             * @description Reported PEEP (cmH2O)
+             * @example 8
+             */
+            peepCmH2O?: number;
+            /**
+             * @description Reported pressure support (cmH2O)
+             * @example 10
+             */
+            pressureSupportCmH2O?: number;
+            /**
+             * @description Reported respiratory rate (breaths/min)
+             * @example 16
+             */
+            respiratoryRateBpm?: number;
+            /**
+             * @description Reported tidal volume (mL)
+             * @example 450
+             */
+            tidalVolumeMl?: number;
+        };
+        RealMonitorStateDTO: {
+            /**
+             * @description Active alarm codes of the ventilator and the client limits
+             * @example [
+             *       "HIGH_PRESSURE"
+             *     ]
+             */
+            alarms?: string[];
+            /**
+             * @description Clinical case loaded on the monitor, if any
+             * @example engine-ards-obese
+             */
+            caseId?: string;
+            limits?: components["schemas"]["RealMonitorLimitsDTO"];
+            metrics?: components["schemas"]["RealMonitorMetricsDTO"];
+            /**
+             * @description Reported ventilation mode
+             * @example VCV
+             */
+            mode?: string;
+            settings?: components["schemas"]["RealMonitorSettingsDTO"];
+            /** @description Recent window, newest last */
+            trend?: components["schemas"]["RealMonitorTrendPointDTO"][];
+        };
+        RealMonitorTrendPointDTO: {
+            /**
+             * @description Exhaled tidal volume (mL)
+             * @example 440
+             */
+            exhaledTidalVolumeMl?: number;
+            /**
+             * @description Peak pressure (cmH2O)
+             * @example 28
+             */
+            peakPressureCmH2O?: number;
+            /**
+             * @description Respiratory rate (breaths/min)
+             * @example 16
+             */
+            respiratoryRateBpm?: number;
+            /**
+             * @description Seconds before now (0 = latest)
+             * @example 30
+             */
+            secondsAgo: number;
+            /**
+             * @description SpO2 (%)
+             * @example 94
+             */
+            spo2Percent?: number;
+        };
         RealtimeHealthDTO: {
             /**
              * @description Authenticated WebSocket users
@@ -19605,6 +19856,19 @@ export interface components {
              */
             temperatureC?: number;
         };
+        SimulationAlarmHelpDTO: {
+            /**
+             * @description Alarm code (engine or ventilator), e.g. HIGH_PRESSURE, LOW_SPO2
+             * @example HIGH_PRESSURE
+             */
+            alarmCode: string;
+            /**
+             * @description Answer language; defaults to the request language
+             * @example es
+             * @enum {string}
+             */
+            language?: "en" | "es";
+        };
         SimulationAssistDTO: {
             /**
              * @description Answer language; defaults to the request language
@@ -19617,6 +19881,26 @@ export interface components {
              * @example ¿Por qué sigue sonando la alarma de presión alta?
              */
             question?: string;
+        };
+        SimulationDebriefItemDTO: {
+            /** @description Changed settings of a decision */
+            changes?: components["schemas"]["SimulationSettingChangeDTO"][];
+            /**
+             * @description Alarm code or patient status (absent for decisions)
+             * @example LOW_SPO2
+             */
+            code?: string;
+            /**
+             * @description Item kind
+             * @example DECISION
+             * @enum {string}
+             */
+            kind: "DECISION" | "ALARM" | "PATIENT_STATUS";
+            /**
+             * @description Simulated time in ms
+             * @example 15000
+             */
+            simTimeMs: number;
         };
         SimulationEventDTO: {
             /**
@@ -19687,6 +19971,29 @@ export interface components {
             /** @description WebSocket connections */
             ws: components["schemas"]["RealtimeHealthDTO"];
         };
+        SimulationOutcomeDTO: {
+            /**
+             * @description Simulated time of the cardiac arrest, in ms
+             * @example 600000
+             */
+            arrestAtMs: number | null;
+            /**
+             * @description Simulated time of death, in ms
+             * @example 630000
+             */
+            deceasedAtMs: number | null;
+            /**
+             * @description Simulated time the patient first turned critical, in ms
+             * @example 360000
+             */
+            firstCriticalAtMs: number | null;
+            /**
+             * @description Final patient status; null for sessions without patient evolution (engine 1.0.0)
+             * @example DECEASED
+             * @enum {string|null}
+             */
+            status: "STABLE" | "UNSTABLE" | "CRITICAL" | "ARREST" | "DECEASED" | null;
+        };
         SimulationSessionDTO: {
             /**
              * @description Exam attempt ID
@@ -19741,7 +20048,7 @@ export interface components {
              */
             questionId: string | null;
             /**
-             * @description Stored server-computed score, null until the session ends
+             * @description Stored server-computed score; null until the session ends, and for an EXAM student until the teacher releases the grade
              * @example null
              */
             score: number | null;
@@ -19840,6 +20147,11 @@ export interface components {
             /** @description Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise */
             patient: components["schemas"]["SimulatedPatientDTO"] | null;
             /**
+             * @description True when an EXAM student is not shown part of the results yet (the teacher has not released the grade or the answers)
+             * @example false
+             */
+            resultsWithheld: boolean;
+            /**
              * @description Current ventilator settings
              * @example {
              *       "mode": "VCV",
@@ -19858,7 +20170,7 @@ export interface components {
              */
             status: string;
             /**
-             * @description Clinical target status
+             * @description Clinical target status; empty for an EXAM student until the teacher releases the answers
              * @example [
              *       {
              *         "id": "SPO2",
@@ -19875,7 +20187,7 @@ export interface components {
              */
             aiHelpCount: number;
             /**
-             * @description Justified score per rubric criterion
+             * @description Justified score per rubric criterion; empty for an EXAM student until the teacher releases the answers
              * @example [
              *       {
              *         "criterion": "TARGETS_REACHED",
@@ -19906,11 +20218,18 @@ export interface components {
              * @example 0192f1c2-7c1e-7a8b-9c0d-1e2f3a4b5c6d
              */
             id: string;
+            /** @description Patient outcome; null for summaries stored before the engine 2.0.0 */
+            outcome: components["schemas"]["SimulationOutcomeDTO"] | null;
             /**
-             * @description Server-computed score between 0 and 1
+             * @description True when an EXAM student is not shown part of the results yet (the teacher has not released the grade or the answers)
+             * @example false
+             */
+            resultsWithheld: boolean;
+            /**
+             * @description Server-computed score between 0 and 1; null for an EXAM student until the teacher releases the grade
              * @example 0.82
              */
-            score: number;
+            score: number | null;
             /**
              * @description Simulated time scored in ms
              * @example 600000
@@ -19922,7 +20241,7 @@ export interface components {
              */
             status: string;
             /**
-             * @description Final clinical target status
+             * @description Final clinical target status; empty for an EXAM student until the teacher releases the answers
              * @example [
              *       {
              *         "id": "SPO2",
@@ -19931,6 +20250,25 @@ export interface components {
              *     ]
              */
             targets: Record<string, never>[];
+            /** @description Debrief timeline: decisions, alarm onsets and patient status changes in simulated time order (at most 200) */
+            timeline: components["schemas"]["SimulationDebriefItemDTO"][];
+        };
+        SimulationSettingChangeDTO: {
+            /**
+             * @description Ventilator setting
+             * @example peepCmH2O
+             */
+            field: string;
+            /**
+             * @description Previous value
+             * @example 5
+             */
+            from: (number | string) | null;
+            /**
+             * @description New value
+             * @example 12
+             */
+            to: number | string;
         };
         SimulatorSessionDTO: {
             /**
@@ -22498,7 +22836,7 @@ export interface components {
              * @example POPUP
              * @enum {string}
              */
-            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
+            surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST" | "SIM_ALARM";
             /**
              * @description Rated output: the grade feedback id (GRADE_FEEDBACK), the assistant message id (MESSAGE; announced by the SSE start event, so a stopped answer can be rated too) or the AI call id of the analysis (NOTES_ANALYSIS)
              * @example cm1x2y3z40000abcd1234efgh
@@ -22509,7 +22847,7 @@ export interface components {
              * @example MESSAGE
              * @enum {string}
              */
-            targetType: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+            targetType: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST" | "AI_CALL";
             /**
              * @description Trust and confidence in the answer. Optional Likert score from 1 (worst) to 5 (best); values outside the range are rejected with 422
              * @example 3
@@ -24646,13 +24984,13 @@ export interface operations {
                 /** @description Range end (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
                 to?: string;
                 /** @description Only ratings of this kind of output */
-                targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+                targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST" | "AI_CALL";
                 /** @description Only ratings given on this surface; a rating stored without one is read with the surface its target type implies */
-                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
+                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST" | "SIM_ALARM";
                 /** @description Only ratings of answers with this content scope */
                 scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
                 /** @description Only ratings linked to calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST" | "SIM_CASE_INTERPRETATION" | "SIM_ALARM_HELP";
                 /** @description Only ratings linked to calls served by this provider */
                 provider?: string;
                 /** @description Only ratings linked to calls served by this model */
@@ -24739,13 +25077,13 @@ export interface operations {
                 /** @description Range end (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
                 to?: string;
                 /** @description Only ratings of this kind of output */
-                targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+                targetType?: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST" | "AI_CALL";
                 /** @description Only ratings given on this surface; a rating stored without one is read with the surface its target type implies */
-                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST";
+                surface?: "POPUP" | "ACCORDION" | "ASSISTANT" | "NOTES_ANALYSIS" | "EVALUATION_FEEDBACK" | "SIMULATOR_ASSIST" | "SIM_ALARM";
                 /** @description Only ratings of answers with this content scope */
                 scope?: "LESSON" | "MODULE" | "PAGE" | "FREE";
                 /** @description Only ratings linked to calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST" | "SIM_CASE_INTERPRETATION" | "SIM_ALARM_HELP";
                 /** @description Only ratings linked to calls served by this provider */
                 provider?: string;
                 /** @description Only ratings linked to calls served by this model */
@@ -24834,7 +25172,7 @@ export interface operations {
                 /** @description Range end (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
                 to?: string;
                 /** @description Only calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST" | "SIM_CASE_INTERPRETATION" | "SIM_ALARM_HELP";
                 /** @description Only calls served by this provider */
                 provider?: string;
                 /** @description Only calls served by this model */
@@ -24919,7 +25257,7 @@ export interface operations {
                 /** @description Range end (exclusive, ISO 8601); defaults to now. The range spans at most 366 days */
                 to?: string;
                 /** @description Only calls of this use case */
-                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST";
+                useCase?: "GRADE_FEEDBACK" | "NOTES_ANALYSIS" | "PAGE_DEEPEN" | "LESSON_QA" | "MODULE_QA" | "FREE_CHAT" | "TOPIC_CHECK" | "SIM_ASSIST" | "SIM_CASE_INTERPRETATION" | "SIM_ALARM_HELP";
                 /** @description Only calls served by this provider */
                 provider?: string;
                 /** @description Only calls served by this model */
@@ -25519,7 +25857,7 @@ export interface operations {
         parameters: {
             query: {
                 /** @description Kind of AI output */
-                targetType: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST";
+                targetType: "GRADE_FEEDBACK" | "MESSAGE" | "NOTES_ANALYSIS" | "SIM_ASSIST" | "AI_CALL";
                 /** @description Rated output id */
                 targetId: string;
             };
@@ -45639,6 +45977,144 @@ export interface operations {
             };
         };
     };
+    realAlarmHelp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RealAlarmHelpDTO"];
+            };
+        };
+        responses: {
+            /** @description Server-sent event stream with the rules and the suggestion */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing permission */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests or daily AI quota reached (Retry-After header) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    realAssist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RealAssistDTO"];
+            };
+        };
+        responses: {
+            /** @description Server-sent event stream with the answer */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing permission */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests or daily AI quota reached (Retry-After header) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     reserve: {
         parameters: {
             query?: never;
@@ -46178,6 +46654,95 @@ export interface operations {
                 };
             };
             /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unexpected server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    alarmHelp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulationAlarmHelpDTO"];
+            };
+        };
+        responses: {
+            /** @description Server-sent event stream with the rules and the suggestion */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Validation error */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Missing permission, session of another user or assistance disabled in this exam */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Simulation session not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description The simulation session is not active */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too many requests or daily AI quota reached (Retry-After header) */
             429: {
                 headers: {
                     [name: string]: unknown;

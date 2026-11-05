@@ -6,8 +6,8 @@
 *   lookups, the summary mapper (unknown targets dropped, opaque breakdown items checked), the exam return URL and
 *   store, the replay length, the event and alarm marks positioned by time and the engine version warning. Depends on
 *   vitest, the engine replay and the simulator entities, mappers and stores. v1.1: the comparison is unavailable
-*   without simTimeMs or with nothing clinical compared.
-* Versión: 1.1
+*   without simTimeMs or with nothing clinical compared. v1.2 (Bloque A): a withheld EXAM summary keeps a null score.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -105,6 +105,14 @@ describe("toSessionSummary", () => {
       { criterion: "TARGETS_REACHED", weight: null, value: null, threshold: null, points: 1, weightedPoints: null, justification: "" },
     ]);
     expect(summary.score).toBe(0.82);
+    expect(summary.resultsWithheld).toBe(false);
+  });
+
+  it("keeps the null score of an EXAM summary whose results are withheld", () => {
+    const summary = toSessionSummary(summaryDto({ score: null, resultsWithheld: true, breakdown: [], targets: [] }));
+
+    expect(summary.score).toBeNull();
+    expect(summary.resultsWithheld).toBe(true);
   });
 });
 

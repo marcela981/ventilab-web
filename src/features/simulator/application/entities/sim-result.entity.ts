@@ -7,7 +7,8 @@
 *   are never replaced) and the evolution series of key metrics built from the local replay timeline. The score is
 *   always the server's; nothing here computes a grade. Depends on the sim-engine public types and the result config.
 *   v1.1: the comparison is `unavailable` without a server simTimeMs or when no clinical field was compared.
-* Versión: 1.1
+*   v1.2 (Bloque A): the score is null while an EXAM student's results are withheld (`resultsWithheld`).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,9 +48,11 @@ export type SessionSummary = {
   finalMetrics: unknown
   /** Final target statuses the server reported (unknown target ids are dropped by the mapper). */
   targets: readonly TargetStatus[]
-  /** Server-computed score between 0 and 1. */
-  score: number
+  /** Server-computed score between 0 and 1; null while the teacher has not released an EXAM grade. */
+  score: number | null
   breakdown: readonly ScoreCriterion[]
+  /** True when an EXAM student is not shown part of the results yet (no score, breakdown or objectives). */
+  resultsWithheld: boolean
   aiHelpCount: number
 };
 
