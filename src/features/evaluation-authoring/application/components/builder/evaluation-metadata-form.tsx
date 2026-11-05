@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationMetadataForm
-* Descripción: General data of an evaluation in the builder: type (EXAM, QUIZ, WORKSHOP; editable only while creating because the update DTO has no type, and a change applies the default of "show results immediately"), title, description (rich text), optional level and module picked from the curriculum tree of the learning feature (`GET /api/curriculum/tree`; picking a module also links its level, picking a level drops a module of another level; ids no longer in the tree stay visible), optional duration in minutes, max attempts and the shuffle and show-results switches. Shows the validation messages of the builder. Depends on MUI, the design-system FormField, @features/learning (useCurriculumTree), the builder entities, RichTextField and the builder CSS Module. v1.1 (B4, D7): the duration and attempts inputs show INTEGER_HELPER_TEXT (after the duration help).
-* Versión: 1.1
+* Descripción: General data of an evaluation in the builder: type (EXAM, QUIZ, WORKSHOP; editable only while creating because the update DTO has no type, and a change applies the default of "show results immediately"), title, description (rich text), optional level and module picked from the curriculum tree of the learning feature (`GET /api/curriculum/tree`; picking a module also links its level, picking a level drops a module of another level; ids no longer in the tree stay visible), optional duration in minutes, max attempts and the shuffle and show-results switches. Shows the validation messages of the builder. Depends on MUI, the design-system FormField, @features/learning (useCurriculumTree), the builder entities, RichTextField and the builder CSS Module. v1.1 (B4, D7): the duration and attempts inputs show INTEGER_HELPER_TEXT (after the duration help). v1.2 (ajustes C1): the "Mostrar los resultados apenas el estudiante envíe" switch is gone: the results always wait for the teacher release.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -133,15 +133,6 @@ export function EvaluationMetadataForm({ form, errors, creating, editorKey, onCh
             />
           )}
           label={BUILDER_COPY.shuffleQuestions}
-        />
-        <FormControlLabel
-          control={(
-            <Switch
-              checked={form.showResultsImmediately}
-              onChange={(event) => onChange({ ...form, showResultsImmediately: event.target.checked })}
-            />
-          )}
-          label={BUILDER_COPY.showResultsImmediately}
         />
       </div>
     </section>

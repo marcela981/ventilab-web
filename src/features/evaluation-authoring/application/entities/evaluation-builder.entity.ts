@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder entities
-* Descripción: Domain types of the evaluation builder (BuilderEvaluation from `GET /api/evaluations/{id}` with its scenarios, questions, options, media, readiness issues, usage and the structureLocked flag) and the pure rules of its metadata form: the defaults of a new evaluation (showResultsImmediately true for QUIZ, false for EXAM and WORKSHOP, applied on a type change only while creating), the form built from a loaded evaluation, validation mirroring the backend DTOs (title required and at most 200 characters, duration and max attempts integers of at least 1, duration optional), the create body and the update body holding only the changed fields (null clears description, duration, module and level), the dirty check and the level/module choices of the curriculum (a module belongs to one level). No dependencies besides the builder rich text helpers. v1.1 (B4, D7): duration and attempts are read with the shared parseDecimal in integer mode (no separator, so "1.000" is never 1). v1.2 (Bloque 3): BuilderQuestion carries the hint (WORKSHOP only for students).
-* Versión: 1.2
+* Descripción: Domain types of the evaluation builder (BuilderEvaluation from `GET /api/evaluations/{id}` with its scenarios, questions, options, media, readiness issues, usage and the structureLocked flag) and the pure rules of its metadata form: the defaults of a new evaluation (showResultsImmediately true for QUIZ, false for EXAM and WORKSHOP, applied on a type change only while creating), the form built from a loaded evaluation, validation mirroring the backend DTOs (title required and at most 200 characters, duration and max attempts integers of at least 1, duration optional), the create body and the update body holding only the changed fields (null clears description, duration, module and level), the dirty check and the level/module choices of the curriculum (a module belongs to one level). No dependencies besides the builder rich text helpers. v1.1 (B4, D7): duration and attempts are read with the shared parseDecimal in integer mode (no separator, so "1.000" is never 1). v1.2 (Bloque 3): BuilderQuestion carries the hint (WORKSHOP only for students). v1.3 (ajustes C1): showResultsImmediately is gone from the builder (no default per type, no create field, no diff): the server ignores it and the results always wait for the teacher release.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -74,7 +74,6 @@ export type BuilderEvaluation = {
   durationMinutes: number | null
   maxAttempts: number
   shuffleQuestions: boolean
-  showResultsImmediately: boolean
   structureLocked: boolean
   canManage: boolean
   usage: { attempts: number, submittedAttempts: number, assignments: number }
@@ -95,7 +94,6 @@ export type MetadataForm = {
   durationMinutes: string
   maxAttempts: string
   shuffleQuestions: boolean
-  showResultsImmediately: boolean
 };
 
 export type MetadataErrors = Partial<Record<"title" | "durationMinutes" | "maxAttempts", string>>;
@@ -107,10 +105,6 @@ export const METADATA_ERROR_MESSAGES = {
   positiveInteger: "Debe ser un número entero mayor o igual a 1.",
 } as const;
 
-export function defaultShowResults(type: EvaluationType): boolean {
-  return type === "QUIZ";
-}
-
 export function newMetadataForm(type: EvaluationType = "QUIZ"): MetadataForm {
   return {
     type,
@@ -121,13 +115,12 @@ export function newMetadataForm(type: EvaluationType = "QUIZ"): MetadataForm {
     durationMinutes: "",
     maxAttempts: "1",
     shuffleQuestions: false,
-    showResultsImmediately: defaultShowResults(type),
   };
 }
 
 // The type only changes while creating: the update DTO has no type.
 export function changeMetadataType(form: MetadataForm, type: EvaluationType): MetadataForm {
-  return { ...form, type, showResultsImmediately: defaultShowResults(type) };
+  return { ...form, type };
 }
 
 export function metadataFormFrom(evaluation: BuilderEvaluation): MetadataForm {
@@ -140,7 +133,6 @@ export function metadataFormFrom(evaluation: BuilderEvaluation): MetadataForm {
     durationMinutes: evaluation.durationMinutes === null ? "" : String(evaluation.durationMinutes),
     maxAttempts: String(evaluation.maxAttempts),
     shuffleQuestions: evaluation.shuffleQuestions,
-    showResultsImmediately: evaluation.showResultsImmediately,
   };
 }
 
@@ -184,7 +176,6 @@ export type CreateEvaluationBody = {
   durationMinutes?: number
   maxAttempts?: number
   shuffleQuestions: boolean
-  showResultsImmediately: boolean
 };
 
 // Assumes a valid form (validateMetadata returned no errors).
@@ -201,7 +192,6 @@ export function toCreateEvaluationBody(form: MetadataForm): CreateEvaluationBody
     ...(duration === null ? {} : { durationMinutes: duration }),
     ...(maxAttempts === null ? {} : { maxAttempts }),
     shuffleQuestions: form.shuffleQuestions,
-    showResultsImmediately: form.showResultsImmediately,
   };
 }
 
@@ -213,7 +203,6 @@ export type UpdateEvaluationChanges = {
   durationMinutes?: number | null
   maxAttempts?: number
   shuffleQuestions?: boolean
-  showResultsImmediately?: boolean
 };
 
 // Only the fields that differ from the loaded evaluation; assumes a valid form.
@@ -251,10 +240,6 @@ export function toUpdateEvaluationChanges(evaluation: BuilderEvaluation, form: M
     changes.shuffleQuestions = form.shuffleQuestions;
   }
 
-  if (form.showResultsImmediately !== evaluation.showResultsImmediately) {
-    changes.showResultsImmediately = form.showResultsImmediately;
-  }
-
   return changes;
 }
 
@@ -268,8 +253,7 @@ export function isMetadataDirty(evaluation: BuilderEvaluation | null, form: Meta
       || form.moduleId !== pristine.moduleId
       || form.durationMinutes.trim() !== ""
       || form.maxAttempts.trim() !== pristine.maxAttempts
-      || form.shuffleQuestions !== pristine.shuffleQuestions
-      || form.showResultsImmediately !== pristine.showResultsImmediately;
+      || form.shuffleQuestions !== pristine.shuffleQuestions;
   }
 
   return Object.keys(toUpdateEvaluationChanges(evaluation, form)).length > 0;

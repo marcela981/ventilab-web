@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder mapper
-* Descripción: Maps the EvaluationDetailDTO of `GET /api/evaluations/{id}` to the BuilderEvaluation of the builder: scenarios and questions sorted by order, options sorted by order, media normalized, the description kept as text or Tiptap document (blank text becomes null), prompts and scenario contents kept as Tiptap documents (a non-object falls back to an empty document) and the readiness issues with their details. Also maps the metadata create body and update changes to their request DTOs (the generated schema types a Tiptap description as an empty record, so the document is passed through as the backend accepts it). Depends on the authoring DTOs and the builder entities. v1.1 (Bloque 3): questions carry the hint.
-* Versión: 1.1
+* Descripción: Maps the EvaluationDetailDTO of `GET /api/evaluations/{id}` to the BuilderEvaluation of the builder: scenarios and questions sorted by order, options sorted by order, media normalized, the description kept as text or Tiptap document (blank text becomes null), prompts and scenario contents kept as Tiptap documents (a non-object falls back to an empty document) and the readiness issues with their details. Also maps the metadata create body and update changes to their request DTOs (the generated schema types a Tiptap description as an empty record, so the document is passed through as the backend accepts it). Depends on the authoring DTOs and the builder entities. v1.1 (Bloque 3): questions carry the hint. v1.2 (ajustes C1): showResultsImmediately is no longer read (it has no effect).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -99,7 +99,6 @@ export function toBuilderEvaluation(dto: EvaluationDetailDTO): BuilderEvaluation
     durationMinutes: dto.durationMinutes,
     maxAttempts: dto.maxAttempts,
     shuffleQuestions: dto.shuffleQuestions,
-    showResultsImmediately: dto.showResultsImmediately,
     structureLocked: dto.structureLocked,
     canManage: dto.canManage,
     usage: {

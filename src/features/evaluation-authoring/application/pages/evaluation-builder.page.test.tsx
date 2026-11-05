@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationBuilderPage tests
-* Descripción: Renders the evaluation builder against a mocked backend (msw) with a mocked next/router (with route events), a textarea standing in for the lazy Tiptap editor and a pass-through @hello-pangea/dnd that exposes onDragEnd: creating validates, applies the type defaults, posts the evaluation and replaces the route with its editor; editing tracks "Cambios sin guardar", arms beforeunload and the route-change confirmation, and saves only the changed metadata with PATCH; a choice question saves its prompt and points with PATCH and its correct answer with option PATCHes (radio semantics); questions are added and deleted; a drag sends the batch `PUT .../questions/order` (and `.../scenarios/order`) and a refused reorder restores the previous order with a toast; structureLocked and a 409 has_submitted_attempts show the banner whose "Duplicar" opens the copy; a 422 shows its message and the reloaded readiness issues on the question. Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 + A2 review): the question texts and its points go in separate PATCHes; a 409 on the structural PATCH keeps the saved texts and drops the structural edits; a 422 shows the client READY validation on the question (the mocked detail does not change); an option created while its text is edited keeps that edit and is not created twice; the refused reorder is shown optimistically while the PUT is pending; "Marcar como lista" validates on the client (issues on the cards, no request), sends `PATCH .../status` READY and shows the reloaded issues on a 422; a READY evaluation disables single-correct answers and adding questions and returns to DRAFT; a SIMULATION question picks a published clinical case and edits its rubric, invalid rubrics block the save. v1.2 (A3 review W2/S1/S2): a SIMULATION question without a clinical case shows the non-blocking recommendation and can still be marked READY; the case title filter says it covers this page only; a 422 on a save with no client READY issue shows the READY hint on the question. v1.3 (S1): with the shared media service upload mocked (msw serves the preview URL), the statement uploads a video and removes an attached image (saved as `mediaIds` in the text PATCH), an option uploads its image (saved as `mediaId` in its option PATCH), and a statement file of another kind is refused before uploading. v1.4 (closure B1): Testing Library waits 5 s (the 1 s default failed under the full parallel suite).
-* Versión: 1.4
+* Descripción: Renders the evaluation builder against a mocked backend (msw) with a mocked next/router (with route events), a textarea standing in for the lazy Tiptap editor and a pass-through @hello-pangea/dnd that exposes onDragEnd: creating validates, applies the type defaults, posts the evaluation and replaces the route with its editor; editing tracks "Cambios sin guardar", arms beforeunload and the route-change confirmation, and saves only the changed metadata with PATCH; a choice question saves its prompt and points with PATCH and its correct answer with option PATCHes (radio semantics); questions are added and deleted; a drag sends the batch `PUT .../questions/order` (and `.../scenarios/order`) and a refused reorder restores the previous order with a toast; structureLocked and a 409 has_submitted_attempts show the banner whose "Duplicar" opens the copy; a 422 shows its message and the reloaded readiness issues on the question. Depends on vitest, Testing Library, msw and the authoring test helpers. v1.1 (A3 + A2 review): the question texts and its points go in separate PATCHes; a 409 on the structural PATCH keeps the saved texts and drops the structural edits; a 422 shows the client READY validation on the question (the mocked detail does not change); an option created while its text is edited keeps that edit and is not created twice; the refused reorder is shown optimistically while the PUT is pending; "Marcar como lista" validates on the client (issues on the cards, no request), sends `PATCH .../status` READY and shows the reloaded issues on a 422; a READY evaluation disables single-correct answers and adding questions and returns to DRAFT; a SIMULATION question picks a published clinical case and edits its rubric, invalid rubrics block the save. v1.2 (A3 review W2/S1/S2): a SIMULATION question without a clinical case shows the non-blocking recommendation and can still be marked READY; the case title filter says it covers this page only; a 422 on a save with no client READY issue shows the READY hint on the question. v1.3 (S1): with the shared media service upload mocked (msw serves the preview URL), the statement uploads a video and removes an attached image (saved as `mediaIds` in the text PATCH), an option uploads its image (saved as `mediaId` in its option PATCH), and a statement file of another kind is refused before uploading. v1.4 (closure B1): Testing Library waits 5 s (the 1 s default failed under the full parallel suite). v1.5 (ajustes C1): the create form has no immediate results switch and posts no showResultsImmediately.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -266,12 +266,11 @@ afterAll(() => {
 });
 
 describe("EvaluationBuilderPage — create", () => {
-  it("validates, applies the type defaults, posts the evaluation and opens its editor", async() => {
+  it("validates, posts the evaluation without the immediate results option and opens its editor", async() => {
     renderWithProviders(<EvaluationBuilderPage evaluationId={null} />);
 
-    const showResults = screen.getByLabelText(BUILDER_COPY.showResultsImmediately);
-
-    expect(showResults).toBeChecked();
+    // The results always wait for the teacher release: there is no immediate results switch.
+    expect(screen.queryByLabelText(/Mostrar los resultados/)).not.toBeInTheDocument();
     expect(screen.getByText(BUILDER_COPY.createFirst)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: BUILDER_COPY.create }));
@@ -279,7 +278,6 @@ describe("EvaluationBuilderPage — create", () => {
     expect(requests).toEqual([]);
 
     fireEvent.change(screen.getByLabelText("Tipo"), { target: { value: "EXAM" } });
-    expect(showResults).not.toBeChecked();
     fireEvent.change(screen.getByLabelText(/^Título/), { target: { value: "Parcial" } });
     fireEvent.change(await screen.findByRole("textbox", { name: BUILDER_COPY.description }, LAZY_WAIT), { target: { value: "Lee el caso" } });
     fireEvent.change(screen.getByLabelText(BUILDER_COPY.module), { target: { value: "module-1" } });
@@ -298,7 +296,6 @@ describe("EvaluationBuilderPage — create", () => {
       moduleId: "module-1",
       maxAttempts: 1,
       shuffleQuestions: false,
-      showResultsImmediately: false,
     }]);
     // The redirect after creating is not blocked by the unsaved-changes guard.
     expect(() => startRouteChange()).not.toThrow();
