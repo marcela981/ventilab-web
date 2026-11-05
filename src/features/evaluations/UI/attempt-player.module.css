@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt player styles
-* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): workshop progress, quiz list and submit row, "Comprobar respuesta" row, the aria-live clock warning and the focus ring of the question heading. vX.x (Bloque 5): July skin: question cards, navigator panel and scenario on glass (the scenario with the #00a1db edge); the sticky header stays opaque on the raised surface so the questions never show through it. v1.3 (ajustes C1): .checkRow is gone with "Comprobar respuesta".
-* Versión: 1.3
+* Descripción: Layout of the attempt player (/evaluations/[evaluationId]/attempts/[attemptId]): header with the title, the clock (warning and critical colors from the semantic tokens) and the submit button; a two-column body with the question navigator (collapsible behind a toggle under 900px) and the content, where the clinical scenario stays sticky next to the question on wide screens and above it on mobile; the question card, its autosave status and the Previous/Next pager. Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): workshop progress, quiz list and submit row, "Comprobar respuesta" row, the aria-live clock warning and the focus ring of the question heading. vX.x (Bloque 5): July skin: question cards, navigator panel and scenario on glass (the scenario with the #00a1db edge); the sticky header stays opaque on the raised surface so the questions never show through it. v1.3 (ajustes C1): .checkRow is gone with "Comprobar respuesta". v1.4 (ajustes C2): with a scenario on wide screens, the scenario keeps the left column and the progress, question and pager stack on the right (auto-placement split the question from its pager).
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -305,6 +305,16 @@
   .contentWithScenario {
     grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
     align-items: start;
+  }
+
+  /* The scenario keeps the left column; the progress, the question and the pager stack on the right. */
+  .contentWithScenario > .scenario {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+  }
+
+  .contentWithScenario > :not(.scenario) {
+    grid-column: 2;
   }
 
   .scenario {

@@ -166,6 +166,8 @@ describe("EvaluationsListPage", () => {
       "📝 Quizzes · Mecánica · Intermedio",
       "📝 Quizzes · Otras · Otras",
     ]);
+    // Without track nor level the "Otras" heading appears once (ajustes C2).
+    expect(within(quizzes).getAllByText("Otras")).toHaveLength(1);
 
     const done = within(quizzes).getByRole("article", { name: "Quiz nivel 1" });
 

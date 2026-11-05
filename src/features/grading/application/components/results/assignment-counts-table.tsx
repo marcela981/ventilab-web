@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AssignmentCountsTable
-* Descripción: Table of the groups an evaluation is assigned to, as `GET /api/evaluation-assignments?evaluationId` returns them: group, state (programada, activa, cerrada), window in Bogota time and the attempt counts by status (in progress, submitted, pending review, graded). Counts are shown as the API sends them. Depends on MUI, @shared/lib, the evaluation results entities and the CSS Module.
-* Versión: 1.0
+* Descripción: Table of the groups an evaluation is assigned to, as `GET /api/evaluation-assignments?evaluationId` returns them: group, state (programada, activa, cerrada), window in Bogota time and the attempt counts by status (in progress, submitted, pending review, graded). Counts are shown as the API sends them. Depends on MUI, @shared/lib, the evaluation results entities and the CSS Module. v1.1 (ajustes C2): the table keeps a minimum width and scrolls inside its container on narrow screens instead of squeezing the assignment window into many lines.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,7 +46,7 @@ export type AssignmentCountsTableProps = {
 export function AssignmentCountsTable({ assignments }: AssignmentCountsTableProps) {
   return (
     <TableContainer className={cx(styles.tableContainer)}>
-      <Table size="small" aria-label={ASSIGNMENT_TABLE_COPY.label}>
+      <Table size="small" aria-label={ASSIGNMENT_TABLE_COPY.label} className={cx(styles.countsTable)}>
         <TableHead>
           <TableRow>
             <TableCell>{ASSIGNMENT_TABLE_COPY.group}</TableCell>

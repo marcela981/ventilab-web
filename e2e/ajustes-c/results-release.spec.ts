@@ -62,6 +62,9 @@ test("(C4) the student sees no key and no grade until the release; grade only, t
     const attemptId = new URL(page.url()).pathname.split("/").pop() ?? "";
 
     await page.getByRole("radio", { name: "Evita el colapso alveolar" }).check();
+    await expect(page.getByText("Respuesta guardada").first()).toBeVisible();
+    // The exam shows one question per page.
+    await page.getByRole("button", { name: "Siguiente" }).click();
     await page.getByRole("radio", { name: "Verdadero" }).check();
     await expect(page.getByText("Respuesta guardada").first()).toBeVisible();
     await page.getByRole("button", { name: /^Enviar examen/ }).click();
