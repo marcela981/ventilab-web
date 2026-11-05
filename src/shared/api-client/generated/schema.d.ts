@@ -2167,8 +2167,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Publish attempt grade
-         * @description Publishes the grade of a GRADED attempt and notifies the student with grade:published; idempotent (an already published grade keeps its date)
+         * Release attempt results
+         * @description Releases to the student the grade of a GRADED attempt (scope GRADE) or the grade with the correct answers, explanations, rubrics, per-question points and AI feedback (scope GRADE_AND_ANSWERS, the default); notifies grade:published when the grade is released; idempotent (what was already released keeps its date). Until then the student only sees the attempt as submitted
          *
          *     **Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.
          */
@@ -2189,8 +2189,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Publish evaluation grades
-         * @description Publishes every GRADED unpublished attempt of the evaluation (optionally one group) within the caller's scope and notifies each student; returns how many were published
+         * Release evaluation results
+         * @description Releases the results of every GRADED attempt of the evaluation (optionally one group) within the caller's scope: the grade only (scope GRADE) or the grade with the answers and AI feedback (scope GRADE_AND_ANSWERS, the default); attempts still in progress or pending review are left out; returns how many attempts changed
          *
          *     **Required access:** bearer token holding `evaluations:grade`; minimum role TEACHER.
          */
@@ -3893,28 +3893,6 @@ export interface paths {
         get: operations["getMyEvaluations"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/my-evaluations/attempts/{attemptId}/answers/{questionId}/check": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Check evaluation answer
-         * @description Immediate feedback (QUIZ and WORKSHOP choice questions): saves the selected options of the own attempt in progress, reveals whether they are correct with the correct options and the explanation, and locks the answer (a later save or check answers 409); the score is still computed only at submission
-         *
-         *     **Required access:** bearer token holding `evaluations:attempt`; minimum role STUDENT.
-         */
-        post: operations["checkAnswer"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9500,34 +9478,6 @@ export interface components {
              */
             studentCode: string | null;
         };
-        CheckEvaluationAnswerDTO: {
-            /**
-             * @description Selected option IDs to check (choice questions)
-             * @example [
-             *       "cm5option01"
-             *     ]
-             */
-            selectedOptionIds: string[];
-        };
-        CheckEvaluationAnswerResponseDTO: {
-            /**
-             * @description Correct option IDs
-             * @example [
-             *       "cm5option01"
-             *     ]
-             */
-            correctOptionIds: string[];
-            /**
-             * @description Teacher explanation
-             * @example PEEP keeps the alveoli open
-             */
-            explanation: string | null;
-            /**
-             * @description Whether the selected options are exactly the correct ones
-             * @example true
-             */
-            isCorrect: boolean;
-        };
         ClinicalCaseAttemptsDTO: {
             /** @description Attempts, most recent first */
             attempts: components["schemas"]["CaseAttemptDTO"][];
@@ -13000,38 +12950,6 @@ export interface components {
              */
             score: number;
         };
-        GradedQuestionDTO: {
-            /**
-             * @description Correct option identifier
-             * @example q1-a
-             */
-            correctOptionId: string;
-            /**
-             * @description Question explanation
-             * @example PEEP keeps the alveoli open
-             */
-            explanation: string | null;
-            /**
-             * @description Feedback of the selected option
-             * @example Review the definition of PEEP
-             */
-            feedback: string | null;
-            /**
-             * @description Whether the selected option is correct
-             * @example false
-             */
-            isCorrect: boolean;
-            /**
-             * @description Question identifier
-             * @example q1
-             */
-            questionId: string;
-            /**
-             * @description Option selected by the user, empty when unanswered
-             * @example q1-b
-             */
-            selectedOptionId: string;
-        };
         GradingAnswerDTO: {
             /**
              * @description Answer ID (null when the student did not answer)
@@ -13097,6 +13015,12 @@ export interface components {
             /** @description One entry per question with the student answer and its scores */
             answers: components["schemas"]["GradingAnswerDTO"][];
             /**
+             * Format: date-time
+             * @description When the correct answers, explanations and AI feedback were released to the student
+             * @example null
+             */
+            answersReleasedAt: string | null;
+            /**
              * @description Assignment ID (null for legacy attempts)
              * @example cm5assignment01
              */
@@ -13129,7 +13053,7 @@ export interface components {
             grade: number | null;
             /**
              * Format: date-time
-             * @description When the grade was published to the student
+             * @description When the grade was released to the student
              * @example null
              */
             gradePublishedAt: string | null;
@@ -13198,6 +13122,12 @@ export interface components {
         };
         GradingAttemptListItemDTO: {
             /**
+             * Format: date-time
+             * @description When the answers and AI feedback were released (null while unreleased)
+             * @example null
+             */
+            answersReleasedAt: string | null;
+            /**
              * @description Assignment ID
              * @example cm5assignment01
              */
@@ -13224,7 +13154,7 @@ export interface components {
             grade: number | null;
             /**
              * Format: date-time
-             * @description When the grade was published (null while unpublished)
+             * @description When the grade was released (null while unreleased)
              * @example 2026-10-06T09:00:00.000Z
              */
             gradePublishedAt: string | null;
@@ -16258,6 +16188,11 @@ export interface components {
         };
         MyEvaluationAttemptDTO: {
             /**
+             * @description Whether the teacher released the correct answers and the AI feedback
+             * @example false
+             */
+            answersReleased: boolean;
+            /**
              * @description Attempt number
              * @example 1
              */
@@ -16289,7 +16224,7 @@ export interface components {
              */
             passed?: boolean;
             /**
-             * @description Whether the grade is published
+             * @description Whether the teacher released the grade
              * @example true
              */
             published: boolean;
@@ -17544,18 +17479,6 @@ export interface components {
              */
             withinRange: boolean;
         };
-        PartialClosedScoreDTO: {
-            /**
-             * @description Closed (choice) questions answered correctly
-             * @example 3
-             */
-            correct: number;
-            /**
-             * @description Closed (choice) questions in the evaluation
-             * @example 4
-             */
-            total: number;
-        };
         PatientDTO: {
             /** @description Arterial blood gas */
             arterialBloodGas: Record<string, never> | null;
@@ -18131,10 +18054,16 @@ export interface components {
         };
         PublishAttemptGradeResponseDTO: {
             /**
-             * @description Whether it was already published (nothing changed)
+             * @description Whether everything requested was already released (nothing changed)
              * @example false
              */
             alreadyPublished: boolean;
+            /**
+             * Format: date-time
+             * @description When the answers, explanations and AI feedback were released; null while only the grade is released
+             * @example null
+             */
+            answersReleasedAt: string | null;
             /**
              * @description Attempt ID
              * @example 01932e9f-1234-7abc-9def-1a2b3c4d5e6f
@@ -18158,10 +18087,17 @@ export interface components {
              * @example cm5group01
              */
             groupId?: string;
+            /**
+             * @description What the student gets: GRADE (score, grade and passed only) or GRADE_AND_ANSWERS (also the correct answers, explanations, rubrics, per-question points and AI feedback)
+             * @default GRADE_AND_ANSWERS
+             * @example GRADE
+             * @enum {string}
+             */
+            scope: "GRADE" | "GRADE_AND_ANSWERS";
         };
         PublishGradesResponseDTO: {
             /**
-             * @description Number of grades published by this call
+             * @description Number of attempts whose release changed with this call (grade published and/or answers released)
              * @example 12
              */
             publishedCount: number;
@@ -18244,24 +18180,7 @@ export interface components {
              */
             attemptId: string;
             /**
-             * @description Number of correct answers
-             * @example 4
-             */
-            correctAnswers: number;
-            /** @description Per-question grading */
-            gradedQuestions: components["schemas"]["GradedQuestionDTO"][];
-            /**
-             * @description Whether the attempt reached the passing score
-             * @example true
-             */
-            passed: boolean;
-            /**
-             * @description Score from 0 to 100
-             * @example 80
-             */
-            score: number;
-            /**
-             * @description Number of questions in the quiz
+             * @description Number of questions in the quiz (the score and the corrections are released by the teacher)
              * @example 5
              */
             totalQuestions: number;
@@ -18596,6 +18515,15 @@ export interface components {
              * @example SecurePass123
              */
             password: string;
+        };
+        ReleaseAttemptResultsDTO: {
+            /**
+             * @description What the student gets: GRADE (score, grade and passed only) or GRADE_AND_ANSWERS (also the correct answers, explanations, rubrics, per-question points and AI feedback)
+             * @default GRADE_AND_ANSWERS
+             * @example GRADE
+             * @enum {string}
+             */
+            scope: "GRADE" | "GRADE_AND_ANSWERS";
         };
         RenameAiConversationDTO: {
             /**
@@ -20501,31 +20429,6 @@ export interface components {
              */
             textAnswer: string | null;
         };
-        StudentAnswerRevealDTO: {
-            /**
-             * @description Correct option IDs
-             * @example [
-             *       "cm5option01"
-             *     ]
-             */
-            correctOptionIds: string[];
-            /**
-             * @description Teacher explanation
-             * @example PEEP keeps the alveoli open
-             */
-            explanation: string | null;
-            /**
-             * @description Whether the checked answer is correct
-             * @example false
-             */
-            isCorrect: boolean;
-            /**
-             * Format: date-time
-             * @description When the answer was checked (it is locked since then)
-             * @example 2026-10-06T08:05:00.000Z
-             */
-            revealedAt: string;
-        };
         StudentAssignmentCheckDTO: {
             /**
              * @description Whether the student is assigned to the teacher
@@ -20544,6 +20447,11 @@ export interface components {
             teacherId: string;
         };
         StudentAttemptDetailDTO: {
+            /**
+             * @description Whether the teacher released the correct answers, explanations, rubrics, per-question points and AI feedback
+             * @example false
+             */
+            answersReleased: boolean;
             /**
              * @description Assignment ID
              * @example cm5assignment01
@@ -20577,15 +20485,13 @@ export interface components {
              * @example 10
              */
             maxScore?: number;
-            /** @description Correct closed questions while open questions wait for the teacher (PENDING_REVIEW QUIZ or WORKSHOP attempts only; null otherwise) */
-            partialClosedScore: components["schemas"]["PartialClosedScoreDTO"] | null;
             /**
              * @description Whether the grade reaches the passing grade (published only)
              * @example true
              */
             passed?: boolean;
             /**
-             * @description Whether the grade is published (scores and correct answers are only included then)
+             * @description Whether the teacher released the grade (score, grade and passed are only included then)
              * @example false
              */
             published: boolean;
@@ -21010,7 +20916,7 @@ export interface components {
              */
             content: string;
             /**
-             * @description Option feedback (only once the grade is published)
+             * @description Option feedback (only once the teacher releases the answers)
              * @example Correct
              */
             feedback?: string | null;
@@ -21020,7 +20926,7 @@ export interface components {
              */
             id: string;
             /**
-             * @description Whether the option is correct (only once the grade is published)
+             * @description Whether the option is correct (only once the teacher releases the answers)
              * @example true
              */
             isCorrect?: boolean;
@@ -21087,11 +20993,11 @@ export interface components {
              */
             clinicalCaseId: string | null;
             /**
-             * @description Points earned (only once the grade is published; null while pending)
+             * @description Points earned (only once the teacher releases the answers; null while pending)
              * @example 1
              */
             earnedScore?: number | null;
-            /** @description Teacher explanation (only once the grade is published) */
+            /** @description Teacher explanation (only once the teacher releases the answers) */
             explanation?: string | null;
             /**
              * @description Hint shown on demand (WORKSHOP evaluations only; null otherwise)
@@ -21119,9 +21025,7 @@ export interface components {
             position: number;
             /** @description Question prompt (Tiptap document) */
             prompt: Record<string, never>;
-            /** @description Correction of an answer the student checked for immediate feedback (QUIZ and WORKSHOP); null when the answer was not checked */
-            reveal: components["schemas"]["StudentAnswerRevealDTO"] | null;
-            /** @description Rubric (only once the grade is published) */
+            /** @description Rubric (only once the teacher releases the answers) */
             rubric?: Record<string, never> | null;
             /**
              * @description Scenario the question belongs to
@@ -31189,9 +31093,13 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReleaseAttemptResultsDTO"];
+            };
+        };
         responses: {
-            /** @description Grade published successfully */
+            /** @description Results released successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -31202,7 +31110,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Validation error or malformed request */
+            /** @description Validation error */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -38954,107 +38862,6 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Too many requests (rate limit or quota); retry after the time given by the Retry-After header when present */
-            429: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unexpected server error */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    checkAnswer: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                attemptId: string;
-                questionId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CheckEvaluationAnswerDTO"];
-            };
-        };
-        responses: {
-            /** @description Answer checked successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["APIResponseEnvelope"] & {
-                        data: components["schemas"]["CheckEvaluationAnswerResponseDTO"];
-                    };
-                };
-            };
-            /** @description Validation error */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Unauthorized */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The caller lacks the required permission or is not allowed to act on this resource */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Attempt or question not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description The attempt is closed, read-only or past its deadline, or the answer was already checked */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description EXAM evaluation, non-choice question, or options that do not match the question */
-            422: {
                 headers: {
                     [name: string]: unknown;
                 };

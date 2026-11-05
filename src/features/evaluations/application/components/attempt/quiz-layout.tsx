@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: QuizLayout
-* Descripción: QUIZ body of the attempt player, as July's QuizRenderer: every question visible at once ("Pregunta i de N"), the clinical scenario shown before the first question that uses it, immediate feedback under each choice question once answered ("¡Correcto! 🎉" / `Casi. La respuesta correcta era "{x}"` and the explanation, announced through an aria-live region) and "Enviar quiz" at the end. Depends on the attempt components and the attempt player CSS Module.
-* Versión: 1.0
+* Descripción: QUIZ body of the attempt player, as July's QuizRenderer: every question visible at once ("Pregunta i de N"), the clinical scenario shown before the first question that uses it, immediate feedback under each choice question once answered ("¡Correcto! 🎉" / `Casi. La respuesta correcta era "{x}"` and the explanation, announced through an aria-live region) and "Enviar quiz" at the end. Depends on the attempt components and the attempt player CSS Module. v1.1 (ajustes C1): no immediate feedback; every answer is autosaved with its save status and the results wait for the teacher release.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

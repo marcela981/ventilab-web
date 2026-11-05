@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: WorkshopLayout
-* Descripción: WORKSHOP body of the attempt player, as July's TallerRenderer: "Paso n de N" with a progress bar, the clinical scenario of the step, one question at a time (AttemptQuestionBlock: "Pista 💡" / "Ocultar pista" before answering, immediate feedback with the explanation after answering), Anterior and Siguiente, and on the last step "Enviar taller" instead of Siguiente. The focus moves to the question heading on every step change and Alt+←/→ change the step outside text fields (useQuestionPager). Depends on MUI, the attempt components, useQuestionPager and the attempt player CSS Module.
-* Versión: 1.0
+* Descripción: WORKSHOP body of the attempt player, as July's TallerRenderer: "Paso n de N" with a progress bar, the clinical scenario of the step, one question at a time (AttemptQuestionBlock: "Pista 💡" / "Ocultar pista" before answering, immediate feedback with the explanation after answering), Anterior and Siguiente, and on the last step "Enviar taller" instead of Siguiente. The focus moves to the question heading on every step change and Alt+←/→ change the step outside text fields (useQuestionPager). Depends on MUI, the attempt components, useQuestionPager and the attempt player CSS Module. v1.1 (ajustes C1): no immediate feedback or explanation after answering; the hint stays and the results wait for the teacher release.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje

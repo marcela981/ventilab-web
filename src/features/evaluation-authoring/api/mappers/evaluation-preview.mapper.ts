@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation student preview mapper
-* Descripción: Maps the EvaluationDetailDTO of `GET /api/evaluations/{id}` (the authoring view, which carries the correct answers, explanations, rubrics and option feedback) to the StudentPreview rendered with the student components of @features/evaluations: scenarios and questions in the shape of an unpublished attempt (AttemptScenario, AttemptQuestion), sorted by order, numbered from 1, with no answer and WITHOUT isCorrect, option feedback, explanation, rubric or earned score, exactly what a student sees while answering. Depends on the authoring DTOs, the preview entity and the @features/evaluations barrel (entities and toRichText).
-* Versión: 1.0
+* Descripción: Maps the EvaluationDetailDTO of `GET /api/evaluations/{id}` (the authoring view, which carries the correct answers, explanations, rubrics and option feedback) to the StudentPreview rendered with the student components of @features/evaluations: scenarios and questions in the shape of an unpublished attempt (AttemptScenario, AttemptQuestion), sorted by order, numbered from 1, with no answer and WITHOUT isCorrect, option feedback, explanation, rubric or earned score, exactly what a student sees while answering. Depends on the authoring DTOs, the preview entity and the @features/evaluations barrel (entities and toRichText). v1.1 (ajustes C1): the preview question no longer carries a revealed correction (reveal is gone).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -44,9 +44,8 @@ function toPreviewQuestion(dto: EvaluationQuestionDTO, index: number): AttemptQu
     clinicalCaseId: dto.clinicalCaseId,
     options: [...dto.options].sort(byOrder).map(toPreviewOption),
     answer: null,
-    // Never the hint (a student sees it only while answering a WORKSHOP) and nothing is revealed.
+    // Never the hint (a student sees it only while answering a WORKSHOP).
     hint: null,
-    reveal: null,
   };
 }
 

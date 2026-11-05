@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: ResultsBand
-* Descripción: July result band at the top of the result page: the verdict ("¡Aprobado! 🎉" / "Reprobado 😔", no emojis in EXAM) with "{c} de {t} correctas" once published, or "Respuestas enviadas — pendiente de revisión por el docente" with the partial count of the closed questions while the teacher reviews, colored by the outcome, and "Volver a evaluaciones". Depends on next/link, the result band rules, the evaluations URLs and the attempt result CSS Module.
-* Versión: 1.0
+* Descripción: July result band at the top of the result page: the verdict ("¡Aprobado! 🎉" / "Reprobado 😔", no emojis in EXAM) with "{c} de {t} correctas" once published, or "Respuestas enviadas — pendiente de revisión por el docente" with the partial count of the closed questions while the teacher reviews, colored by the outcome, and "Volver a evaluaciones". Depends on next/link, the result band rules, the evaluations URLs and the attempt result CSS Module. v1.1 (ajustes C1): before the teacher release the band reads "Entregado — en espera de resultados" in the pending tone with no partial count; "{c} de {t} correctas" only once the answers are released.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,7 +28,7 @@ export function ResultsBand({ attempt }: { attempt: AttemptDetail }) {
     <section className={cx(styles.band, tone)} aria-label={band.verdict}>
       <div className={cx(styles.bandText)}>
         <p className={cx(styles.bandVerdict)}>{band.verdict}</p>
-        {band.detail ? <p className={cx(styles.bandDetail)}>{band.detail}</p> : null}
+        {band.kind === "published" && band.detail ? <p className={cx(styles.bandDetail)}>{band.detail}</p> : null}
       </div>
       <Link href={EVALUATIONS_URL} className={cx(styles.bandBack)}>{BAND_COPY.back}</Link>
     </section>

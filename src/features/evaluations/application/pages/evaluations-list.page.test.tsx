@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationsListPage tests
-* Descripción: Renders /evaluations against a mocked backend (msw): active evaluations by default with counts per tab, the card details (type, linked title, duration, attempts, last attempt status and published grade colored by `passed`), switching tabs, the type filter chips with the filtered empty state, the load error with retry, and the socket events evaluation:activated and grade:published refetching my evaluations and my grades. Depends on vitest, Testing Library, msw and the evaluations test helpers. v1.1 (Bloque 3): July grouping (type → track → level), "Completado ✓", empty texts, `?moduleId=` filter; the type filter chips are gone.
-* Versión: 1.1
+* Descripción: Renders /evaluations against a mocked backend (msw): active evaluations by default with counts per tab, the card details (type, linked title, duration, attempts, last attempt status and published grade colored by `passed`), switching tabs, the type filter chips with the filtered empty state, the load error with retry, and the socket events evaluation:activated and grade:published refetching my evaluations and my grades. Depends on vitest, Testing Library, msw and the evaluations test helpers. v1.1 (Bloque 3): July grouping (type → track → level), "Completado ✓", empty texts, `?moduleId=` filter; the type filter chips are gone. v1.2 (ajustes C1): a submitted attempt not released shows "En espera de resultados", no grade, and keeps "Ver resultado".
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -103,6 +103,25 @@ describe("EvaluationsListPage", () => {
     expect(quiz).toHaveTextContent("Sin límite de tiempo");
     expect(quiz).toHaveTextContent("En curso");
     expect(quiz).not.toHaveTextContent("Nota");
+  });
+
+  it("shows \"En espera de resultados\" and no grade while the teacher has not released it", async() => {
+    server.use(http.get(apiUrl("/api/my-evaluations"), () => HttpResponse.json(envelope([
+      myEvaluationDto("as1", "e1", {
+        canStart: false,
+        evaluation: { title: "Quiz entregado", type: "QUIZ", maxAttempts: 1 },
+        // GRADED by the server (automatic score) but not released: the summary carries no grade.
+        attempts: [attemptDto("at1", 1, { status: "GRADED" })],
+      }),
+    ]))));
+    renderWithSession(<EvaluationsListPage />);
+
+    const card = await screen.findByRole("article", { name: "Quiz entregado" });
+
+    expect(card).toHaveTextContent("En espera de resultados");
+    expect(card).not.toHaveTextContent("Calificado");
+    expect(card).not.toHaveTextContent("Nota");
+    expect(within(card).getByRole("link", { name: "Ver resultado: Quiz entregado" })).toHaveAttribute("href", "/evaluations/e1/attempts/at1/result");
   });
 
   it("switches tabs and shows a failed published grade in the closed tab", async() => {

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptReviewPane
-* Descripción: Review pane of one attempt in the "Revisar" tab of the unified grading screen /grading/evaluations/[evaluationId]?attempt=<id> (DISENO_BLOQUE3 §2.8; extracted from the former grade-attempt page /grading/attempts/[attemptId], which now resolves to this screen). Reads the attempt (`GET /api/evaluation-grading/attempts/{attemptId}`) and its AI feedback. Shows the student and attempt, the status, publication, grade with pass/fail from the API, score and passing grade (legacy attempts are read-only), a question navigator, each answer with its grading card (the scenario above the first of its questions; SIMULATION answers with the server rubric breakdown), "Guardar" (only the changed answers, one PUT at a time; overriding a score needs a comment; backend 422 codes land on their field; a failed save keeps its draft and a failed read-back keeps every draft with a reload alert), "Publicar" after confirmation (GRADED attempts only, nothing unsaved) and the AI feedback panel with "Regenerar" (409 when a generation is already running and 429 when regenerating too often are shown in the panel). Unsaved grades are reported to the screen (onDirtyChange), which asks before switching attempts; the browser and other routes are guarded by useUnsavedGradesGuard. Depends on React, MUI, the evaluations entry points (scenario, status badge), the design-system components, @shared/lib, the grading services, hooks, entities and components and the grade-attempt CSS Module.
-* Versión: 2.0
+* Descripción: Review pane of one attempt in the "Revisar" tab of the unified grading screen /grading/evaluations/[evaluationId]?attempt=<id> (DISENO_BLOQUE3 §2.8; extracted from the former grade-attempt page /grading/attempts/[attemptId], which now resolves to this screen). Reads the attempt (`GET /api/evaluation-grading/attempts/{attemptId}`) and its AI feedback. Shows the student and attempt, the status, publication, grade with pass/fail from the API, score and passing grade (legacy attempts are read-only), a question navigator, each answer with its grading card (the scenario above the first of its questions; SIMULATION answers with the server rubric breakdown), "Guardar" (only the changed answers, one PUT at a time; overriding a score needs a comment; backend 422 codes land on their field; a failed save keeps its draft and a failed read-back keeps every draft with a reload alert), "Publicar" after confirmation (GRADED attempts only, nothing unsaved) and the AI feedback panel with "Regenerar" (409 when a generation is already running and 429 when regenerating too often are shown in the panel). Unsaved grades are reported to the screen (onDirtyChange), which asks before switching attempts; the browser and other routes are guarded by useUnsavedGradesGuard. Depends on React, MUI, the evaluations entry points (scenario, status badge), the design-system components, @shared/lib, the grading services, hooks, entities and components and the grade-attempt CSS Module. v2.1 (ajustes C1): "Publicar" becomes two releases, "Liberar nota" (scope GRADE) and "Liberar nota y respuestas" (scope GRADE_AND_ANSWERS: also the correct answers, explanations and AI feedback), each with its confirmation; the summary shows the release state ("Sin liberar", "Nota liberada", "Nota y respuestas liberadas"); once the grade is released only the answers release remains, and after both (or for a legacy attempt) none.
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +26,6 @@ import { AnswerGradingCard, gradingAnchorId } from "../attempt/answer-grading-ca
 import { GradingFeedbackPanel } from "../attempt/feedback-panel";
 import { formatPoints, GRADE_COPY } from "../../entities/grade-attempt-copy";
 import {
-  canPublish,
   hasErrors,
   initialDraft,
   isDraftDirty,
@@ -36,6 +35,8 @@ import {
 } from "../../entities/grading-attempt.entity";
 import type { GradeDraft, GradeDraftErrors, GradingAttempt, GradingItem } from "../../entities/grading-attempt.entity";
 import { getGradingErrorMessage } from "../../entities/grading-error-messages";
+import { canRelease, RELEASE_STATE_LABELS, releaseStateOf } from "../../entities/results-release.entity";
+import type { ReleaseScope } from "../../entities/results-release.entity";
 import { useGradingAttempt } from "../../hooks/use-grading-attempt";
 import { useGradingFeedback } from "../../hooks/use-grading-feedback";
 import { useGradingMutation } from "../../hooks/use-grading-mutation";
@@ -66,15 +67,31 @@ export function toAnswerErrors(error: unknown): GradeDraftErrors {
   return { general: message };
 }
 
+const RELEASE_COPY: Record<ReleaseScope, { action: string, title: string, description: string, toast: string }> = {
+  GRADE: {
+    action: GRADE_COPY.releaseGrade,
+    title: GRADE_COPY.releaseGradeTitle,
+    description: GRADE_COPY.releaseGradeDescription,
+    toast: GRADE_COPY.releasedGradeToast,
+  },
+  GRADE_AND_ANSWERS: {
+    action: GRADE_COPY.releaseAll,
+    title: GRADE_COPY.releaseAllTitle,
+    description: GRADE_COPY.releaseAllDescription,
+    toast: GRADE_COPY.releasedAllToast,
+  },
+};
+
 function AttemptSummary({ attempt }: { attempt: GradingAttempt }) {
   const state = passState(attempt);
+  const release = releaseStateOf(attempt);
 
   return (
     <section className={cx(styles.summary)} aria-label={GRADE_COPY.gradeLabel}>
       <div className={cx(styles.summaryRow)}>
         <AttemptStatusBadge status={attempt.status} />
-        <span className={cx(styles.publication, attempt.publishedAt ? styles.publicationDone : undefined)}>
-          {attempt.publishedAt ? GRADE_COPY.published(formatDateTime(attempt.publishedAt)) : GRADE_COPY.unpublished}
+        <span className={cx(styles.publication, release !== "none" ? styles.publicationDone : undefined)} data-testid="release-state">
+          {RELEASE_STATE_LABELS[release]}
         </span>
         {attempt.submittedAt ? <span className={cx(styles.muted)}>{GRADE_COPY.submittedAt(formatDateTime(attempt.submittedAt))}</span> : null}
       </div>
@@ -127,7 +144,10 @@ export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: At
   const [errors, setErrors] = useState<Record<string, GradeDraftErrors>>({});
   const [saving, setSaving] = useState(false);
   const savingRef = useRef(false);
-  const [confirmPublish, setConfirmPublish] = useState(false);
+  // The release the teacher is confirming (null while no dialog is open).
+  const [confirmScope, setConfirmScope] = useState<ReleaseScope | null>(null);
+  // Kept after closing so the dialog does not go blank while it fades out.
+  const [dialogScope, setDialogScope] = useState<ReleaseScope>("GRADE");
   const [regenerating, setRegenerating] = useState(false);
   // Saved answers whose fresh values could not be read back; their drafts stay until a reload succeeds.
   const [staleSaved, setStaleSaved] = useState<string[]>([]);
@@ -266,14 +286,14 @@ export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: At
     }
   };
 
-  const publish = async() => {
-    const outcome = await run(() => publishAttemptGrade(attemptId));
+  const release = async(scope: ReleaseScope) => {
+    const outcome = await run(() => publishAttemptGrade(attemptId, scope));
 
     if (outcome.status === "success") {
-      setConfirmPublish(false);
-      toast.success(outcome.value.alreadyPublished ? GRADE_COPY.alreadyPublishedToast : GRADE_COPY.publishedToast);
+      setConfirmScope(null);
+      toast.success(outcome.value.alreadyPublished ? GRADE_COPY.alreadyReleasedToast : RELEASE_COPY[scope].toast);
     } else if (outcome.status === "error") {
-      setConfirmPublish(false);
+      setConfirmScope(null);
       toast.error(outcome.message);
     }
   };
@@ -298,8 +318,18 @@ export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: At
     }
   };
 
-  const publishable = attempt !== null && canPublish(attempt);
   const busy = saving || mutating;
+  const releaseState = attempt ? releaseStateOf(attempt) : "none";
+  // Once the grade is released only the answers remain; a legacy attempt is read-only and a full release is final.
+  const releaseScopes: ReleaseScope[] = [];
+
+  if (attempt && !attempt.legacy) {
+    if (releaseState === "none") {
+      releaseScopes.push("GRADE", "GRADE_AND_ANSWERS");
+    } else if (releaseState === "grade") {
+      releaseScopes.push("GRADE_AND_ANSWERS");
+    }
+  }
 
   const actions = (
     <div className={cx(styles.headerActions)}>
@@ -308,24 +338,34 @@ export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: At
           <AsyncButton variant="contained" disabled={dirtyCount === 0 || busy || readOnly} loading={saving} onClick={save}>
             {GRADE_COPY.save}
           </AsyncButton>
-          <Button variant="outlined" disabled={!publishable || dirtyCount > 0 || busy} onClick={() => setConfirmPublish(true)}>
-            {GRADE_COPY.publish}
-          </Button>
+          {releaseScopes.map((scope) => (
+            <Button
+              key={scope}
+              variant="outlined"
+              disabled={!canRelease(attempt, scope) || dirtyCount > 0 || busy}
+              onClick={() => {
+                setDialogScope(scope);
+                setConfirmScope(scope);
+              }}
+            >
+              {RELEASE_COPY[scope].action}
+            </Button>
+          ))}
         </>
       ) : null}
     </div>
   );
 
-  const publishHint = () => {
-    if (!attempt || attempt.publishedAt || attempt.legacy) {
+  const releaseHint = () => {
+    if (releaseScopes.length === 0) {
       return null;
     }
 
-    if (attempt.status !== "GRADED") {
-      return <p className={cx(styles.muted)}>{GRADE_COPY.publishNeedsGraded}</p>;
+    if (attempt?.status !== "GRADED") {
+      return <p className={cx(styles.muted)}>{GRADE_COPY.releaseNeedsGraded}</p>;
     }
 
-    return dirtyCount > 0 ? <p className={cx(styles.muted)}>{GRADE_COPY.publishNeedsSave}</p> : null;
+    return dirtyCount > 0 ? <p className={cx(styles.muted)}>{GRADE_COPY.releaseNeedsSave}</p> : null;
   };
 
   const renderBody = () => {
@@ -358,7 +398,7 @@ export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: At
             {GRADE_COPY.refreshFailed}
           </Alert>
         ) : null}
-        {publishHint()}
+        {releaseHint()}
         {dirtyCount > 0 ? (
           <p className={cx(styles.dirty)} role="status">{GRADE_COPY.dirty(dirtyCount)}</p>
         ) : null}
@@ -409,14 +449,18 @@ export function AttemptReviewPane({ attemptId, studentLabel, onDirtyChange }: At
     <div className={cx(styles.pane)}>
       {renderBody()}
       <ConfirmDialog
-        open={confirmPublish}
-        title={GRADE_COPY.publishTitle}
-        description={GRADE_COPY.publishDescription}
-        confirmLabel={GRADE_COPY.publishConfirm}
+        open={confirmScope !== null}
+        title={RELEASE_COPY[dialogScope].title}
+        description={RELEASE_COPY[dialogScope].description}
+        confirmLabel={GRADE_COPY.releaseConfirm}
         cancelLabel={GRADE_COPY.cancel}
         isPending={mutating}
-        onConfirm={() => void publish()}
-        onCancel={() => setConfirmPublish(false)}
+        onConfirm={() => {
+          if (confirmScope) {
+            void release(confirmScope);
+          }
+        }}
+        onCancel={() => setConfirmScope(null)}
       />
     </div>
   );

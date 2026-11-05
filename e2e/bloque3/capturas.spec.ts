@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Screenshots of Block 3 (documentation)
-* Descripción: Only with E2E_CAPTURES=1: writes PNG screenshots to docs/bloque3/capturas/ (E2E_CAPTURES_DIR overrides) of the key evaluation screens, on data seeded through the API for a brand-new group and student: the student list grouped by type → track → level, the quiz immediate feedback, the workshop hint, the exam player with its timer and the practical part, the result with the AI feedback (fake LLM provider, see scripts/e2e/README.md), the staff hub (Gestionar), the "Asignación a grupos" section of the builder, the unified grading screen and the "Reiniciar intento" dialog. It asserts only what it needs to frame each capture. Depends on @playwright/test and the learning and evaluations e2e helpers.
-* Versión: 0.1
+* Descripción: Only with E2E_CAPTURES=1: writes PNG screenshots to docs/bloque3/capturas/ (E2E_CAPTURES_DIR overrides) of the key evaluation screens, on data seeded through the API for a brand-new group and student: the student list grouped by type → track → level, the quiz autosaved answers and its result waiting for the teacher release, the workshop hint, the exam player with its timer and the practical part, the result with the AI feedback (fake LLM provider, see scripts/e2e/README.md), the staff hub (Gestionar), the "Asignación a grupos" section of the builder, the unified grading screen and the "Reiniciar intento" dialog. It asserts only what it needs to frame each capture. Depends on @playwright/test and the learning and evaluations e2e helpers. v0.2 (ajustes C1): the quiz capture shows the autosaved answers (no immediate feedback), a new capture shows the result waiting for the teacher release, and the AI feedback capture comes after the teacher releases the grade and the answers through the API.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { type BrowserContext, expect, type Page, test } from "@playwright/test";
-import { curriculumLevels, freshGroup, retireEvaluation, runTag, type SeededEvaluation, seedEvaluation, signInTeacher } from "../support/evaluations";
+import { curriculumLevels, freshGroup, releaseAttemptResults, retireEvaluation, runTag, type SeededEvaluation, seedEvaluation, signInTeacher } from "../support/evaluations";
 import { contextFor } from "../support/learning";
 
 const OUT_DIR = process.env.E2E_CAPTURES_DIR ?? "docs/bloque3/capturas";
@@ -86,18 +86,23 @@ test("Block 3 key screens", async ({ browser, request, baseURL }) => {
     await expect(page.getByRole("group", { name: "Evaluaciones activas" }).getByRole("article").first()).toBeVisible({ timeout: 30_000 });
     await shot(page, "01-lista-estudiante");
 
-    // Quiz: immediate feedback, then the result with the AI feedback.
+    // Quiz: autosaved answers, the result waiting for the release, then the released result with the AI feedback.
     await page.goto(`/evaluations/${quiz.id}`);
     await page.getByRole("button", { name: "Comenzar" }).click();
     await expect(page).toHaveURL(/\/attempts\/[^/]+$/, { timeout: 30_000 });
+    const quizAttemptId = new URL(page.url()).pathname.split("/").pop() ?? "";
+
     await page.getByRole("radio", { name: "Volumen corriente" }).check();
-    await expect(page.getByText("¡Correcto! 🎉")).toBeVisible({ timeout: 15_000 });
     await page.getByRole("radio", { name: "20 cmH2O" }).check();
-    await expect(page.getByText(/^Casi\. La respuesta correcta era/)).toBeVisible({ timeout: 15_000 });
-    await shot(page, "02-quiz-retroalimentacion-inmediata");
+    await expect(page.getByText("Respuesta guardada")).toHaveCount(2, { timeout: 15_000 });
+    await shot(page, "02-quiz-autoguardado");
     await page.getByRole("button", { name: "Enviar quiz" }).click();
     await page.getByRole("dialog", { name: "¿Enviar el intento?" }).getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(page).toHaveURL(/\/result$/, { timeout: 30_000 });
+    await expect(page.getByText("Entregado — en espera de resultados")).toBeVisible({ timeout: 30_000 });
+    await shot(page, "05a-resultado-en-espera");
+    await releaseAttemptResults(teacher.api, quizAttemptId, "GRADE_AND_ANSWERS");
+    await page.reload();
     await expect(page.getByRole("region", { name: "Retroalimentación general" })).toContainText("proveedor falso de E2E", { timeout: 60_000 });
     await shot(page, "05-resultado-con-retroalimentacion-ia");
 

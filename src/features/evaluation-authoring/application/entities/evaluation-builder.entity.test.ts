@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation builder entity tests
-* Descripción: Unit tests of the metadata rules of the evaluation builder: defaults by type (show results immediately only for QUIZ, applied on a type change), validation (title, duration, max attempts), the create body (blank fields omitted), the update changes (only changed fields; blanks clear with null), the dirty check of a new and a loaded evaluation and the level/module choices. Depends on vitest and the builder entities.
-* Versión: 1.0
+* Descripción: Unit tests of the metadata rules of the evaluation builder: defaults by type (show results immediately only for QUIZ, applied on a type change), validation (title, duration, max attempts), the create body (blank fields omitted), the update changes (only changed fields; blanks clear with null), the dirty check of a new and a loaded evaluation and the level/module choices. Depends on vitest and the builder entities. v1.1 (ajustes C1): no immediate results option: a type change keeps the rest of the form and the create body has no showResultsImmediately.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,7 +36,6 @@ const evaluation: BuilderEvaluation = {
   durationMinutes: 45,
   maxAttempts: 1,
   shuffleQuestions: false,
-  showResultsImmediately: false,
   structureLocked: false,
   canManage: true,
   usage: { attempts: 0, submittedAttempts: 0, assignments: 0 },
@@ -51,10 +50,9 @@ const levels = [
 ];
 
 describe("metadata defaults", () => {
-  it("shows results immediately only for quizzes", () => {
-    expect(newMetadataForm().showResultsImmediately).toBe(true);
-    expect(changeMetadataType(newMetadataForm(), "EXAM").showResultsImmediately).toBe(false);
-    expect(changeMetadataType(newMetadataForm("WORKSHOP"), "QUIZ").showResultsImmediately).toBe(true);
+  it("changes only the type, with no immediate results option", () => {
+    expect(newMetadataForm()).not.toHaveProperty("showResultsImmediately");
+    expect(changeMetadataType(newMetadataForm(), "EXAM")).toEqual({ ...newMetadataForm(), type: "EXAM" });
   });
 });
 
@@ -78,7 +76,6 @@ describe("toCreateEvaluationBody", () => {
       durationMinutes: 30,
       maxAttempts: 1,
       shuffleQuestions: false,
-      showResultsImmediately: false,
     });
   });
 });

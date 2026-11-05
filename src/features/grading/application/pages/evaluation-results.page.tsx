@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationResultsBody
-* Descripción: v2.0 (Bloque 3, W7): the former results page is now the body of the "Estadísticas" and "Publicación masiva" tabs of the unified grading screen /grading/evaluations/[evaluationId] (section prop): "estadisticas" shows the statistics, the group filter, the attempts per group and the published grades per student; "publicacion" shows the group filter, "Publicar calificaciones" with its confirmation, the stats delay notice and the attempts per group. The page header, document title and back link moved to the screen. Before: Staff page /grading/evaluations/[evaluationId] (teachers and admins). Shows the statistics the API computes for the evaluation (`GET /api/analytics/evaluations/{evaluationId}/stats`): average, median, minimum and maximum grade in es-CO, pass rate as a percentage, the passing grade of the API and the total, graded and published attempt counts; nothing is computed on the client. The grade histogram (the API 0.5 buckets) and the per-question difficulty index are drawn by a lazily loaded chart chunk (@shared/charts and Chart.js stay out of the page chunk); without graded attempts the charts are replaced by a note, and without attempts the page shows an empty state. A group filter (the groups of `GET /api/evaluation-assignments?evaluationId`) narrows the per-group attempt counts table, the per-student results and the bulk publish. The API has no per-evaluation results endpoint (reported gap): the per-student section explains it and, for a chosen group, lists the published grades of this evaluation read from the group dashboard (`GET /api/analytics/groups/{groupId}/dashboard`). "Publicar calificaciones" asks for confirmation stating the scope only (all graded, unpublished grades of the chosen group or of every group), then sends `POST /api/evaluation-grading/publish` {evaluationId, groupId?}, toasts the publishedCount of the response and refreshes the grading reads (stats, assignments, dashboard, queue). Links back to /grading. Depends on MUI, next/head, next/link, the design-system components, @shared/lib, the grading hooks, service, entities and components and the CSS Module. v1.1 (G3 review): W1/S1 no client-side estimate (the confirmation states the scope, the toast reports the API publishedCount, the button is not disabled by computed counts); W2 after a successful publish an info note warns that the stats (cached up to 60 s by the backend) may take up to a minute, and the stats are revalidated once more after STATS_REFRESH_DELAY_MS while the page stays mounted (timer cleared on unmount); S2 a note states that the indicators cover every group (the stats have no group filter).
-* Versión: 2.0
+* Descripción: v2.0 (Bloque 3, W7): the former results page is now the body of the "Estadísticas" and "Publicación masiva" tabs of the unified grading screen /grading/evaluations/[evaluationId] (section prop): "estadisticas" shows the statistics, the group filter, the attempts per group and the published grades per student; "publicacion" shows the group filter, "Publicar calificaciones" with its confirmation, the stats delay notice and the attempts per group. The page header, document title and back link moved to the screen. Before: Staff page /grading/evaluations/[evaluationId] (teachers and admins). Shows the statistics the API computes for the evaluation (`GET /api/analytics/evaluations/{evaluationId}/stats`): average, median, minimum and maximum grade in es-CO, pass rate as a percentage, the passing grade of the API and the total, graded and published attempt counts; nothing is computed on the client. The grade histogram (the API 0.5 buckets) and the per-question difficulty index are drawn by a lazily loaded chart chunk (@shared/charts and Chart.js stay out of the page chunk); without graded attempts the charts are replaced by a note, and without attempts the page shows an empty state. A group filter (the groups of `GET /api/evaluation-assignments?evaluationId`) narrows the per-group attempt counts table, the per-student results and the bulk publish. The API has no per-evaluation results endpoint (reported gap): the per-student section explains it and, for a chosen group, lists the published grades of this evaluation read from the group dashboard (`GET /api/analytics/groups/{groupId}/dashboard`). "Publicar calificaciones" asks for confirmation stating the scope only (all graded, unpublished grades of the chosen group or of every group), then sends `POST /api/evaluation-grading/publish` {evaluationId, groupId?}, toasts the publishedCount of the response and refreshes the grading reads (stats, assignments, dashboard, queue). Links back to /grading. Depends on MUI, next/head, next/link, the design-system components, @shared/lib, the grading hooks, service, entities and components and the CSS Module. v1.1 (G3 review): W1/S1 no client-side estimate (the confirmation states the scope, the toast reports the API publishedCount, the button is not disabled by computed counts); W2 after a successful publish an info note warns that the stats (cached up to 60 s by the backend) may take up to a minute, and the stats are revalidated once more after STATS_REFRESH_DELAY_MS while the page stays mounted (timer cleared on unmount); S2 a note states that the indicators cover every group (the stats have no group filter). v2.1 (ajustes C1): the bulk publication becomes a release with a scope choice ("Solo la nota" by default, or "Nota, respuestas y retroalimentación IA") sent as scope in `POST /api/evaluation-grading/publish`; the confirmation and the toast speak of released results (publishedCount counts the attempts whose release changed).
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,6 +12,11 @@
 import BarChartIcon from "@mui/icons-material/BarChart";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormLabel from "@mui/material/FormLabel";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
 import TextField from "@mui/material/TextField";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
@@ -33,13 +38,25 @@ import {
 import type { EvaluationStats } from "../entities/evaluation-results.entity";
 import { ALL_OPTION } from "../entities/grading.entity";
 import { getGradingErrorMessage } from "../entities/grading-error-messages";
+import { RELEASE_SCOPES } from "../entities/results-release.entity";
+import type { ReleaseScope } from "../entities/results-release.entity";
 import { useEvaluationAssignments, useEvaluationStats, useGroupStudentResults } from "../hooks/use-evaluation-results";
 import { useGradingMutation } from "../hooks/use-grading-mutation";
 import styles from "../../UI/evaluation-results.module.css";
 
 // TODO(i18n): move to a grading namespace in src/i18n.
+const RELEASE_WHAT: Record<ReleaseScope, string> = {
+  GRADE: "Se liberará solo la nota (las respuestas, las explicaciones y la retroalimentación IA seguirán ocultas)",
+  GRADE_AND_ANSWERS: "Se liberarán la nota, las respuestas correctas, las explicaciones y la retroalimentación IA",
+};
+
 export const RESULTS_COPY = {
-  publishIntro: "Publica de una vez las calificaciones ya calificadas y aún no publicadas, de todos los grupos o de uno.",
+  publishIntro: "Libera de una vez los resultados de los intentos ya calificados, de todos los grupos o de uno. Los intentos en curso o por revisar quedan fuera.",
+  scopeLabel: "Qué verá el estudiante",
+  scopes: {
+    GRADE: "Solo la nota",
+    GRADE_AND_ANSWERS: "Nota, respuestas y retroalimentación IA",
+  } satisfies Record<ReleaseScope, string>,
   loading: "Cargando los resultados…",
   loadErrorTitle: "No se pudieron cargar los resultados",
   emptyTitle: "Todavía no hay intentos en esta evaluación",
@@ -69,19 +86,19 @@ export const RESULTS_COPY = {
   studentsError: "No se pudieron cargar las notas del grupo.",
   studentsEmpty: "Ningún estudiante de este grupo tiene una nota publicada en esta evaluación.",
   retry: "Reintentar",
-  publish: "Publicar calificaciones",
-  publishTitle: "¿Publicar calificaciones?",
-  publishScopeAll: "Se publicarán todas las calificaciones calificadas y no publicadas de todos los grupos.",
-  publishScopeGroup: (group: string) => `Se publicarán todas las calificaciones calificadas y no publicadas del grupo ${group}.`,
+  publish: "Liberar resultados",
+  publishTitle: "¿Liberar los resultados?",
+  publishScopeAll: (scope: ReleaseScope) => `${RELEASE_WHAT[scope]} de todos los intentos calificados de todos los grupos. No se puede deshacer.`,
+  publishScopeGroup: (group: string, scope: ReleaseScope) => `${RELEASE_WHAT[scope]} de todos los intentos calificados del grupo ${group}. No se puede deshacer.`,
   statsDelay: "Las estadísticas pueden tardar hasta 1 minuto en actualizarse.",
-  publishConfirm: "Publicar",
+  publishConfirm: "Liberar",
   cancel: "Cancelar",
   published: (count: number) => {
     if (count === 0) {
-      return "No había calificaciones pendientes de publicar.";
+      return "No había resultados pendientes de liberar.";
     }
 
-    return count === 1 ? "Se publicó 1 calificación." : `Se publicaron ${formatCount(count)} calificaciones.`;
+    return count === 1 ? "Se liberaron los resultados de 1 intento." : `Se liberaron los resultados de ${formatCount(count)} intentos.`;
   },
 } as const;
 
@@ -132,6 +149,8 @@ export function EvaluationResultsBody({ evaluationId, section }: EvaluationResul
   const students = useGroupStudentResults(section === "estadisticas" ? selectedGroup : null, evaluationId);
   const { pending: publishing, run } = useGradingMutation();
   const [confirmPublish, setConfirmPublish] = useState(false);
+  // The least revealing release by default: a release cannot be undone.
+  const [scope, setScope] = useState<ReleaseScope>("GRADE");
   const [statsDelayed, setStatsDelayed] = useState(false);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reloadStats = stats.reload;
@@ -151,7 +170,7 @@ export function EvaluationResultsBody({ evaluationId, section }: EvaluationResul
 
   const publish = async() => {
     const outcome = await run(() => publishEvaluationGrades(
-      selectedGroup === null ? { evaluationId } : { evaluationId, groupId: selectedGroup },
+      selectedGroup === null ? { evaluationId, scope } : { evaluationId, groupId: selectedGroup, scope },
     ));
 
     if (outcome.status === "success") {
@@ -176,6 +195,19 @@ export function EvaluationResultsBody({ evaluationId, section }: EvaluationResul
   const actions = (
     <div className={cx(styles.headerActions)}>
       <p className={cx(styles.muted)}>{RESULTS_COPY.publishIntro}</p>
+      <FormControl className={cx(styles.scopeChoice)}>
+        <FormLabel id={`${groupFieldId}-scope`}>{RESULTS_COPY.scopeLabel}</FormLabel>
+        <RadioGroup
+          aria-labelledby={`${groupFieldId}-scope`}
+          name="release-scope"
+          value={scope}
+          onChange={(event) => setScope(event.target.value as ReleaseScope)}
+        >
+          {RELEASE_SCOPES.map((value) => (
+            <FormControlLabel key={value} value={value} control={<Radio />} label={RESULTS_COPY.scopes[value]} disabled={publishing} />
+          ))}
+        </RadioGroup>
+      </FormControl>
       <Button
         variant="contained"
         disabled={!stats.data || stats.data.totalAttempts === 0 || publishing}
@@ -268,7 +300,7 @@ export function EvaluationResultsBody({ evaluationId, section }: EvaluationResul
     return <StudentResultsTable results={students.data} />;
   };
 
-  const confirmDescription = groupName ? RESULTS_COPY.publishScopeGroup(groupName) : RESULTS_COPY.publishScopeAll;
+  const confirmDescription = groupName ? RESULTS_COPY.publishScopeGroup(groupName, scope) : RESULTS_COPY.publishScopeAll(scope);
 
   return (
     <div className={cx(styles.content)}>

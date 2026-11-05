@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E (8) /admin/ai filters the ratings by surface and exports them as CSV (Bloque 4)
-* Descripción: A brand-new student of a new group of the E2E teacher rates, through the API, one AI output of Bloque 2 (the analysis of his notes, surface NOTES_ANALYSIS, scope LESSON) and one of Bloque 3 (the general AI feedback of a published QUIZ grade, surface EVALUATION_FEEDBACK). Both outputs are produced by the real backend against the fake LLM (scripts/e2e/fake-llm.mjs through OPENAI_BASE_URL). The admin opens /admin/ai, filters "Superficie" = "Análisis de notas" (?surface=NOTES_ANALYSIS in the URL; every rating group of the table has that surface) and downloads "Exportar calificaciones (CSV)": the file has the surface and scope columns and only NOTES_ANALYSIS rows, among them the new one. After "Limpiar", the export includes both new ratings with their surfaces (Bloques 2 and 3). The evaluation is archived at the end. Depends on @playwright/test and the auth, backend API, evaluations, learning and panel e2e helpers.
-* Versión: 0.1
+* Descripción: A brand-new student of a new group of the E2E teacher rates, through the API, one AI output of Bloque 2 (the analysis of his notes, surface NOTES_ANALYSIS, scope LESSON) and one of Bloque 3 (the general AI feedback of a published QUIZ grade, surface EVALUATION_FEEDBACK). Both outputs are produced by the real backend against the fake LLM (scripts/e2e/fake-llm.mjs through OPENAI_BASE_URL). The admin opens /admin/ai, filters "Superficie" = "Análisis de notas" (?surface=NOTES_ANALYSIS in the URL; every rating group of the table has that surface) and downloads "Exportar calificaciones (CSV)": the file has the surface and scope columns and only NOTES_ANALYSIS rows, among them the new one. After "Limpiar", the export includes both new ratings with their surfaces (Bloques 2 and 3). The evaluation is archived at the end. Depends on @playwright/test and the auth, backend API, evaluations, learning and panel e2e helpers. v0.2 (ajustes C1): the QUIZ is no longer published on submit: the teacher releases the grade and the answers (scope GRADE_AND_ANSWERS) before the student reads and rates the feedback.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -13,7 +13,7 @@ import { readFileSync } from "node:fs";
 import { expect, type Page, test } from "@playwright/test";
 import { TEACHER_STORAGE_STATE } from "../support/auth";
 import { backendApiAs } from "../support/backend-api";
-import { retireEvaluation, type SeededEvaluation, seedEvaluation } from "../support/evaluations";
+import { releaseAttemptResults, retireEvaluation, type SeededEvaluation, seedEvaluation } from "../support/evaluations";
 import { contextFor, LESSON_1 } from "../support/learning";
 import { ADMIN_EMAIL, freshStudentSession, groupWith, runTag, staffSession } from "../support/panel";
 
@@ -96,7 +96,7 @@ test("(8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ra
 
     await student.api.call("PUT", "/api/ai-ratings", { targetType: "NOTES_ANALYSIS", targetId: analysis.aiCallId, helpful: true, surface: "NOTES_ANALYSIS", scope: "LESSON" });
 
-    // Bloque 3: general AI feedback of a published QUIZ grade.
+    // Bloque 3: general AI feedback of a QUIZ whose grade and answers the teacher released.
     evaluation = await seedEvaluation(teacher, {
       type: "QUIZ",
       title: `E2E B4 quiz valoraciones ${tag}`,
@@ -105,6 +105,8 @@ test("(8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ra
     const attempt = await student.api.call<{ id: string }>("POST", `/api/my-evaluations/${evaluation.assignmentIds[0]}/attempts`);
 
     await student.api.call("POST", `/api/evaluation-attempts/${attempt.id}/submit`, {});
+    // The feedback is only readable once the teacher releases the answers.
+    await releaseAttemptResults(teacher, attempt.id, "GRADE_AND_ANSWERS");
     let feedbackId: string | null = null;
 
     await expect.poll(async () => {

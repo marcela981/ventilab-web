@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptPlayerPage
-* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]: the student answers one attempt. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt that is no longer IN_PROGRESS goes straight to its result. Shows the question navigator (answered, unanswered, marked for review; marks are client-only), the sticky clinical scenario of the current question, the question (QuestionView) with Previous/Next, the autosave status per answer and a clock corrected for the server clock skew (toasts at 5 and 1 minutes). The current question and the marks are kept in sessionStorage so a reload resumes on the same question. Answers are saved automatically with a retry queue (unsaved values survive a reload). "Enviar intento" asks for confirmation with the number of unanswered questions, flushes the queue and submits once (single-flight); at zero the attempt is flushed and submitted automatically. Both end on the result page; a closed attempt (409) also goes there. The browser warns before leaving while answers are unsaved. Never reads correctness, explanation or rubric. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the attempt player CSS Module. v1.1 (E2 review): once the time is up the controls become read-only and the automatic submit is retried with exponential backoff (autoSubmitRetryDelay) after any failure that is not a closed attempt, also when a manual submit in flight at zero fails; the retry timer is cleared on unmount; the timer receives the attempt id to pair serverNow with the client clock of its response. v1.2 (A3 review follow-up): the automatic submit retry stops once the player is unmounted (no new timer, no navigation), retries only retryable errors (network, timeout, 429, 5xx) at most AUTO_SUBMIT_MAX_RETRIES times, and otherwise shows the error and re-enables "Enviar intento" for a manual retry. v1.3 (O1 notifications): focus mode (useFocusMode of the design system) while the attempt is open, so notification toasts do not interrupt the student. v1.4 (Bloque 3): one presentation per type (layoutFor): QUIZ shows every question with immediate feedback and "Enviar quiz" (QuizLayout), WORKSHOP goes "Paso n de N" with "Pista 💡" and the explanation after answering and "Enviar taller" on the last step (WorkshopLayout), EXAM keeps the navigator and pagination without feedback and "Enviar examen" in the header (ExamLayout; SIMULATION questions unchanged). Choice questions of QUIZ and WORKSHOP are checked by the server (useCheckAnswer): single choice and true/false on select (no PUT), multiple choice with "Comprobar respuesta" (autosaved until then); a 422 falls back to the autosave, a failed check keeps the answer saved, a closed attempt ends on the result, and a PUT refused with 409 evaluation.answer_locked is terminal and silent. Clock warnings at 10 and 5 minutes for EXAM (5 and 1 otherwise) are announced in an aria-live region instead of a toast. Focus on the question heading and Alt+←/→ live in the paginated layouts.
-* Versión: 1.4
+* Descripción: Page /evaluations/[evaluationId]/attempts/[attemptId]: the student answers one attempt. Loads the attempt (`GET /api/evaluation-attempts/{attemptId}`); an attempt that is no longer IN_PROGRESS goes straight to its result. Shows the question navigator (answered, unanswered, marked for review; marks are client-only), the sticky clinical scenario of the current question, the question (QuestionView) with Previous/Next, the autosave status per answer and a clock corrected for the server clock skew (toasts at 5 and 1 minutes). The current question and the marks are kept in sessionStorage so a reload resumes on the same question. Answers are saved automatically with a retry queue (unsaved values survive a reload). "Enviar intento" asks for confirmation with the number of unanswered questions, flushes the queue and submits once (single-flight); at zero the attempt is flushed and submitted automatically. Both end on the result page; a closed attempt (409) also goes there. The browser warns before leaving while answers are unsaved. Never reads correctness, explanation or rubric. Depends on MUI, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the attempt player CSS Module. v1.1 (E2 review): once the time is up the controls become read-only and the automatic submit is retried with exponential backoff (autoSubmitRetryDelay) after any failure that is not a closed attempt, also when a manual submit in flight at zero fails; the retry timer is cleared on unmount; the timer receives the attempt id to pair serverNow with the client clock of its response. v1.2 (A3 review follow-up): the automatic submit retry stops once the player is unmounted (no new timer, no navigation), retries only retryable errors (network, timeout, 429, 5xx) at most AUTO_SUBMIT_MAX_RETRIES times, and otherwise shows the error and re-enables "Enviar intento" for a manual retry. v1.3 (O1 notifications): focus mode (useFocusMode of the design system) while the attempt is open, so notification toasts do not interrupt the student. v1.4 (Bloque 3): one presentation per type (layoutFor): QUIZ shows every question with immediate feedback and "Enviar quiz" (QuizLayout), WORKSHOP goes "Paso n de N" with "Pista 💡" and the explanation after answering and "Enviar taller" on the last step (WorkshopLayout), EXAM keeps the navigator and pagination without feedback and "Enviar examen" in the header (ExamLayout; SIMULATION questions unchanged). Choice questions of QUIZ and WORKSHOP are checked by the server (useCheckAnswer): single choice and true/false on select (no PUT), multiple choice with "Comprobar respuesta" (autosaved until then); a 422 falls back to the autosave, a failed check keeps the answer saved, a closed attempt ends on the result, and a PUT refused with 409 evaluation.answer_locked is terminal and silent. Clock warnings at 10 and 5 minutes for EXAM (5 and 1 otherwise) are announced in an aria-live region instead of a toast. Focus on the question heading and Alt+←/→ live in the paginated layouts. v1.5 (ajustes C1): no immediate feedback in any type (the results wait for the teacher release): useCheckAnswer, "Comprobar respuesta" and the check on select are gone, every answer is autosaved and shows its save status; WORKSHOP keeps "Pista 💡". A PUT refused with 409 evaluation.answer_locked (an answer revealed before this change) stays terminal and silent.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,7 +26,7 @@ import type { AttemptLayoutProps } from "../components/attempt/attempt-question-
 import { ExamLayout } from "../components/attempt/exam-layout";
 import { QuizLayout } from "../components/attempt/quiz-layout";
 import { WorkshopLayout } from "../components/attempt/workshop-layout";
-import { checksOnSelect, hasImmediateFeedback, layoutFor, SUBMIT_LABELS, warningThresholdsFor } from "../entities/attempt-layout";
+import { layoutFor, SUBMIT_LABELS, warningThresholdsFor } from "../entities/attempt-layout";
 import { clampQuestionIndex, countUnanswered, initialAnswers } from "../entities/attempt-progress";
 import {
   clearAttemptStorage,
@@ -38,12 +38,11 @@ import {
 import { formatRemaining, MINUTE_MS } from "../entities/attempt-timer";
 import type { AttemptAnswer, AttemptDetail, AttemptQuestion } from "../entities/evaluation.entity";
 import { EVALUATION_TYPE_LABELS } from "../entities/evaluation-labels";
-import { EVALUATION_ERROR_MESSAGES, getEvaluationErrorMessage, isRetryableEvaluationError } from "../entities/evaluations-error-messages";
+import { getEvaluationErrorMessage, isRetryableEvaluationError } from "../entities/evaluations-error-messages";
 import { buildAttemptResultUrl, buildEvaluationIntroUrl } from "../entities/evaluations-urls";
 import { useAttempt } from "../hooks/use-attempt";
 import { useAttemptAutosave } from "../hooks/use-attempt-autosave";
 import { useAttemptTimer } from "../hooks/use-attempt-timer";
-import { useCheckAnswer } from "../hooks/use-check-answer";
 import { useSubmitAttempt } from "../hooks/use-submit-attempt";
 import styles from "../../UI/attempt-player.module.css";
 
@@ -117,7 +116,7 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
   }, [attempt.id, onFinished, toast]);
 
   const handleSaveError = useCallback((_questionId: string, error: unknown) => {
-    // A revealed answer is locked: a PUT that arrives afterwards is refused for good and nothing was lost.
+    // An answer revealed before the teacher release existed stays locked: its PUT is refused for good.
     if (toApiError(error).code === ANSWER_LOCKED_CODE) {
       return;
     }
@@ -142,8 +141,6 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
   const [timeUp, setTimeUp] = useState(false);
   const [autoSubmitStopped, setAutoSubmitStopped] = useState(false);
   const [timerWarning, setTimerWarning] = useState<string | null>(null);
-  const [uncheckable, setUncheckable] = useState<ReadonlySet<string>>(() => new Set());
-  const checker = useCheckAnswer(attempt.id, questions);
   const evaluationType = attempt.evaluation.type;
   const submitLabel = SUBMIT_LABELS[evaluationType];
   const submittingRef = useRef(false);
@@ -302,53 +299,13 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
     onWarning: setTimerWarning,
   });
 
-  const runCheck = async(question: AttemptQuestion, answer: AttemptAnswer) => {
-    const outcome = await checker.check(question.id, answer.selectedOptionIds);
-
-    if (outcome.status === "locked") {
-      toast.info(EVALUATION_ERROR_MESSAGES[ANSWER_LOCKED_CODE]);
-    } else if (outcome.status === "unavailable") {
-      // The server gives no immediate feedback for this question: it is answered like any other.
-      setUncheckable((current) => new Set(current).add(question.id));
-      autosave.save(question.id, question.type, answer);
-    } else if (outcome.status === "error") {
-      if (isClosedAttemptError(outcome.error)) {
-        if (!finishedRef.current) {
-          finishOnClosedAttempt(outcome.error);
-        }
-
-        return;
-      }
-
-      // The answer is still saved; "Comprobar respuesta" retries the check.
-      toast.error(getEvaluationErrorMessage(outcome.error));
-      autosave.save(question.id, question.type, answer);
-    }
-  };
-
   const handleChange = (question: AttemptQuestion, answer: AttemptAnswer) => {
     if (timeUpRef.current) {
       return;
     }
 
     setAnswers((current) => ({ ...current, [question.id]: answer }));
-
-    if (hasImmediateFeedback(evaluationType, question) && !uncheckable.has(question.id) && checksOnSelect(question)) {
-      // The check saves the answer itself; a PUT would race with the lock.
-      void runCheck(question, answer);
-
-      return;
-    }
-
     autosave.save(question.id, question.type, answer);
-  };
-
-  const handleCheck = (question: AttemptQuestion) => {
-    const answer = answers[question.id];
-
-    if (answer && !timeUpRef.current) {
-      void runCheck(question, answer);
-    }
   };
 
   const toggleMarked = (questionId: string) => {
@@ -382,12 +339,7 @@ function AttemptPlayer({ attempt, onFinished }: PlayerProps) {
     readOnly,
     timeUp,
     saveStatuses: autosave.statuses,
-    reveals: checker.reveals,
-    locked: checker.locked,
-    checking: checker.checking,
-    uncheckable,
     onChange: handleChange,
-    onCheck: handleCheck,
     submitButton,
   };
 

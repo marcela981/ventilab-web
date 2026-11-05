@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptResultPage tests
-* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast). v1.4 (closure B1): the full-suite timeouts (cold lazy markdown renderer under 278 parallel files) get headroom: lazy waits 10 s, Testing Library waits 5 s and every test 20 s (not only the first one). v1.5 (Bloque 3): July band (published with emojis or not, pending with the partial score), feedback requested in parallel, embedded own rating and the EVALUATION_FEEDBACK surface.
-* Versión: 1.5
+* Descripción: Covers the attempt result page against an msw backend: an IN_PROGRESS attempt goes back to the player; unpublished attempts (SUBMITTED, PENDING_REVIEW) show only their state, render no question detail and never request the feedback; a published attempt shows the es-CO grade with the pass/fail class from `passed`, per-question earned points, the correct option, the teacher explanation and the simulation rubric; the AI feedback goes from the PENDING skeleton to READY after a FEEDBACK_READY notification for the attempt (and ignores other attempts), and DETERMINISTIC items carry the "Retroalimentación automática" label with the rating widget. Depends on Vitest, Testing Library, msw and the evaluations test helpers. v1.1 (E3 review): the "other attempt is ignored" check now waits before comparing the request count and then proves exactly one extra request for this attempt; a failed first feedback read shows the unavailable message; a rubric that repeats a parameter renders every row. v1.2 (A3 review follow-up): the FEEDBACK_READY notification for another attempt is checked deterministically through a spy on the SWR fetcher (SWR calls it synchronously on revalidation) instead of a wall-clock sleep. v1.3 (B1 closure): the FEEDBACK_READY notifications carry the typed FeedbackReady data of the contract (no cast). v1.4 (closure B1): the full-suite timeouts (cold lazy markdown renderer under 278 parallel files) get headroom: lazy waits 10 s, Testing Library waits 5 s and every test 20 s (not only the first one). v1.5 (Bloque 3): July band (published with emojis or not, pending with the partial score), feedback requested in parallel, embedded own rating and the EVALUATION_FEEDBACK surface. v1.6 (ajustes C1): the three release states: nothing released ("Entregado — en espera de resultados", no partial count, no feedback request, also for a GRADED attempt not released), grade alone (grade, verdict and score with the note; no per-question correction, no feedback request) and answers released (full view); FEEDBACK_READY after the answers release loads the correction and the feedback.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -83,6 +83,7 @@ function publishedAttempt(overrides: Partial<StudentAttemptDetailDTO> = {}): Stu
     status: "GRADED",
     submittedAt: "2026-10-14T15:20:00.000Z",
     published: true,
+    answersReleased: true,
     grade: 3.5,
     passed: false,
     score: 3.5,
@@ -110,6 +111,26 @@ function publishedAttempt(overrides: Partial<StudentAttemptDetailDTO> = {}): Stu
   });
 }
 
+// The grade is released, the answers are not: the server sends the result but no correction field.
+function gradeOnlyAttempt(): StudentAttemptDetailDTO {
+  return attemptDetailDto("at1", {
+    status: "GRADED",
+    submittedAt: "2026-10-14T15:20:00.000Z",
+    published: true,
+    answersReleased: false,
+    grade: 4.2,
+    passed: true,
+    score: 4.2,
+    maxScore: 5,
+    questions: [
+      questionDto("q1", 0, "SINGLE_CHOICE", {
+        options: [optionDto("o1", 0, "5 cmH2O"), optionDto("o2", 1, "10 cmH2O")],
+        answer: { selectedOptionIds: ["o1"], textAnswer: null, simulationSessionId: null },
+      }),
+    ],
+  });
+}
+
 const feedbackItem = (id: string, questionId: string | null, status: "PENDING" | "READY" | "FAILED", source: "LLM" | "DETERMINISTIC" | null = null, content: string | null = null) =>
   ({ id, questionId, status, source, content, myRating: null });
 
@@ -131,7 +152,7 @@ beforeEach(() => {
     http.get(apiUrl("/api/evaluation-attempts/:attemptId/feedback"), () => {
       feedbackRequests += 1;
 
-      return attempt.published ? HttpResponse.json(envelope(feedback)) : errorResponse("evaluation.feedback_not_found", 404);
+      return attempt.answersReleased ? HttpResponse.json(envelope(feedback)) : errorResponse("evaluation.grade_feedback_not_available", 404);
     }),
     http.get(apiUrl("/api/ai-ratings/mine"), () => HttpResponse.json(envelope(null))),
   );
@@ -154,31 +175,76 @@ describe("AttemptResultPage", () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/evaluations/e1/attempts/at1"));
   });
 
-  it("shows a submitted attempt without any graded detail or feedback request", async() => {
+  it("shows a submitted attempt as waiting for results, without any graded detail or feedback request", async() => {
     attempt = unpublishedAttempt("SUBMITTED");
 
     expect(JSON.stringify(attempt)).not.toMatch(/isCorrect|explanation|rubric|earnedScore/);
 
     renderResult();
 
-    expect(await screen.findByRole("heading", { level: 2, name: "Enviado" })).toBeInTheDocument();
-    expect(screen.getByText(/te notificaremos cuando esté disponible/)).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 2, name: "En espera de resultados" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Entregado — en espera de resultados" })).not.toHaveTextContent(/correctas/);
+    expect(screen.getByText(/liberará los resultados/)).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Pregunta 1 de 1" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("attempt-grade")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Volver a mis evaluaciones" })).toHaveAttribute("href", "/evaluations");
     expect(screen.getByRole("link", { name: "Ver la evaluación" })).toHaveAttribute("href", "/evaluations/e1");
-    // Requested in parallel with the attempt, then never polled once the attempt is known to be unpublished.
-    expect(feedbackRequests).toBeLessThanOrEqual(1);
+    // The feedback belongs to the answers release: never requested before.
+    expect(feedbackRequests).toBe(0);
   });
 
-  it("shows a pending review attempt as pending grading", async() => {
-    attempt = unpublishedAttempt("PENDING_REVIEW");
+  it.each(["PENDING_REVIEW", "GRADED"] as const)("shows a %s attempt that is not released as waiting for results", async(status) => {
+    attempt = unpublishedAttempt(status);
 
     renderResult();
 
-    expect(await screen.findByRole("heading", { level: 2, name: "Pendiente de calificación" })).toBeInTheDocument();
-    // Requested in parallel with the attempt, then never polled once the attempt is known to be unpublished.
-    expect(feedbackRequests).toBeLessThanOrEqual(1);
+    expect(await screen.findByRole("heading", { level: 2, name: "En espera de resultados" })).toBeInTheDocument();
+    expect(screen.queryByTestId("attempt-grade")).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Pregunta 1 de 1" })).not.toBeInTheDocument();
+    expect(feedbackRequests).toBe(0);
+  });
+
+  it("shows only the grade and the verdict when the teacher released the grade alone", async() => {
+    attempt = gradeOnlyAttempt();
+
+    renderResult();
+
+    const grade = await screen.findByTestId("attempt-grade");
+
+    expect(within(grade).getByText("4,2")).toBeInTheDocument();
+    expect(within(grade).getByText("Aprobado")).toBeInTheDocument();
+    expect(screen.getByText("4,2 de 5 puntos")).toBeInTheDocument();
+    expect(screen.getByRole("note")).toHaveTextContent("Tu docente liberó la nota. Las respuestas y la retroalimentación se mostrarán cuando las libere.");
+    expect(screen.getByRole("region", { name: "¡Aprobado! 🎉" })).not.toHaveTextContent(/correctas/);
+    // No per-question correction and no AI feedback.
+    expect(screen.queryByRole("region", { name: "Pregunta 1 de 1" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Revisión de las opciones" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Retroalimentación general" })).not.toBeInTheDocument();
+    expect(feedbackRequests).toBe(0);
+  });
+
+  it("loads the correction and the feedback when FEEDBACK_READY arrives after the answers release", async() => {
+    const socket = createFakeSocket();
+
+    attempt = gradeOnlyAttempt();
+    feedback = { attemptId: "at1", overall: feedbackItem("f0", null, "READY", "LLM", "Buen manejo general de la ventilación."), questions: [] };
+    renderResult(socket);
+    await screen.findByRole("note");
+
+    attempt = publishedAttempt();
+    socket.emit("notification:new", {
+      id: "n3",
+      type: "FEEDBACK_READY",
+      title: "Retroalimentación lista",
+      body: "",
+      createdAt: "2026-10-14T16:00:00.000Z",
+      readAt: null,
+      data: { attemptId: "at1", evaluationId: "e1", feedbackId: "f0" },
+    });
+
+    expect(await screen.findByRole("region", { name: "Pregunta 1 de 2" })).toBeInTheDocument();
+    expect(await screen.findByText("Buen manejo general de la ventilación.", {}, LAZY)).toBeInTheDocument();
+    expect(screen.queryByRole("note")).not.toBeInTheDocument();
   });
 
   it("shows the published grade, the per-question result and the rubric", async() => {
@@ -317,7 +383,7 @@ describe("AttemptResultPage", () => {
 
     attempt = unpublishedAttempt("PENDING_REVIEW");
     renderResult(socket);
-    await screen.findByRole("heading", { level: 2, name: "Pendiente de calificación" });
+    await screen.findByRole("heading", { level: 2, name: "En espera de resultados" });
 
     attempt = publishedAttempt();
     socket.emit("grade:published", {
@@ -349,13 +415,14 @@ describe("AttemptResultPage", () => {
     expect(await screen.findByRole("region", { name: "Aprobado" })).toBeInTheDocument();
   });
 
-  it("shows the pending band with the partial score of the closed questions", async() => {
-    attempt = { ...unpublishedAttempt("PENDING_REVIEW"), partialClosedScore: { correct: 2, total: 3 } };
+  it("shows the pending band with no partial count while nothing is released", async() => {
+    attempt = unpublishedAttempt("PENDING_REVIEW");
     renderResult();
 
-    const band = await screen.findByRole("region", { name: "Respuestas enviadas — pendiente de revisión por el docente" });
+    const band = await screen.findByRole("region", { name: "Entregado — en espera de resultados" });
 
-    expect(band).toHaveTextContent("2 de 3 correctas");
+    expect(band).toHaveClass("bandPending");
+    expect(band).not.toHaveTextContent(/correctas/);
   });
 
   it("uses the embedded own rating and rates with the evaluation feedback surface", async() => {

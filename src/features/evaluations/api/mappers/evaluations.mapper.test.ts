@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations mappers tests
-* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items. v1.2 (B1 closure): the published grade fixture carries the new moduleId and moduleTitle fields. v1.3 (Bloque 3): curriculum placement, attemptsAllowed, hint, reveal, partialClosedScore and myRating.
-* Versión: 1.3
+* Descripción: Verifies the DTO → entity mapping of the student evaluations feature: items without an evaluation summary are dropped, attempts are sorted and carry a result only when published with a grade, descriptions become text or Tiptap doc RichText, the attempt start keeps the attempt id, and the attempt detail sorts scenarios, questions and options while copying correctness, explanation, rubric and earned score only when the backend sends them. Depends on vitest, the mappers and the test helpers. v1.1 (E3): toAttemptFeedback keeps the overall item (or null) and the per-question items. v1.2 (B1 closure): the published grade fixture carries the new moduleId and moduleTitle fields. v1.3 (Bloque 3): curriculum placement, attemptsAllowed, hint, reveal, partialClosedScore and myRating. v1.4 (ajustes C1): published and answersReleased on summaries and details; a grade released alone keeps the result without the correction; reveal, partialClosedScore and toAnswerReveal are gone.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 import { attemptDto, myEvaluationDto } from "../../application/pages/evaluations-test-helpers";
 import type { StudentAttemptDetailDTO, StudentQuestionDTO } from "../dtos/evaluations.dto";
-import { toAnswerReveal, toAttemptDetail, toAttemptFeedback, toAttemptStart, toMyEvaluations, toMyGrade, toRichText } from "./evaluations.mapper";
+import { toAttemptDetail, toAttemptFeedback, toAttemptStart, toMyEvaluations, toMyGrade, toRichText } from "./evaluations.mapper";
 
 const tiptapDoc = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Hola" }] }] };
 
@@ -135,7 +135,6 @@ function questionDto(id: string, position: number, overrides: Partial<StudentQue
     ],
     answer: { selectedOptionIds: [`${id}-a`], textAnswer: null, simulationSessionId: null },
     hint: null,
-    reveal: null,
     ...overrides,
   };
 }
@@ -151,13 +150,13 @@ function attemptDetailDto(overrides: Partial<StudentAttemptDetailDTO> = {}): Stu
     deadlineAt: "2026-10-14T15:30:00.000Z",
     serverNow: "2026-10-14T15:01:00.000Z",
     published: false,
+    answersReleased: false,
     evaluation: { id: "e1", title: "Quiz 1", type: "QUIZ", description: null },
     scenarios: [
       { id: "s2", order: 2, content: tiptapDoc as unknown as StudentAttemptDetailDTO["scenarios"][number]["content"], media: [] },
       { id: "s1", order: 1, content: tiptapDoc as unknown as StudentAttemptDetailDTO["scenarios"][number]["content"], media: [] },
     ],
     questions: [questionDto("q2", 2), questionDto("q1", 1)],
-    partialClosedScore: null,
     ...overrides,
   };
 }
@@ -175,13 +174,33 @@ describe("toAttemptDetail", () => {
     expect(detail.questions[0]).not.toHaveProperty("earnedScore");
     expect(detail.questions[0]?.options[0]).not.toHaveProperty("isCorrect");
     expect(detail.result).toBeNull();
+    expect(detail.published).toBe(false);
+    expect(detail.answersReleased).toBe(false);
     expect(detail.serverNow).toBe("2026-10-14T15:01:00.000Z");
   });
 
-  it("copies correctness, explanation, rubric, earned score and result once published", () => {
+  it("keeps the result but no correction when only the grade is released", () => {
     const detail = toAttemptDetail(attemptDetailDto({
       status: "GRADED",
       published: true,
+      answersReleased: false,
+      grade: 4.5,
+      passed: true,
+      score: 9,
+      maxScore: 10,
+    }));
+
+    expect(detail.result).toEqual({ grade: 4.5, passed: true, score: 9, maxScore: 10 });
+    expect(detail.answersReleased).toBe(false);
+    expect(detail.questions[0]).not.toHaveProperty("explanation");
+    expect(detail.questions[0]?.options[0]).not.toHaveProperty("isCorrect");
+  });
+
+  it("copies correctness, explanation, rubric, earned score and result once the answers are released", () => {
+    const detail = toAttemptDetail(attemptDetailDto({
+      status: "GRADED",
+      published: true,
+      answersReleased: true,
       grade: 2.5,
       passed: false,
       score: 1,
@@ -195,6 +214,7 @@ describe("toAttemptDetail", () => {
     }));
 
     expect(detail.result).toEqual({ grade: 2.5, passed: false, score: 1, maxScore: 4 });
+    expect(detail.answersReleased).toBe(true);
     expect(detail.questions[0]).toMatchObject({ explanation: "Porque sí", earnedScore: 0, rubric: null });
     expect(detail.questions[0]?.options[0]).toMatchObject({ isCorrect: false, feedback: null });
   });
@@ -237,27 +257,30 @@ describe("Bloque 3 fields", () => {
     expect(item).toMatchObject({ attemptsAllowed: 3, moduleId: "m1", levelId: "l1", levelTitle: "Fundamentos", levelOrder: 2, track: "mecanica" });
   });
 
-  it("maps the hint (blank is null), the revealed correction and the partial closed score", () => {
+  it("maps the hint (blank is null)", () => {
     const detail = toAttemptDetail(attemptDetailDto({
-      status: "PENDING_REVIEW",
-      partialClosedScore: { correct: 2, total: 3 },
-      questions: [
-        questionDto("q1", 1, {
-          hint: "Piensa en la PEEP",
-          reveal: { revealedAt: "2026-10-14T15:02:00.000Z", isCorrect: false, correctOptionIds: ["q1-b"], explanation: "La B." },
-        }),
-        questionDto("q2", 2, { hint: "  " }),
-      ],
+      questions: [questionDto("q1", 1, { hint: "Piensa en la PEEP" }), questionDto("q2", 2, { hint: "  " })],
     }));
 
-    expect(detail.partialClosedScore).toEqual({ correct: 2, total: 3 });
     expect(detail.questions[0]?.hint).toBe("Piensa en la PEEP");
-    expect(detail.questions[0]?.reveal).toEqual({ isCorrect: false, correctOptionIds: ["q1-b"], explanation: "La B." });
     expect(detail.questions[1]?.hint).toBeNull();
-    expect(detail.questions[1]?.reveal).toBeNull();
   });
+});
 
-  it("maps a check response to the same reveal shape (blank explanation is null)", () => {
-    expect(toAnswerReveal({ isCorrect: true, correctOptionIds: ["a"], explanation: " " })).toEqual({ isCorrect: true, correctOptionIds: ["a"], explanation: null });
+describe("ajustes C1 release flags", () => {
+  it("maps published and answersReleased of every attempt summary", () => {
+    const [item] = toMyEvaluations([myEvaluationDto("as1", "e1", {
+      attempts: [
+        attemptDto("a1", 1, { status: "GRADED", published: true, answersReleased: true, grade: 4, passed: true, score: 8, maxScore: 10 }),
+        attemptDto("a2", 2, { status: "GRADED", published: true, answersReleased: false, grade: 3, passed: true, score: 6, maxScore: 10 }),
+        attemptDto("a3", 3, { status: "SUBMITTED" }),
+      ],
+    })]);
+
+    expect(item?.attempts.map(({ id, published, answersReleased, result }) => ({ id, published, answersReleased, graded: result !== null }))).toEqual([
+      { id: "a1", published: true, answersReleased: true, graded: true },
+      { id: "a2", published: true, answersReleased: false, graded: true },
+      { id: "a3", published: false, answersReleased: false, graded: false },
+    ]);
   });
 });

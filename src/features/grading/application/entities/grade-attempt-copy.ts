@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grade attempt copy
-* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3. v1.2 (B4, D7): the score hint adds DECIMAL_HELPER_TEXT. v1.3 (Bloque 3): pane title (student and attempt) replaces the page title, subtitle and links.
-* Versión: 1.3
+* Descripción: Spanish UI copy of the grade-attempt page /grading/attempts/[attemptId]: header (attempt, student, status, grade, passing grade, publication), the question navigator, each answer card (scores, correct answer, explanation, score and comment fields), the simulation rubric breakdown (criterion and reason labels of the server scoring), the save and publish actions with their confirmations and toasts, the unsaved-changes prompt and the AI feedback panel (statuses, provider and model, regenerate). No dependencies. v1.1 (G2 review W1/S3/S4): the read-only previous comment, the hint of a comment-only edit of an automatic score, the stale-after-save alert and its reload action, and the results link of G3. v1.2 (B4, D7): the score hint adds DECIMAL_HELPER_TEXT. v1.3 (Bloque 3): pane title (student and attempt) replaces the page title, subtitle and links. v1.4 (ajustes C1): the publish copy becomes the release copy ("Liberar nota", "Liberar nota y respuestas", their confirmations, toasts and hints); the publication date texts are replaced by the release state labels.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,8 +29,6 @@ export const GRADE_COPY = {
   passed: "Aprobado",
   failed: "No aprobado",
   passingGrade: (grade: string) => `Nota mínima para aprobar: ${grade}`,
-  published: (date: string) => `Publicada el ${date}`,
-  unpublished: "Sin publicar",
   legacy: "Intento migrado del sistema anterior: solo lectura.",
   navigatorLabel: "Preguntas del intento",
   navigatorItem: (position: number, pending: boolean) => `Pregunta ${position}${pending ? ", pendiente" : ""}`,
@@ -72,15 +70,19 @@ export const GRADE_COPY = {
   saveFailed: "Algunas calificaciones no se guardaron. Revisa las preguntas marcadas.",
   fixErrors: "Corrige los campos marcados antes de guardar.",
   unsavedPrompt: "Tienes calificaciones sin guardar. ¿Salir de todos modos?",
-  publish: "Publicar",
-  publishTitle: "¿Publicar la calificación?",
-  publishDescription: "El estudiante verá su nota, las respuestas correctas y la retroalimentación.",
-  publishConfirm: "Publicar",
+  releaseGrade: "Liberar nota",
+  releaseAll: "Liberar nota y respuestas",
+  releaseGradeTitle: "¿Liberar la nota?",
+  releaseGradeDescription: "El estudiante verá su nota, su puntaje y si aprobó. Las respuestas correctas, las explicaciones y la retroalimentación IA seguirán ocultas hasta que las liberes. No se puede deshacer.",
+  releaseAllTitle: "¿Liberar la nota y las respuestas?",
+  releaseAllDescription: "El estudiante verá su nota y también las respuestas correctas, las explicaciones, el puntaje de cada pregunta y la retroalimentación IA. No se puede deshacer.",
+  releaseConfirm: "Liberar",
   cancel: "Cancelar",
-  publishedToast: "Calificación publicada.",
-  alreadyPublishedToast: "La calificación ya estaba publicada.",
-  publishNeedsGraded: "Solo se puede publicar cuando todas las preguntas estén calificadas.",
-  publishNeedsSave: "Guarda los cambios antes de publicar.",
+  releasedGradeToast: "Nota liberada.",
+  releasedAllToast: "Nota y respuestas liberadas.",
+  alreadyReleasedToast: "Esos resultados ya estaban liberados.",
+  releaseNeedsGraded: "Solo se pueden liberar los resultados cuando todas las preguntas estén calificadas.",
+  releaseNeedsSave: "Guarda los cambios antes de liberar los resultados.",
   feedbackTitle: "Retroalimentación con IA",
   feedbackOverall: "General",
   feedbackQuestion: (position: number | null) => (position === null ? "Pregunta" : `Pregunta ${position}`),

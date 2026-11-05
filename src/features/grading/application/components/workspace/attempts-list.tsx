@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptsList
-* Descripción: Left column of the "Revisar" tab of the unified grading screen: the July header "Total · Entregadas · Calificadas" (counts of the whole evaluation, ignoring the status filter), the filters (group and statuses), one row per attempt (student, attempt number, status, grade or score, lateness; aria-current on the selected one) that opens it in the review pane, a "Reiniciar intento" action on submitted, pending-review and graded attempts, and the pagination. Loading, error with retry, empty and no-match states. Depends on MUI, the design-system states, @shared/lib, the evaluation attempts and grading entities, the filters component and the grading CSS Module.
-* Versión: 1.0
+* Descripción: Left column of the "Revisar" tab of the unified grading screen: the July header "Total · Entregadas · Calificadas" (counts of the whole evaluation, ignoring the status filter), the filters (group and statuses), one row per attempt (student, attempt number, status, grade or score, lateness; aria-current on the selected one) that opens it in the review pane, a "Reiniciar intento" action on submitted, pending-review and graded attempts, and the pagination. Loading, error with retry, empty and no-match states. Depends on MUI, the design-system states, @shared/lib, the evaluation attempts and grading entities, the filters component and the grading CSS Module. v1.1 (ajustes C1): each graded row shows its release state ("Sin liberar", "Nota liberada", "Nota y respuestas liberadas").
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,7 @@ import type { EvaluationAttemptRow, EvaluationAttemptsFilters, EvaluationAttempt
 import type { FilterOption } from "../../entities/grading.entity";
 import { studentLabel } from "../../entities/grading.entity";
 import { getGradingErrorMessage } from "../../entities/grading-error-messages";
+import { RELEASE_STATE_LABELS, releaseStateOf } from "../../entities/results-release.entity";
 import { AttemptsListFilters } from "./attempts-list-filters";
 import styles from "../../../UI/grading.module.css";
 
@@ -68,6 +69,13 @@ export type AttemptsListProps = {
   onPageSizeChange: (pageSize: number) => void
 };
 
+// The release state matters once the attempt is graded (the server only releases GRADED attempts).
+function rowRelease(row: EvaluationAttemptRow): string | null {
+  const state = releaseStateOf(row);
+
+  return row.status === "GRADED" || state !== "none" ? RELEASE_STATE_LABELS[state] : null;
+}
+
 function rowResult(row: EvaluationAttemptRow): string | null {
   if (row.grade !== null) {
     return ATTEMPTS_LIST_COPY.grade(formatGrade(row.grade));
@@ -99,6 +107,7 @@ export function AttemptsList(props: AttemptsListProps) {
             const student = studentLabel({ name: row.studentName, email: row.studentEmail });
             const selected = row.attemptId === selectedAttemptId;
             const result = rowResult(row);
+            const release = rowRelease(row);
 
             return (
               <li key={row.attemptId} className={cx(styles.attemptRow, selected && styles.attemptRowSelected)}>
@@ -113,6 +122,7 @@ export function AttemptsList(props: AttemptsListProps) {
                   <span className={cx(styles.attemptMeta)}>
                     {ATTEMPTS_LIST_COPY.attempt(row.attemptNumber)} · {GRADING_ATTEMPT_STATUS_LABELS[row.status]}
                     {result ? ` · ${result}` : ""}
+                    {release ? ` · ${release}` : ""}
                     {row.isLate ? ` · ${ATTEMPTS_LIST_COPY.late}` : ""}
                   </span>
                 </button>

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation attempts mappers
-* Descripción: Maps the page of `GET /api/evaluation-grading/attempts` (EvaluationAttemptsPageDTO plus the envelope pagination) to the EvaluationAttemptsPage of the unified grading screen: one row per attempt with the student flattened (blank names become null) and the counts per status (missing counts read as 0). The pagination falls back to the row count when the envelope has none. Depends on the grading DTOs and the evaluation attempts entities.
-* Versión: 1.0
+* Descripción: Maps the page of `GET /api/evaluation-grading/attempts` (EvaluationAttemptsPageDTO plus the envelope pagination) to the EvaluationAttemptsPage of the unified grading screen: one row per attempt with the student flattened (blank names become null) and the counts per status (missing counts read as 0). The pagination falls back to the row count when the envelope has none. Depends on the grading DTOs and the evaluation attempts entities. v1.1 (ajustes C1): maps answersReleasedAt.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,6 +30,7 @@ export function toEvaluationAttemptRow(dto: GradingAttemptListItemDTO): Evaluati
     maxScore: dto.maxScore,
     grade: dto.grade,
     gradePublishedAt: dto.gradePublishedAt,
+    answersReleasedAt: dto.answersReleasedAt,
     isLate: dto.isLate,
   };
 }

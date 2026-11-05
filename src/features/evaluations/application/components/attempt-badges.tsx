@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt badges
-* Descripción: AttemptStatusBadge shows the status of an attempt (En curso, Enviado, Pendiente de calificación, Calificado) with a semantic color, and GradeBadge shows a published grade in es-CO with one decimal ("3,5") plus "Aprobado"/"No aprobado", colored with the success/error tokens from the API `passed` flag (the pass threshold is never computed on the client). Depends on @shared/lib (format, class names), the evaluation entities and labels, and the evaluations CSS Module.
-* Versión: 1.0
+* Descripción: AttemptStatusBadge shows the status of an attempt (En curso, Enviado, Pendiente de calificación, Calificado) with a semantic color, and GradeBadge shows a published grade in es-CO with one decimal ("3,5") plus "Aprobado"/"No aprobado", colored with the success/error tokens from the API `passed` flag (the pass threshold is never computed on the client). Depends on @shared/lib (format, class names), the evaluation entities and labels, and the evaluations CSS Module. v1.1 (ajustes C1): ResultsPendingBadge ("En espera de resultados") for a submitted attempt whose grade the teacher has not released.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +24,14 @@ const STATUS_CLASS: Record<AttemptStatus, string | undefined> = {
 
 export function AttemptStatusBadge({ status }: { status: AttemptStatus }) {
   return <span className={cx(styles.statusBadge, STATUS_CLASS[status])}>{ATTEMPT_STATUS_LABELS[status]}</span>;
+}
+
+// TODO(i18n): move to an evaluations namespace in src/i18n.
+export const RESULTS_PENDING_LABEL = "En espera de resultados";
+
+// A submitted attempt whose grade the teacher has not released yet.
+export function ResultsPendingBadge() {
+  return <span className={cx(styles.statusBadge, styles.statusPending)}>{RESULTS_PENDING_LABEL}</span>;
 }
 
 // TODO(i18n): move to an evaluations namespace in src/i18n.

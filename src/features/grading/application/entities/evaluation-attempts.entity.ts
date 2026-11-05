@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation attempts entities
-* Descripción: View models and pure rules of the unified grading screen (tabs revisar, estadisticas, publicacion with their labels; the attempt status labels; the builder URL that extends an assignment window) and of its attempts list: one attempt row (student, status, attempt number, dates, score and grade, publication, lateness), a page of rows with the counts per status of the whole evaluation (the counts ignore the status filter), the status filter values read from and written to the URL (`?status=SUBMITTED,PENDING_REVIEW`), the query sent to `GET /api/evaluation-grading/attempts` (evaluationId required, groupId and status optional, 1-based page) and whether a teacher may offer "Reiniciar intento" for a row (SUBMITTED, PENDING_REVIEW and GRADED). Depends on nothing at runtime. v1.1 (Bloque 3): tabs, status labels and the builder URL of the unified grading screen.
-* Versión: 1.1
+* Descripción: View models and pure rules of the unified grading screen (tabs revisar, estadisticas, publicacion with their labels; the attempt status labels; the builder URL that extends an assignment window) and of its attempts list: one attempt row (student, status, attempt number, dates, score and grade, publication, lateness), a page of rows with the counts per status of the whole evaluation (the counts ignore the status filter), the status filter values read from and written to the URL (`?status=SUBMITTED,PENDING_REVIEW`), the query sent to `GET /api/evaluation-grading/attempts` (evaluationId required, groupId and status optional, 1-based page) and whether a teacher may offer "Reiniciar intento" for a row (SUBMITTED, PENDING_REVIEW and GRADED). Depends on nothing at runtime. v1.1 (Bloque 3): tabs, status labels and the builder URL of the unified grading screen. v1.2 (ajustes C1): rows carry answersReleasedAt (the release state of the list).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -28,6 +28,7 @@ export type EvaluationAttemptRow = {
   maxScore: number | null
   grade: number | null
   gradePublishedAt: string | null
+  answersReleasedAt: string | null
   isLate: boolean
 };
 

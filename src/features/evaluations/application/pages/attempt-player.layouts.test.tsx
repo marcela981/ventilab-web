@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptPlayerPage layouts tests
-* Descripción: Verifies the presentation per evaluation type of the attempt player (Bloque 3, W3): QUIZ shows every question and checks a single choice on select through the server (no PUT, July verdicts, explanation, locked controls, aria-live region), a multiple choice is autosaved and checked with "Comprobar respuesta", a revealed answer survives a reload, a 422 falls back to the autosave and a PUT refused with 409 evaluation.answer_locked is terminal (no retry, no error toast); WORKSHOP goes "Paso n de N" with "Pista 💡" / "Ocultar pista", "¡Muy bien! 🌟" with the July generic text when there is no explanation, focus on the question heading, Alt+←/→ and "Enviar taller" on the last step; EXAM announces the 10-minute warning in an aria-live region. Depends on Testing Library, msw, vitest and the evaluations test helpers.
-* Versión: 1.0
+* Descripción: Verifies the presentation per evaluation type of the attempt player (Bloque 3, W3): QUIZ shows every question and a PUT refused with 409 evaluation.answer_locked is terminal (no retry, no error toast); WORKSHOP goes "Paso n de N" with "Pista 💡" / "Ocultar pista", focus on the question heading, Alt+←/→ and "Enviar taller" on the last step; EXAM announces the 10-minute warning in an aria-live region. Depends on Testing Library, msw, vitest and the evaluations test helpers. v1.1 (ajustes C1): no immediate feedback in any type: QUIZ, WORKSHOP and EXAM autosave every answer with its save status, never show a verdict or the correct option and never call the removed check endpoint (msw fails on unhandled requests); the WORKSHOP hint stays after answering.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -26,9 +26,10 @@ vi.mock("next/router", () => ({ useRouter: () => router }));
 
 const server = setupServer();
 const LAZY = { timeout: 5000 };
+// The first render loads the question components cold; it gets headroom under the full parallel run.
+const COLD_START_TIMEOUT_MS = 15_000;
 let attempt: StudentAttemptDetailDTO;
 let saved: string[] = [];
-let checks: Array<{ questionId: string, body: unknown }> = [];
 
 const peep = () => questionDto("q1", 0, "SINGLE_CHOICE", {
   prompt: "¿Qué PEEP inicial programarías?",
@@ -59,7 +60,6 @@ beforeEach(() => {
   router.replace.mockClear();
   sessionStorage.clear();
   saved = [];
-  checks = [];
   attempt = withType("QUIZ");
   server.use(
     http.get(apiUrl("/api/evaluation-attempts/:attemptId"), () => HttpResponse.json(envelope(attempt))),
@@ -67,19 +67,6 @@ beforeEach(() => {
       saved.push(String(params.questionId));
 
       return HttpResponse.json(envelope({ questionId: params.questionId }));
-    }),
-    http.post(apiUrl("/api/my-evaluations/attempts/:attemptId/answers/:questionId/check"), async({ params, request }) => {
-      const body = await request.json() as { selectedOptionIds: string[] };
-
-      checks.push({ questionId: String(params.questionId), body });
-
-      if (params.questionId === "q1") {
-        const isCorrect = body.selectedOptionIds[0] === "o2";
-
-        return HttpResponse.json(envelope({ isCorrect, correctOptionIds: ["o2"], explanation: isCorrect ? null : "La PEEP de 10 recluta mejor." }));
-      }
-
-      return HttpResponse.json(envelope({ isCorrect: true, correctOptionIds: ["m1", "m2"], explanation: null }));
     }),
   );
 });
@@ -94,7 +81,7 @@ afterAll(() => {
 });
 
 describe("AttemptPlayerPage — QUIZ", () => {
-  it("shows every question and checks a single choice on select without a PUT", async() => {
+  it("shows every question and autosaves a single choice with no correction", async() => {
     renderPlayer();
 
     expect(await screen.findByRole("heading", { level: 2, name: "Pregunta 1 de 2" })).toBeInTheDocument();
@@ -105,64 +92,30 @@ describe("AttemptPlayerPage — QUIZ", () => {
 
     fireEvent.click(within(first).getByRole("radio", { name: "5 cmH2O" }));
 
-    expect(await within(first).findByText("Casi. La respuesta correcta era \"10 cmH2O\"")).toBeInTheDocument();
-    expect(within(first).getByText("La PEEP de 10 recluta mejor.")).toBeInTheDocument();
-    expect(within(first).getByText("Casi. La respuesta correcta era \"10 cmH2O\"").closest("[aria-live='polite']")).not.toBeNull();
-    expect(within(first).getByRole("radio", { name: "10 cmH2O" })).toBeDisabled();
-    expect(checks).toEqual([{ questionId: "q1", body: { selectedOptionIds: ["o1"] } }]);
-    expect(saved).toEqual([]);
+    await waitFor(() => {
+      expect(saved).toEqual(["q1"]);
+    }, LAZY);
+    expect(await within(first).findByText("Respuesta guardada")).toBeInTheDocument();
+    // The student can still change the answer and never sees whether it was right.
+    expect(within(first).getByRole("radio", { name: "10 cmH2O" })).not.toBeDisabled();
+    expect(screen.queryByText(/Correcto|Casi|respuesta correcta/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Comprobar respuesta" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enviar quiz" })).toBeInTheDocument();
-  });
+  }, COLD_START_TIMEOUT_MS);
 
-  it("autosaves a multiple choice and checks it with Comprobar respuesta", async() => {
+  it("autosaves a multiple choice without Comprobar respuesta", async() => {
     renderPlayer();
 
     const second = await screen.findByRole("region", { name: "Pregunta 2 de 2" });
 
-    expect(within(second).getByRole("button", { name: "Comprobar respuesta" })).toBeDisabled();
+    expect(within(second).queryByRole("button", { name: "Comprobar respuesta" })).not.toBeInTheDocument();
     fireEvent.click(within(second).getByRole("checkbox", { name: "VC" }));
     fireEvent.click(within(second).getByRole("checkbox", { name: "PC" }));
     await waitFor(() => {
       expect(saved).toContain("q2");
     }, LAZY);
-
-    fireEvent.click(within(second).getByRole("button", { name: "Comprobar respuesta" }));
-
-    expect(await within(second).findByText("¡Correcto! 🎉")).toBeInTheDocument();
-    expect(checks).toEqual([{ questionId: "q2", body: { selectedOptionIds: ["m1", "m2"] } }]);
-    expect(within(second).queryByRole("button", { name: "Comprobar respuesta" })).not.toBeInTheDocument();
-    expect(within(second).getByRole("checkbox", { name: "CPAP" })).toBeDisabled();
-  });
-
-  it("keeps a revealed answer after a reload", async() => {
-    attempt = withType("QUIZ", {
-      questions: [
-        questionDto("q1", 0, "SINGLE_CHOICE", {
-          options: [optionDto("o1", 0, "5 cmH2O"), optionDto("o2", 1, "10 cmH2O")],
-          answer: { selectedOptionIds: ["o2"], textAnswer: null, simulationSessionId: null },
-          reveal: { revealedAt: "2026-10-14T15:01:00.000Z", isCorrect: true, correctOptionIds: ["o2"], explanation: "Bien recordado." },
-        }),
-      ],
-    });
-    renderPlayer();
-
-    expect(await screen.findByText("¡Correcto! 🎉")).toBeInTheDocument();
-    expect(screen.getByText("Bien recordado.")).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "5 cmH2O" })).toBeDisabled();
-  });
-
-  it("falls back to the autosave when the server refuses the check (422)", async() => {
-    server.use(http.post(apiUrl("/api/my-evaluations/attempts/:attemptId/answers/:questionId/check"), () =>
-      errorResponse("evaluation.answer_check_unavailable", 422)));
-    renderPlayer();
-
-    fireEvent.click(await screen.findByRole("radio", { name: "10 cmH2O" }));
-
-    await waitFor(() => {
-      expect(saved).toEqual(["q1"]);
-    }, LAZY);
-    expect(await screen.findByText("Respuesta guardada")).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "5 cmH2O" })).not.toBeDisabled();
+    expect(await within(second).findByText("Respuesta guardada")).toBeInTheDocument();
+    expect(within(second).getByRole("checkbox", { name: "CPAP" })).not.toBeDisabled();
   });
 
   it("treats a PUT refused because the answer is locked as final", async() => {
@@ -192,7 +145,7 @@ describe("AttemptPlayerPage — QUIZ", () => {
 });
 
 describe("AttemptPlayerPage — WORKSHOP", () => {
-  it("goes step by step with the hint, the explanation after answering, focus and Alt shortcuts", async() => {
+  it("goes step by step with the hint, no correction after answering, focus and Alt shortcuts", async() => {
     attempt = withType("WORKSHOP", {
       questions: [
         questionDto("q1", 0, "SINGLE_CHOICE", {
@@ -202,8 +155,6 @@ describe("AttemptPlayerPage — WORKSHOP", () => {
         questionDto("q2", 1, "OPEN_TEXT", { prompt: "Justifica." }),
       ],
     });
-    server.use(http.post(apiUrl("/api/my-evaluations/attempts/:attemptId/answers/:questionId/check"), () =>
-      HttpResponse.json(envelope({ isCorrect: true, correctOptionIds: ["o2"], explanation: null }))));
     renderPlayer();
 
     expect(await screen.findByText("Paso 1 de 2")).toBeInTheDocument();
@@ -218,9 +169,13 @@ describe("AttemptPlayerPage — WORKSHOP", () => {
 
     fireEvent.click(screen.getByRole("radio", { name: "10 cmH2O" }));
 
-    expect(await screen.findByText("¡Muy bien! 🌟")).toBeInTheDocument();
-    expect(screen.getByText("La opción correcta es \"10 cmH2O\". Revisa el material del módulo para profundizar en este tema.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Pista/ })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(saved).toEqual(["q1"]);
+    }, LAZY);
+    expect(await screen.findByText("Respuesta guardada")).toBeInTheDocument();
+    expect(screen.queryByText(/Muy bien|La opción correcta|respuesta correcta/)).not.toBeInTheDocument();
+    // The hint stays available after answering.
+    expect(screen.getByRole("button", { name: "Ocultar pista" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Enviar taller" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Siguiente" }));
@@ -242,7 +197,7 @@ describe("AttemptPlayerPage — WORKSHOP", () => {
 });
 
 describe("AttemptPlayerPage — EXAM", () => {
-  it("gives no immediate feedback and announces the 10-minute warning", async() => {
+  it("autosaves with no correction and announces the 10-minute warning", async() => {
     attempt = withType("EXAM", { serverNow: "2026-10-14T15:20:01.000Z", deadlineAt: "2026-10-14T15:30:00.000Z" });
     renderPlayer();
 
@@ -253,7 +208,6 @@ describe("AttemptPlayerPage — EXAM", () => {
     await waitFor(() => {
       expect(saved).toEqual(["q1"]);
     }, LAZY);
-    expect(checks).toEqual([]);
     expect(screen.queryByText(/Correcto|Casi/)).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Enviar examen" })).toBeInTheDocument();
   });
