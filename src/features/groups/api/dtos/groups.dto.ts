@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Groups DTOs
-* Descripción: Request and response types of the groups endpoints, taken from the generated OpenAPI schema: list (`GET /api/groups` -> GroupDTO[]), own groups (`GET /api/groups/mine` -> MyGroupsDTO), detail (`GET /api/groups/{id}` -> GroupDetailDTO), members, supervisions, create/update/delete, add member, leader and supervision bodies, and the users list used to search members (`GET /api/users` -> UserDTO[]). Types only. v1.1 (B3.10): unused aliases removed (AddGroupMemberRequestDTO, SetGroupLeaderRequestDTO, AddGroupSupervisionRequestDTO). v1.2 (ajustes D2): active student group of a user (`GET /api/groups/student-memberships` -> StudentMembershipDTO[]).
-* Versión: 1.2
+* Descripción: Request and response types of the groups endpoints, taken from the generated OpenAPI schema: list (`GET /api/groups` -> GroupDTO[]), own groups (`GET /api/groups/mine` -> MyGroupsDTO), detail (`GET /api/groups/{id}` -> GroupDetailDTO), members, supervisions, create/update/delete, add member, leader and supervision bodies, and the users list used to search members (`GET /api/users` -> UserDTO[]). Types only. v1.1 (B3.10): unused aliases removed (AddGroupMemberRequestDTO, SetGroupLeaderRequestDTO, AddGroupSupervisionRequestDTO).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,8 +14,6 @@ import type { components } from "@shared/api-client/generated/schema";
 type Schemas = components["schemas"];
 
 export type GroupDTO = Schemas["GroupDTO"];
-
-export type StudentMembershipDTO = Schemas["StudentMembershipDTO"];
 
 export type GroupDetailDTO = Schemas["GroupDetailDTO"];
 
