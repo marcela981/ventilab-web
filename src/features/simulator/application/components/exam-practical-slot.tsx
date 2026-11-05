@@ -17,7 +17,9 @@
 *   v1.2 (review of e45841f): the session lookup turns off SWR `keepPreviousData` (on app-wide), so the list of a
 *   previous session id is never read as "not found" for the new one, and a missing session counts as settled only
 *   when the lookup is not validating.
-* Versión: 1.2
+*   v1.3 (ajustes C2): the copy speaks of the evaluation, not of "this exam" (SIMULATION questions also appear
+*   in quizzes and workshops), and the rubric rules show once the teacher releases the answers.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -62,19 +64,19 @@ export const EXAM_SLOT_COPY = {
   threshold: "Umbral",
   penalty: "Penalización",
   passingScore: (score: string) => `Puntaje mínimo para aprobar: ${score}`,
-  rulesPending: "Las reglas de la rúbrica de esta parte práctica se muestran cuando se publica la calificación. El servidor calcula el puntaje.",
+  rulesPending: "Las reglas de la rúbrica de esta parte práctica se muestran cuando el docente libera las respuestas. El servidor calcula el puntaje.",
   policy: "Asesoría IA",
-  policyDisabled: "Desactivada en este examen.",
+  policyDisabled: "Desactivada en esta evaluación.",
   policyPenalty: (points: string | null) => (points
     ? `Permitida con penalización: cada solicitud descuenta ${points} puntos.`
     : "Permitida con penalización: cada solicitud descuenta puntos."),
-  policyUnknown: "No se puede verificar antes de la calificación; durante el examen la asesoría queda desactivada.",
+  policyUnknown: "No se puede verificar antes de la calificación; durante la evaluación la asesoría queda desactivada.",
   deadline: "Fecha límite del intento",
   noDeadline: "Sin fecha límite",
   points: "Puntaje de la pregunta",
   start: "Iniciar parte práctica",
   starting: "Iniciando…",
-  startHint: "La simulación corre a velocidad fija y sin pausa. Al terminar o al llegar la fecha límite vuelves a este examen.",
+  startHint: "La simulación corre a velocidad fija y sin pausa. Al terminar o al llegar la fecha límite vuelves a la evaluación.",
   continue: "Continuar parte práctica",
   inProgress: "Parte práctica en curso.",
   completed: "Parte práctica completada",
