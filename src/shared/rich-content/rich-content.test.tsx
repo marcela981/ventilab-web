@@ -79,4 +79,26 @@ describe("RichContent", () => {
     expect(external).toHaveAttribute("target", "_blank");
     expect(external).toHaveAttribute("rel", "noopener noreferrer");
   });
+
+  it("renders markdown images as a lazy figure with the title as caption", async() => {
+    render(<RichContent content={["Texto", "", "![Curva presión-volumen](/learning/diagrams/b2-curva-pv.svg \"Figura: curva P-V\")"].join("\n")} />);
+
+    const figure = await screen.findByRole("figure", { name: "Figura: curva P-V" }, LAZY_WAIT);
+    const image = screen.getByRole("img", { name: "Curva presión-volumen" });
+
+    expect(figure).toContainElement(image);
+    expect(image).toHaveAttribute("loading", "lazy");
+    expect(image).toHaveAttribute("decoding", "async");
+    expect(figure).toHaveTextContent("Figura: curva P-V");
+    expect(figure.closest("p")).not.toBeNull();
+  });
+
+  it("wraps tables in a keyboard reachable scroll region", async() => {
+    render(<RichContent content={["| Parámetro | Valor |", "|---|---|", "| PEEP | 5 |"].join("\n")} />);
+
+    const region = await screen.findByRole("region", { name: "Tabla desplazable" }, LAZY_WAIT);
+
+    expect(region).toHaveAttribute("tabindex", "0");
+    expect(region).toContainElement(screen.getByRole("table"));
+  });
 });
