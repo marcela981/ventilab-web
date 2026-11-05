@@ -4,8 +4,8 @@
 *   PracticalQuestionSlot (rendered through the public evaluations barrel, which otherwise shows its disabled card)
 *   and that the registered component is lazy: the exam slot module is not evaluated by the registration and is only
 *   loaded when a SIMULATION question renders (the loading text shows first). The slot module is replaced by a probe
-*   that records its evaluation. Depends on vitest and Testing Library.
-* Versión: 1.0
+*   that records its evaluation. Depends on vitest and Testing Library. v1.1 (ajustes C1): the question fixture has no reveal field.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -40,7 +40,6 @@ const QUESTION: AttemptQuestion = {
   points: 4,
   clinicalCaseId: "case-1",
   hint: null,
-  reveal: null,
   options: [],
   answer: null,
 };

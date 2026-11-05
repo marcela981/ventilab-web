@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Attempt result styles
-* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July result band (passed, failed, pending). vX.x (Bloque 5): July skin: status, summary and question cards on glass, reviewed answers on green/red translucent tints, the teacher explanation with the #00a1db left edge, the feedback block on the raised surface and the verdict band tinted with its own color.
-* Versión: 1.2
+* Descripción: Layout of the attempt result page (/evaluations/[evaluationId]/attempts/[attemptId]/result): back links, header, the unpublished status card, the grade summary (passed/failed colors from the semantic tokens), the question cards with the option review (correct in success, wrong selection in error), the teacher explanation, the rubric table and the AI feedback block (pending hint, discreet automatic-feedback label). Tokens only (var(--vl-*), var(--mui-*)); no hex/rgb literals. v1.1 (Bloque 3): the July result band (passed, failed, pending). vX.x (Bloque 5): July skin: status, summary and question cards on glass, reviewed answers on green/red translucent tints, the teacher explanation with the #00a1db left edge, the feedback block on the raised surface and the verdict band tinted with its own color. v1.3 (ajustes C1): .releaseNote, the note of a grade released without the answers.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -63,6 +63,10 @@
 
 .statusCard {
   border-left: 4px solid var(--vl-color-info);
+}
+
+.releaseNote {
+  margin: 0;
 }
 
 .statusTitle {

@@ -9,8 +9,8 @@
 *   read-only mode, and the exam start routine itself (POST body, stored EXAM record with the exam context and the
 *   server clock offset, exam return record). Depends on vitest, Testing Library, msw and the simulator test helpers.
 *   v1.1 (review of eb3c21b): one explicit PUT on success (no player onChange), onChange only when the save fails, a double click starts one session, the link read from question.answer on return, and a settled lookup without the session shows an error with retry.
-*   v1.2 (review of e45841f): a new linked session id under the app-wide keepPreviousData never shows a false "not found".
-* Versión: 1.2
+*   v1.2 (review of e45841f): a new linked session id under the app-wide keepPreviousData never shows a false "not found". v1.3 (ajustes C1): the question fixture has no reveal field.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,7 +80,6 @@ function buildQuestion(overrides: Partial<AttemptQuestion> = {}): AttemptQuestio
     points: 4,
     clinicalCaseId: "case-1",
     hint: null,
-    reveal: null,
     options: [],
     answer: null,
     ...overrides,

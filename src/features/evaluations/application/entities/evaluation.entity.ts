@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation entities
-* Descripción: Domain types of the student evaluations feature and their pure rules. MyEvaluation is one assigned evaluation (assignment window, state UPCOMING|ACTIVE|CLOSED, summary, attempts, canStart from the backend); AttemptDetail is one attempt with its scenarios and questions, where correctness, explanation, rubric and earned score are optional because the backend only sends them once the grade is published; RichText is a description, prompt or scenario that is either plain/markdown text or a Tiptap document. Rules: client-side filtering by state and type (the endpoint has no filters), the evaluation shown on the intro page (several assignments of the same evaluation: the active one first), the intro action (start, continue or blocked with a reason) and the last submitted attempt. Grades and pass/fail always come from the API. Depends on the shared formatters. v1.1 (Bloque 3): MyEvaluation carries attemptsAllowed (maxAttempts plus granted resets) and its curriculum placement (moduleId, levelId, levelTitle, levelOrder, track); AttemptQuestion carries the WORKSHOP hint and the revealed correction (AnswerReveal); AttemptDetail carries partialClosedScore. v1.2 (Bloque 3): the intro blocks with the July re-entry text once attemptsAllowed is reached (BLOCKED_REASONS.alreadyTaken) and attemptOrdinalLabel gives "Intento x de N".
-* Versión: 1.2
+* Descripción: Domain types of the student evaluations feature and their pure rules. MyEvaluation is one assigned evaluation (assignment window, state UPCOMING|ACTIVE|CLOSED, summary, attempts, canStart from the backend); AttemptDetail is one attempt with its scenarios and questions, where correctness, explanation, rubric and earned score are optional because the backend only sends them once the grade is published; RichText is a description, prompt or scenario that is either plain/markdown text or a Tiptap document. Rules: client-side filtering by state and type (the endpoint has no filters), the evaluation shown on the intro page (several assignments of the same evaluation: the active one first), the intro action (start, continue or blocked with a reason) and the last submitted attempt. Grades and pass/fail always come from the API. Depends on the shared formatters. v1.1 (Bloque 3): MyEvaluation carries attemptsAllowed (maxAttempts plus granted resets) and its curriculum placement (moduleId, levelId, levelTitle, levelOrder, track); AttemptQuestion carries the WORKSHOP hint and the revealed correction (AnswerReveal); AttemptDetail carries partialClosedScore. v1.2 (Bloque 3): the intro blocks with the July re-entry text once attemptsAllowed is reached (BLOCKED_REASONS.alreadyTaken) and attemptOrdinalLabel gives "Intento x de N". v1.3 (ajustes C1): two release flags from the teacher, published (grade) and answersReleased (answers, explanations and AI feedback), on attempt summaries and details; isAwaitingResults marks a submitted attempt whose grade is not released; AnswerReveal, reveal and partialClosedScore are gone.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -41,6 +41,7 @@ export type AttemptSummary = {
   submittedAt: string | null
   deadlineAt: string | null
   published: boolean
+  answersReleased: boolean
   result: AttemptResult | null
 };
 
@@ -113,19 +114,6 @@ export type AttemptAnswer = {
   simulationSessionId: string | null
 };
 
-// Correction of an answer revealed by the immediate feedback (QUIZ and WORKSHOP); the answer is then locked.
-export type AnswerReveal = {
-  isCorrect: boolean
-  correctOptionIds: string[]
-  explanation: string | null
-};
-
-// Closed questions answered correctly in an attempt that waits for teacher review.
-export type PartialClosedScore = {
-  correct: number
-  total: number
-};
-
 export type AttemptQuestion = {
   id: string
   scenarioId: string | null
@@ -140,9 +128,7 @@ export type AttemptQuestion = {
   answer: AttemptAnswer | null
   // WORKSHOP only; never replaced by the explanation.
   hint: string | null
-  // Set once the answer was checked (immediate feedback), so it survives a reload.
-  reveal: AnswerReveal | null
-  // Published attempts only.
+  // Only once the teacher released the answers.
   earnedScore?: number | null | undefined
   explanation?: string | null | undefined
   rubric?: Record<string, unknown> | null | undefined
@@ -164,7 +150,10 @@ export type AttemptDetail = {
   submittedAt: string | null
   deadlineAt: string | null
   serverNow: string
+  // The teacher released the grade (score, grade, passed).
   published: boolean
+  // The teacher released the answers, explanations and AI feedback (implies the grade).
+  answersReleased: boolean
   evaluation: {
     id: string
     title: string
@@ -175,8 +164,6 @@ export type AttemptDetail = {
   scenarios: AttemptScenario[]
   questions: AttemptQuestion[]
   result: AttemptResult | null
-  // PENDING_REVIEW of a QUIZ or WORKSHOP with open questions; null otherwise.
-  partialClosedScore: PartialClosedScore | null
 };
 
 export type EvaluationTypeFilter = EvaluationType | null;
@@ -231,6 +218,11 @@ export function findLastSubmittedAttempt(evaluation: MyEvaluation): AttemptSumma
   const submitted = evaluation.attempts.filter((attempt) => attempt.status !== "IN_PROGRESS");
 
   return submitted[submitted.length - 1] ?? null;
+}
+
+// Submitted, but the teacher has not released the grade yet ("En espera de resultados").
+export function isAwaitingResults(attempt: Pick<AttemptSummary, "status" | "published">): boolean {
+  return attempt.status !== "IN_PROGRESS" && !attempt.published;
 }
 
 export function findLastAttempt(evaluation: MyEvaluation): AttemptSummary | null {

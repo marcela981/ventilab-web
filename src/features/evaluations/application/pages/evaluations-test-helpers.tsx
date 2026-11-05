@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluations test helpers
-* Descripción: Shared fixtures of the evaluations tests: backend envelope and error bodies, factories of MyEvaluationDTO and MyEvaluationAttemptDTO, a fake socket that records listeners and lets a test emit server events, and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and a realtime context with the fake socket (no AuthProvider, no network for the session or the socket). Test-only code. Depends on Testing Library, msw, SWR, the session and realtime contexts and the evaluations DTOs. v1.1 (E2): the render helper also mounts the global ToastProvider (as pages/_app.js does), plus factories of the student attempt detail, question, option and scenario DTOs (without isCorrect, explanation, rubric or earnedScore, as the backend sends them before publication). v1.2 (Bloque 3): fixtures carry attemptsAllowed, the curriculum placement, hint, reveal and partialClosedScore.
-* Versión: 1.2
+* Descripción: Shared fixtures of the evaluations tests: backend envelope and error bodies, factories of MyEvaluationDTO and MyEvaluationAttemptDTO, a fake socket that records listeners and lets a test emit server events, and a render helper that mounts a page inside an isolated SWR cache, a session context with the given role and a realtime context with the fake socket (no AuthProvider, no network for the session or the socket). Test-only code. Depends on Testing Library, msw, SWR, the session and realtime contexts and the evaluations DTOs. v1.1 (E2): the render helper also mounts the global ToastProvider (as pages/_app.js does), plus factories of the student attempt detail, question, option and scenario DTOs (without isCorrect, explanation, rubric or earnedScore, as the backend sends them before publication). v1.2 (Bloque 3): fixtures carry attemptsAllowed, the curriculum placement, hint, reveal and partialClosedScore. v1.3 (ajustes C1): attempts carry answersReleased (false by default); reveal and partialClosedScore are gone.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -55,6 +55,7 @@ export function attemptDto(id: string, attemptNumber: number, overrides: Partial
     submittedAt: "2026-10-14T14:20:00.000Z",
     deadlineAt: "2026-10-14T14:30:00.000Z",
     published: false,
+    answersReleased: false,
     ...overrides,
   };
 }
@@ -120,7 +121,6 @@ export function questionDto(
     options: [],
     answer: null,
     hint: null,
-    reveal: null,
     ...rest,
   };
 }
@@ -140,10 +140,10 @@ export function attemptDetailDto(id: string, overrides: Partial<StudentAttemptDe
     deadlineAt: null,
     serverNow: "2026-10-14T15:00:00.000Z",
     published: false,
+    answersReleased: false,
     evaluation: { id: "e1", title: "Quiz de PEEP", type: "QUIZ", description: null },
     scenarios: [],
     questions: [],
-    partialClosedScore: null,
     ...overrides,
   };
 }

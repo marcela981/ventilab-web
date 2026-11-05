@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationIntroPage
-* Descripción: Page /evaluations/[evaluationId]: introduction of one assigned evaluation, taken from `GET /api/my-evaluations` (there is no intro endpoint; when the evaluation is assigned several times the active assignment wins). Shows the type, the instructions (rich text or plain text), questions, duration, attempts used, the date window (America/Bogota) and the attempt warnings (the server controls the time, answers are saved automatically). "Comenzar" or "Continuar intento" calls the idempotent start endpoint and opens the attempt player; when the backend does not allow a start the button is disabled with the reason. "Ver resultado" links to the result of the last submitted attempt. Depends on MUI Alert, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the evaluations CSS Module. v1.1 (Bloque 3): re-entry text when every allowed attempt was used ("Ya realizaste esta evaluación el <fecha>…"), "Intento x de N" when more than one attempt is allowed, attempts counted against attemptsAllowed and the player route prefetched (router.prefetch) while the start is possible.
-* Versión: 1.1
+* Descripción: Page /evaluations/[evaluationId]: introduction of one assigned evaluation, taken from `GET /api/my-evaluations` (there is no intro endpoint; when the evaluation is assigned several times the active assignment wins). Shows the type, the instructions (rich text or plain text), questions, duration, attempts used, the date window (America/Bogota) and the attempt warnings (the server controls the time, answers are saved automatically). "Comenzar" or "Continuar intento" calls the idempotent start endpoint and opens the attempt player; when the backend does not allow a start the button is disabled with the reason. "Ver resultado" links to the result of the last submitted attempt. Depends on MUI Alert, next/head, next/link, next/router, the design-system components, @shared/lib, the evaluations hooks, entities and components, and the evaluations CSS Module. v1.1 (Bloque 3): re-entry text when every allowed attempt was used ("Ya realizaste esta evaluación el <fecha>…"), "Intento x de N" when more than one attempt is allowed, attempts counted against attemptsAllowed and the player route prefetched (router.prefetch) while the start is possible. v1.2 (ajustes C1): the last result shows "En espera de resultados" until the teacher releases the grade, and the grade badge only once published.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,10 +22,10 @@ import { PageHeader } from "@shared/design-system/components/page-header";
 import { CardSkeleton } from "@shared/design-system/components/skeleton";
 import { cx } from "@shared/lib/class-names";
 import { formatDateRange, formatDuration } from "@shared/lib/format";
-import { GradeBadge } from "../components/attempt-badges";
+import { GradeBadge, ResultsPendingBadge } from "../components/attempt-badges";
 import { RichTextView } from "../components/rich-text-view";
 import type { MyEvaluation } from "../entities/evaluation.entity";
-import { attemptOrdinalLabel, findIntroEvaluation, findLastSubmittedAttempt, resolveIntroAction } from "../entities/evaluation.entity";
+import { attemptOrdinalLabel, findIntroEvaluation, findLastSubmittedAttempt, isAwaitingResults, resolveIntroAction } from "../entities/evaluation.entity";
 import { EVALUATION_TYPE_LABELS, formatAttemptsUsed } from "../entities/evaluation-labels";
 import { getEvaluationErrorMessage } from "../entities/evaluations-error-messages";
 import { buildAttemptResultUrl, buildAttemptUrl, EVALUATIONS_URL } from "../entities/evaluations-urls";
@@ -111,10 +111,11 @@ function IntroBody({ evaluation }: { evaluation: MyEvaluation }) {
           <dt>{PAGE_COPY.window}</dt>
           <dd>{formatDateRange(evaluation.startsAt, evaluation.endsAt)}</dd>
         </dl>
-        {lastSubmitted?.result ? (
+        {lastSubmitted ? (
           <div className={cx(styles.cardFooter)}>
             <span>{PAGE_COPY.lastResult}</span>
-            <GradeBadge result={lastSubmitted.result} />
+            {lastSubmitted.published && lastSubmitted.result ? <GradeBadge result={lastSubmitted.result} /> : null}
+            {isAwaitingResults(lastSubmitted) ? <ResultsPendingBadge /> : null}
           </div>
         ) : null}
       </section>
