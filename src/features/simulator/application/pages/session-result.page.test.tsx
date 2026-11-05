@@ -9,7 +9,10 @@
 *   Testing Library, msw, the engine replay and the simulator test helpers. v1.1: the evolution charts are line charts.
 *   v1.2: the breakdown in any mode, the mode-unknown note (history failed or not listing the session), no retry for
 *   404 but a retry for 5xx, and the local replay timeout with a retry in a new worker.
-* Versión: 1.2
+*   v1.3 (Bloque A): the deceased outcome as the prominent first block with its times and the "Línea de tiempo"
+*   (decisions, alarm onsets, status changes at mm:ss); an EXAM summary with withheld results shows "Entregado — en
+*   espera de resultados" and no score, objectives, breakdown or timeline, or only the score once the grade is out.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,15 +55,16 @@ beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
-type Setup = { mode?: "FREE" | "EXAM", finalMetrics?: unknown, attemptId?: string | null };
+type Setup = { mode?: "FREE" | "EXAM", finalMetrics?: unknown, attemptId?: string | null, summary?: Record<string, unknown> };
 
-function installHandlers({ mode = "FREE", finalMetrics = SERVER_FINAL, attemptId = null }: Setup = {}) {
+function installHandlers({ mode = "FREE", finalMetrics = SERVER_FINAL, attemptId = null, summary = {} }: Setup = {}) {
   server.use(
     http.get(apiUrl("/api/simulation/sessions/s1/summary"), () => HttpResponse.json(envelope(summaryDto({
       targets: [{ id: "SPO2", status: "MET", value: 93, min: 88, max: 95 }, { id: "PLATEAU_PRESSURE", status: "UNMET", value: 32, min: null, max: 30 }],
       breakdown: BREAKDOWN,
       aiHelpCount: 2,
       finalMetrics,
+      ...summary,
     })))),
     http.get(apiUrl("/api/simulation/sessions/s1/replay"), () => HttpResponse.json(envelope(replayDto({ case: ENGINE_CASE, events: RECORDED })))),
     http.get(apiUrl("/api/simulation/sessions/history"), () => HttpResponse.json(envelope([sessionDto("s1", { mode, attemptId, questionId: attemptId ? "q1" : null })]))),
@@ -136,6 +140,55 @@ describe("SessionResultPage", () => {
     });
     await waitFor(() => expect(workers[0]?.terminated).toBe(true));
     expect(screen.getByRole("link", { name: "Ver repetición" })).toHaveAttribute("href", "/simulator/sessions/s1/replay");
+  });
+
+  it("shows a deceased patient first and the debrief timeline (Bloque A)", async() => {
+    renderPage({
+      summary: {
+        outcome: { status: "DECEASED", firstCriticalAtMs: 360_000, arrestAtMs: 600_000, deceasedAtMs: 720_000 },
+        timeline: [
+          { simTimeMs: 15_000, kind: "DECISION", changes: [{ field: "peepCmH2O", from: 5, to: 12 }] },
+          { simTimeMs: 300_000, kind: "ALARM", code: "LOW_SPO2" },
+          { simTimeMs: 360_000, kind: "PATIENT_STATUS", code: "CRITICAL" },
+          { simTimeMs: 720_000, kind: "PATIENT_STATUS", code: "DECEASED" },
+        ],
+      },
+    });
+
+    const outcome = await screen.findByRole("heading", { name: "Paciente fallecido" });
+
+    expect(outcome.compareDocumentPosition(screen.getByText("Puntaje calculado por el servidor")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText("Fallecimiento").nextElementSibling).toHaveTextContent("12:00");
+    expect(screen.getByText("Paro cardíaco").nextElementSibling).toHaveTextContent("10:00");
+
+    const items = screen.getAllByRole("listitem").filter((item) => item.closest("ol[aria-label='Línea de tiempo']"));
+
+    expect(items.map((item) => item.textContent)).toEqual([
+      "00:15PEEP 5 → 12 cmH₂O",
+      "05:00Alarma: SpO₂ baja",
+      "06:00Estado del paciente: Crítico",
+      "12:00Estado del paciente: Paciente fallecido",
+    ]);
+  });
+
+  it("an EXAM student before the release sees only that the practical part was submitted (Bloque A)", async() => {
+    renderPage({ mode: "EXAM", summary: { score: null, resultsWithheld: true, breakdown: [], targets: [], timeline: [], outcome: null } });
+
+    expect(await screen.findByRole("heading", { name: "Entregado — en espera de resultados" })).toBeInTheDocument();
+    expect(screen.queryByText("Puntaje calculado por el servidor")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Objetivos clínicos al final" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Desglose de la rúbrica (servidor)" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Línea de tiempo" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Evolución de la sesión" })).not.toBeInTheDocument();
+  });
+
+  it("with only the grade released, an EXAM student sees the score without the correction (Bloque A)", async() => {
+    renderPage({ mode: "EXAM", summary: { score: 0.7, resultsWithheld: true, breakdown: [], targets: [], timeline: [], outcome: null } });
+
+    expect(await screen.findByText(/^70s?%$/)).toBeInTheDocument();
+    expect(screen.getByRole("note")).toHaveTextContent("La corrección detallada");
+    expect(screen.queryByRole("heading", { name: "Objetivos clínicos al final" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Desglose de la rúbrica (servidor)" })).not.toBeInTheDocument();
   });
 
   it("notes a local-versus-server difference without replacing the server result", async() => {

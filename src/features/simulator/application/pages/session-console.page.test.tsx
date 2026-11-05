@@ -30,7 +30,9 @@
 *   test asserts one store publish per window and no hook re-render at all.
 *   v2.1 (Ajustes A, A1): the July console applies each edit on its own (no Confirmar / Cancelar): every stepper
 *   click is one PARAM_CHANGE at once, and Escape drops a slider change still debouncing (no event).
-*   v2.2 (Bloque A): sessions, replays and worker ready messages use the bundled ENGINE_VERSION (2.0.0).
+*   v2.2 (Bloque A): sessions, replays and worker ready messages use the bundled ENGINE_VERSION (2.0.0); a deceased
+*   patient shows "Paciente fallecido" in the status area and ends the session on its own (no confirmation, one
+*   POST /end, then the result); EXAM leaves the live objectives out of the case drawer.
 * Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -45,7 +47,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@shared/api-client/api-error";
 import { ENGINE_VERSION, replay } from "@shared/sim-engine";
-import type { SimBatch, SimCommand } from "@shared/sim-engine";
+import type { EngineMetrics, SimBatch, SimCommand } from "@shared/sim-engine";
 import type { ConsoleSampleBatch } from "@shared/ventilator-console";
 import { RESYNC_SETTLE_TIMEOUT_MS } from "../config/sim-console.config";
 import type { SessionReplay, SessionState } from "../entities/sim-session.entity";
@@ -194,6 +196,65 @@ async function endThroughDialog(worker: FakeWorker, pausedAtMs = 4400): Promise<
 const peepRaise = (id: string, simTimeMs: number) => ({ id, simTimeMs, type: "PARAM_CHANGE" as const, payload: { changes: { peepCmH2O: 6 } } });
 
 describe("SessionConsolePage", () => {
+  it("a deceased patient is shown in the status area and ends the session on its own (Bloque A)", async() => {
+    const { worker, endSession } = renderPage();
+
+    await startRunning(worker);
+
+    const { final } = replay(buildEngineCase(), 42, [], 2000);
+    const deceased: EngineMetrics = {
+      ...final,
+      patient: {
+        status: "DECEASED",
+        severity: 1,
+        heartRateBpm: 0,
+        insults: [],
+        criticalExposureMin: 10,
+        firstCriticalAtMs: 1000,
+        arrestAtMs: 1500,
+        deceasedAtMs: 2000,
+      },
+    };
+
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 5000, status: "running", metrics: deceased }) }));
+
+    expect(await screen.findByRole("status", { name: "Estado del paciente" })).toHaveTextContent("Paciente fallecido");
+    await waitFor(() => expect(sentOfType(worker, "pause").length).toBeGreaterThan(0));
+    expect(screen.queryByRole("button", { name: "Finalizar" })).not.toBeInTheDocument();
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 5100, status: "paused", metrics: deceased }) }));
+
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/simulator/sessions/s1/result"));
+    expect(endSession).toHaveBeenCalledTimes(1);
+    expect(endSession).toHaveBeenCalledWith("s1", 5100);
+  });
+
+  it("an unstable patient shows its status and severity without ending the session (Bloque A)", async() => {
+    const { worker, endSession } = renderPage();
+
+    await startRunning(worker);
+
+    const { final } = replay(buildEngineCase(), 42, [], 2000);
+    const unstable: EngineMetrics = {
+      ...final,
+      patient: {
+        status: "UNSTABLE",
+        severity: 0.454,
+        heartRateBpm: 118,
+        insults: ["HYPOXEMIA"],
+        criticalExposureMin: 0,
+        firstCriticalAtMs: null,
+        arrestAtMs: null,
+        deceasedAtMs: null,
+      },
+    };
+
+    act(() => worker.emit({ type: "batch", batch: buildBatch({ simTimeMs: 5000, status: "running", metrics: unstable }) }));
+
+    expect(await screen.findByRole("status", { name: "Estado del paciente" })).toHaveTextContent("Inestable · gravedad 45 %");
+    expect(sentOfType(worker, "pause")).toHaveLength(0);
+    expect(endSession).not.toHaveBeenCalled();
+  });
+
   it("initialises the worker from a fresh record with the session multiplier and starts it when ready", async() => {
     const { worker, fetchReplay } = renderPage({ record: { timeMultiplier: 2 } });
 
@@ -379,6 +440,17 @@ describe("SessionConsolePage", () => {
 
     expect(screen.getByText("Velocidad fija ×2 (examen, sin pausa)")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Pausar" })).not.toBeInTheDocument();
+  });
+
+  it("EXAM leaves the live objectives out of the case drawer (Bloque A)", async() => {
+    const { worker } = renderPage({ record: { mode: "EXAM" } });
+
+    await startRunning(worker);
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar caso clínico" }));
+
+    expect(await screen.findByText("SDRA moderado")).toBeInTheDocument();
+    expect(screen.queryByText("en tiempo real")).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Objetivos en tiempo real" })).not.toBeInTheDocument();
   });
 
   it("FREE pauses, resumes and changes the playback multiplier up to the session multiplier", async() => {

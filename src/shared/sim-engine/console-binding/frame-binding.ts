@@ -14,7 +14,7 @@
 *   v1.2 (Bloque 5, perf): the console values come from the light `@shared/ventilator-console/config.entry` (the barrel
 *   evaluated the whole console).
 *   v1.3 (Bloque A, engine 2.0.0): Spanish labels of the patient alarms (low SpO₂ and MAP, tachycardia, bradycardia,
-*   cardiac arrest).
+*   cardiac arrest) and the heart rate vital (`hr`, from `hemodynamics.heartRateBpm`; absent without patient evolution).
 * Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -132,7 +132,15 @@ export function toPatientValues(metrics: EngineMetrics | null): PatientValues {
     paco2: metrics.gasExchange.paco2MmHg,
     ph: metrics.gasExchange.ph,
     map: metrics.hemodynamics.meanArterialPressureMmHg,
+    ...heartRateOf(metrics),
   };
+}
+
+/** The heart rate only when the engine reports one (engine 2.0.0 with patient evolution), so v1 sessions show no FC. */
+function heartRateOf(metrics: EngineMetrics): PatientValues {
+  const heartRate = metrics.hemodynamics.heartRateBpm;
+
+  return typeof heartRate === "number" && Number.isFinite(heartRate) ? { hr: heartRate } : {};
 }
 
 export type PatientTrends = Readonly<Partial<Record<PatientVitalId, readonly number[]>>>;
@@ -164,6 +172,13 @@ function formatAlarmNumber(value: number): string {
   return Number.isFinite(value) ? String(Math.round(value * 10) / 10) : "—";
 }
 
+function alarmMessage(alarm: Alarm): string {
+  const label = ALARM_LABELS[alarm.code] ?? alarm.code;
+
+  // The cardiac arrest has no measured value or limit to show.
+  return alarm.code === "CARDIAC_ARREST" ? label : `${label}: ${formatAlarmNumber(alarm.value)} (límite ${formatAlarmNumber(alarm.threshold)})`;
+}
+
 /** Engine alarms as console alarms; an alarm still active keeps its onset time (simulated ms). */
 export function toConsoleAlarms(alarms: readonly Alarm[], simTimeMs: number, previous: readonly ConsoleAlarm[] = []): ConsoleAlarm[] {
   const since = new Map(previous.map((alarm) => [alarm.id, alarm.since]));
@@ -172,7 +187,7 @@ export function toConsoleAlarms(alarms: readonly Alarm[], simTimeMs: number, pre
     id: alarm.code,
     type: alarm.code,
     priority: priorityOf(alarm),
-    message: `${ALARM_LABELS[alarm.code] ?? alarm.code}: ${formatAlarmNumber(alarm.value)} (límite ${formatAlarmNumber(alarm.threshold)})`,
+    message: alarmMessage(alarm),
     since: since.get(alarm.code) ?? simTimeMs,
   }));
 }

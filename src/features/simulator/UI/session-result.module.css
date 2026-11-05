@@ -5,8 +5,10 @@
 *   objectives and rubric tables with a horizontal scroll wrapper on narrow screens, the objective status text, the
 *   discreet determinism note, the evolution chart grid and the page links. Design-system tokens only; no hex or rgb.
 *   v1.1: the retry row and text button of the local evolution. v1.2 (W6, Bloque 1): the summary column of the
-*   result shown without the page chrome (the /simulador result dialog).
-* Versión: 1.2
+*   result shown without the page chrome (the /simulador result dialog). v1.3 (Bloque A): the patient outcome card
+*   (prominent error border and title for "Paciente fallecido"), the debrief timeline list with its mm:ss times and
+*   the withheld EXAM result card.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -185,4 +187,71 @@
   color: var(--vl-color-link);
   font: var(--mui-font-button);
   cursor: pointer;
+}
+
+/* Patient outcome: a deceased patient is the most prominent block of the debrief. */
+.outcomeCard[data-status="DECEASED"],
+.outcomeCard[data-status="ARREST"] {
+  border: 2px solid var(--vl-color-error);
+}
+
+.outcomeTitle {
+  margin: 0;
+  font: var(--mui-font-h5);
+}
+
+.outcomeCard[data-status="DECEASED"] .outcomeTitle,
+.outcomeCard[data-status="ARREST"] .outcomeTitle {
+  color: var(--vl-color-error);
+}
+
+.outcomeCard[data-status="CRITICAL"] .outcomeTitle,
+.outcomeCard[data-status="UNSTABLE"] .outcomeTitle {
+  color: var(--vl-color-warning);
+}
+
+.outcomeCard[data-status="STABLE"] .outcomeTitle {
+  color: var(--vl-color-success);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.timelineItem {
+  display: flex;
+  gap: var(--vl-space-3);
+  align-items: baseline;
+  padding: var(--vl-space-1) 0;
+  border-top: 1px solid var(--vl-color-border);
+  font: var(--mui-font-body2);
+}
+
+.timelineItem:first-child {
+  border-top: 0;
+}
+
+.timelineTime {
+  flex: none;
+  min-width: 5ch;
+  color: var(--vl-color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.timelineItem[data-kind="ALARM"] .timelineText {
+  color: var(--vl-color-warning);
+}
+
+.timelineItem[data-kind="PATIENT_STATUS"] .timelineText {
+  font-weight: 600;
+}
+
+.timelineItem[data-code="DECEASED"] .timelineText,
+.timelineItem[data-code="ARREST"] .timelineText {
+  color: var(--vl-color-error);
 }

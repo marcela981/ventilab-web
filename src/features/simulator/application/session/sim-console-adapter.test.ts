@@ -6,8 +6,9 @@
 *   applicability, confirmed changes back to engine units, local validation, ranges from the case targets, the live
 *   objectives and the PBW (Devine) patient summary. v1.1: an event confirmed between batches by a real sim loop is
 *   enqueued with exactly the effective time the loop used; a rejected event is never enqueued. Depends on vitest,
-*   the engine replay, the sim loop and the adapter.
-* Versión: 1.1
+*   the engine replay, the sim loop and the adapter. v1.2 (Bloque A): with patient evolution (engine 2.0.0) the vitals
+*   carry the heart rate and the patient alarms get their Spanish labels; without it there is no FC.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,6 +71,25 @@ describe("worker output → console", () => {
       ph: final.gasExchange.ph,
       map: final.hemodynamics.meanArterialPressureMmHg,
     });
+  });
+
+  it("adds the heart rate only when the case has patient evolution, and labels the patient alarms", () => {
+    const evolution = {
+      initialSeverity: 0.2,
+      minSeverity: 0,
+      progressionRatePerMin: 0.05,
+      viliRatePerMin: 0,
+      recoveryRatePerMin: 0.02,
+      arrestAfterCriticalMin: 10,
+      deathAfterArrestMin: 2,
+      baselineHeartRateBpm: 90,
+    };
+    const { final } = replay(buildEngineCase({ evolution }), 42, [], 15_000);
+
+    expect(final.hemodynamics.heartRateBpm).toEqual(expect.any(Number));
+    expect(toPatientValues(final)).toMatchObject({ hr: final.hemodynamics.heartRateBpm });
+    expect(toConsoleAlarms([{ code: "LOW_SPO2", severity: "HIGH", value: 84.2, threshold: 90 }], 0)[0]?.message).toBe("SpO₂ baja: 84.2 (límite 90)");
+    expect(toConsoleAlarms([{ code: "CARDIAC_ARREST", severity: "HIGH", value: 0, threshold: 0 }], 0)[0]?.message).toBe("Paro cardíaco");
   });
 
   it("shows missing values before the first metrics and keeps the trends bounded", () => {

@@ -13,7 +13,10 @@
 *   refusals). The runner renders nothing: it lifts its memoised controller to the host, so the children stay mounted
 *   across claims, boots and resyncs and read everything with `useSimSessionHost()`. High-frequency data never goes
 *   through the context (the console and the clock read `running.session.store`).
-* Versión: 0.1
+*   v0.2 (Bloque A): when the engine reports the patient deceased, the runner ends the session on its own through the
+*   normal end path (no confirmation; pause → flush → POST /end → leave: the result and its debrief, or back to the
+*   exam), once, unless the student or the deadline is already ending it.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,6 +32,7 @@ import { DEADLINE_FLUSH_TIMEOUT_MS } from "../config/sim-exam.config";
 import { buildExamAttemptUrl, buildSessionResultUrl, EVALUATIONS_LIST_URL } from "../config/simulator.routes";
 import type { SimulationMode } from "../config/simulator.config";
 import type { AssistTurn } from "../entities/sim-assist.entity";
+import { isDeceased } from "../entities/sim-debrief.entity";
 import { checkEngineVersion } from "../entities/sim-session.entity";
 import type { SessionBoot, SessionRecord } from "../entities/sim-session.entity";
 import { useExamDeadline } from "../hooks/use-exam-deadline";
@@ -258,6 +262,30 @@ function SimSessionRunner({ boot, sessionId, onEnded, sessionDeps, examReturn, o
       resync,
     };
   });
+
+  // A deceased patient ends the session on its own (the engine ignores every later change): the normal end path, once.
+  const deceasedEndRef = useRef(false);
+  const { store } = session;
+
+  useEffect(() => {
+    if (!store || blocked) {
+      return undefined;
+    }
+
+    const check = (): void => {
+      if (deceasedEndRef.current || endInFlightRef.current || deadlineRef.current || !isDeceased(store.getSnapshot().metrics)) {
+        return;
+      }
+
+      deceasedEndRef.current = true;
+      setConfirming(false);
+      void actionsRef.current?.finish();
+    };
+
+    check();
+
+    return store.subscribe(check);
+  }, [blocked, store]);
 
   const requestEnd = useCallback(() => actionsRef.current?.requestEnd(), []);
   const cancelEnd = useCallback(() => actionsRef.current?.cancelEnd(), []);

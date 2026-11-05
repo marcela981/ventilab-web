@@ -6,7 +6,8 @@
 *   rebuilds the live objectives only when the engine target statuses change; SessionAssistSlot renders a host assist
 *   slot with the current simulated time. Depends on React, the session store hook and the simulator components.
 *   v0.2 (Bloque 5, C6): LiveCasePanel is the "Caso clínico" strip button and drawer, with an optional extra block.
-* Versión: 0.2
+*   v0.3 (Bloque A): `hideObjectives` (EXAM) leaves the live objectives out of the drawer and never reads them.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -46,9 +47,19 @@ export type LiveCasePanelProps = {
   engineCase: EngineCase
   /** v0.2: extra content of the case drawer (the own patient of the workspace). */
   extra?: ReactNode
+  /** v0.3: EXAM — the live objectives would reveal the correction, so the drawer leaves them out. */
+  hideObjectives?: boolean
 };
 
-export const LiveCasePanel = memo(function LiveCasePanel({ store, caseId, engineCase, extra }: LiveCasePanelProps) {
+export const LiveCasePanel = memo(function LiveCasePanel({ hideObjectives = false, ...props }: LiveCasePanelProps) {
+  if (hideObjectives) {
+    return <CasePanel caseId={props.caseId} engineCase={props.engineCase} objectives={null} extra={props.extra} />;
+  }
+
+  return <LiveObjectivesCasePanel {...props} />;
+});
+
+const LiveObjectivesCasePanel = memo(function LiveObjectivesCasePanel({ store, caseId, engineCase, extra }: Omit<LiveCasePanelProps, "hideObjectives">) {
   const statuses = useSimSessionSlice(store, selectTargets, sameData);
   const objectives = useMemo(() => buildObjectives(engineCase.targets, statuses), [engineCase.targets, statuses]);
 

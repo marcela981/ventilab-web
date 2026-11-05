@@ -7,7 +7,7 @@
 *   state, replay and history; the started session carries the patient of the start request (not echoed by the server).
 *   v1.4 (W8, Bloque 1): the patient preset of a clinical case detail ("Cargar caso" of the Simular Paciente form).
 *   v1.5 (Bloque A): the summary score is nullable (an EXAM student before the teacher release) and carries
-*   `resultsWithheld`.
+*   `resultsWithheld`, the patient `outcome` and the debrief `timeline` (malformed items dropped).
 * Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
@@ -20,6 +20,7 @@ import type { TargetStatus } from "@shared/sim-engine";
 import { OBJECTIVE_DEFINITIONS } from "../../application/config/sim-console.config";
 import { CASE_DIFFICULTIES } from "../../application/config/simulator.config";
 import type { CaseDifficulty } from "../../application/config/simulator.config";
+import { parseOutcome, parseTimeline } from "../../application/entities/sim-debrief.entity";
 import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../../application/entities/sim-result.entity";
 import { sessionDurationMs } from "../../application/entities/simulator.entity";
 import { parseSessionPatient } from "../../application/entities/sim-patient.entity";
@@ -161,6 +162,8 @@ export function toSessionSummary(dto: SimulationSessionSummaryDTO): SessionSumma
     breakdown: breakdown.flatMap(toScoreCriterion),
     resultsWithheld: dto.resultsWithheld === true,
     aiHelpCount: dto.aiHelpCount,
+    outcome: parseOutcome(dto.outcome),
+    timeline: parseTimeline(dto.timeline),
   };
 }
 

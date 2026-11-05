@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Monitor value cards preference tests
-* Descripción: normalizeCardsPref and the layout conversion: defaults for anything that is not a v1 preference (not JSON, not an object, missing or old version), a newer version read as defaults and not writable, unknown and duplicate ids dropped, a new catalog card inserted after its previous neighbour and visible, the hidden cards of known ids kept, and the per-user key. v0.1 (Bloque 5, C5): first version. Depends on Vitest and the preference entity.
-* Versión: 0.1
+* Descripción: normalizeCardsPref and the layout conversion: defaults for anything that is not a v1 preference (not JSON, not an object, missing or old version), a newer version read as defaults and not writable, unknown and duplicate ids dropped, a new catalog card inserted after its previous neighbour and visible, the hidden cards of known ids kept, and the per-user key. v0.1 (Bloque 5, C5): first version. v0.2 (Bloque A): a preference saved before the heart rate card gets FC at the end of the vitals, visible, with the user's order and hidden cards kept. Depends on Vitest and the preference entity.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -52,6 +52,17 @@ describe("normalizeCardsPref", () => {
     expect(pref.hidden).toEqual([]);
 
     expect(normalizeCardsPref({ version: 1, order: ["spo2"], hidden: [], known: ["spo2"] }, CATALOG).pref.order).toEqual(["peakPressure", "meanPressure", "totalPeep", "spo2"]);
+  });
+
+  it("migrates a preference saved before the heart rate card: FC lands after PCO2, visible (Bloque A)", () => {
+    const before = MONITOR_CARD_IDS.filter((id) => id !== "hr");
+    const userOrder = ["spo2", ...before.filter((id) => id !== "spo2")];
+    const { pref, writable } = normalizeCardsPref(JSON.stringify({ version: 1, order: userOrder, hidden: ["fio2"], known: before }));
+
+    expect(writable).toBe(true);
+    expect(MONITOR_CARD_IDS.at(-1)).toBe("hr");
+    expect(pref.order).toEqual([...userOrder, "hr"]);
+    expect(pref.hidden).toEqual(["fio2"]);
   });
 
   it("converts to and from the console layout and keys the preference per user", () => {

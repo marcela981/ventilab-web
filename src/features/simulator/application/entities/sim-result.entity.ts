@@ -8,7 +8,8 @@
 *   always the server's; nothing here computes a grade. Depends on the sim-engine public types and the result config.
 *   v1.1: the comparison is `unavailable` without a server simTimeMs or when no clinical field was compared.
 *   v1.2 (Bloque A): the score is null while an EXAM student's results are withheld (`resultsWithheld`).
-* Versión: 1.2
+*   v1.3 (Bloque A): the summary carries the server patient `outcome` and the debrief `timeline`.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -25,6 +26,7 @@ import {
   TIME_TO_STABILIZE_CRITERION,
 } from "../config/sim-result.config";
 import type { EvolutionMetricId } from "../config/sim-result.config";
+import type { DebriefItem, SimulationOutcome } from "./sim-debrief.entity";
 
 /** One criterion of the server rubric breakdown, as the server justified it. */
 export type ScoreCriterion = {
@@ -54,6 +56,10 @@ export type SessionSummary = {
   /** True when an EXAM student is not shown part of the results yet (no score, breakdown or objectives). */
   resultsWithheld: boolean
   aiHelpCount: number
+  /** Patient outcome of the server replay; null before the engine 2.0.0 or while the answers are withheld. */
+  outcome: SimulationOutcome | null
+  /** Decisions, alarm onsets and patient status changes in simulated time order (empty while withheld). */
+  timeline: readonly DebriefItem[]
 };
 
 /** Exam linkage of a session (history DTO); null ids in FREE mode. */
