@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 460" width="720" height="460" role="img" aria-labelledby="t d">
+<title id="t">Unidad alveolocapilar y surfactante</title>
+<desc id="d">Esquema de un alvéolo junto a un capilar pulmonar. La pared alveolar está tapizada por neumocitos tipo I, delgados, que forman la mayor parte de la superficie, y por neumocitos tipo II, cúbicos, que producen el surfactante. Una capa fina de surfactante recubre la interfase aire-líquido. Un macrófago alveolar se encuentra en la luz. Entre el gas alveolar y el eritrocito hay una barrera muy delgada formada por epitelio, membrana basal y endotelio. Flechas indican que el oxígeno pasa del alvéolo a la sangre y el dióxido de carbono en sentido inverso.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs><marker id="a" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#1f2937"/></marker></defs>
+<text x="360" y="34" font-size="18" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" text-anchor="middle" font-weight="600">La unidad alveolocapilar</text>
+<circle cx="270" cy="250" r="150" fill="#f3f4f6" stroke="#1d4ed8" stroke-width="5"/>
+<circle cx="270" cy="250" r="142" fill="none" stroke="#c2410c" stroke-width="3" stroke-dasharray="6 4"/>
+<text x="270" y="240" font-size="16" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" text-anchor="middle" font-weight="600">Gas alveolar</text>
+<text x="270" y="262" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" text-anchor="middle">(O₂ alto, CO₂ bajo)</text>
+<rect x="128" y="300" width="44" height="38" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="2" transform="rotate(-35 150 319)"/>
+<circle cx="150" cy="319" r="6" fill="#15803d"/>
+<ellipse cx="290" cy="330" rx="30" ry="20" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<circle cx="294" cy="330" r="7" fill="#b91c1c"/>
+<path d="M 430 60 C 470 140 470 360 430 440" fill="none" stroke="#b91c1c" stroke-width="34" stroke-opacity="0.18"/>
+<path d="M 430 60 C 470 140 470 360 430 440" fill="none" stroke="#b91c1c" stroke-width="2"/>
+<ellipse cx="449" cy="150" rx="12" ry="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<ellipse cx="455" cy="250" rx="12" ry="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<ellipse cx="449" cy="350" rx="12" ry="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<line x1="360" y1="215" x2="438" y2="235" stroke="#1d4ed8" stroke-width="3" marker-end="url(#a)"/>
+<text x="352" y="210" font-size="15" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1d4ed8" font-weight="600" text-anchor="end">O₂</text>
+<line x1="438" y1="275" x2="360" y2="290" stroke="#6d28d9" stroke-width="3" marker-end="url(#a)"/>
+<text x="352" y="300" font-size="15" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#6d28d9" font-weight="600" text-anchor="end">CO₂</text>
+<line x1="170" y1="138" x2="40" y2="70" stroke="#9ca3af"/>
+<text x="44" y="65" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Neumocito tipo I (pared delgada)</text>
+<line x1="140" y1="336" x2="30" y2="430" stroke="#9ca3af"/>
+<text x="34" y="425" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Neumocito tipo II: produce surfactante</text>
+<line x1="300" y1="352" x2="330" y2="430" stroke="#9ca3af"/>
+<text x="334" y="425" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Macrófago alveolar</text>
+<line x1="395" y1="170" x2="492" y2="82" stroke="#9ca3af"/>
+<text x="496" y="77" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Capa de surfactante</text>
+<text x="492" y="150" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Capilar pulmonar</text>
+<text x="492" y="255" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Eritrocito</text>
+<text x="492" y="336" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Barrera muy delgada:</text>
+<text x="492" y="354" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >epitelio, membrana</text>
+<text x="492" y="372" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >basal y endotelio</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" width="720" height="560" role="img" aria-labelledby="t d">
+<title id="t">Curvas escalares de presión, flujo y volumen en un ciclo con flujo constante</title>
+<desc id="d">Tres gráficos alineados en el tiempo, de 0 a 4 segundos, de un ciclo de ventilación controlada por volumen con flujo constante y pausa inspiratoria. Presión: salto inicial sobre la PEEP, rampa lineal hasta el pico, caída a la meseta durante la pausa y descenso a la PEEP en la espiración. Flujo: rectángulo positivo durante la inspiración, cero en la pausa y flujo negativo que decae de forma exponencial hasta cero. Volumen: ascenso lineal, meseta en la pausa y descenso exponencial hasta cero.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+  <!-- phase shading -->
+  <rect x="90" y="40" width="150" height="475" fill="#dbeafe" opacity="0.5"/>
+  <rect x="240" y="40" width="45" height="475" fill="#f3f4f6"/>
+  <text x="165" y="32" font-size="14" text-anchor="middle">Inspiración</text>
+  <text x="262" y="32" font-size="14" text-anchor="middle">Pausa</text>
+  <text x="480" y="32" font-size="14" text-anchor="middle">Espiración (pasiva)</text>
+
+  <!-- pressure panel -->
+  <line x1="90" y1="50" x2="90" y2="170" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="90" y1="170" x2="690" y2="170" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="90" y1="150" x2="690" y2="150" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="20" y="100" font-size="14">Presión</text>
+  <text x="20" y="118" font-size="13">(cmH₂O)</text>
+  <text x="84" y="154" font-size="13" text-anchor="end">5</text>
+  <text x="84" y="74" font-size="13" text-anchor="end">25</text>
+  <path d="M90,150 L90,130 L240,70 L245,90 L285,90 L288.8,110.4 L292.5,123.9 L296.3,132.8 L300,138.7 L303.7,142.5 L307.5,145.1 L311.2,146.8 L315,147.9 L322.5,149.1 L330,149.6 L345,149.9 L360,150 L690,150" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-linejoin="round"/>
+  <text x="228" y="62" font-size="14" text-anchor="end">Pico</text>
+  <text x="292" y="82" font-size="14">Meseta</text>
+  <text x="560" y="143" font-size="14">PEEP</text>
+
+  <!-- flow panel -->
+  <line x1="90" y1="210" x2="90" y2="350" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="90" y1="280" x2="690" y2="280" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="20" y="262" font-size="14">Flujo</text>
+  <text x="20" y="280" font-size="13">(L/min)</text>
+  <text x="84" y="284" font-size="13" text-anchor="end">0</text>
+  <text x="84" y="258" font-size="13" text-anchor="end">+30</text>
+  <path d="M90,280 L90,254 L240,254 L240,280 L285,280 L285,345.6 L292.5,337.9 L300,331.1 L307.5,325.1 L315,319.8 L322.5,315.1 L330,311 L345,304.1 L360,298.8 L375,294.6 L390,291.4 L405,288.9 L420,286.9 L435,285.4 L450,284.2 L465,283.3 L480,282.5 L510,281.5 L540,280.9 L570,280.6 L600,280.3 L645,280.2 L690,280.1" fill="none" stroke="#15803d" stroke-width="3" stroke-linejoin="round"/>
+  <text x="165" y="245" font-size="14" text-anchor="middle">Flujo constante</text>
+  <text x="330" y="342" font-size="14">Pico espiratorio, decae hacia cero</text>
+
+  <!-- volume panel -->
+  <line x1="90" y1="390" x2="90" y2="510" stroke="#9ca3af" stroke-width="1.5"/>
+  <line x1="90" y1="510" x2="690" y2="510" stroke="#9ca3af" stroke-width="1.5"/>
+  <text x="20" y="450" font-size="14">Volumen</text>
+  <text x="20" y="468" font-size="13">(mL)</text>
+  <text x="84" y="514" font-size="13" text-anchor="end">0</text>
+  <text x="84" y="414" font-size="13" text-anchor="end">500</text>
+  <path d="M90,510 L240,410 L285,410 L292.5,421.8 L300,432.1 L307.5,441.3 L315,449.3 L322.5,456.5 L330,462.8 L345,473.2 L360,481.3 L375,487.7 L390,492.6 L405,496.5 L420,499.5 L435,501.8 L450,503.6 L465,505 L480,506.1 L510,507.6 L540,508.6 L570,509.1 L600,509.5 L645,509.8 L690,509.9" fill="none" stroke="#6d28d9" stroke-width="3" stroke-linejoin="round"/>
+  <text x="150" y="440" font-size="14">Rampa lineal</text>
+  <text x="380" y="470" font-size="14">Vaciado exponencial</text>
+
+  <!-- time axis -->
+  <text x="90" y="530" font-size="13" text-anchor="middle">0</text>
+  <text x="240" y="530" font-size="13" text-anchor="middle">1</text>
+  <text x="390" y="530" font-size="13" text-anchor="middle">2</text>
+  <text x="540" y="530" font-size="13" text-anchor="middle">3</text>
+  <text x="690" y="530" font-size="13" text-anchor="middle">4</text>
+  <text x="390" y="550" font-size="14" text-anchor="middle">Tiempo (s)</text>
+</g>
+</svg>

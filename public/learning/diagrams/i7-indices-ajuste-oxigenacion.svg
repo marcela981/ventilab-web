@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="720" height="520" role="img" aria-labelledby="t d">
+<title id="t">Ajuste escalonado de FiO₂ y PEEP</title>
+<desc id="d">Diagrama de flujo. Se mide la SpO₂ y, si hay duda, la PaO₂. Si la oxigenación está por debajo de la meta, primero se descartan causas agudas como desplazamiento u obstrucción del tubo, neumotórax o fallo del equipo, y luego se sube la FiO₂ o la PEEP según la tabla. Si está en la meta, se mantiene el ajuste y se reevalúa. Si está por encima, se baja primero la FiO₂ y después la PEEP en pasos. Tras cada cambio se revisan presión meseta, presión de distensión, presión arterial media y una nueva medición de oxigenación.</desc>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+  </marker>
+</defs>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14" text-anchor="middle">
+  <text x="360" y="30" font-size="18" font-weight="600">Ajuste de la oxigenación hacia una meta</text>
+  <rect x="210" y="46" width="300" height="44" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="360" y="73">Mide SpO₂ (y PaO₂ si hay duda)</text>
+  <rect x="190" y="118" width="340" height="56" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+  <text x="360" y="142" font-weight="600">¿Está dentro de la meta?</text>
+  <text x="360" y="162" font-size="13">(meta explícita según el paciente)</text>
+  <line x1="360" y1="90" x2="360" y2="116" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M190,146 L135,146 L135,214" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="360" y1="174" x2="360" y2="214" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M530,146 L585,146 L585,214" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <text x="135" y="200" font-weight="600" fill="#b91c1c">Por debajo</text>
+  <text x="400" y="200" font-weight="600" fill="#15803d">En meta</text>
+  <text x="585" y="200" font-weight="600" fill="#c2410c">Por encima</text>
+  <rect x="20" y="216" width="230" height="86" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="135" y="240" font-weight="600">1. Descarta causas agudas</text>
+  <text x="135" y="260" font-size="13">tubo desplazado u obstruido,</text>
+  <text x="135" y="277" font-size="13">neumotórax, fallo del equipo</text>
+  <text x="135" y="294" font-size="13">(enfoque DOPE)</text>
+  <rect x="20" y="332" width="230" height="64" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="135" y="358" font-weight="600">2. Sube FiO₂ o PEEP</text>
+  <text x="135" y="378" font-size="13">siguiendo la tabla FiO₂/PEEP</text>
+  <line x1="135" y1="302" x2="135" y2="330" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="270" y="216" width="180" height="86" rx="8" fill="#dcfce7" stroke="#15803d"/>
+  <text x="360" y="252" font-weight="600">Mantén el ajuste</text>
+  <text x="360" y="274" font-size="13">y reevalúa en cada control</text>
+  <rect x="470" y="216" width="230" height="86" rx="8" fill="#f3f4f6" stroke="#c2410c"/>
+  <text x="585" y="244" font-weight="600">1. Baja primero la FiO₂</text>
+  <text x="585" y="266" font-size="13">la hiperoxemia no añade</text>
+  <text x="585" y="283" font-size="13">O₂ útil a los tejidos</text>
+  <rect x="470" y="332" width="230" height="64" rx="8" fill="#f3f4f6" stroke="#c2410c"/>
+  <text x="585" y="358" font-weight="600">2. Luego reduce la PEEP</text>
+  <text x="585" y="378" font-size="13">en pasos, vigilando la SpO₂</text>
+  <line x1="585" y1="302" x2="585" y2="330" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M135,396 L135,440 L178,440" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <path d="M585,396 L585,440 L542,440" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="180" y="418" width="360" height="66" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+  <text x="360" y="444" font-weight="600">Tras cada cambio, reevalúa</text>
+  <text x="360" y="466" font-size="13">P meseta, ΔP, PAM y nueva medición en minutos</text>
+  <text x="360" y="508" font-size="13">Ejemplo de meta en SDRA: SpO₂ 88–95 % o PaO₂ 55–80 mmHg (red ARDS).</text>
+</g>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 540" width="720" height="540" role="img" aria-labelledby="t d">
+<title id="t">Desarrollo de la prueba de ventilación espontánea</title>
+<desc id="d">Diagrama de flujo. Se inicia la prueba con presión de soporte de 5 a 8 cmH₂O, CPAP o tubo en T, y se vigila directamente durante 30 a 120 minutos. Un recuadro lateral resume los criterios de fracaso: frecuencia respiratoria mayor de 35 por minuto, SpO₂ menor de 90 %, volumen corriente menor de 4 mL/kg de peso predicho o dos o más signos de dificultad respiratoria. Si hay criterios de fracaso, se suspende la prueba, se vuelve a un soporte cómodo y se busca la causa. Si no, se evalúan la tos, las secreciones y la conciencia; si hay riesgo de estridor se hace la prueba de fuga y, si la fuga es menor de 110 mL, se administran corticoides al menos 4 horas antes; finalmente se extuba y se vigila, con ventilación no invasiva preventiva inmediata si el riesgo de fracaso es alto.</desc>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+  </marker>
+</defs>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14" text-anchor="middle">
+  <text x="360" y="30" font-size="18" font-weight="600">Prueba de ventilación espontánea y extubación</text>
+  <rect x="210" y="44" width="300" height="54" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="360" y="66" font-weight="600">Inicia la PVE</text>
+  <text x="360" y="87" font-size="13">soporte 5–8 cmH₂O, CPAP o tubo en T</text>
+  <line x1="360" y1="98" x2="360" y2="118" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="210" y="120" width="300" height="54" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="360" y="142" font-weight="600">Vigila a pie de cama 30–120 min</text>
+  <text x="360" y="163" font-size="13">FR, VT, SpO₂, FC, PA, trabajo respiratorio</text>
+  <line x1="360" y1="174" x2="360" y2="194" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="240" y="196" width="240" height="44" rx="22" fill="#dbeafe" stroke="#1d4ed8"/>
+  <text x="360" y="223" font-weight="600">¿Criterios de fracaso?</text>
+  <rect x="16" y="120" width="180" height="128" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="106" y="142" font-size="13" font-weight="600">Criterios de fracaso</text>
+  <text x="106" y="164" font-size="13">FR &gt; 35/min</text>
+  <text x="106" y="184" font-size="13">SpO₂ &lt; 90 %</text>
+  <text x="106" y="204" font-size="13">VT &lt; 4 mL/kg PBW</text>
+  <text x="106" y="224" font-size="13">≥ 2 signos de dificultad</text>
+  <text x="106" y="242" font-size="13">(red ARDS)</text>
+  <line x1="480" y1="218" x2="522" y2="218" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <text x="500" y="210" font-size="13" fill="#b91c1c">Sí</text>
+  <rect x="524" y="180" width="180" height="78" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="614" y="204" font-size="13">Suspende, vuelve a</text>
+  <text x="614" y="223" font-size="13">soporte cómodo, busca</text>
+  <text x="614" y="242" font-size="13">la causa; repite mañana</text>
+  <line x1="360" y1="240" x2="360" y2="270" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <text x="376" y="260" font-size="13" text-anchor="start" fill="#15803d">No</text>
+  <rect x="210" y="272" width="300" height="54" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="360" y="294" font-weight="600">Evalúa la vía aérea</text>
+  <text x="360" y="315" font-size="13">tos, secreciones, nivel de conciencia</text>
+  <line x1="360" y1="326" x2="360" y2="346" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="240" y="348" width="240" height="44" rx="22" fill="#dbeafe" stroke="#1d4ed8"/>
+  <text x="360" y="375" font-weight="600">¿Riesgo de estridor?</text>
+  <line x1="480" y1="370" x2="522" y2="370" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <text x="500" y="362" font-size="13" fill="#c2410c">Sí</text>
+  <rect x="524" y="332" width="180" height="78" rx="8" fill="#f3f4f6" stroke="#c2410c"/>
+  <text x="614" y="356" font-size="13">Prueba de fuga; si</text>
+  <text x="614" y="375" font-size="13">&lt; 110 mL, corticoides</text>
+  <text x="614" y="394" font-size="13">≥ 4 h antes de extubar</text>
+  <path d="M614,410 L614,450 L512,450" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="360" y1="392" x2="360" y2="422" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+  <text x="376" y="412" font-size="13" text-anchor="start" fill="#15803d">No</text>
+  <rect x="210" y="424" width="300" height="60" rx="8" fill="#dcfce7" stroke="#15803d"/>
+  <text x="360" y="448" font-weight="600">Extuba y vigila de cerca</text>
+  <text x="360" y="470" font-size="13">VNI preventiva inmediata si alto riesgo</text>
+  <text x="360" y="516" font-size="13">Basado en el protocolo de la red ARDS y las guías ATS/CHEST 2017.</text>
+</g>
+</svg>

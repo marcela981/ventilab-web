@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+<title id="t">Evolución por etapas del caso integrador de SDRA por neumonía</title>
+<desc id="d">Línea de tiempo horizontal con cuatro etapas: ingreso e intubación, primeras horas, día 2 y destete. En cada etapa se muestran la relación PaO2/FiO2 del caso ficticio (90, 110, 210 y 260 mmHg) y la decisión principal: ventilación protectora con 6 mL/kg de peso predicho; prono por PaO2/FiO2 menor de 150; vuelta a supino y descenso de FiO2 y PEEP; prueba de ventilación espontánea y extubación.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<line x1="60" y1="120" x2="660" y2="120" stroke="#1f2937" stroke-width="3"/>
+<circle cx="100" cy="120" r="12" fill="#b91c1c"/>
+<text x="100" y="90" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#b91c1c" text-anchor="middle" font-weight="bold">Ingreso</text>
+<rect x="22" y="150" width="156" height="120" rx="10" fill="#f3f4f6" stroke="#b91c1c" stroke-width="2"/>
+<text x="100" y="180" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">P/F 90</text>
+<text x="100" y="210" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">Vt 6 mL/kg PBW</text>
+<text x="100" y="236" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">Pplat y ΔP</text>
+<circle cx="270" cy="120" r="12" fill="#c2410c"/>
+<text x="270" y="90" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#c2410c" text-anchor="middle" font-weight="bold">Primeras horas</text>
+<rect x="192" y="150" width="156" height="120" rx="10" fill="#f3f4f6" stroke="#c2410c" stroke-width="2"/>
+<text x="270" y="180" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">P/F 110</text>
+<text x="270" y="210" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">Prono ≥ 16 h</text>
+<text x="270" y="236" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">PEEP ajustada</text>
+<circle cx="440" cy="120" r="12" fill="#1d4ed8"/>
+<text x="440" y="90" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#1d4ed8" text-anchor="middle" font-weight="bold">Día 2</text>
+<rect x="362" y="150" width="156" height="120" rx="10" fill="#f3f4f6" stroke="#1d4ed8" stroke-width="2"/>
+<text x="440" y="180" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">P/F 210</text>
+<text x="440" y="210" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">Supino estable</text>
+<text x="440" y="236" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">↓ FiO₂ y PEEP</text>
+<circle cx="610" cy="120" r="12" fill="#15803d"/>
+<text x="610" y="90" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#15803d" text-anchor="middle" font-weight="bold">Destete</text>
+<rect x="532" y="150" width="156" height="120" rx="10" fill="#f3f4f6" stroke="#15803d" stroke-width="2"/>
+<text x="610" y="180" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="16" fill="#1f2937" text-anchor="middle" font-weight="bold">P/F 260</text>
+<text x="610" y="210" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">PVE 30 min PS</text>
+<text x="610" y="236" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">Extubación</text>
+<text x="360" y="320" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">P/F = PaO₂/FiO₂ en mmHg (valores del caso ficticio). PBW = peso corporal predicho.</text>
+<text x="360" y="345" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="14" fill="#1f2937" text-anchor="middle">PVE = prueba de ventilación espontánea; PS = presión de soporte.</text>
+</svg>

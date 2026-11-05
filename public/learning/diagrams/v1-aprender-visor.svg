@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d">
+<title id="t">Visor de lecciones de VentyLab</title>
+<desc id="d">Esquema del visor de lecciones: arriba la ruta de navegación, el título de la lección y el indicador Página x de N con barra de progreso; en el centro el contenido de la página y, al final, el acordeón ¿Te gustaría expandir más este tema?; abajo los botones Anterior y Siguiente. A la derecha el índice de lecciones con candados en las lecciones aún no disponibles. En la esquina inferior derecha el botón flotante Abrir TutorAI, que abre un diálogo con las pestañas Sugerencias, Preguntas y Notas.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<rect x="20" y="20" width="480" height="460" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="36" y="46" font-size="13" fill="#9ca3af">Aprender › Módulo › Lección</text>
+<text x="36" y="72" font-size="17" font-weight="700">Título de la lección</text>
+<text x="36" y="98" font-size="14">Página 2 de 5</text>
+<rect x="140" y="88" width="300" height="10" rx="5" fill="#ffffff" stroke="#9ca3af"/>
+<rect x="140" y="88" width="120" height="10" rx="5" fill="#1d4ed8"/>
+<text x="450" y="98" font-size="13">40 %</text>
+<rect x="36" y="114" width="448" height="200" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text x="52" y="142" font-size="15" font-weight="700">Contenido de la página</text>
+<text x="52" y="168" font-size="14">Texto, fórmulas, figuras, llamadas</text>
+<text x="52" y="192" font-size="14">de atención y ejercicios.</text>
+<text x="52" y="230" font-size="13" fill="#15803d">La página cuenta como vista tras 5 s</text>
+<text x="52" y="250" font-size="13" fill="#15803d">o al pulsar «Siguiente».</text>
+<rect x="36" y="326" width="448" height="70" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="52" y="352" font-size="14" font-weight="700">¿Te gustaría expandir más este tema?</text>
+<text x="52" y="378" font-size="13">Expansión de Tema con IA · Tu pregunta · Enviar</text>
+<rect x="36" y="412" width="110" height="40" rx="8" fill="#ffffff" stroke="#9ca3af"/>
+<text x="62" y="437" font-size="14">Anterior</text>
+<rect x="374" y="412" width="110" height="40" rx="8" fill="#1d4ed8"/>
+<text x="398" y="437" font-size="14" fill="#ffffff">Siguiente</text>
+<rect x="520" y="20" width="180" height="250" rx="10" fill="#ffffff" stroke="#9ca3af"/>
+<text x="534" y="46" font-size="14" font-weight="700">Índice de lecciones</text>
+<text x="534" y="78" font-size="14" fill="#15803d">✓ Lección 1</text>
+<text x="534" y="106" font-size="14" fill="#1d4ed8">● Lección 2</text>
+<text x="534" y="134" font-size="14" fill="#9ca3af">Lección 3 (bloqueada)</text>
+<text x="534" y="162" font-size="14" fill="#9ca3af">Lección 4 (bloqueada)</text>
+<text x="534" y="200" font-size="13">Orden obligatorio:</text>
+<text x="534" y="220" font-size="13">se desbloquea al</text>
+<text x="534" y="240" font-size="13">completar la anterior</text>
+<rect x="520" y="290" width="180" height="190" rx="10" fill="#dcfce7" stroke="#15803d"/>
+<text x="534" y="316" font-size="14" font-weight="700">Abrir TutorAI</text>
+<rect x="534" y="330" width="152" height="30" rx="6" fill="#ffffff" stroke="#15803d"/>
+<text x="546" y="350" font-size="14">Sugerencias</text>
+<rect x="534" y="368" width="152" height="30" rx="6" fill="#ffffff" stroke="#15803d"/>
+<text x="546" y="388" font-size="14">Preguntas</text>
+<rect x="534" y="406" width="152" height="30" rx="6" fill="#ffffff" stroke="#15803d"/>
+<text x="546" y="426" font-size="14">Notas</text>
+<text x="534" y="462" font-size="13">botón flotante</text>
+</g>
+</svg>

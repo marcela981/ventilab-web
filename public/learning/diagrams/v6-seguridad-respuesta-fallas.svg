@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d">
+  <title id="t">Qué hacer ante cada falla del modo real</title>
+  <desc id="d">Tabla de tres columnas: situación, lo que ves en la pantalla y lo que haces. Equipo sin datos: aviso Equipo sin datos y consola en solo lectura; avisa al custodio y no reenvíes cambios. Sin conexión con el servidor: aviso de reconexión y consola en solo lectura; espera la reconexión y revisa los valores que informa el equipo. Pérdida del control o fin de la reserva: aviso o diálogo y solo lectura; pulsa Entendido y no intentes forzar el control. Alarma del equipo: alarma en la barra; lee el tipo, revisa el pulmón de prueba y el circuito, y avisa al custodio. Comando sin confirmación: estado Sin confirmación del equipo; mira Comandos recientes y el equipo antes de reintentar.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <rect x="16" y="16" width="200" height="40" fill="#1d4ed8"/>
+    <text x="116" y="42" font-size="15" font-weight="600" text-anchor="middle" fill="#ffffff">Situación</text>
+    <rect x="216" y="16" width="240" height="40" fill="#1d4ed8"/>
+    <text x="336" y="42" font-size="15" font-weight="600" text-anchor="middle" fill="#ffffff">Lo que ves</text>
+    <rect x="456" y="16" width="248" height="40" fill="#1d4ed8"/>
+    <text x="580" y="42" font-size="15" font-weight="600" text-anchor="middle" fill="#ffffff">Lo que haces</text>
+
+    <rect x="16" y="56" width="688" height="84" fill="#ffffff" stroke="#9ca3af"/>
+    <text x="28" y="90" font-size="14" font-weight="600">Equipo sin datos</text>
+    <text x="228" y="86" font-size="14">«Equipo sin datos», curvas</text>
+    <text x="228" y="106" font-size="14">grises, solo lectura</text>
+    <text x="468" y="86" font-size="14">Avisa al custodio; no</text>
+    <text x="468" y="106" font-size="14">repitas cambios a ciegas</text>
+
+    <rect x="16" y="140" width="688" height="84" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="28" y="174" font-size="14" font-weight="600">Sin conexión</text>
+    <text x="28" y="194" font-size="14" font-weight="600">con el servidor</text>
+    <text x="228" y="170" font-size="14">«Reconectando…»,</text>
+    <text x="228" y="190" font-size="14">solo lectura</text>
+    <text x="468" y="170" font-size="14">Espera la reconexión y revisa</text>
+    <text x="468" y="190" font-size="14">lo que informa el equipo</text>
+
+    <rect x="16" y="224" width="688" height="84" fill="#ffffff" stroke="#9ca3af"/>
+    <text x="28" y="258" font-size="14" font-weight="600">Pierdes el control</text>
+    <text x="28" y="278" font-size="14" font-weight="600">o termina la reserva</text>
+    <text x="228" y="254" font-size="14">Aviso o diálogo con el</text>
+    <text x="228" y="274" font-size="14">motivo; solo lectura</text>
+    <text x="468" y="254" font-size="14">«Entendido»; retoma el control</text>
+    <text x="468" y="274" font-size="14">solo si te corresponde</text>
+
+    <rect x="16" y="308" width="688" height="84" fill="#f3f4f6" stroke="#9ca3af"/>
+    <text x="28" y="342" font-size="14" font-weight="600" fill="#b91c1c">Alarma del equipo</text>
+    <text x="228" y="338" font-size="14">Alarma en la barra (p. ej.,</text>
+    <text x="228" y="358" font-size="14">«Desconexión»)</text>
+    <text x="468" y="338" font-size="14">Lee el tipo, revisa circuito y</text>
+    <text x="468" y="358" font-size="14">pulmón de prueba, avisa</text>
+
+    <rect x="16" y="392" width="688" height="84" fill="#ffffff" stroke="#9ca3af"/>
+    <text x="28" y="426" font-size="14" font-weight="600">Comando sin</text>
+    <text x="28" y="446" font-size="14" font-weight="600">confirmación</text>
+    <text x="228" y="422" font-size="14">«Sin confirmación</text>
+    <text x="228" y="442" font-size="14">del equipo»</text>
+    <text x="468" y="422" font-size="14">Mira «Comandos recientes» y</text>
+    <text x="468" y="442" font-size="14">el equipo antes de reintentar</text>
+  </g>
+</svg>

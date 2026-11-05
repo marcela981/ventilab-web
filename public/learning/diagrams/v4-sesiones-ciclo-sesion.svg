@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+  <title id="t">Ciclo de una sesión de simulación en VentyLab</title>
+  <desc id="d">Seis cajas en dos filas conectadas en ciclo. Fila superior: Iniciar desde Simular Paciente; Practicar en Monitoreo, donde cada cambio queda registrado como evento; Finalizar sesión con confirmación. Fila inferior, de derecha a izquierda: el servidor repite la sesión con los eventos y calcula el puntaje; Resultado de la sesión con objetivos, rúbrica y evolución; Mis sesiones con Ver resultado, Ver repetición o Continuar. Una flecha vuelve de Mis sesiones a Iniciar para una nueva práctica. Al costado de Practicar, una caja punteada indica que la Asesoría IA es opcional durante la práctica.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <rect x="20" y="40" width="196" height="84" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="118" y="68" font-size="15" font-weight="600" text-anchor="middle">1. Iniciar</text>
+    <text x="118" y="90" font-size="14" text-anchor="middle">Simular Paciente</text>
+    <text x="118" y="110" font-size="14" text-anchor="middle">Enviar al Monitoreo</text>
+    <rect x="262" y="40" width="196" height="84" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="68" font-size="15" font-weight="600" text-anchor="middle">2. Practicar</text>
+    <text x="360" y="90" font-size="14" text-anchor="middle">Monitoreo</text>
+    <text x="360" y="110" font-size="14" text-anchor="middle">cada cambio = evento</text>
+    <rect x="504" y="40" width="196" height="84" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="602" y="68" font-size="15" font-weight="600" text-anchor="middle">3. Finalizar sesión</text>
+    <text x="602" y="90" font-size="14" text-anchor="middle">«¿Finalizar la sesión?»</text>
+    <text x="602" y="110" font-size="14" text-anchor="middle">no se puede continuar</text>
+
+    <rect x="504" y="214" width="196" height="84" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="602" y="242" font-size="15" font-weight="600" text-anchor="middle">4. Servidor</text>
+    <text x="602" y="264" font-size="14" text-anchor="middle">repite los eventos</text>
+    <text x="602" y="284" font-size="14" text-anchor="middle">calcula el puntaje</text>
+    <rect x="262" y="214" width="196" height="84" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="360" y="242" font-size="15" font-weight="600" text-anchor="middle">5. Resultado</text>
+    <text x="360" y="264" font-size="14" text-anchor="middle">objetivos y rúbrica</text>
+    <text x="360" y="284" font-size="14" text-anchor="middle">evolución de la sesión</text>
+    <rect x="20" y="214" width="196" height="84" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="118" y="242" font-size="15" font-weight="600" text-anchor="middle">6. Mis sesiones</text>
+    <text x="118" y="264" font-size="14" text-anchor="middle">Ver resultado</text>
+    <text x="118" y="284" font-size="14" text-anchor="middle">Ver repetición</text>
+
+    <line x1="216" y1="82" x2="259" y2="82" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="458" y1="82" x2="501" y2="82" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="602" y1="124" x2="602" y2="211" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="504" y1="256" x2="461" y2="256" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="262" y1="256" x2="219" y2="256" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <line x1="118" y1="214" x2="118" y2="127" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+    <text x="126" y="176" font-size="14">nueva práctica</text>
+
+    <rect x="262" y="146" width="196" height="46" rx="8" fill="#ffffff" stroke="#c2410c" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="360" y="174" font-size="14" text-anchor="middle">Asesoría IA (opcional)</text>
+    <line x1="360" y1="146" x2="360" y2="127" stroke="#c2410c" stroke-width="2" marker-end="url(#a)"/>
+
+    <rect x="20" y="322" width="680" height="76" rx="8" fill="#f3f4f6"/>
+    <text x="36" y="348" font-size="14">El puntaje oficial lo calcula el servidor a partir de los eventos registrados.</text>
+    <text x="36" y="370" font-size="14">La repetición es de solo lectura: muestra lo que pasó, no permite cambiarlo.</text>
+    <text x="36" y="390" font-size="14">Una sesión que sigue «En curso» se retoma con «Continuar».</text>
+  </g>
+</svg>

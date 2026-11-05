@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" role="img" aria-labelledby="t d">
+<title id="t">Clasificación del destete</title>
+<desc id="d">Línea de tiempo desde el primer intento de separación del ventilador, con marcas en 24 horas y 7 días, en escala no proporcional. Fila del consenso de 2007: destete simple si hay éxito tras la primera prueba; difícil si requiere hasta tres pruebas o hasta siete días; prolongado si fracasan al menos tres pruebas o se necesitan más de siete días. Fila del estudio WIND: grupo 1, menos de 24 horas; grupo 2, de uno a siete días; grupo 3, siete días o más.</desc>
+<defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+  </marker>
+</defs>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" text-anchor="middle">
+  <text x="360" y="30" font-size="18" font-weight="600">Dos formas de clasificar el destete</text>
+  <line x1="60" y1="80" x2="695" y2="80" stroke="#1f2937" stroke-width="2.5" marker-end="url(#a)"/>
+  <circle cx="60" cy="80" r="7" fill="#1d4ed8"/>
+  <line x1="200" y1="72" x2="200" y2="88" stroke="#1f2937" stroke-width="2"/>
+  <line x1="450" y1="72" x2="450" y2="88" stroke="#1f2937" stroke-width="2"/>
+  <text x="78" y="62" font-size="14" text-anchor="start">Primer intento de separación</text>
+  <text x="200" y="106" font-size="14">24 h</text>
+  <text x="450" y="106" font-size="14">7 días</text>
+  <text x="640" y="106" font-size="13">tiempo →</text>
+  <text x="60" y="136" font-size="15" font-weight="600" text-anchor="start">Consenso internacional 2007</text>
+  <rect x="60" y="146" width="138" height="72" rx="8" fill="#dcfce7" stroke="#15803d"/>
+  <rect x="202" y="146" width="246" height="72" rx="8" fill="#f3f4f6" stroke="#c2410c"/>
+  <rect x="452" y="146" width="238" height="72" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="129" y="174" font-size="15" font-weight="600">Simple</text>
+  <text x="129" y="196" font-size="13">éxito en la 1.ª prueba</text>
+  <text x="325" y="174" font-size="15" font-weight="600">Difícil</text>
+  <text x="325" y="196" font-size="13">hasta 3 pruebas o hasta 7 días</text>
+  <text x="571" y="174" font-size="15" font-weight="600">Prolongado</text>
+  <text x="571" y="196" font-size="13">≥ 3 pruebas fallidas o &gt; 7 días</text>
+  <text x="60" y="252" font-size="15" font-weight="600" text-anchor="start">Estudio WIND (2017)</text>
+  <rect x="60" y="262" width="138" height="66" rx="8" fill="#dcfce7" stroke="#15803d"/>
+  <rect x="202" y="262" width="246" height="66" rx="8" fill="#f3f4f6" stroke="#c2410c"/>
+  <rect x="452" y="262" width="238" height="66" rx="8" fill="#fee2e2" stroke="#b91c1c"/>
+  <text x="129" y="290" font-size="15" font-weight="600">Grupo 1</text>
+  <text x="129" y="312" font-size="13">menos de 24 h</text>
+  <text x="325" y="290" font-size="15" font-weight="600">Grupo 2</text>
+  <text x="325" y="312" font-size="13">de 1 a 7 días</text>
+  <text x="571" y="290" font-size="15" font-weight="600">Grupo 3</text>
+  <text x="571" y="312" font-size="13">7 días o más</text>
+  <text x="360" y="350" font-size="13">Escala no proporcional. WIND agrupa aparte a quienes nunca inician el destete.</text>
+</g>
+</svg>

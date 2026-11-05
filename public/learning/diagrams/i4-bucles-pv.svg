@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Curva presión-volumen estática y bucle dinámico con sobredistensión</title>
+<desc id="d">Panel A: curva presión-volumen casi estática del sistema respiratorio con forma sigmoidea. La rama de insuflación tiene un punto de inflexión inferior, una zona central lineal de mayor pendiente y un punto de inflexión superior a partir del cual se aplana. La rama de desinflado va por encima de la de insuflación y el área entre ambas es la histéresis. Panel B: bucle presión-volumen dinámico en VCV. En el bucle sin sobredistensión la rama inspiratoria es casi recta; en el bucle con sobredistensión el último tramo de la rama inspiratoria se aplana, de modo que la presión sigue subiendo con poco aumento de volumen, formando un pico en forma de pico de pato.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="190" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">A. Curva P-V casi estática</text>
+<text x="540" y="30" text-anchor="middle" font-size="16" font-weight="600" fill="#1f2937">B. Bucle P-V dinámico (VCV)</text>
+<g stroke="#9ca3af" stroke-width="1.5">
+<line x1="60" y1="50" x2="60" y2="380"/><line x1="60" y1="380" x2="340" y2="380"/>
+<line x1="410" y1="50" x2="410" y2="380"/><line x1="410" y1="380" x2="690" y2="380"/>
+</g>
+<g font-size="14" fill="#1f2937" text-anchor="middle">
+<text x="200" y="404">Presión (cmH₂O)</text>
+<text x="550" y="404">Presión (cmH₂O)</text>
+<text x="26" y="215" transform="rotate(-90 26 215)">Volumen (mL)</text>
+<text x="380" y="215" transform="rotate(-90 380 215)">Volumen (mL)</text>
+</g>
+<!-- A: inflation limb sigmoid -->
+<path d="M66 376 Q110 372 130 330 L240 140 Q262 100 330 90" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<!-- A: deflation limb above -->
+<path d="M330 90 Q250 92 190 150 Q130 220 100 300 Q86 350 66 376" fill="none" stroke="#6d28d9" stroke-width="2.5" stroke-dasharray="7 4"/>
+<circle cx="130" cy="330" r="6" fill="#c2410c"/>
+<circle cx="240" cy="140" r="6" fill="#b91c1c"/>
+<text x="140" y="350" font-size="14" fill="#c2410c">PII (inferior)</text>
+<text x="250" y="160" font-size="14" fill="#b91c1c">PIS (superior)</text>
+<text x="170" y="270" font-size="14" fill="#1d4ed8">insuflación</text>
+<text x="74" y="230" font-size="14" fill="#6d28d9">desinflado</text>
+<text x="128" y="190" font-size="14" fill="#1f2937">histéresis</text>
+<!-- B: normal loop -->
+<path d="M430 370 L458 362 L560 180 Q470 200 430 370 Z" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>
+<!-- B: overdistension loop -->
+<path d="M430 370 L458 362 L545 206 Q585 150 662 128 Q480 160 430 370" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+<text x="640" y="116" text-anchor="middle" font-size="14" fill="#b91c1c">pico de pato</text>
+<text x="585" y="196" font-size="14" fill="#b91c1c">la presión sube</text>
+<text x="585" y="214" font-size="14" fill="#b91c1c">con poco volumen</text>
+<text x="530" y="300" font-size="14" fill="#15803d">sin sobredistensión</text>
+<text x="500" y="330" font-size="14" fill="#1f2937">inspiración a la derecha</text>
+<text x="436" y="352" font-size="14" fill="#1f2937">PEEP</text>
+<text x="360" y="430" text-anchor="middle" font-size="14" fill="#1f2937">Esquema cualitativo; los puntos de inflexión se estiman mal a simple vista</text>
+</svg>

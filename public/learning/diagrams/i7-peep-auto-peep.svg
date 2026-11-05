@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d">
+<title id="t">PEEP extrínseca y PEEP intrínseca en las curvas de presión y flujo</title>
+<desc id="d">Curvas de presión y flujo frente al tiempo en ventilación controlada por volumen con flujo constante. En la mitad izquierda la espiración es completa y el flujo espiratorio vuelve a cero antes de la siguiente respiración. En la mitad derecha el tiempo espiratorio es corto: el flujo espiratorio no llega a cero antes de la siguiente inspiración, y al hacer una pausa espiratoria final la presión del circuito sube desde la PEEP programada hasta la PEEP total. La diferencia es la PEEP intrínseca.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+  <text x="360" y="28" font-size="18" font-weight="600" text-anchor="middle">La PEEP intrínseca se revela con una pausa espiratoria</text>
+  <text x="205" y="54" font-size="14" font-weight="600" text-anchor="middle">Espiración completa</text>
+  <text x="520" y="54" font-size="14" font-weight="600" text-anchor="middle">Espiración incompleta</text>
+  <line x1="345" y1="44" x2="345" y2="460" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <line x1="70" y1="60" x2="70" y2="215" stroke="#9ca3af" stroke-width="2"/>
+  <line x1="70" y1="210" x2="695" y2="210" stroke="#9ca3af" stroke-width="2"/>
+  <g font-size="13" text-anchor="end">
+    <text x="64" y="214">0</text>
+    <text x="64" y="164">10</text>
+    <text x="64" y="114">20</text>
+    <text x="64" y="64">30</text>
+  </g>
+  <text x="22" y="135" font-size="13" text-anchor="middle" transform="rotate(-90 22 135)">Presión (cmH₂O)</text>
+  <line x1="70" y1="185" x2="695" y2="185" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="250" y="203" font-size="13" fill="#15803d">PEEP programada</text>
+  <line x1="600" y1="160" x2="695" y2="160" stroke="#c2410c" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="690" y="152" font-size="13" text-anchor="end" fill="#c2410c">PEEP total</text>
+  <path d="M70,185 L80,185 L80,165 L140,75 L140,100 L160,100 C172,165 190,183 230,185 L360,185 L360,165 L420,75 L420,100 L440,100 C452,165 465,183 485,185 L500,185 L500,163 L560,72 L560,97 L580,97 C592,165 605,183 625,185 L640,185 C650,168 662,161 690,160" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+  <text x="150" y="70" font-size="13" text-anchor="start">Pico</text>
+  <text x="166" y="96" font-size="13" text-anchor="start">Meseta</text>
+  <text x="665" y="100" font-size="13" text-anchor="middle">Pausa</text>
+  <text x="665" y="116" font-size="13" text-anchor="middle">espiratoria</text>
+  <line x1="640" y1="122" x2="690" y2="122" stroke="#1f2937" stroke-width="1.5"/>
+  <line x1="70" y1="290" x2="70" y2="455" stroke="#9ca3af" stroke-width="2"/>
+  <line x1="70" y1="370" x2="695" y2="370" stroke="#9ca3af" stroke-width="2"/>
+  <g font-size="13" text-anchor="end">
+    <text x="64" y="314">+60</text>
+    <text x="64" y="374">0</text>
+    <text x="64" y="434">−60</text>
+  </g>
+  <text x="22" y="372" font-size="13" text-anchor="middle" transform="rotate(-90 22 372)">Flujo (L/min)</text>
+  <path d="M70,370 L80,370 L80,310 L140,310 L140,370 L160,370 L160,440 C175,400 200,378 250,371 L360,370 L360,310 L420,310 L420,370 L440,370 L440,440 C452,415 475,400 500,397 L500,310 L560,310 L560,370 L580,370 L580,440 C592,415 615,400 640,397 L640,370 L690,370" fill="none" stroke="#6d28d9" stroke-width="3"/>
+  <text x="110" y="302" font-size="13" text-anchor="middle">Inspiración</text>
+  <text x="250" y="400" font-size="13" text-anchor="middle">Vuelve a cero</text>
+  <circle cx="500" cy="397" r="6" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+  <circle cx="640" cy="397" r="6" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+  <text x="520" y="462" font-size="14" text-anchor="middle" fill="#b91c1c">El flujo espiratorio no llega a cero</text>
+  <text x="380" y="490" font-size="14" text-anchor="middle">Tiempo →   PEEP intrínseca = PEEP total − PEEP programada</text>
+</g>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d">
+<title id="t">Compartimentos y presiones del sistema respiratorio</title>
+<desc id="d">Esquema del pulmón dentro de la caja torácica. Se identifican cuatro presiones: en la apertura de la vía aérea (boca), en el alvéolo, en el espacio pleural y en la superficie corporal. La presión transpulmonar es la diferencia entre la presión alveolar y la pleural y distiende el pulmón. La presión a través de la pared torácica es la diferencia entre la presión pleural y la de la superficie corporal. La presión del sistema respiratorio es la suma de ambas. La diferencia entre la boca y el alvéolo es la presión resistiva, que solo existe cuando hay flujo.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="30" font-size="18" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" text-anchor="middle" font-weight="600">Presiones que actúan sobre el pulmón y la pared torácica</text>
+<rect x="70" y="90" width="330" height="310" rx="60" fill="#f3f4f6" stroke="#1f2937" stroke-width="8"/>
+<rect x="92" y="112" width="286" height="266" rx="48" fill="#ffffff" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="5 4"/>
+<ellipse cx="235" cy="262" rx="125" ry="108" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+<rect x="223" y="54" width="24" height="106" fill="#dbeafe" stroke="#1d4ed8" stroke-width="3"/>
+<rect x="225" y="150" width="20" height="16" fill="#dbeafe"/>
+<text x="256" y="50" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-weight="600">Pao (apertura de la vía aérea)</text>
+<text x="235" y="262" font-size="15" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" text-anchor="middle" font-weight="600" fill="#1d4ed8">Palv</text>
+<text x="235" y="282" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" text-anchor="middle">alvéolo</text>
+<text x="110" y="132" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-weight="600">Ppl</text>
+<text x="290" y="80" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Pared torácica</text>
+<text x="40" y="428" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-weight="600">Pbs: presión en la superficie corporal (atmosférica)</text>
+<rect x="430" y="100" width="270" height="78" rx="8" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="442" y="126" font-size="15" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="600" fill="#1d4ed8">PL = Palv − Ppl</text>
+<text x="442" y="148" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Transpulmonar: distiende</text>
+<text x="442" y="166" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >el pulmón</text>
+<rect x="430" y="192" width="270" height="78" rx="8" fill="#f3f4f6" stroke="#1f2937"/>
+<text x="442" y="218" font-size="15" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-weight="600">Pw = Ppl − Pbs</text>
+<text x="442" y="240" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >A través de la pared</text>
+<text x="442" y="258" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >torácica</text>
+<rect x="430" y="284" width="270" height="78" rx="8" fill="#dcfce7" stroke="#15803d"/>
+<text x="442" y="310" font-size="15" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="600" fill="#15803d">Prs = PL + Pw</text>
+<text x="442" y="332" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >Sistema respiratorio</text>
+<text x="442" y="350" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" >(Palv − Pbs)</text>
+<text x="430" y="392" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-style="italic">Pao − Palv: presión resistiva</text>
+<text x="430" y="410" font-size="14" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-style="italic">(solo existe si hay flujo)</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+  <title id="t">Sistema bicarbonato-ácido carbónico y sus reguladores</title>
+  <desc id="d">Esquema con la reacción CO2 más agua en equilibrio con ácido carbónico y con hidrogeniones más bicarbonato. A la izquierda, el pulmón regula el CO2 mediante la ventilación alveolar en minutos. A la derecha, el riñón regula el bicarbonato en días. Abajo, el pH depende del cociente entre bicarbonato y 0,03 por PaCO2.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <text x="360" y="38" font-size="18" font-weight="bold" text-anchor="middle">El pH depende de dos variables reguladas por órganos distintos</text>
+
+    <!-- Reaction row -->
+    <rect x="40" y="130" width="140" height="56" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="110" y="164" font-size="18" text-anchor="middle" font-weight="bold">CO₂ + H₂O</text>
+    <rect x="290" y="130" width="140" height="56" rx="10" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+    <text x="360" y="164" font-size="18" text-anchor="middle" font-weight="bold">H₂CO₃</text>
+    <rect x="540" y="130" width="140" height="56" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="610" y="164" font-size="18" text-anchor="middle" font-weight="bold">H⁺ + HCO₃⁻</text>
+
+    <!-- double arrows -->
+    <g stroke="#1f2937" stroke-width="2" fill="none">
+      <line x1="190" y1="150" x2="278" y2="150"/>
+      <polyline points="270,144 280,150 270,156"/>
+      <line x1="200" y1="168" x2="288" y2="168"/>
+      <polyline points="208,162 198,168 208,174"/>
+      <line x1="440" y1="150" x2="528" y2="150"/>
+      <polyline points="520,144 530,150 520,156"/>
+      <line x1="450" y1="168" x2="538" y2="168"/>
+      <polyline points="458,162 448,168 458,174"/>
+    </g>
+
+    <!-- Lung -->
+    <rect x="30" y="230" width="190" height="80" rx="10" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="125" y="258" font-size="16" text-anchor="middle" font-weight="bold" fill="#1d4ed8">Pulmón</text>
+    <text x="125" y="280" font-size="14" text-anchor="middle">ventilación alveolar</text>
+    <text x="125" y="299" font-size="14" text-anchor="middle">actúa en minutos</text>
+    <line x1="110" y1="226" x2="110" y2="196" stroke="#1d4ed8" stroke-width="2"/>
+    <polyline points="104,204 110,194 116,204" fill="none" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="40" y="112" font-size="14" fill="#1d4ed8">CO₂ eliminado al exhalar</text>
+
+    <!-- Kidney -->
+    <rect x="500" y="230" width="190" height="80" rx="10" fill="#ffffff" stroke="#15803d" stroke-width="2"/>
+    <text x="595" y="258" font-size="16" text-anchor="middle" font-weight="bold" fill="#15803d">Riñón</text>
+    <text x="595" y="280" font-size="14" text-anchor="middle">reabsorbe o genera HCO₃⁻</text>
+    <text x="595" y="299" font-size="14" text-anchor="middle">actúa en días</text>
+    <line x1="630" y1="226" x2="630" y2="196" stroke="#15803d" stroke-width="2"/>
+    <polyline points="624,204 630,194 636,204" fill="none" stroke="#15803d" stroke-width="2"/>
+    <text x="500" y="112" font-size="14" fill="#15803d">excreta ácidos fijos</text>
+
+    <!-- Ratio -->
+    <rect x="200" y="335" width="320" height="62" rx="10" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="360" y="361" font-size="16" text-anchor="middle" font-weight="bold">pH = 6,1 + log ( HCO₃⁻ / 0,03 · PaCO₂ )</text>
+    <text x="360" y="384" font-size="14" text-anchor="middle">numerador: riñón · denominador: pulmón</text>
+  </g>
+</svg>

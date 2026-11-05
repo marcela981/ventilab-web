@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+  <title id="t">Ciclado por flujo en presión de soporte</title>
+  <desc id="d">Curva de flujo inspiratorio frente al tiempo en ventilación con presión de soporte. El flujo sube rápido hasta un pico y luego decae de forma exponencial. Dos líneas horizontales marcan el 50 por ciento y el 25 por ciento del flujo pico. Si el criterio de ciclado es 50 por ciento, la inspiración termina antes y el tiempo inspiratorio es más corto; si es 25 por ciento, termina más tarde y el tiempo inspiratorio es más largo. La curva continua muestra el ciclado al 25 por ciento, seguido del flujo espiratorio negativo.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <line x1="80" y1="50" x2="80" y2="380" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="80" y1="320" x2="690" y2="320" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="30" y="200" font-size="13" transform="rotate(-90 30 200)" text-anchor="middle">Flujo (L/min)</text>
+    <text x="686" y="340" font-size="13" text-anchor="end">Tiempo (s)</text>
+    <text x="72" y="325" font-size="13" text-anchor="end">0</text>
+
+    <!-- thresholds -->
+    <line x1="80" y1="80" x2="690" y2="80" stroke="#9ca3af" stroke-width="1" stroke-dasharray="2 4"/>
+    <text x="690" y="74" font-size="14" text-anchor="end">Flujo pico (100 %)</text>
+    <line x1="80" y1="200" x2="690" y2="200" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="690" y="194" font-size="14" text-anchor="end" fill="#1d4ed8">50 % del pico</text>
+    <line x1="80" y1="260" x2="690" y2="260" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="690" y="254" font-size="14" text-anchor="end" fill="#15803d">25 % del pico</text>
+
+    <!-- flow curve -->
+    <path d="M80,320 L110,320 L140,80 L166,118.1 L192,150.3 L218,177.3 L244,200 L270,219.1 L296,235.1 L322,248.7 L348,260 L348,375 C380,345 430,326 520,320 L560,320" fill="none" stroke="#c2410c" stroke-width="3"/>
+
+    <!-- cycle markers -->
+    <line x1="244" y1="200" x2="244" y2="300" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="4 3"/>
+    <circle cx="244" cy="200" r="6" fill="#ffffff" stroke="#1d4ed8" stroke-width="2.5"/>
+    <circle cx="348" cy="260" r="6" fill="#ffffff" stroke="#15803d" stroke-width="2.5"/>
+    <text x="250" y="140" font-size="14" fill="#1d4ed8">ciclado al 50 %</text>
+    <text x="356" y="290" font-size="14" fill="#15803d">ciclado al 25 %</text>
+
+    <!-- Ti arrows -->
+    <line x1="110" y1="300" x2="244" y2="300" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="177" y="294" font-size="14" text-anchor="middle" fill="#1d4ed8">Ti corto</text>
+    <line x1="110" y1="370" x2="340" y2="370" stroke="#15803d" stroke-width="2"/>
+    <text x="225" y="364" font-size="14" text-anchor="middle" fill="#15803d">Ti largo</text>
+    <text x="440" y="368" font-size="14">flujo espiratorio</text>
+  </g>
+</svg>

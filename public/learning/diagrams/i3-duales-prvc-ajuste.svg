@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" width="720" height="470" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Ajuste ciclo a ciclo de la presión en un modo de volumen objetivo con presión adaptativa</title>
+<desc id="d">Diagrama esquemático de doce ciclos. Arriba, barras de volumen corriente entregado frente a una línea de volumen objetivo. Abajo, la presión inspiratoria aplicada en cada ciclo. Tras una caída de la compliance en el ciclo 4 el volumen cae por debajo del objetivo y el ventilador sube la presión en escalones durante varios ciclos hasta recuperarlo. En el ciclo 9 el paciente hace un esfuerzo inspiratorio intenso, el volumen supera el objetivo y el ventilador reduce la presión en los ciclos siguientes, de modo que el soporte disminuye justo cuando la demanda del paciente aumenta.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="28" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">PRVC / VC+: el ventilador ajusta la presión para alcanzar el volumen objetivo</text>
+<!-- top panel -->
+<line x1="80" y1="50" x2="80" y2="220" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="80" y1="220" x2="690" y2="220" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="30" y="135" font-size="14" fill="#1f2937" transform="rotate(-90 30 135)" text-anchor="middle">Vt entregado (mL)</text>
+<line x1="80" y1="100" x2="690" y2="100" stroke="#15803d" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="686" y="94" text-anchor="end" font-size="14" fill="#15803d">Vt objetivo</text>
+<g fill="#1d4ed8">
+<rect x="96" y="100" width="30" height="120"/>
+<rect x="146" y="100" width="30" height="120"/>
+<rect x="196" y="100" width="30" height="120"/>
+<rect x="246" y="150" width="30" height="70"/>
+<rect x="296" y="138" width="30" height="82"/>
+<rect x="346" y="124" width="30" height="96"/>
+<rect x="396" y="110" width="30" height="110"/>
+<rect x="446" y="100" width="30" height="120"/>
+<rect x="496" y="64" width="30" height="156"/>
+<rect x="546" y="78" width="30" height="142"/>
+<rect x="596" y="90" width="30" height="130"/>
+<rect x="646" y="98" width="30" height="122"/>
+</g>
+<text x="261" y="140" text-anchor="middle" font-size="14" fill="#b91c1c">↓ compliance</text>
+<text x="511" y="58" text-anchor="middle" font-size="14" fill="#c2410c">esfuerzo intenso</text>
+<!-- bottom panel -->
+<line x1="80" y1="250" x2="80" y2="420" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="80" y1="420" x2="690" y2="420" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="30" y="335" font-size="14" fill="#1f2937" transform="rotate(-90 30 335)" text-anchor="middle">P inspiratoria (cmH₂O)</text>
+<path d="M96 360 L276 360 L296 360 L296 340 L346 340 L346 322 L396 322 L396 306 L446 306 L446 300 L546 300 L546 318 L596 318 L596 334 L646 334 L646 344 L676 344" fill="none" stroke="#6d28d9" stroke-width="3"/>
+<g fill="#6d28d9">
+<circle cx="111" cy="360" r="4"/><circle cx="161" cy="360" r="4"/><circle cx="211" cy="360" r="4"/><circle cx="261" cy="360" r="4"/>
+<circle cx="311" cy="340" r="4"/><circle cx="361" cy="322" r="4"/><circle cx="411" cy="306" r="4"/><circle cx="461" cy="300" r="4"/>
+<circle cx="511" cy="300" r="4"/><circle cx="561" cy="318" r="4"/><circle cx="611" cy="334" r="4"/><circle cx="661" cy="344" r="4"/>
+</g>
+<text x="370" y="290" text-anchor="middle" font-size="14" fill="#6d28d9">sube en escalones</text>
+<text x="606" y="300" text-anchor="middle" font-size="14" fill="#b91c1c">baja el soporte</text>
+<g font-size="14" fill="#1f2937" text-anchor="middle">
+<text x="111" y="440">1</text><text x="161" y="440">2</text><text x="211" y="440">3</text><text x="261" y="440">4</text><text x="311" y="440">5</text><text x="361" y="440">6</text>
+<text x="411" y="440">7</text><text x="461" y="440">8</text><text x="511" y="440">9</text><text x="561" y="440">10</text><text x="611" y="440">11</text><text x="661" y="440">12</text>
+</g>
+<text x="385" y="462" text-anchor="middle" font-size="14" fill="#1f2937">Número de ciclo (esquema cualitativo, sin escala real)</text>
+</svg>

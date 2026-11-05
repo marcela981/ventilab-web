@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 320" width="720" height="320" role="img" aria-labelledby="t d">
+<title id="t">Modelo del sistema respiratorio: tubo resistivo y globo elástico</title>
+<desc id="d">Esquema con un manómetro a la entrada de un tubo estrecho que representa las vías aéreas y un globo que representa los alvéolos dentro de una caja torácica. Una flecha muestra el flujo que atraviesa el tubo, cuya oposición es el componente resistivo. El globo se infla con volumen, cuya oposición es el componente elástico. La presión medida a la entrada es la suma de ambos componentes más la PEEP.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+  <!-- manometer -->
+  <circle cx="95" cy="120" r="38" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+  <line x1="95" y1="120" x2="118" y2="98" stroke="#b91c1c" stroke-width="3"/>
+  <line x1="95" y1="158" x2="95" y2="160" stroke="#1f2937" stroke-width="2"/>
+  <text x="95" y="56" font-size="14" text-anchor="middle">Presión en la</text>
+  <text x="95" y="40" font-size="14" text-anchor="middle">Manómetro</text>
+  <text x="95" y="72" font-size="14" text-anchor="middle">vía aérea (Paw)</text>
+  <!-- tube -->
+  <rect x="40" y="160" width="140" height="30" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <rect x="180" y="166" width="212" height="18" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <line x1="200" y1="175" x2="320" y2="175" stroke="#15803d" stroke-width="3"/>
+  <polygon points="320,168 336,175 320,182" fill="#15803d"/>
+  <text x="250" y="158" font-size="14" text-anchor="middle">Flujo (V̇)</text>
+  <text x="250" y="214" font-size="14" text-anchor="middle">Vías aéreas: resistencia (R)</text>
+  <text x="250" y="234" font-size="14" text-anchor="middle" fill="#1d4ed8">Componente resistivo = R · V̇</text>
+  <!-- thorax box -->
+  <rect x="375" y="60" width="320" height="230" rx="18" fill="none" stroke="#9ca3af" stroke-width="2" stroke-dasharray="6 5"/>
+  <text x="535" y="84" font-size="14" text-anchor="middle">Tórax</text>
+  <!-- balloon -->
+  <ellipse cx="500" cy="175" rx="110" ry="70" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>
+  <text x="500" y="168" font-size="14" text-anchor="middle">Alvéolos: compliance (C)</text>
+  <text x="500" y="190" font-size="14" text-anchor="middle">Volumen (V)</text>
+  <text x="515" y="275" font-size="14" text-anchor="middle" fill="#15803d">Componente elástico = V / C</text>
+  <!-- summary -->
+  <text x="40" y="270" font-size="14">Paw = V/C + R·V̇ + PEEP</text>
+</g>
+</svg>

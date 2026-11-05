@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d">
+  <title id="t">Variables de fase en un ciclo controlado por volumen</title>
+  <desc id="d">Curvas de presión en la vía aérea y de flujo frente al tiempo en ventilación controlada por volumen con flujo constante y pausa inspiratoria. El disparo marca el inicio de la inspiración. Durante la inspiración el flujo es cuadrado y constante, que es la variable objetivo o límite, mientras la presión sube en rampa hasta la presión pico y cae a una meseta durante la pausa sin flujo. El ciclado ocurre al terminar el tiempo inspiratorio programado. En la espiración el flujo es negativo y vuelve a cero, y la presión regresa a la línea de base, la PEEP, hasta el siguiente disparo.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <!-- phase bands -->
+    <rect x="120" y="40" width="230" height="400" fill="#dbeafe" opacity="0.45"/>
+    <rect x="350" y="40" width="250" height="400" fill="#f3f4f6" opacity="0.8"/>
+    <text x="235" y="58" font-size="14" text-anchor="middle" font-weight="600">Inspiración</text>
+    <text x="475" y="58" font-size="14" text-anchor="middle" font-weight="600">Espiración</text>
+
+    <!-- axes pressure -->
+    <line x1="80" y1="70" x2="80" y2="210" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="80" y1="210" x2="690" y2="210" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="22" y="140" font-size="13" transform="rotate(-90 22 140)" text-anchor="middle">Paw (cmH₂O)</text>
+    <!-- PEEP baseline -->
+    <line x1="80" y1="190" x2="690" y2="190" stroke="#15803d" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <path d="M80,190 L120,190 L124,150 L300,80 L306,110 L350,110 C365,175 390,188 450,190 L600,190 L604,150 L680,120" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <text x="300" y="74" font-size="14" text-anchor="middle">Ppico</text>
+    <text x="328" y="104" font-size="14" text-anchor="middle">Pplat</text>
+    <text x="460" y="182" font-size="14" fill="#15803d">Línea de base: PEEP</text>
+
+    <!-- axes flow -->
+    <line x1="80" y1="250" x2="80" y2="430" stroke="#9ca3af" stroke-width="1.5"/>
+    <line x1="80" y1="340" x2="690" y2="340" stroke="#9ca3af" stroke-width="1.5"/>
+    <text x="22" y="340" font-size="13" transform="rotate(-90 22 340)" text-anchor="middle">Flujo (L/min)</text>
+    <text x="684" y="360" font-size="13" text-anchor="end">Tiempo (s)</text>
+    <path d="M80,340 L120,340 L120,290 L300,290 L300,340 L350,340 L350,410 C380,365 420,345 500,340 L600,340 L600,290 L680,290" fill="none" stroke="#c2410c" stroke-width="3"/>
+    <text x="210" y="282" font-size="14" text-anchor="middle" fill="#c2410c">Objetivo: flujo constante</text>
+    <text x="325" y="330" font-size="14" text-anchor="middle">pausa</text>
+    <text x="440" y="420" font-size="14" fill="#c2410c">flujo espiratorio pasivo</text>
+
+    <!-- event lines -->
+    <g stroke="#6d28d9" stroke-width="2" stroke-dasharray="4 4">
+      <line x1="120" y1="70" x2="120" y2="440"/>
+      <line x1="350" y1="70" x2="350" y2="440"/>
+      <line x1="600" y1="70" x2="600" y2="440"/>
+    </g>
+    <text x="120" y="462" font-size="14" text-anchor="middle" fill="#6d28d9" font-weight="600">Disparo</text>
+    <text x="350" y="462" font-size="14" text-anchor="middle" fill="#6d28d9" font-weight="600">Ciclado</text>
+    <text x="350" y="480" font-size="13" text-anchor="middle" fill="#6d28d9">(fin del Ti programado)</text>
+    <text x="600" y="462" font-size="14" text-anchor="middle" fill="#6d28d9" font-weight="600">Disparo</text>
+    <text x="600" y="480" font-size="13" text-anchor="middle" fill="#6d28d9">(siguiente ciclo)</text>
+  </g>
+</svg>

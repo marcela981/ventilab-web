@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="t">Zonas de riesgo de lesión inducida por el ventilador sobre la curva presión-volumen</title>
+  <desc id="d">Curva presión-volumen estática en forma de S. En el tramo inferior, de pendiente baja, las unidades alveolares se colapsan y reabren en cada ciclo: riesgo de atelectrauma. El tramo medio, casi recto y de mayor pendiente, es la zona más segura para ventilar. En el tramo superior la curva se aplana porque el pulmón ya está distendido: riesgo de volutrauma y barotrauma. Se marcan los puntos de inflexión inferior y superior. Esquema conceptual sin escala numérica.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <rect x="80" y="70" width="150" height="290" fill="#fee2e2"/>
+  <rect x="230" y="70" width="240" height="290" fill="#dcfce7"/>
+  <rect x="470" y="70" width="210" height="290" fill="#fee2e2"/>
+  <g font-size="15" text-anchor="middle" fill="#1f2937">
+    <text x="155" y="34" font-weight="700" fill="#b91c1c">Atelectrauma</text>
+    <text x="155" y="54" font-size="14">colapso y reapertura</text>
+    <text x="350" y="34" font-weight="700" fill="#15803d">Zona más segura</text>
+    <text x="350" y="54" font-size="14">ventilación protectora</text>
+    <text x="575" y="34" font-weight="700" fill="#b91c1c">Sobredistensión</text>
+    <text x="575" y="54" font-size="14">volutrauma, barotrauma</text>
+  </g>
+  <g stroke="#9ca3af" stroke-width="2">
+    <line x1="80" y1="360" x2="690" y2="360"/>
+    <line x1="80" y1="360" x2="80" y2="66"/>
+  </g>
+  <path d="M80,352 C150,350 190,330 230,300 L470,140 C510,113 590,96 680,90" fill="none" stroke="#1d4ed8" stroke-width="4"/>
+  <circle cx="230" cy="300" r="7" fill="#ffffff" stroke="#1f2937" stroke-width="2.5"/>
+  <circle cx="470" cy="140" r="7" fill="#ffffff" stroke="#1f2937" stroke-width="2.5"/>
+  <g font-size="14" fill="#1f2937">
+    <text x="244" y="322">Punto de inflexión inferior</text>
+    <text x="456" y="122" text-anchor="end">Punto de inflexión superior</text>
+    <text x="250" y="228" fill="#1d4ed8" font-weight="600">Curva P-V</text>
+    <text x="490" y="250">La curva se aplana:</text>
+    <text x="490" y="270">más presión, poco</text>
+    <text x="490" y="290">volumen adicional</text>
+    <text x="92" y="250">Unidades que se</text>
+    <text x="92" y="270">cierran en cada</text>
+    <text x="92" y="290">espiración</text>
+  </g>
+  <text x="385" y="392" text-anchor="middle" font-size="14" fill="#1f2937">Presión en la vía aérea (cmH₂O)</text>
+  <text x="40" y="215" text-anchor="middle" font-size="14" fill="#1f2937" transform="rotate(-90 40 215)">Volumen pulmonar (mL)</text>
+  <text x="385" y="422" text-anchor="middle" font-size="13" fill="#1f2937">Esquema conceptual: la forma y los puntos de inflexión varían en cada paciente</text>
+</svg>

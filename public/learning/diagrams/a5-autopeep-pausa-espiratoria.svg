@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 410" width="720" height="410" role="img" aria-labelledby="t d">
+  <title id="t">Auto-PEEP con pausa espiratoria</title>
+  <desc id="d">Curva de presión en la vía aérea frente al tiempo en un paciente pasivo con atrapamiento aéreo. Tras dos ciclos, se ocluye la vía aérea al final de la espiración: la presión sube desde la PEEP programada de 5 cmH₂O hasta estabilizarse en una PEEP total de 14 cmH₂O. La diferencia, 9 cmH₂O, es la auto-PEEP. Valores ilustrativos.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <line x1="90" y1="360" x2="680" y2="360" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="90" y1="360" x2="90" y2="60" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="91" y1="320" x2="680" y2="320" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="325" font-size="13" fill="#1f2937" text-anchor="end">5</text>
+    <line x1="91" y1="248" x2="680" y2="248" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="253" font-size="13" fill="#1f2937" text-anchor="end">14</text>
+    <line x1="91" y1="120" x2="680" y2="120" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="125" font-size="13" fill="#1f2937" text-anchor="end">30</text>
+    <text x="80" y="365" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <rect x="450" y="104" width="210" height="256" fill="#f3f4f6"/>
+    <path d="M90,320 L110,320 L110,216 L180,104 L184.2,153.5 L188.3,191.7 L192.5,221.1 L196.7,243.8 L200.8,261.3 L205.0,274.7 L209.2,285.1 L213.3,293.1 L217.5,299.3 L221.7,304.0 L225.8,307.7 L230.0,310.5 L234.2,312.7 L238.3,314.4 L242.5,315.7 L246.7,316.7 L250.8,317.4 L255.0,318.0 L259.2,318.5 L263.3,318.8 L267.5,319.1 L271.7,319.3 L275.8,319.5 L280.0,319.6 L280,320 L280,216 L350,104 L354.2,153.5 L358.3,191.7 L362.5,221.1 L366.7,243.8 L370.8,261.3 L375.0,274.7 L379.2,285.1 L383.3,293.1 L387.5,299.3 L391.7,304.0 L395.8,307.7 L400.0,310.5 L404.2,312.7 L408.3,314.4 L412.5,315.7 L416.7,316.7 L420.8,317.4 L425.0,318.0 L429.2,318.5 L433.3,318.8 L437.5,319.1 L441.7,319.3 L445.8,319.5 L450.0,319.6 C470,320 475,251.2 510,248 L660,248" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <text x="555" y="124" font-size="14" fill="#6d28d9" text-anchor="middle" font-weight="700">Pausa espiratoria</text>
+    <text x="555" y="142" font-size="14" fill="#6d28d9" text-anchor="middle">(válvulas cerradas)</text>
+    <line x1="450" y1="320" x2="660" y2="320" stroke="#1f2937" stroke-width="2" stroke-dasharray="5 4"/>
+    <line x1="640" y1="248" x2="640" y2="320" stroke="#b91c1c" stroke-width="3"/>
+    <line x1="634" y1="248" x2="646" y2="248" stroke="#b91c1c" stroke-width="3"/>
+    <line x1="634" y1="320" x2="646" y2="320" stroke="#b91c1c" stroke-width="3"/>
+    <text x="550" y="238" font-size="14" fill="#1f2937" text-anchor="middle" font-weight="700">PEEP total = 14</text>
+    <text x="630" y="289" font-size="14" fill="#b91c1c" text-anchor="end" font-weight="700">auto-PEEP = 9</text>
+    <text x="555" y="342" font-size="14" fill="#1f2937" text-anchor="middle">PEEP programada = 5</text>
+    <text x="280" y="92" font-size="14" fill="#1f2937" text-anchor="middle">ciclos con atrapamiento</text>
+    <text x="385" y="392" font-size="14" fill="#1f2937" text-anchor="middle">Tiempo (s)</text>
+    <text x="30" y="210" font-size="14" fill="#1f2937" text-anchor="middle" transform="rotate(-90 30 210)">Presión en la vía aérea (cmH₂O)</text>
+  </g>
+</svg>

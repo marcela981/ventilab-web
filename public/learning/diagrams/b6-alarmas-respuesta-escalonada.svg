@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 560" width="720" height="560" role="img" aria-labelledby="t d">
+  <title id="t">Respuesta escalonada ante una alarma del ventilador</title>
+  <desc id="d">Algoritmo. Suena una alarma y lo primero es mirar al paciente. Pregunta: ¿está inestable? Si la respuesta es sí: pedir ayuda, desconectar del ventilador y ventilar con bolsa autoinflable y oxígeno, y revisar tubo, obstrucción, neumotórax y equipo. Si la respuesta es no: identificar la alarma y sus valores, recorrer el circuito desde el paciente hacia el ventilador, corregir la causa y reajustar los límites si procede. Ambas ramas terminan en reevaluar y registrar.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+    <rect x="260" y="20" width="200" height="40" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="360" y="45" text-anchor="middle" font-weight="bold">Suena una alarma</text>
+    <line x1="360" y1="60" x2="360" y2="82" stroke="#1f2937" stroke-width="2" marker-end="url(#ar)"/>
+
+    <rect x="200" y="86" width="320" height="56" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="1.5"/>
+    <text x="360" y="108" text-anchor="middle" font-weight="bold">Mira al paciente</text>
+    <text x="360" y="129" text-anchor="middle" font-size="13">color, tórax, esfuerzo, SpO₂, FC, presión arterial</text>
+    <line x1="360" y1="142" x2="360" y2="164" stroke="#1f2937" stroke-width="2" marker-end="url(#ar)"/>
+
+    <path d="M360,168 L450,213 L360,258 L270,213 Z" fill="#ffffff" stroke="#6d28d9" stroke-width="2"/>
+    <text x="360" y="218" text-anchor="middle" font-weight="bold">¿Inestable?</text>
+
+    <!-- YES branch -->
+    <path d="M270,213 L170,213 L170,278" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#ar)"/>
+    <text x="220" y="204" text-anchor="middle" font-weight="bold" fill="#b91c1c">Sí</text>
+    <rect x="30" y="282" width="280" height="180" rx="8" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="44" y="308">1. Pide ayuda</text>
+    <text x="44" y="336">2. Desconecta del ventilador</text>
+    <text x="60" y="356">y ventila con bolsa</text>
+    <text x="60" y="376">autoinflable y oxígeno</text>
+    <text x="44" y="404">3. Revisa tubo (posición y</text>
+    <text x="60" y="424">permeabilidad), neumotórax</text>
+    <text x="60" y="444">y equipo</text>
+
+    <!-- NO branch -->
+    <path d="M450,213 L550,213 L550,278" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#ar)"/>
+    <text x="500" y="204" text-anchor="middle" font-weight="bold" fill="#15803d">No</text>
+    <rect x="410" y="282" width="280" height="180" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="424" y="308">1. Identifica la alarma</text>
+    <text x="440" y="328">y sus valores</text>
+    <text x="424" y="356">2. Recorre el circuito desde</text>
+    <text x="440" y="376">el paciente al ventilador</text>
+    <text x="424" y="404">3. Corrige la causa</text>
+    <text x="424" y="432">4. Reajusta límites solo</text>
+    <text x="440" y="452">si procede</text>
+
+    <!-- converge -->
+    <path d="M170,462 L170,500 L256,500" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#ar)"/>
+    <path d="M550,462 L550,500 L464,500" fill="none" stroke="#1f2937" stroke-width="2" marker-end="url(#ar)"/>
+    <rect x="260" y="480" width="200" height="40" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="360" y="505" text-anchor="middle" font-weight="bold">Reevalúa y registra</text>
+    <text x="360" y="545" text-anchor="middle" font-size="13">Nunca amplíes un límite sin haber identificado la causa</text>
+  </g>
+</svg>

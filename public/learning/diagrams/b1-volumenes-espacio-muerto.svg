@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+<title id="t">Destino de un volumen corriente</title>
+<desc id="d">Arriba, una barra divide el volumen corriente en tres partes: espacio muerto anatómico más instrumental, espacio muerto alveolar y gas que intercambia; las dos primeras forman el espacio muerto fisiológico. Abajo, un esquema muestra la pieza en Y y el filtro, el tubo y las vías de conducción, y dos alvéolos: uno ventilado sin perfusión y otro ventilado y rodeado por un capilar, el único que intercambia gases. Proporciones ilustrativas.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+<text x="360" y="30" font-size="16" font-weight="bold" text-anchor="middle">Un volumen corriente, tres destinos (proporciones ilustrativas)</text>
+<rect x="40" y="48" width="210" height="44" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+<rect x="250" y="48" width="110" height="44" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<rect x="360" y="48" width="320" height="44" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<text x="145" y="75" text-anchor="middle">Anatómico + instrumental</text>
+<text x="305" y="75" text-anchor="middle">Alveolar</text>
+<text x="520" y="75" text-anchor="middle">Llega a alvéolos perfundidos: intercambia</text>
+<path d="M40,100 L40,110 L360,110 L360,100" fill="none" stroke="#1f2937" stroke-width="2"/>
+<text x="200" y="130" text-anchor="middle" font-weight="bold">Espacio muerto fisiológico</text>
+<path d="M360,100 L360,110 L680,110 L680,100" fill="none" stroke="#15803d" stroke-width="2"/>
+<text x="520" y="130" text-anchor="middle" font-weight="bold" fill="#15803d">Ventilación alveolar efectiva</text>
+<rect x="40" y="225" width="90" height="50" rx="6" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+<text x="85" y="246" text-anchor="middle">Pieza en Y</text>
+<text x="85" y="264" text-anchor="middle">y filtro</text>
+<rect x="130" y="238" width="170" height="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+<text x="215" y="300" text-anchor="middle">Tubo y vías de conducción</text>
+<path d="M300,244 L380,190 M300,256 L380,310" fill="none" stroke="#9ca3af" stroke-width="10" stroke-linecap="round"/>
+<circle cx="420" cy="180" r="42" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+<text x="475" y="172">Ventilado, sin perfusión</text>
+<text x="475" y="192" fill="#b91c1c">(espacio muerto alveolar)</text>
+<circle cx="420" cy="320" r="42" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<path d="M366,352 C385,382 455,382 474,352" fill="none" stroke="#b91c1c" stroke-width="5"/>
+<text x="475" y="314">Ventilado y perfundido</text>
+<text x="475" y="334" fill="#15803d">(intercambia O₂ y CO₂)</text>
+<text x="484" y="378" fill="#b91c1c">Capilar pulmonar</text>
+<text x="420" y="185" text-anchor="middle" font-weight="bold">O₂</text>
+<text x="420" y="325" text-anchor="middle" font-weight="bold">O₂ ⇄ CO₂</text>
+</g>
+</svg>

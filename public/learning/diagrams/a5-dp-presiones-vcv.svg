@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 390" width="720" height="390" role="img" aria-labelledby="t d">
+  <title id="t">Presión pico, meseta y driving pressure</title>
+  <desc id="d">Curva de presión en la vía aérea frente al tiempo en ventilación controlada por volumen con flujo constante y pausa inspiratoria. La presión salta desde la PEEP, sube en rampa hasta la presión pico, cae a la presión meseta durante la pausa y desciende de forma exponencial hasta la PEEP total en la espiración. La diferencia entre pico y meseta es la presión resistiva; la diferencia entre meseta y PEEP total es la driving pressure. Esquema ilustrativo.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <line x1="90" y1="340" x2="680" y2="340" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="90" y1="340" x2="90" y2="60" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="91" y1="265" x2="680" y2="265" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="270" font-size="13" fill="#1f2937" text-anchor="end">10</text>
+    <line x1="91" y1="190" x2="680" y2="190" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="195" font-size="13" fill="#1f2937" text-anchor="end">20</text>
+    <line x1="91" y1="115" x2="680" y2="115" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="120" font-size="13" fill="#1f2937" text-anchor="end">30</text>
+    <text x="80" y="345" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <path d="M90,265 L110,265 L110,220 L300,115 L308,160 L370,160 L375.0,181.3 L380.0,198.4 L385.0,211.9 L390.0,222.7 L395.0,231.3 L400.0,238.1 L405.0,243.6 L410.0,248.0 L415.0,251.4 L420.0,254.2 L425.0,256.4 L430.0,258.1 L435.0,259.5 L440.0,260.6 L445.0,261.5 L450.0,262.2 L455.0,262.8 L460.0,263.2 L465.0,263.6 L470.0,263.9 L475.0,264.1 L480.0,264.3 L485.0,264.4 L490.0,264.6 L660,265" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <line x1="395" y1="160" x2="395" y2="265" stroke="#15803d" stroke-width="3"/>
+    <line x1="389" y1="160" x2="401" y2="160" stroke="#15803d" stroke-width="3"/>
+    <line x1="389" y1="265" x2="401" y2="265" stroke="#15803d" stroke-width="3"/>
+    <text x="409" y="208.5" font-size="15" fill="#15803d" font-weight="700">Driving pressure</text>
+    <text x="409" y="227.5" font-size="14" fill="#1f2937">ΔP = Pmeseta − PEEP total</text>
+    <line x1="322" y1="115" x2="322" y2="160" stroke="#c2410c" stroke-width="3"/>
+    <line x1="316" y1="115" x2="328" y2="115" stroke="#c2410c" stroke-width="3"/>
+    <line x1="316" y1="160" x2="328" y2="160" stroke="#c2410c" stroke-width="3"/>
+    <text x="334" y="91" font-size="14" fill="#c2410c" font-weight="700">Presión resistiva</text>
+    <text x="334" y="108" font-size="14" fill="#1f2937">Ppico − Pmeseta</text>
+    <text x="292" y="107" font-size="14" fill="#1f2937" text-anchor="end">Ppico</text>
+    <text x="340" y="180" font-size="14" fill="#1f2937" text-anchor="middle">Pmeseta</text>
+    <text x="560" y="255" font-size="14" fill="#1f2937">PEEP total</text>
+    <line x1="308" y1="190" x2="370" y2="190" stroke="#6d28d9" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="360" y="208" font-size="13" fill="#6d28d9" text-anchor="end">pausa inspiratoria</text>
+    <text x="235" y="242.5" font-size="14" fill="#1f2937" text-anchor="middle">rampa con flujo constante</text>
+    <text x="385" y="372" font-size="14" fill="#1f2937" text-anchor="middle">Tiempo (s)</text>
+    <text x="30" y="200" font-size="14" fill="#1f2937" text-anchor="middle" transform="rotate(-90 30 200)">Presión en la vía aérea (cmH₂O)</text>
+  </g>
+</svg>

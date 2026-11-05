@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+<title id="t">Auto-PEEP en la curva de flujo y fuga en la curva de volumen</title>
+<desc id="d">Panel superior: curva flujo-tiempo en VCV. En el primer ciclo, de referencia, el flujo espiratorio regresa a cero antes del siguiente ciclo. En los dos ciclos siguientes, con frecuencia alta, el flujo espiratorio sigue siendo negativo cuando empieza la siguiente inspiración: el atrapamiento de aire indica auto-PEEP. Panel inferior: curva volumen-tiempo. En el ciclo de referencia el volumen vuelve a cero. En los ciclos con fuga la rama espiratoria se queda por encima de cero y el trazo cae verticalmente a cero al inicio del siguiente ciclo, porque el volumen espirado medido es menor que el inspirado.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<text x="360" y="28" text-anchor="middle" font-size="17" font-weight="600" fill="#1f2937">Dos hallazgos que se ven en las curvas escalares</text>
+<!-- flow panel -->
+<text x="80" y="56" font-size="15" font-weight="600" fill="#1f2937">Flujo-tiempo: auto-PEEP</text>
+<line x1="80" y1="70" x2="80" y2="236" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="80" y1="150" x2="690" y2="150" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="34" y="153" font-size="14" fill="#1f2937" transform="rotate(-90 34 153)" text-anchor="middle">Flujo (L/min)</text>
+<text x="686" y="168" text-anchor="end" font-size="14" fill="#1f2937">Tiempo (s)</text>
+<!-- reference breath -->
+<path d="M90 150 L90 95 L150 95 L150 150 L152 224 Q180 160 240 151 L280 150" fill="none" stroke="#15803d" stroke-width="2.5"/>
+<text x="185" y="92" text-anchor="middle" font-size="14" fill="#15803d">referencia: vuelve a 0</text>
+<!-- auto-PEEP breaths -->
+<path d="M280 150 L280 95 L340 95 L340 150 L342 224 Q370 170 420 174 L420 95 L480 95 L480 150 L482 224 Q510 170 560 174 L560 95 L620 95 L620 150" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+<line x1="420" y1="174" x2="452" y2="206" stroke="#1f2937" stroke-width="1"/>
+<text x="456" y="214" font-size="14" fill="#b91c1c">no llega a 0: atrapamiento</text>
+<!-- volume panel -->
+<text x="80" y="276" font-size="15" font-weight="600" fill="#1f2937">Volumen-tiempo: fuga</text>
+<line x1="80" y1="290" x2="80" y2="460" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="80" y1="450" x2="690" y2="450" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="34" y="370" font-size="14" fill="#1f2937" transform="rotate(-90 34 370)" text-anchor="middle">Volumen (mL)</text>
+<text x="686" y="472" text-anchor="end" font-size="14" fill="#1f2937">Tiempo (s)</text>
+<path d="M90 450 L150 320 L160 320 L172 380 Q200 445 260 450 L280 450" fill="none" stroke="#15803d" stroke-width="2.5"/>
+<text x="185" y="312" text-anchor="middle" font-size="14" fill="#15803d">referencia</text>
+<path d="M280 450 L340 320 L350 320 L362 372 Q390 410 440 402 L450 402 L450 450 L510 320 L520 320 L532 372 Q560 410 610 402 L620 402 L620 450 L650 450" fill="none" stroke="#c2410c" stroke-width="2.5"/>
+<text x="444" y="434" font-size="14" fill="#c2410c" text-anchor="end">volumen no recuperado</text>
+<text x="630" y="430" font-size="14" fill="#c2410c" text-anchor="start">caída</text>
+<text x="360" y="494" text-anchor="middle" font-size="14" fill="#1f2937">Esquema cualitativo: el volumen inspirado es igual en todos los ciclos</text>
+</svg>

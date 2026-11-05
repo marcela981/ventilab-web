@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" width="720" height="380" role="img" aria-labelledby="t d">
+  <title id="t">Camino de la telemetría y de los comandos del ventilador físico</title>
+  <desc id="d">Cuatro cajas de izquierda a derecha: el equipo físico conectado a un pulmón de prueba, el broker MQTT, el servidor VentyLab y el navegador con la pestaña Monitoreo en modo Real. Flecha superior de izquierda a derecha: la telemetría de presión, flujo, volumen y alarmas viaja del equipo al broker, al servidor y por WebSocket al navegador. Flecha inferior de derecha a izquierda: el comando del operador sale del navegador por HTTP, el servidor comprueba reserva, control, frecuencia y rangos, y solo entonces lo publica en el broker hacia el equipo. El servidor también decide quién recibe la telemetría.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+    </marker>
+  </defs>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+    <rect x="12" y="110" width="150" height="110" rx="8" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+    <text x="87" y="140" font-size="15" font-weight="600" text-anchor="middle">Equipo físico</text>
+    <text x="87" y="164" font-size="14" text-anchor="middle">ventilador de la</text>
+    <text x="87" y="184" font-size="14" text-anchor="middle">universidad</text>
+    <text x="87" y="206" font-size="14" text-anchor="middle">+ pulmón de prueba</text>
+    <rect x="198" y="110" width="150" height="110" rx="8" fill="#f3f4f6" stroke="#6d28d9" stroke-width="2"/>
+    <text x="273" y="150" font-size="15" font-weight="600" text-anchor="middle">Broker MQTT</text>
+    <text x="273" y="174" font-size="14" text-anchor="middle">mensajería</text>
+    <text x="273" y="194" font-size="14" text-anchor="middle">del equipo</text>
+    <rect x="384" y="110" width="150" height="110" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="459" y="140" font-size="15" font-weight="600" text-anchor="middle">Servidor</text>
+    <text x="459" y="162" font-size="14" text-anchor="middle">reservas</text>
+    <text x="459" y="182" font-size="14" text-anchor="middle">control exclusivo</text>
+    <text x="459" y="202" font-size="14" text-anchor="middle">validación</text>
+    <rect x="570" y="110" width="138" height="110" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+    <text x="639" y="140" font-size="15" font-weight="600" text-anchor="middle">Navegador</text>
+    <text x="639" y="164" font-size="14" text-anchor="middle">Monitoreo</text>
+    <text x="639" y="184" font-size="14" text-anchor="middle">modo Real</text>
+
+    <line x1="40" y1="96" x2="660" y2="96" stroke="#15803d" stroke-width="3" marker-end="url(#a)"/>
+    <text x="40" y="40" font-size="15" font-weight="600" fill="#15803d">Telemetría</text>
+    <text x="40" y="62" font-size="14">presión, flujo, volumen y alarmas; llega por WebSocket</text>
+    <text x="40" y="82" font-size="14">solo a quienes tienen la reserva, y al personal docente</text>
+
+    <line x1="660" y1="236" x2="40" y2="236" stroke="#c2410c" stroke-width="3" marker-end="url(#a)"/>
+    <text x="40" y="266" font-size="15" font-weight="600" fill="#c2410c">Comandos</text>
+    <text x="40" y="288" font-size="14">solo el operador; el servidor revisa reserva activa, control,</text>
+    <text x="40" y="308" font-size="14">frecuencia de envío y rangos seguros antes de publicar</text>
+
+    <rect x="20" y="326" width="680" height="40" rx="8" fill="#f3f4f6"/>
+    <text x="36" y="351" font-size="14">El servidor nunca envía un comando por su cuenta: solo reenvía lo que decide una persona.</text>
+  </g>
+</svg>

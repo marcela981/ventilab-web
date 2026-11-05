@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 470" width="720" height="470" role="img" aria-labelledby="t d">
+<title id="t">Controles de la oxigenación y de la ventilación</title>
+<desc id="d">Diagrama de dos columnas. Columna izquierda, oxigenación: FiO₂, PEEP, presión media de la vía aérea y tiempo inspiratorio actúan sobre la PO₂ alveolar y el volumen pulmonar aireado y perfundido, y determinan la PaO₂ y la SpO₂. Columna derecha, ventilación: frecuencia respiratoria, volumen corriente o presión inspiratoria y espacio muerto determinan la ventilación alveolar, de la que dependen la PaCO₂ y el pH. Una flecha discontinua entre columnas indica que interactúan: la PaCO₂ alta reduce la PO₂ alveolar y la PEEP puede reclutar o sobredistender.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+<path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/>
+</marker>
+<marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+<path d="M0,0 L10,5 L0,10 z" fill="#6d28d9"/>
+</marker>
+</defs>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14" text-anchor="middle">
+<rect x="30" y="20" width="300" height="40" rx="8" fill="#1d4ed8"/>
+<text x="180" y="46" fill="#ffffff" font-weight="bold" font-size="16">Oxigenación</text>
+<rect x="390" y="20" width="300" height="40" rx="8" fill="#15803d"/>
+<text x="540" y="46" fill="#ffffff" font-weight="bold" font-size="15">Ventilación (eliminación de CO₂)</text>
+<rect x="30" y="76" width="145" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="102" y="101">FiO₂</text>
+<rect x="185" y="76" width="145" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="257" y="101">PEEP</text>
+<rect x="30" y="126" width="145" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="102" y="151">Presión media</text>
+<rect x="185" y="126" width="145" height="40" rx="6" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="257" y="151">Tiempo inspiratorio</text>
+<rect x="390" y="76" width="145" height="40" rx="6" fill="#dcfce7" stroke="#15803d"/>
+<text x="462" y="101">Frecuencia</text>
+<rect x="545" y="76" width="145" height="40" rx="6" fill="#dcfce7" stroke="#15803d"/>
+<text x="617" y="101">Volumen corriente</text>
+<rect x="390" y="126" width="300" height="40" rx="6" fill="#dcfce7" stroke="#15803d"/>
+<text x="540" y="151">Espacio muerto (circuito y fisiológico)</text>
+<g stroke="#1f2937" stroke-width="2" fill="none" marker-end="url(#ah)">
+<path d="M180,168 L180,198"/>
+<path d="M540,168 L540,198"/>
+<path d="M180,262 L180,292"/>
+<path d="M540,262 L540,292"/>
+</g>
+<rect x="30" y="200" width="300" height="62" rx="8" fill="#f3f4f6" stroke="#1d4ed8" stroke-width="2"/>
+<text x="180" y="226">PO₂ alveolar y volumen</text>
+<text x="180" y="246">pulmonar aireado y perfundido</text>
+<rect x="390" y="200" width="300" height="62" rx="8" fill="#f3f4f6" stroke="#15803d" stroke-width="2"/>
+<text x="540" y="236">Ventilación alveolar</text>
+<rect x="30" y="294" width="300" height="50" rx="8" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+<text x="180" y="324" font-weight="bold" font-size="16">PaO₂ y SpO₂</text>
+<rect x="390" y="294" width="300" height="50" rx="8" fill="#dcfce7" stroke="#15803d" stroke-width="2"/>
+<text x="540" y="324" font-weight="bold" font-size="16">PaCO₂ y pH</text>
+<path d="M360,231 L385,231" stroke="#6d28d9" stroke-width="2.5" stroke-dasharray="6 4" fill="none" marker-end="url(#ap)"/>
+<path d="M360,231 L335,231" stroke="#6d28d9" stroke-width="2.5" stroke-dasharray="6 4" fill="none" marker-end="url(#ap)"/>
+<rect x="30" y="370" width="660" height="80" rx="8" fill="#ffffff" stroke="#6d28d9" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="360" y="396" fill="#6d28d9" font-weight="bold">Interacciones</text>
+<text x="360" y="416">La PaCO₂ alta reduce la PO₂ alveolar (ecuación del gas alveolar).</text>
+<text x="360" y="436">La PEEP puede reclutar (mejora ambas) o sobredistender (más espacio muerto).</text>
+</g>
+</svg>

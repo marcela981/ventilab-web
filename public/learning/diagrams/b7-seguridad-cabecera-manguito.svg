@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 440" width="720" height="440" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="t">Cabecera elevada y manguito frente a la microaspiración</title>
+  <desc id="d">A la izquierda, esquema lateral de una cama con el respaldo elevado entre 30 y 45 grados y un paciente semisentado. A la derecha, ampliación de la tráquea con el tubo endotraqueal en su interior y el manguito inflado que sella la luz traqueal. Por encima del manguito se acumulan secreciones subglóticas; una flecha discontinua muestra cómo pueden filtrarse por los pliegues del manguito hacia los pulmones, lo que se llama microaspiración. La presión del manguito debe medirse y mantenerse entre 20 y 30 cmH₂O.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/>
+    </marker>
+  </defs>
+  <text x="200" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2937">Posición semisentada</text>
+  <rect x="30" y="340" width="375" height="16" rx="4" fill="#f3f4f6" stroke="#9ca3af" stroke-width="2"/>
+  <line x1="60" y1="356" x2="60" y2="390" stroke="#9ca3af" stroke-width="4"/>
+  <line x1="400" y1="356" x2="400" y2="390" stroke="#9ca3af" stroke-width="4"/>
+  <line x1="300" y1="338" x2="400" y2="338" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+  <line x1="300" y1="338" x2="120" y2="212" stroke="#1f2937" stroke-width="6" stroke-linecap="round"/>
+  <path d="M300,322 L118,195 L132,175 L318,304 Z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <path d="M310,316 L400,316 L400,334 L304,334 Z" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <circle cx="108" cy="170" r="26" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+  <path d="M220,338 A80,80 0 0 1 234,292" fill="none" stroke="#c2410c" stroke-width="2.5"/>
+  <text x="168" y="300" font-size="16" font-weight="700" fill="#c2410c">30-45°</text>
+  <text x="230" y="380" text-anchor="middle" font-size="14" fill="#1f2937">Respaldo elevado: menos reflujo</text>
+  <text x="230" y="400" text-anchor="middle" font-size="14" fill="#1f2937">y menos aspiración</text>
+
+  <line x1="420" y1="60" x2="420" y2="420" stroke="#9ca3af" stroke-width="1.5" stroke-dasharray="6 6"/>
+  <text x="560" y="36" text-anchor="middle" font-size="17" font-weight="700" fill="#1f2937">Tráquea ampliada</text>
+  <path d="M500,60 L500,400 M600,60 L600,400" stroke="#1f2937" stroke-width="3" fill="none"/>
+  <rect x="536" y="56" width="28" height="330" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+  <ellipse cx="550" cy="250" rx="49" ry="26" fill="#dcfce7" stroke="#15803d" stroke-width="2.5"/>
+  <rect x="536" y="228" width="28" height="44" fill="#f3f4f6" stroke="#1f2937" stroke-width="2"/>
+  <g fill="#c2410c">
+    <ellipse cx="516" cy="214" rx="13" ry="7"/>
+    <ellipse cx="584" cy="210" rx="12" ry="7"/>
+    <ellipse cx="518" cy="196" rx="9" ry="5"/>
+    <ellipse cx="582" cy="192" rx="9" ry="5"/>
+  </g>
+  <path d="M510,222 C506,250 508,272 516,300 L518,330" fill="none" stroke="#c2410c" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#ah)"/>
+  <g font-size="14" fill="#1f2937">
+    <text x="612" y="190">Secreciones</text>
+    <text x="612" y="208">subglóticas</text>
+    <text x="612" y="252" fill="#15803d" font-weight="600">Manguito</text>
+    <text x="612" y="270">20-30</text>
+    <text x="612" y="288">cmH₂O</text>
+    <text x="612" y="120">Tubo</text>
+    <text x="612" y="138">endotraqueal</text>
+    <text x="494" y="350" text-anchor="end" fill="#c2410c" font-weight="600">Micro-</text>
+    <text x="494" y="368" text-anchor="end" fill="#c2410c" font-weight="600">aspiración</text>
+    <text x="550" y="424" text-anchor="middle">hacia los pulmones</text>
+  </g>
+</svg>

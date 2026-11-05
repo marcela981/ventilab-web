@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 385" width="720" height="385" role="img" aria-labelledby="t d">
+<title id="t">Presión pico y meseta en tres situaciones</title>
+<desc id="d">Tres curvas de presión en el tiempo en VCV con el mismo volumen y flujo. En la referencia la presión pico es 25 y la meseta 15 cmH2O. Con resistencia aumentada el pico sube a 38 pero la meseta casi no cambia, así que crece la diferencia pico menos meseta. Con compliance disminuida suben pico y meseta, la diferencia pico menos meseta se mantiene en 10 y crece la diferencia meseta menos PEEP.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/></marker>
+</defs>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+<text x="360" y="28" font-size="18" text-anchor="middle" font-weight="700">Presión pico y meseta: tres situaciones en VCV</text>
+<rect x="30" y="50" width="200" height="290" rx="8" fill="#f3f4f6"/>
+<text x="130" y="72" text-anchor="middle" fill="#1f2937" font-weight="700">Referencia</text>
+<line x1="50" y1="90" x2="50" y2="300" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="50" y1="300" x2="220" y2="300" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="50" y1="275" x2="220" y2="275" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3 4"/>
+<path d="M50,275 L65,275 L66,225 L145,175 L147,225 L175,225 C180,270 188,275 200,275 L220,275" fill="none" stroke="#1f2937" stroke-width="3" stroke-linejoin="round"/>
+<text x="145" y="167" font-size="13" text-anchor="middle" font-weight="700">Ppico 25</text>
+<text x="162" y="217" font-size="13" text-anchor="start">Pmeseta 15</text>
+<text x="218" y="292" font-size="13" text-anchor="end">PEEP 5</text>
+<text x="130" y="320" font-size="13" text-anchor="middle" fill="#1d4ed8">pico − meseta = 10</text>
+<text x="130" y="336" font-size="13" text-anchor="middle" fill="#15803d">meseta − PEEP = 10</text>
+<rect x="260" y="50" width="200" height="290" rx="8" fill="#f3f4f6"/>
+<text x="360" y="72" text-anchor="middle" fill="#1d4ed8" font-weight="700">Resistencia aumentada</text>
+<line x1="280" y1="90" x2="280" y2="300" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="280" y1="300" x2="450" y2="300" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="280" y1="275" x2="450" y2="275" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3 4"/>
+<path d="M280,275 L295,275 L296,165 L375,110 L377,220 L405,220 C410,270 418,275 430,275 L450,275" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-linejoin="round"/>
+<text x="375" y="102" font-size="13" text-anchor="middle" font-weight="700">Ppico 38</text>
+<text x="392" y="212" font-size="13" text-anchor="start">Pmeseta 16</text>
+<text x="448" y="292" font-size="13" text-anchor="end">PEEP 5</text>
+<text x="360" y="320" font-size="13" text-anchor="middle" fill="#1d4ed8">pico − meseta = 22</text>
+<text x="360" y="336" font-size="13" text-anchor="middle" fill="#15803d">meseta − PEEP = 11</text>
+<rect x="490" y="50" width="200" height="290" rx="8" fill="#f3f4f6"/>
+<text x="590" y="72" text-anchor="middle" fill="#b91c1c" font-weight="700">Compliance disminuida</text>
+<line x1="510" y1="90" x2="510" y2="300" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="510" y1="300" x2="680" y2="300" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="510" y1="275" x2="680" y2="275" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3 4"/>
+<path d="M510,275 L525,275 L526,225 L605,115 L607,165 L635,165 C640,270 648,275 660,275 L680,275" fill="none" stroke="#b91c1c" stroke-width="3" stroke-linejoin="round"/>
+<text x="605" y="107" font-size="13" text-anchor="middle" font-weight="700">Ppico 37</text>
+<text x="622" y="157" font-size="13" text-anchor="start">Pmeseta 27</text>
+<text x="678" y="292" font-size="13" text-anchor="end">PEEP 5</text>
+<text x="590" y="320" font-size="13" text-anchor="middle" fill="#1d4ed8">pico − meseta = 10</text>
+<text x="590" y="336" font-size="13" text-anchor="middle" fill="#15803d">meseta − PEEP = 22</text>
+<text x="360" y="368" font-size="13" text-anchor="middle">Presiones en cmH₂O, mismo volumen y flujo en los tres paneles; eje horizontal: tiempo.</text>
+</g>
+</svg>

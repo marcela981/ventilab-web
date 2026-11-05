@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 556" width="720" height="556" role="img" aria-labelledby="t d">
+  <title id="t">Flujo espiratorio y atrapamiento aéreo</title>
+  <desc id="d">Dos curvas de flujo frente al tiempo en ventilación controlada por volumen con flujo inspiratorio constante. En la curva superior el tiempo espiratorio es suficiente y el flujo espiratorio decrece hasta cero antes de cada nueva inspiración. En la curva inferior la frecuencia es mayor, el tiempo espiratorio es corto y cada inspiración comienza cuando el flujo espiratorio aún es negativo, lo que indica atrapamiento aéreo y auto-PEEP. Esquema ilustrativo.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <line x1="90" y1="150" x2="680" y2="150" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="90" y1="70" x2="90" y2="240" stroke="#9ca3af" stroke-width="2"/>
+    <text x="84" y="155" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <text x="100" y="58" font-size="15" fill="#1f2937" font-weight="700">Tiempo espiratorio suficiente</text>
+    <text x="84" y="100" font-size="14" fill="#1f2937" text-anchor="end">+</text>
+    <text x="84" y="225" font-size="14" fill="#1f2937" text-anchor="end">−</text>
+    <path d="M90,150 L100,150 L100,95 L160,95 L160,225 L167.9,206.5 L175.8,192.6 L183.8,182.1 L191.7,174.2 L199.6,168.2 L207.5,163.8 L215.4,160.4 L223.3,157.8 L231.3,155.9 L239.2,154.4 L247.1,153.3 L255.0,152.5 L262.9,151.9 L270.8,151.4 L278.8,151.1 L286.7,150.8 L294.6,150.6 L302.5,150.5 L310.4,150.3 L318.3,150.3 L326.3,150.2 L334.2,150.1 L342.1,150.1 L350.0,150.1 L350,150 L350,95 L410,95 L410,225 L417.9,206.5 L425.8,192.6 L433.8,182.1 L441.7,174.2 L449.6,168.2 L457.5,163.8 L465.4,160.4 L473.3,157.8 L481.3,155.9 L489.2,154.4 L497.1,153.3 L505.0,152.5 L512.9,151.9 L520.8,151.4 L528.8,151.1 L536.7,150.8 L544.6,150.6 L552.5,150.5 L560.4,150.3 L568.3,150.3 L576.3,150.2 L584.2,150.1 L592.1,150.1 L600.0,150.1" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <text x="440" y="200" font-size="14" fill="#15803d" font-weight="700">el flujo vuelve a cero antes</text>
+    <text x="440" y="218" font-size="14" fill="#1f2937">de la siguiente inspiración</text>
+    <text x="104" y="86" font-size="13" fill="#1d4ed8">inspiración</text>
+    <text x="170" y="226" font-size="13" fill="#1d4ed8">espiración</text>
+    <line x1="90" y1="395" x2="680" y2="395" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="90" y1="315" x2="90" y2="485" stroke="#9ca3af" stroke-width="2"/>
+    <text x="84" y="400" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <text x="100" y="303" font-size="15" fill="#1f2937" font-weight="700">Tiempo espiratorio corto</text>
+    <text x="84" y="345" font-size="14" fill="#1f2937" text-anchor="end">+</text>
+    <text x="84" y="470" font-size="14" fill="#1f2937" text-anchor="end">−</text>
+    <path d="M90,395 L100,395 L100,340 L160,340 L160,470 L163.8,465.5 L167.5,461.2 L171.3,457.2 L175.0,453.4 L178.8,449.9 L182.5,446.5 L186.3,443.4 L190.0,440.5 L193.8,437.7 L197.5,435.1 L201.3,432.7 L205.0,430.4 L208.8,428.3 L212.5,426.3 L216.3,424.4 L220.0,422.6 L223.8,420.9 L227.5,419.3 L231.3,417.9 L235.0,416.5 L238.8,415.2 L242.5,414.0 L246.3,412.8 L250.0,411.7 L250,395 L250,340 L310,340 L310,470 L313.8,465.5 L317.5,461.2 L321.3,457.2 L325.0,453.4 L328.8,449.9 L332.5,446.5 L336.3,443.4 L340.0,440.5 L343.8,437.7 L347.5,435.1 L351.3,432.7 L355.0,430.4 L358.8,428.3 L362.5,426.3 L366.3,424.4 L370.0,422.6 L373.8,420.9 L377.5,419.3 L381.3,417.9 L385.0,416.5 L388.8,415.2 L392.5,414.0 L396.3,412.8 L400.0,411.7 L400,395 L400,340 L460,340 L460,470 L463.8,465.5 L467.5,461.2 L471.3,457.2 L475.0,453.4 L478.8,449.9 L482.5,446.5 L486.3,443.4 L490.0,440.5 L493.8,437.7 L497.5,435.1 L501.3,432.7 L505.0,430.4 L508.8,428.3 L512.5,426.3 L516.3,424.4 L520.0,422.6 L523.8,420.9 L527.5,419.3 L531.3,417.9 L535.0,416.5 L538.8,415.2 L542.5,414.0 L546.3,412.8 L550.0,411.7 L550,340" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <text x="400" y="488" font-size="14" fill="#b91c1c" text-anchor="middle" font-weight="700">el flujo espiratorio no llega a cero:</text>
+    <text x="400" y="506" font-size="14" fill="#1f2937" text-anchor="middle">atrapamiento aéreo y auto-PEEP</text>
+    <text x="30" y="270" font-size="14" fill="#1f2937" text-anchor="middle" transform="rotate(-90 30 270)">Flujo (L/min)</text>
+    <text x="640" y="540" font-size="14" fill="#1f2937" text-anchor="end">Tiempo (s)</text>
+  </g>
+</svg>

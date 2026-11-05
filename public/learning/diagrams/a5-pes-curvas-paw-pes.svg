@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 500" width="720" height="500" role="img" aria-labelledby="t d">
+  <title id="t">Presión en vía aérea y esofágica</title>
+  <desc id="d">Curvas superpuestas de presión en la vía aérea y presión esofágica frente al tiempo en un paciente pasivo en VCV, con una pausa inspiratoria y una pausa espiratoria. Durante la pausa inspiratoria la presión meseta es 30 y la esofágica 23 cmH₂O, de modo que la presión transpulmonar inspiratoria es 7. Durante la pausa espiratoria la PEEP total es 10 y la esofágica 16, de modo que la presión transpulmonar espiratoria es −6 cmH₂O, lo que sugiere colapso al final de la espiración. Valores ilustrativos.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <line x1="90" y1="440" x2="680" y2="440" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="90" y1="440" x2="90" y2="90" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="91" y1="340" x2="680" y2="340" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="345" font-size="13" fill="#1f2937" text-anchor="end">10</text>
+    <line x1="91" y1="280" x2="680" y2="280" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="285" font-size="13" fill="#1f2937" text-anchor="end">16</text>
+    <line x1="91" y1="210" x2="680" y2="210" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="215" font-size="13" fill="#1f2937" text-anchor="end">23</text>
+    <line x1="91" y1="140" x2="680" y2="140" stroke="#f3f4f6" stroke-width="1"/>
+    <text x="80" y="145" font-size="13" fill="#1f2937" text-anchor="end">30</text>
+    <text x="80" y="445" font-size="13" fill="#1f2937" text-anchor="end">0</text>
+    <rect x="290" y="90" width="80" height="350" fill="#f3f4f6"/>
+    <rect x="520" y="90" width="120" height="350" fill="#f3f4f6"/>
+    <path d="M90,340 L120,340 L120,300 L280,110 L290,140 L370,140 L374.2,177.6 L378.3,208.2 L382.5,232.9 L386.7,253.1 L390.8,269.4 L395.0,282.7 L399.2,293.5 L403.3,302.2 L407.5,309.3 L411.7,315.1 L415.8,319.8 L420.0,323.6 L424.2,326.7 L428.3,329.2 L432.5,331.2 L436.7,332.9 L440.8,334.2 L445.0,335.3 L449.2,336.2 L453.3,336.9 L457.5,337.5 L461.7,338.0 L465.8,338.3 L470.0,338.7 L640,340" fill="none" stroke="#1d4ed8" stroke-width="3"/>
+    <path d="M90,280 L120,280 C200,270 240,220 285,210 L370,210 L374.2,223.2 L378.3,233.9 L382.5,242.5 L386.7,249.6 L390.8,255.3 L395.0,259.9 L399.2,263.7 L403.3,266.8 L407.5,269.3 L411.7,271.3 L415.8,272.9 L420.0,274.3 L424.2,275.3 L428.3,276.2 L432.5,276.9 L436.7,277.5 L440.8,278.0 L445.0,278.4 L449.2,278.7 L453.3,278.9 L457.5,279.1 L461.7,279.3 L465.8,279.4 L470.0,279.5 L640,280" fill="none" stroke="#c2410c" stroke-width="3"/>
+    <text x="190" y="184" font-size="14" fill="#1d4ed8" text-anchor="end" font-weight="700">Paw</text>
+    <text x="210" y="274" font-size="14" fill="#c2410c" font-weight="700">Pes</text>
+    <text x="330" y="106" font-size="13" fill="#6d28d9" text-anchor="middle">pausa insp.</text>
+    <text x="580" y="106" font-size="13" fill="#6d28d9" text-anchor="middle">pausa esp.</text>
+    <line x1="355" y1="140" x2="355" y2="210" stroke="#15803d" stroke-width="3"/>
+    <text x="380" y="124" font-size="14" fill="#15803d" font-weight="700">Ptp insp = 30 − 23 = 7</text>
+    <line x1="600" y1="280" x2="600" y2="340" stroke="#b91c1c" stroke-width="3"/>
+    <text x="580" y="366" font-size="14" fill="#b91c1c" text-anchor="middle" font-weight="700">Ptp esp = 10 − 16 = −6</text>
+    <text x="330" y="134" font-size="13" fill="#1f2937" text-anchor="middle">Pmeseta 30</text>
+    <text x="470" y="272" font-size="13" fill="#1f2937">Pes esp 16</text>
+    <text x="470" y="332" font-size="13" fill="#1f2937">PEEP total 10</text>
+    <text x="385" y="478" font-size="14" fill="#1f2937" text-anchor="middle">Tiempo (s)</text>
+    <text x="30" y="270" font-size="14" fill="#1f2937" text-anchor="middle" transform="rotate(-90 30 270)">Presión (cmH₂O)</text>
+  </g>
+</svg>

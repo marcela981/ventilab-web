@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" width="720" height="400" role="img" aria-labelledby="t d">
+<title id="t">Aplicación automática de los cambios</title>
+<desc id="d">Tres líneas de tiempo. Primera, Digital con botones más y menos o valor escrito: cada pulsación se aplica de inmediato al motor. Segunda, Digital con deslizador o rueda: varios movimientos seguidos y una sola aplicación 300 ms después del último. Tercera, Real: varios cambios seguidos, espera de 500 ms tras el último, validación del rango seguro y un único comando al equipo; mientras hay un comando en vuelo, los cambios nuevos se agrupan en el siguiente.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<text x="20" y="36" font-size="16" font-weight="700">Cuándo se aplica un cambio (tiempo →)</text>
+<text x="20" y="80" font-size="14" font-weight="700">Digital: +/−,</text>
+<text x="20" y="98" font-size="14" font-weight="700">valor escrito</text>
+<line x1="170" y1="90" x2="700" y2="90" stroke="#9ca3af" stroke-width="2"/>
+<circle cx="220" cy="90" r="7" fill="#1d4ed8"/><circle cx="330" cy="90" r="7" fill="#1d4ed8"/><circle cx="450" cy="90" r="7" fill="#1d4ed8"/>
+<rect x="212" y="58" width="16" height="16" fill="#15803d"/><rect x="322" y="58" width="16" height="16" fill="#15803d"/><rect x="442" y="58" width="16" height="16" fill="#15803d"/>
+<text x="480" y="70" font-size="13">se aplica en el acto (0 ms)</text>
+<text x="20" y="180" font-size="14" font-weight="700">Digital: slider</text>
+<text x="20" y="198" font-size="14" font-weight="700">o rueda</text>
+<line x1="170" y1="190" x2="700" y2="190" stroke="#9ca3af" stroke-width="2"/>
+<circle cx="220" cy="190" r="7" fill="#1d4ed8"/><circle cx="250" cy="190" r="7" fill="#1d4ed8"/><circle cx="280" cy="190" r="7" fill="#1d4ed8"/><circle cx="310" cy="190" r="7" fill="#1d4ed8"/>
+<line x1="310" y1="168" x2="430" y2="168" stroke="#c2410c" stroke-width="2"/>
+<text x="330" y="160" font-size="13" fill="#c2410c">300 ms sin moverlo</text>
+<rect x="422" y="182" width="16" height="16" fill="#15803d"/>
+<text x="450" y="196" font-size="13">una sola aplicación</text>
+<text x="20" y="280" font-size="14" font-weight="700">Real (equipo)</text>
+<line x1="170" y1="290" x2="700" y2="290" stroke="#9ca3af" stroke-width="2"/>
+<circle cx="220" cy="290" r="7" fill="#1d4ed8"/><circle cx="260" cy="290" r="7" fill="#1d4ed8"/><circle cx="300" cy="290" r="7" fill="#1d4ed8"/>
+<line x1="300" y1="268" x2="480" y2="268" stroke="#c2410c" stroke-width="2"/>
+<text x="330" y="260" font-size="13" fill="#c2410c">500 ms tras el último cambio</text>
+<rect x="472" y="282" width="16" height="16" fill="#15803d"/>
+<text x="496" y="286" font-size="13">validación de rango</text>
+<text x="496" y="304" font-size="13">→ un comando</text>
+<rect x="20" y="330" width="680" height="54" rx="8" fill="#f3f4f6" stroke="#9ca3af"/>
+<circle cx="40" cy="357" r="7" fill="#1d4ed8"/><text x="54" y="362" font-size="13">tu cambio</text>
+<rect x="140" y="349" width="16" height="16" fill="#15803d"/><text x="164" y="362" font-size="13">se aplica o se envía</text>
+<text x="320" y="352" font-size="13">Enter aplica ya lo que está en espera;</text>
+<text x="320" y="372" font-size="13">Esc lo descarta. No hay botón «Confirmar».</text>
+</g>
+</svg>

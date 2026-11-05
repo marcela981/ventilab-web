@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 480" width="720" height="480" role="img" aria-labelledby="t d">
+  <title id="t">La auto-PEEP como carga umbral</title>
+  <desc id="d">Tres barras horizontales comparan la presión muscular necesaria para disparar el ventilador con una sensibilidad de 2 cmH₂O. Sin auto-PEEP basta con unos 2 cmH₂O. Con una auto-PEEP de 8 cmH₂O, el paciente debe vencer primero esos 8 y luego el disparo, unos 10 cmH₂O en total. Si en un paciente con limitación del flujo espiratorio se añaden 6 cmH₂O de PEEP externa sin que cambie la PEEP total, la carga baja a unos 4 cmH₂O. Valores ilustrativos.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+    <text x="360" y="36" font-size="15" fill="#1f2937" text-anchor="middle" font-weight="700">Presión muscular necesaria para disparar el ventilador</text>
+    <text x="60" y="68" font-size="15" fill="#1f2937" font-weight="700">Sin auto-PEEP</text>
+    <rect x="60" y="80" width="60" height="40" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="90" y="106" font-size="14" fill="#1f2937" text-anchor="middle">disparo</text>
+    <text x="132" y="106" font-size="15" fill="#1f2937" font-weight="700">≈ 2 cmH₂O</text>
+    <text x="60" y="168" font-size="15" fill="#1f2937" font-weight="700">Auto-PEEP de 8 cmH₂O</text>
+    <rect x="60" y="180" width="240" height="40" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="180" y="206" font-size="14" fill="#1f2937" text-anchor="middle">vencer la auto-PEEP</text>
+    <rect x="300" y="180" width="60" height="40" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="330" y="206" font-size="14" fill="#1f2937" text-anchor="middle">disparo</text>
+    <text x="372" y="206" font-size="15" fill="#1f2937" font-weight="700">≈ 10 cmH₂O</text>
+    <text x="60" y="268" font-size="15" fill="#1f2937" font-weight="700">PEEP externa +6 cmH₂O con limitación del flujo</text>
+    <rect x="60" y="280" width="60" height="40" fill="#fee2e2" stroke="#b91c1c" stroke-width="2"/>
+    <text x="90" y="306" font-size="14" fill="#1f2937" text-anchor="middle">resto</text>
+    <rect x="120" y="280" width="60" height="40" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2"/>
+    <text x="150" y="306" font-size="14" fill="#1f2937" text-anchor="middle">disparo</text>
+    <text x="192" y="306" font-size="15" fill="#1f2937" font-weight="700">≈ 4 cmH₂O</text>
+    <text x="60" y="342" font-size="13" fill="#1f2937">(la PEEP total no cambia; queda una diferencia de 2 cmH₂O)</text>
+    <line x1="60" y1="380" x2="420" y2="380" stroke="#9ca3af" stroke-width="2"/>
+    <line x1="60" y1="380" x2="60" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="60" y="404" font-size="13" fill="#1f2937" text-anchor="middle">0</text>
+    <line x1="120" y1="380" x2="120" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="120" y="404" font-size="13" fill="#1f2937" text-anchor="middle">2</text>
+    <line x1="180" y1="380" x2="180" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="180" y="404" font-size="13" fill="#1f2937" text-anchor="middle">4</text>
+    <line x1="240" y1="380" x2="240" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="240" y="404" font-size="13" fill="#1f2937" text-anchor="middle">6</text>
+    <line x1="300" y1="380" x2="300" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="300" y="404" font-size="13" fill="#1f2937" text-anchor="middle">8</text>
+    <line x1="360" y1="380" x2="360" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="360" y="404" font-size="13" fill="#1f2937" text-anchor="middle">10</text>
+    <line x1="420" y1="380" x2="420" y2="386" stroke="#9ca3af" stroke-width="2"/>
+    <text x="420" y="404" font-size="13" fill="#1f2937" text-anchor="middle">12</text>
+    <text x="240" y="428" font-size="14" fill="#1f2937" text-anchor="middle">Presión muscular (cmH₂O)</text>
+    <text x="360" y="460" font-size="14" fill="#1f2937" text-anchor="middle">Esquema ilustrativo, sensibilidad de disparo por presión de 2 cmH₂O</text>
+  </g>
+</svg>

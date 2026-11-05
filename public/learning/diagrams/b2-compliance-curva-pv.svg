@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d">
+<title id="t">Curva presión-volumen estática</title>
+<desc id="d">Dos curvas presión-volumen estáticas con forma sigmoidea. La curva de compliance conservada tiene un tramo inicial plano, un punto de inflexión inferior, una zona lineal empinada donde la compliance es máxima, un punto de inflexión superior y un tramo final plano de sobredistensión. La curva de baja compliance es más plana y está desplazada hacia la derecha: el mismo cambio de presión produce mucho menos volumen.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<defs>
+<marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2937"/></marker>
+</defs>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937" font-size="14">
+<text x="360" y="30" font-size="18" text-anchor="middle" font-weight="700">Curva presión-volumen estática del sistema respiratorio</text>
+<line x1="100" y1="60" x2="100" y2="360" stroke="#9ca3af" stroke-width="1.5"/>
+<line x1="100" y1="360" x2="672" y2="360" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="100" y="380" font-size="13" text-anchor="middle">0</text>
+<text x="210" y="380" font-size="13" text-anchor="middle">10</text>
+<text x="320" y="380" font-size="13" text-anchor="middle">20</text>
+<text x="430" y="380" font-size="13" text-anchor="middle">30</text>
+<text x="540" y="380" font-size="13" text-anchor="middle">40</text>
+<text x="650" y="380" font-size="13" text-anchor="middle">50</text>
+<text x="90" y="365" font-size="13" text-anchor="end">0</text>
+<text x="90" y="245" font-size="13" text-anchor="end">1</text>
+<text x="90" y="125" font-size="13" text-anchor="end">2</text>
+<text x="386" y="402" font-size="13" text-anchor="middle">Presión de vía aérea en condición estática (cmH₂O)</text>
+<text x="30" y="228" font-size="13" text-anchor="middle" transform="rotate(-90 30 228)">Volumen sobre CRF (L)</text>
+<path d="M100.0,360.0 L111.0,358.4 L122.0,356.4 L133.0,354.0 L144.0,351.2 L155.0,347.7 L166.0,343.7 L177.0,338.9 L188.0,333.3 L199.0,326.8 L210.0,319.3 L221.0,310.7 L232.0,301.0 L243.0,290.2 L254.0,278.4 L265.0,265.6 L276.0,252.1 L287.0,238.0 L298.0,223.7 L309.0,209.3 L320.0,195.2 L331.0,181.7 L342.0,168.9 L353.0,157.1 L364.0,146.3 L375.0,136.6 L386.0,128.0 L397.0,120.5 L408.0,114.0 L419.0,108.4 L430.0,103.6 L441.0,99.6 L452.0,96.2 L463.0,93.3 L474.0,90.9 L485.0,89.0 L496.0,87.3 L507.0,86.0 L518.0,84.8 L529.0,83.9 L540.0,83.2 L551.0,82.5 L562.0,82.0 L573.0,81.6 L584.0,81.2 L595.0,81.0 L606.0,80.7 L617.0,80.5 L628.0,80.4 L639.0,80.2 L650.0,80.1" fill="none" stroke="#1d4ed8" stroke-width="3" stroke-linejoin="round"/>
+<path d="M100.0,360.0 L111.0,359.8 L122.0,359.5 L133.0,359.2 L144.0,358.8 L155.0,358.4 L166.0,357.8 L177.0,357.1 L188.0,356.3 L199.0,355.3 L210.0,354.1 L221.0,352.7 L232.0,351.0 L243.0,349.0 L254.0,346.6 L265.0,343.8 L276.0,340.5 L287.0,336.8 L298.0,332.5 L309.0,327.6 L320.0,322.2 L331.0,316.3 L342.0,309.9 L353.0,303.2 L364.0,296.1 L375.0,289.0 L386.0,281.8 L397.0,274.8 L408.0,268.0 L419.0,261.6 L430.0,255.7 L441.0,250.3 L452.0,245.4 L463.0,241.2 L474.0,237.4 L485.0,234.1 L496.0,231.3 L507.0,228.9 L518.0,226.9 L529.0,225.2 L540.0,223.8 L551.0,222.6 L562.0,221.6 L573.0,220.8 L584.0,220.1 L595.0,219.6 L606.0,219.1 L617.0,218.7 L628.0,218.4 L639.0,218.1 L650.0,217.9" fill="none" stroke="#b91c1c" stroke-width="3" stroke-dasharray="8 5" stroke-linejoin="round"/>
+<circle cx="210" cy="319.2812290687076" r="6" fill="#c2410c"/>
+<text x="200" y="290" font-size="13" text-anchor="end" fill="#c2410c">inflexión</text>
+<text x="200" y="306" font-size="13" text-anchor="end" fill="#c2410c">inferior</text>
+<circle cx="397" cy="120.51304084147779" r="6" fill="#6d28d9"/>
+<text x="385" y="106.51304084147779" font-size="13" text-anchor="end" fill="#6d28d9">punto de inflexión superior</text>
+<text x="430" y="75.60000000000002" font-size="13" fill="#6d28d9">sobredistensión: la pendiente cae</text>
+<text x="326.5" y="216" font-size="13" fill="#1d4ed8" font-weight="700">zona lineal:</text>
+<text x="326.5" y="234" font-size="13" fill="#1d4ed8">máxima compliance (ΔV/ΔP)</text>
+<text x="463" y="294" font-size="13" fill="#b91c1c" font-weight="700">pulmón con baja compliance</text>
+<text x="463" y="312" font-size="13" fill="#b91c1c">(curva más plana y desplazada)</text>
+<text x="140" y="180" font-size="13" fill="#1d4ed8" font-weight="700">compliance conservada</text>
+</g>
+</svg>

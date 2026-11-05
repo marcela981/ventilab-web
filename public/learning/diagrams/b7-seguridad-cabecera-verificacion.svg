@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420" width="720" height="420" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <title id="t">Puntos de verificación en la cabecera del paciente ventilado</title>
+  <desc id="d">Lista visual de seis puntos de verificación antes de conectar al paciente y en cada turno: 1, gases y energía con oxígeno, aire, toma de emergencia y batería; 2, ventilador con autoprueba, parámetros y alarmas ajustadas al paciente; 3, circuito sin acodaduras ni agua y con una sola forma de humidificación; 4, tubo con marca registrada, fijación segura y presión del manguito medida; 5, capnografía de forma de onda continua; 6, equipo de rescate con bolsa y oxígeno independiente del ventilador, aspiración y material de vía aérea.</desc>
+  <rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+  <text x="360" y="38" text-anchor="middle" font-size="18" font-weight="700" fill="#1f2937">Antes de conectar y en cada turno</text>
+  <g font-size="14" fill="#1f2937">
+    <rect x="20" y="60" width="220" height="160" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <circle cx="48" cy="90" r="16" fill="#1d4ed8"/><text x="48" y="96" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="16">1</text>
+    <text x="74" y="96" font-weight="700" font-size="15">Gases y energía</text>
+    <text x="36" y="132">Oxígeno y aire de pared</text>
+    <text x="36" y="156">Toma eléctrica de</text>
+    <text x="36" y="176">emergencia</text>
+    <text x="36" y="200">Batería interna cargada</text>
+
+    <rect x="250" y="60" width="220" height="160" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <circle cx="278" cy="90" r="16" fill="#1d4ed8"/><text x="278" y="96" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="16">2</text>
+    <text x="304" y="96" font-weight="700" font-size="15">Ventilador</text>
+    <text x="266" y="132">Autoprueba con el</text>
+    <text x="266" y="152">circuito del paciente</text>
+    <text x="266" y="176">Parámetros prescritos</text>
+    <text x="266" y="200">Alarmas a medida</text>
+
+    <rect x="480" y="60" width="220" height="160" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.5"/>
+    <circle cx="508" cy="90" r="16" fill="#1d4ed8"/><text x="508" y="96" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="16">3</text>
+    <text x="534" y="96" font-weight="700" font-size="15">Circuito</text>
+    <text x="496" y="132">Conexiones firmes</text>
+    <text x="496" y="156">Sin acodaduras ni agua</text>
+    <text x="496" y="180">Una sola forma de</text>
+    <text x="496" y="200">humidificación</text>
+
+    <rect x="20" y="236" width="220" height="160" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <circle cx="48" cy="266" r="16" fill="#15803d"/><text x="48" y="272" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="16">4</text>
+    <text x="74" y="272" font-weight="700" font-size="15">Tubo</text>
+    <text x="36" y="308">Marca registrada en</text>
+    <text x="36" y="328">labios o dientes</text>
+    <text x="36" y="352">Fijación segura</text>
+    <text x="36" y="376">Manguito con manómetro</text>
+
+    <rect x="250" y="236" width="220" height="160" rx="10" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
+    <circle cx="278" cy="266" r="16" fill="#15803d"/><text x="278" y="272" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="16">5</text>
+    <text x="304" y="272" font-weight="700" font-size="15">Capnografía</text>
+    <text x="266" y="308">Curva de CO₂ continua</text>
+    <text x="266" y="332">Sin curva: descarta</text>
+    <text x="266" y="352">desplazamiento o</text>
+    <text x="266" y="372">desconexión</text>
+
+    <rect x="480" y="236" width="220" height="160" rx="10" fill="#fee2e2" stroke="#b91c1c" stroke-width="1.5"/>
+    <circle cx="508" cy="266" r="16" fill="#b91c1c"/><text x="508" y="272" text-anchor="middle" fill="#ffffff" font-weight="700" font-size="16">6</text>
+    <text x="534" y="272" font-weight="700" font-size="15">Rescate</text>
+    <text x="496" y="308">Bolsa con reservorio y</text>
+    <text x="496" y="328">O₂ independiente</text>
+    <text x="496" y="352">Aspiración probada</text>
+    <text x="496" y="376">Material de vía aérea</text>
+  </g>
+</svg>

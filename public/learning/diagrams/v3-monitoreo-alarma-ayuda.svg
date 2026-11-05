@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" width="720" height="360" role="img" aria-labelledby="t d">
+<title id="t">Ayuda desde una alarma</title>
+<desc id="d">Flujo de la ayuda de alarmas: en la barra de alarmas, ordenada de prioridad alta a baja, haces clic en una alarma; se abre el panel lateral ¿Cómo estabilizar? que muestra primero las reglas fijas por tipo de alarma y después, si la IA está disponible, una sugerencia que se escribe en vivo; puedes valorarla con ¿Te fue útil?. Si la IA no responde se muestran solo las reglas con el aviso de sugerencia automática; durante un examen sin asistencia solo se ve la descripción de la alarma. Tú decides y aplicas cada cambio; la ayuda nunca cambia el ventilador.</desc>
+<rect width="100%" height="100%" rx="12" fill="#ffffff"/>
+<g font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" fill="#1f2937">
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#1f2937"/></marker></defs>
+<rect x="16" y="20" width="250" height="150" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+<text x="30" y="46" font-size="15" font-weight="700">Barra de alarmas</text>
+<rect x="30" y="58" width="222" height="30" rx="6" fill="#fee2e2" stroke="#b91c1c"/>
+<text x="38" y="78" font-size="13">Prioridad alta · Presión alta</text>
+<rect x="30" y="94" width="222" height="30" rx="6" fill="#ffffff" stroke="#c2410c"/>
+<text x="38" y="114" font-size="13">Prioridad media · Auto-PEEP</text>
+<text x="30" y="152" font-size="13">Silenciar (2 min, solo sonido)</text>
+<line x1="266" y1="73" x2="318" y2="73" stroke="#1f2937" stroke-width="2" marker-end="url(#a)"/>
+<text x="272" y="64" font-size="13">clic</text>
+<rect x="320" y="20" width="384" height="200" rx="10" fill="#dbeafe" stroke="#1d4ed8"/>
+<text x="334" y="46" font-size="15" font-weight="700">Panel «¿Cómo estabilizar?»</text>
+<rect x="334" y="58" width="356" height="52" rx="6" fill="#ffffff" stroke="#15803d"/>
+<text x="344" y="80" font-size="14" font-weight="700" fill="#15803d">1. Reglas por tipo de alarma</text>
+<text x="344" y="100" font-size="13">fijas, siempre disponibles, con referencia</text>
+<rect x="334" y="118" width="356" height="52" rx="6" fill="#ffffff" stroke="#6d28d9"/>
+<text x="344" y="140" font-size="14" font-weight="700" fill="#6d28d9">2. Sugerencia de la IA (en vivo)</text>
+<text x="344" y="160" font-size="13">según el contexto de tu sesión</text>
+<text x="334" y="204" font-size="13">Valoración: «¿Te fue útil?»</text>
+<rect x="16" y="240" width="330" height="104" rx="10" fill="#fee2e2" stroke="#b91c1c"/>
+<text x="30" y="266" font-size="14" font-weight="700">Si la IA no está disponible</text>
+<text x="30" y="290" font-size="13">solo reglas, con el aviso de</text>
+<text x="30" y="310" font-size="13">sugerencia automática.</text>
+<text x="30" y="332" font-size="13">En examen sin asistencia: solo descripción.</text>
+<rect x="362" y="240" width="342" height="104" rx="10" fill="#dcfce7" stroke="#15803d"/>
+<text x="376" y="266" font-size="14" font-weight="700">Tú decides</text>
+<text x="376" y="290" font-size="13">La ayuda no cambia el ventilador:</text>
+<text x="376" y="310" font-size="13">aplicas tú cada ajuste y verificas</text>
+<text x="376" y="330" font-size="13">su efecto en curvas y tarjetas.</text>
+</g>
+</svg>
