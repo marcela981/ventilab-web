@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationGradingPage tests
-* Descripción: Renders the unified grading screen with a mocked next/router and backend (msw): the Revisar tab lists every attempt with the July header "Total · Entregadas · Calificadas", the status chips write `?status=`, choosing an attempt writes `?attempt=` with a shallow replace and `?attempt=` opens the review pane; "Reiniciar intento" requires a reason, posts it and handles 409 evaluation.assignment_not_active (window and link to the builder section) and 409 evaluation.attempt_in_progress; the tabs switch with `?tab=` and the back link opens the Calificar tab. Depends on vitest, Testing Library, msw and the grading test helpers.
-* Versión: 1.0
+* Descripción: Renders the unified grading screen with a mocked next/router and backend (msw): the Revisar tab lists every attempt with the July header "Total · Entregadas · Calificadas", the status chips write `?status=`, choosing an attempt writes `?attempt=` with a shallow replace and `?attempt=` opens the review pane; "Reiniciar intento" requires a reason, posts it and handles 409 evaluation.assignment_not_active (window and link to the builder section) and 409 evaluation.attempt_in_progress; the tabs switch with `?tab=` and the back link opens the Calificar tab. Depends on vitest, Testing Library, msw and the grading test helpers. v1.1 (ajustes C1): the attempts list shows the release state of each graded attempt ("Sin liberar", "Nota liberada", "Nota y respuestas liberadas").
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -51,6 +51,7 @@ function rowDto(attemptId: string, overrides: Partial<GradingAttemptListItemDTO>
     maxScore: 5,
     grade: 4,
     gradePublishedAt: null,
+    answersReleasedAt: null,
     isLate: false,
     ...overrides,
   };
@@ -72,8 +73,15 @@ beforeEach(() => {
       listQueries.push(new URL(request.url).searchParams);
 
       return HttpResponse.json(envelope(
-        { items: [rowDto("a1"), rowDto("a2", { status: "IN_PROGRESS", grade: null, score: null, submittedAt: null })], counts: { IN_PROGRESS: 1, SUBMITTED: 2, PENDING_REVIEW: 3, GRADED: 4, total: 10 } },
-        { page: 1, limit: 10, total: 2, pages: 1 },
+        {
+          items: [
+            rowDto("a1"),
+            rowDto("a2", { status: "IN_PROGRESS", grade: null, score: null, submittedAt: null }),
+            rowDto("a3", { gradePublishedAt: "2026-10-12T16:00:00.000Z" }),
+            rowDto("a4", { gradePublishedAt: "2026-10-12T16:00:00.000Z", answersReleasedAt: "2026-10-12T16:00:00.000Z" }),
+          ],
+          counts: { IN_PROGRESS: 1, SUBMITTED: 2, PENDING_REVIEW: 3, GRADED: 4, total: 10 } },
+        { page: 1, limit: 10, total: 4, pages: 1 },
       ));
     }),
     http.get(apiUrl("/api/evaluation-grading/attempts/:attemptId"), ({ params }) => HttpResponse.json(envelope(gradingAttemptDto(String(params.attemptId))))),
@@ -109,6 +117,11 @@ describe("EvaluationGradingPage — Revisar", () => {
 
     const list = screen.getByRole("list", { name: "Intentos de la evaluación" });
 
+    // The release state of every graded attempt.
+    expect(within(list).getByRole("button", { name: "Revisar el intento 1 de Estudiante a1" })).toHaveTextContent("Sin liberar");
+    expect(within(list).getByRole("button", { name: "Revisar el intento 1 de Estudiante a2" })).not.toHaveTextContent(/liberad/);
+    expect(within(list).getByRole("button", { name: "Revisar el intento 1 de Estudiante a3" })).toHaveTextContent("Nota liberada");
+    expect(within(list).getByRole("button", { name: "Revisar el intento 1 de Estudiante a4" })).toHaveTextContent("Nota y respuestas liberadas");
     // No reset while the attempt is in progress.
     expect(within(list).getByRole("button", { name: "Reiniciar intento de Estudiante a1" })).toBeInTheDocument();
     expect(within(list).queryByRole("button", { name: "Reiniciar intento de Estudiante a2" })).not.toBeInTheDocument();

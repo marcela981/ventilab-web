@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Evaluation attempts mapper and entity tests
-* Descripción: Verifies the mapping of the attempts list of the unified grading screen (student flattened, blank names to null, counts per status with missing values as 0, pagination with row-count fallback) and its pure rules: the status filter parsed from and written to the URL, the query sent to `GET /api/evaluation-grading/attempts`, which rows may be reset and the "Total · Entregadas · Calificadas" summary. Depends on vitest, the evaluation attempts mapper and entities.
-* Versión: 1.0
+* Descripción: Verifies the mapping of the attempts list of the unified grading screen (student flattened, blank names to null, counts per status with missing values as 0, pagination with row-count fallback) and its pure rules: the status filter parsed from and written to the URL, the query sent to `GET /api/evaluation-grading/attempts`, which rows may be reset and the "Total · Entregadas · Calificadas" summary. Depends on vitest, the evaluation attempts mapper and entities. v1.1 (ajustes C1): rows carry answersReleasedAt.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -35,6 +35,7 @@ function itemDto(attemptId: string, overrides: Partial<GradingAttemptListItemDTO
     maxScore: 5,
     grade: null,
     gradePublishedAt: null,
+    answersReleasedAt: null,
     isLate: false,
     ...overrides,
   };

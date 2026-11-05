@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AttemptReviewPane tests
-* Descripción: v2.0 (Bloque 3, W7): tests of the review pane of the unified grading screen (former grade-attempt page): the pane title carries the student and attempt number, a 409 or 429 on "Regenerar" stays visible in the feedback panel. Before: page tests of /grading/attempts/[attemptId] through MSW: the header (status, publication, passing grade from the API, grade with pass/fail from `passed`), the correct answer and the server rubric breakdown of a SIMULATION answer; overriding an automatic score without a comment shows the client error on the comment field and sends nothing, with a comment the PUT carries {manualScore, comment}; a score out of range is rejected on the client; the backend 422 codes land on their fields (manual_score_invalid on the score, grade_override_comment_required on the comment); a failed save keeps that draft while the saved one is refreshed from the server; "Publicar" is disabled until the attempt is GRADED and posts only after confirmation; "Regenerar retroalimentación IA" turns the feedback PENDING and it becomes READY through the spaced polling. Depends on vitest, Testing Library, msw, the grading page, copy, entities, error messages and test helpers. v1.1 (G2 review W1/W2/S3/S4): changing the score of a commented answer starts an empty comment, shows the previous one read-only and requires a new one; a comment-only edit of an automatic score shows the override hint; a failed read of the attempt after a successful save keeps the drafts and shows the reload alert until a reload succeeds; "Volver a cargar" after the polling stopped restarts it; the results link. The FEEDBACK_READY socket test is gone (staff never receive it).
-* Versión: 2.0
+* Descripción: v2.0 (Bloque 3, W7): tests of the review pane of the unified grading screen (former grade-attempt page): the pane title carries the student and attempt number, a 409 or 429 on "Regenerar" stays visible in the feedback panel. Before: page tests of /grading/attempts/[attemptId] through MSW: the header (status, publication, passing grade from the API, grade with pass/fail from `passed`), the correct answer and the server rubric breakdown of a SIMULATION answer; overriding an automatic score without a comment shows the client error on the comment field and sends nothing, with a comment the PUT carries {manualScore, comment}; a score out of range is rejected on the client; the backend 422 codes land on their fields (manual_score_invalid on the score, grade_override_comment_required on the comment); a failed save keeps that draft while the saved one is refreshed from the server; "Publicar" is disabled until the attempt is GRADED and posts only after confirmation; "Regenerar retroalimentación IA" turns the feedback PENDING and it becomes READY through the spaced polling. Depends on vitest, Testing Library, msw, the grading page, copy, entities, error messages and test helpers. v1.1 (G2 review W1/W2/S3/S4): changing the score of a commented answer starts an empty comment, shows the previous one read-only and requires a new one; a comment-only edit of an automatic score shows the override hint; a failed read of the attempt after a successful save keeps the drafts and shows the reload alert until a reload succeeds; "Volver a cargar" after the polling stopped restarts it; the results link. The FEEDBACK_READY socket test is gone (staff never receive it). v2.1 (ajustes C1): the release state in the summary and the two releases: "Liberar nota" sends scope GRADE and leaves only "Liberar nota y respuestas", which sends GRADE_AND_ANSWERS and leaves none; both disabled until GRADED, each with its confirmation (cancel sends nothing).
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,6 +50,7 @@ let feedback: GradeFeedbackDTO;
 let putBodies: { questionId: string, body: unknown }[];
 let putFailures: Record<string, { code: string, status: number }>;
 let publishCalls: number;
+let publishBodies: unknown[];
 let regenerateCalls: number;
 let attemptReadFails: boolean;
 
@@ -94,6 +95,7 @@ beforeEach(() => {
   putBodies = [];
   putFailures = {};
   publishCalls = 0;
+  publishBodies = [];
   regenerateCalls = 0;
   attemptReadFails = false;
   server.use(
@@ -120,11 +122,15 @@ beforeEach(() => {
 
       return HttpResponse.json(envelope({ attemptId: "at1", questionId, override: false, published: false, grade: null, maxScore: 5, score: null, status: "PENDING_REVIEW" }));
     }),
-    http.post(apiUrl("/api/evaluation-grading/attempts/:attemptId/publish"), () => {
-      publishCalls += 1;
-      attempt = { ...attempt, gradePublishedAt: "2026-10-12T16:00:00.000Z" };
+    http.post(apiUrl("/api/evaluation-grading/attempts/:attemptId/publish"), async({ request }) => {
+      const body = await request.json() as { scope: "GRADE" | "GRADE_AND_ANSWERS" };
+      const now = "2026-10-12T16:00:00.000Z";
 
-      return HttpResponse.json(envelope({ attemptId: "at1", alreadyPublished: false, publishedAt: "2026-10-12T16:00:00.000Z" }));
+      publishCalls += 1;
+      publishBodies.push(body);
+      attempt = { ...attempt, gradePublishedAt: now, answersReleasedAt: body.scope === "GRADE_AND_ANSWERS" ? now : attempt.answersReleasedAt };
+
+      return HttpResponse.json(envelope({ attemptId: "at1", alreadyPublished: false, publishedAt: now, answersReleasedAt: attempt.answersReleasedAt }));
     }),
     http.post(apiUrl("/api/evaluation-grading/attempts/:attemptId/feedback/regenerate"), () => {
       regenerateCalls += 1;
@@ -175,7 +181,7 @@ describe("AttemptReviewPane — layout", () => {
 
     expect(screen.getByRole("heading", { level: 2, name: GRADE_COPY.paneTitle("Ana Gómez", 2) })).toBeInTheDocument();
     expect(screen.getByText("Pendiente de calificación")).toBeInTheDocument();
-    expect(screen.getByText(GRADE_COPY.unpublished)).toBeInTheDocument();
+    expect(screen.getByTestId("release-state")).toHaveTextContent("Sin liberar");
     expect(screen.getByText(GRADE_COPY.passingGrade("3,0"))).toBeInTheDocument();
     expect(screen.getByText(GRADE_COPY.noGrade)).toBeInTheDocument();
 
@@ -204,7 +210,7 @@ describe("AttemptReviewPane — layout", () => {
 
     expect(screen.getByText("2,5")).toBeInTheDocument();
     expect(screen.getByText(`· ${GRADE_COPY.failed}`)).toBeInTheDocument();
-    expect(screen.getByText(/^Publicada el/)).toBeInTheDocument();
+    expect(screen.getByTestId("release-state")).toHaveTextContent("Nota liberada");
   });
 });
 
@@ -354,33 +360,75 @@ describe("AttemptReviewPane — review fixes", () => {
 
 });
 
-describe("AttemptReviewPane — publish", () => {
-  it("is disabled until the attempt is GRADED", async() => {
+describe("AttemptReviewPane — release", () => {
+  it("disables both releases until the attempt is GRADED", async() => {
     renderPage();
     await loaded();
 
-    expect(screen.getByRole("button", { name: GRADE_COPY.publish })).toBeDisabled();
-    expect(screen.getByText(GRADE_COPY.publishNeedsGraded)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: GRADE_COPY.releaseGrade })).toBeDisabled();
+    expect(screen.getByRole("button", { name: GRADE_COPY.releaseAll })).toBeDisabled();
+    expect(screen.getByText(GRADE_COPY.releaseNeedsGraded)).toBeInTheDocument();
   });
 
-  it("publishes a GRADED attempt after confirmation", async() => {
+  it("releases the grade alone with scope GRADE after confirmation, then offers only the answers", async() => {
     markGraded();
     renderPage();
     await loaded();
 
-    const publish = screen.getByRole("button", { name: GRADE_COPY.publish });
+    const releaseGrade = screen.getByRole("button", { name: GRADE_COPY.releaseGrade });
 
-    await waitFor(() => expect(publish).toBeEnabled());
-    fireEvent.click(publish);
+    await waitFor(() => expect(releaseGrade).toBeEnabled());
+    fireEvent.click(releaseGrade);
 
-    const dialog = await screen.findByRole("dialog", { name: GRADE_COPY.publishTitle });
+    const dialog = await screen.findByRole("dialog", { name: GRADE_COPY.releaseGradeTitle });
 
+    expect(within(dialog).getByText(GRADE_COPY.releaseGradeDescription)).toBeInTheDocument();
     expect(publishCalls).toBe(0);
-    fireEvent.click(within(dialog).getByRole("button", { name: GRADE_COPY.publishConfirm }));
+    fireEvent.click(within(dialog).getByRole("button", { name: GRADE_COPY.releaseConfirm }));
 
-    await waitFor(() => expect(publishCalls).toBe(1));
-    expect(await screen.findByText(GRADE_COPY.publishedToast)).toBeInTheDocument();
-    expect(await screen.findByText(/^Publicada el/)).toBeInTheDocument();
+    await waitFor(() => expect(publishBodies).toEqual([{ scope: "GRADE" }]));
+    expect(await screen.findByText(GRADE_COPY.releasedGradeToast)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("release-state")).toHaveTextContent("Nota liberada"));
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(screen.queryByRole("button", { name: GRADE_COPY.releaseGrade })).not.toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: GRADE_COPY.releaseAll })).toBeEnabled();
+  });
+
+  it("releases the grade and the answers with scope GRADE_AND_ANSWERS after confirmation", async() => {
+    markGraded();
+    renderPage();
+    await loaded();
+
+    const releaseAll = screen.getByRole("button", { name: GRADE_COPY.releaseAll });
+
+    await waitFor(() => expect(releaseAll).toBeEnabled());
+    fireEvent.click(releaseAll);
+
+    const dialog = await screen.findByRole("dialog", { name: GRADE_COPY.releaseAllTitle });
+
+    expect(within(dialog).getByText(GRADE_COPY.releaseAllDescription)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: GRADE_COPY.releaseConfirm }));
+
+    await waitFor(() => expect(publishBodies).toEqual([{ scope: "GRADE_AND_ANSWERS" }]));
+    expect(await screen.findByText(GRADE_COPY.releasedAllToast)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("release-state")).toHaveTextContent("Nota y respuestas liberadas"));
+    expect(screen.queryByRole("button", { name: GRADE_COPY.releaseGrade })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: GRADE_COPY.releaseAll })).not.toBeInTheDocument();
+  });
+
+  it("cancels a release without calling the API", async() => {
+    markGraded();
+    renderPage();
+    await loaded();
+
+    const releaseGrade = screen.getByRole("button", { name: GRADE_COPY.releaseGrade });
+
+    await waitFor(() => expect(releaseGrade).toBeEnabled());
+    fireEvent.click(releaseGrade);
+    fireEvent.click(within(await screen.findByRole("dialog", { name: GRADE_COPY.releaseGradeTitle })).getByRole("button", { name: GRADE_COPY.cancel }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(publishCalls).toBe(0);
   });
 });
 

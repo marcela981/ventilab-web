@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading test helpers
-* Descripción: Shared fixtures of the grading tests: backend envelope (with optional pagination) and error bodies, factories of GradingQueueItemDTO, EvaluationSummaryDTO and GroupDTO, and a render helper that mounts a tree inside an isolated SWR cache. Test-only code. Depends on Testing Library, msw, SWR and the grading DTOs. v1.1 (G2): factories of the grading attempt (questions, options, answers, practical score) and the staff feedback DTOs, a fake socket that lets a test emit server events, and renderGradingPage, which mounts a page with an isolated SWR cache, a TEACHER session, the realtime context with the fake socket and the global ToastProvider. v1.2 (B3.10): the unused createFakeSocket factory is removed (no grading test emits server events); renderGradingPage keeps the optional FakeSocket shape.
-* Versión: 1.2
+* Descripción: Shared fixtures of the grading tests: backend envelope (with optional pagination) and error bodies, factories of GradingQueueItemDTO, EvaluationSummaryDTO and GroupDTO, and a render helper that mounts a tree inside an isolated SWR cache. Test-only code. Depends on Testing Library, msw, SWR and the grading DTOs. v1.1 (G2): factories of the grading attempt (questions, options, answers, practical score) and the staff feedback DTOs, a fake socket that lets a test emit server events, and renderGradingPage, which mounts a page with an isolated SWR cache, a TEACHER session, the realtime context with the fake socket and the global ToastProvider. v1.2 (B3.10): the unused createFakeSocket factory is removed (no grading test emits server events); renderGradingPage keeps the optional FakeSocket shape. v1.3 (ajustes C1): the grading attempt fixture carries answersReleasedAt.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -173,6 +173,7 @@ export function gradingAttemptDto(id: string, overrides: Partial<GradingAttemptD
     passed: null,
     passingGrade: 3,
     gradePublishedAt: null,
+    answersReleasedAt: null,
     showResultsImmediately: false,
     questions: [],
     scenarios: [],

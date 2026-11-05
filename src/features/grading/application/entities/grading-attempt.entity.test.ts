@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading attempt entities tests
-* Descripción: Verifies the pure grading rules: score parsing (dot or comma, up to two decimals), the draft validation (required score, range [0, points], a comment when the answer already has an automatic or manual score, comment length), the dirty check against the counting score and the current comment, the request body, the pass state from `passed` or the API passing grade, the publish rule (GRADED, unpublished, not legacy), the pending feedback check and the spaced polling delays. Depends on vitest and the grading attempt entities. v1.1 (G2 review W1/S4): the empty override comment on a score change (and its restore), the new-comment rule of an override and the comment-only override of an automatic score. v1.2 (B4, D7): the score is read with the shared es-CO parser and an initial score is written in es-CO without float noise.
-* Versión: 1.2
+* Descripción: Verifies the pure grading rules: score parsing (dot or comma, up to two decimals), the draft validation (required score, range [0, points], a comment when the answer already has an automatic or manual score, comment length), the dirty check against the counting score and the current comment, the request body, the pass state from `passed` or the API passing grade, the publish rule (GRADED, unpublished, not legacy), the pending feedback check and the spaced polling delays. Depends on vitest and the grading attempt entities. v1.1 (G2 review W1/S4): the empty override comment on a score change (and its restore), the new-comment rule of an override and the comment-only override of an automatic score. v1.2 (B4, D7): the score is read with the shared es-CO parser and an initial score is written in es-CO without float noise. v1.3 (ajustes C1): fixtures without reveal; canRelease per scope (GRADE, GRADE_AND_ANSWERS).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +12,6 @@
 import { describe, expect, it } from "vitest";
 import {
   applyScoreChange,
-  canPublish,
   GRADE_DRAFT_ERRORS,
   hasPendingFeedback,
   initialDraft,
@@ -25,6 +24,7 @@ import {
   toGradeAnswerBody,
   validateDraft,
 } from "./grading-attempt.entity";
+import { canRelease, releaseStateOf } from "./results-release.entity";
 import type { FeedbackItem, GradingItem } from "./grading-attempt.entity";
 
 function item(overrides: Partial<GradingItem> = {}): GradingItem {
@@ -39,7 +39,6 @@ function item(overrides: Partial<GradingItem> = {}): GradingItem {
       points: 2,
       clinicalCaseId: null,
       hint: null,
-      reveal: null,
       options: [],
       answer: null,
     },
@@ -176,11 +175,27 @@ describe("attempt rules", () => {
     expect(passState({ grade: 3.5, passed: null, passingGrade: 3.5 })).toBe("passed");
   });
 
-  it("publishes only a GRADED, unpublished, non-legacy attempt", () => {
-    expect(canPublish({ status: "GRADED", publishedAt: null, legacy: false })).toBe(true);
-    expect(canPublish({ status: "PENDING_REVIEW", publishedAt: null, legacy: false })).toBe(false);
-    expect(canPublish({ status: "GRADED", publishedAt: "2026-10-12T00:00:00.000Z", legacy: false })).toBe(false);
-    expect(canPublish({ status: "GRADED", publishedAt: null, legacy: true })).toBe(false);
+  it("tells the release state from the two marks", () => {
+    const at = "2026-10-12T00:00:00.000Z";
+
+    expect(releaseStateOf({ gradePublishedAt: null, answersReleasedAt: null })).toBe("none");
+    expect(releaseStateOf({ gradePublishedAt: at, answersReleasedAt: null })).toBe("grade");
+    expect(releaseStateOf({ gradePublishedAt: at, answersReleasedAt: at })).toBe("full");
+  });
+
+  it("releases only a GRADED, non-legacy attempt, and never what is already released", () => {
+    const at = "2026-10-12T00:00:00.000Z";
+    const graded = { status: "GRADED", gradePublishedAt: null, answersReleasedAt: null, legacy: false };
+
+    expect(canRelease(graded, "GRADE")).toBe(true);
+    expect(canRelease(graded, "GRADE_AND_ANSWERS")).toBe(true);
+    expect(canRelease({ ...graded, status: "PENDING_REVIEW" }, "GRADE")).toBe(false);
+    expect(canRelease({ ...graded, legacy: true }, "GRADE_AND_ANSWERS")).toBe(false);
+    // Grade released: only the answers remain.
+    expect(canRelease({ ...graded, gradePublishedAt: at }, "GRADE")).toBe(false);
+    expect(canRelease({ ...graded, gradePublishedAt: at }, "GRADE_AND_ANSWERS")).toBe(true);
+    // Everything released: nothing left.
+    expect(canRelease({ ...graded, gradePublishedAt: at, answersReleasedAt: at }, "GRADE_AND_ANSWERS")).toBe(false);
   });
 });
 

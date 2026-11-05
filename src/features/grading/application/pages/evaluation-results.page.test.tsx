@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: EvaluationResultsBody tests
-* Descripción: v2.0 (Bloque 3, W7): the statistics and groups tests render the "estadisticas" section and the bulk publish tests the "publicacion" section of the body of the unified grading screen; the back link moved to the screen. Before: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount. v1.2 (closure B1): fixtures carry the stats groupId and the dashboard passingGrade, riskThresholds and moduleSummary. v1.3 (Bloque 3): the back link opens the Calificar tab of the staff hub.
-* Versión: 2.0
+* Descripción: v2.0 (Bloque 3, W7): the statistics and groups tests render the "estadisticas" section and the bulk publish tests the "publicacion" section of the body of the unified grading screen; the back link moved to the screen. Before: Page tests of /grading/evaluations/[evaluationId] through MSW with @shared/charts mocked: the KPIs are the API statistics formatted in es-CO (grades with one decimal, pass rate as a percentage, passing grade from the API); the histogram chart receives the API buckets with their es-CO labels and counts and the difficulty chart the API indices by question; without attempts an empty state replaces KPIs and charts; the per-student section always explains the API gap and, for a chosen group, lists the published grades of the evaluation from the group dashboard; the bulk publish confirmation states the scope only (no client-side count), posts {evaluationId} or {evaluationId, groupId} only after confirming and toasts the publishedCount of the response. Depends on vitest, Testing Library, msw, the results page, its copy and entities and the grading test helpers. v1.1 (G3 review): the pass rate is asserted as the literal es-CO string "75%"; the KPIs carry the every-group scope note; the confirmation has no estimate and the button stays enabled when every graded attempt is already published; after a publish the stats-delay note appears and the stats are requested again once after STATS_REFRESH_DELAY_MS, and the timer is cleared on unmount. v1.2 (closure B1): fixtures carry the stats groupId and the dashboard passingGrade, riskThresholds and moduleSummary. v1.3 (Bloque 3): the back link opens the Calificar tab of the staff hub. v2.1 (ajustes C1): the bulk release sends its scope ("Solo la nota" by default → GRADE; "Nota, respuestas y retroalimentación IA" → GRADE_AND_ANSWERS) and the confirmation names what the students will see.
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -264,41 +264,46 @@ describe("EvaluationResultsBody — bulk publish", () => {
     section = "publicacion";
   });
 
-  it("confirms with the scope only for every group and posts only the evaluation", async() => {
+  it("releases only the grade of every group by default and confirms what the students will see", async() => {
     renderPage();
     await loaded();
 
+    const scopes = screen.getByRole("radiogroup", { name: RESULTS_COPY.scopeLabel });
+
+    expect(within(scopes).getByRole("radio", { name: RESULTS_COPY.scopes.GRADE })).toBeChecked();
+    expect(within(scopes).getByRole("radio", { name: RESULTS_COPY.scopes.GRADE_AND_ANSWERS })).not.toBeChecked();
     await waitFor(() => expect(publishButton()).toBeEnabled());
     fireEvent.click(publishButton());
 
     const dialog = await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle });
 
-    expect(within(dialog).getByText(RESULTS_COPY.publishScopeAll)).toBeInTheDocument();
+    expect(within(dialog).getByText(RESULTS_COPY.publishScopeAll("GRADE"))).toBeInTheDocument();
     expect(within(dialog).queryByText(/aprox/)).not.toBeInTheDocument();
     expect(publishBodies).toEqual([]);
 
     fireEvent.click(within(dialog).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
 
-    await waitFor(() => expect(publishBodies).toEqual([{ evaluationId: "ev-1" }]));
+    await waitFor(() => expect(publishBodies).toEqual([{ evaluationId: "ev-1", scope: "GRADE" }]));
     expect(await screen.findByText(RESULTS_COPY.published(8))).toBeInTheDocument();
   });
 
-  it("publishes one group and toasts the API count", async() => {
+  it("releases the grade and the answers of one group and toasts the API count", async() => {
     publishedCount = 1;
     renderPage();
     await loaded();
     await screen.findByRole("table", { name: "Intentos por grupo" });
 
     fireEvent.change(groupSelect(), { target: { value: "g2" } });
+    fireEvent.click(screen.getByRole("radio", { name: RESULTS_COPY.scopes.GRADE_AND_ANSWERS }));
     fireEvent.click(publishButton());
 
     const dialog = await screen.findByRole("dialog", { name: RESULTS_COPY.publishTitle });
 
-    expect(within(dialog).getByText(RESULTS_COPY.publishScopeGroup("Urgencias"))).toBeInTheDocument();
+    expect(within(dialog).getByText(RESULTS_COPY.publishScopeGroup("Urgencias", "GRADE_AND_ANSWERS"))).toBeInTheDocument();
 
     fireEvent.click(within(dialog).getByRole("button", { name: RESULTS_COPY.publishConfirm }));
 
-    await waitFor(() => expect(publishBodies).toEqual([{ evaluationId: "ev-1", groupId: "g2" }]));
+    await waitFor(() => expect(publishBodies).toEqual([{ evaluationId: "ev-1", groupId: "g2", scope: "GRADE_AND_ANSWERS" }]));
     expect(await screen.findByText(RESULTS_COPY.published(1))).toBeInTheDocument();
   });
 

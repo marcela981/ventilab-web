@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Grading attempt mappers
-* Descripción: Maps `GET /api/evaluation-grading/attempts/{attemptId}` and `GET .../feedback` to the grading attempt entities: questions sorted by order as the evaluations feature renders them (rich-text prompt, media, options sorted by order; the correct option ids and the plain-text explanation are kept apart for the staff view), each joined with its answer by questionId (automatic, manual and earned scores, pending flag, teacher comment) and the practical score of a SIMULATION answer. The OpenAPI schema types the rubric breakdown as opaque objects, so every row is read defensively: the criterion (or parameter) name, value, threshold, points, weighted points and justification, each null when absent or of another type. Depends on the evaluations barrel (toRichText and types) and the grading DTOs and entities.
-* Versión: 1.0
+* Descripción: Maps `GET /api/evaluation-grading/attempts/{attemptId}` and `GET .../feedback` to the grading attempt entities: questions sorted by order as the evaluations feature renders them (rich-text prompt, media, options sorted by order; the correct option ids and the plain-text explanation are kept apart for the staff view), each joined with its answer by questionId (automatic, manual and earned scores, pending flag, teacher comment) and the practical score of a SIMULATION answer. The OpenAPI schema types the rubric breakdown as opaque objects, so every row is read defensively: the criterion (or parameter) name, value, threshold, points, weighted points and justification, each null when absent or of another type. Depends on the evaluations barrel (toRichText and types) and the grading DTOs and entities. v1.1 (ajustes C1): answersReleasedAt (answers release) next to gradePublishedAt; the question no longer carries reveal.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -61,7 +61,6 @@ function toQuestion(dto: GradingQuestionDTO, index: number, answer: AttemptAnswe
     options: [...dto.options].sort(byOrder).map(toOption),
     answer,
     hint: null,
-    reveal: null,
   };
 }
 
@@ -140,7 +139,8 @@ export function toGradingAttempt(dto: GradingAttemptDTO): GradingAttempt {
     grade: dto.grade,
     passed: dto.passed,
     passingGrade: dto.passingGrade,
-    publishedAt: dto.gradePublishedAt,
+    gradePublishedAt: dto.gradePublishedAt,
+    answersReleasedAt: dto.answersReleasedAt,
     legacy: dto.legacy,
     scenarios: [...dto.scenarios].sort(byOrder).map(toScenario),
     items: [...dto.questions].sort(byOrder).map((question, index) => toItem(question, index, answers.get(question.id))),
