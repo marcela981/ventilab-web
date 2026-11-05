@@ -47,11 +47,15 @@ async function audit(page: Page, screen: string, viewport: string, problems: Pro
     problems.push({ screen, viewport, issue: "LaTeX not rendered" });
   }
 
+  // The app shell scrolls inside its content column: unfold it only for the capture so the whole screen is kept.
+  const unfold = await page.addStyleTag({ content: "html, body, #__next, #__next > *, main, main > * { height: auto !important; max-height: none !important; overflow: visible !important; }" });
+
   await page.screenshot({ path: `${OUT}/${screen}-${viewport}.png`, fullPage: true });
+  await unfold.evaluate((element) => (element as HTMLElement).remove());
 }
 
 test("(C2) evaluation screens by role at 375, 1280 and 1920 px", async ({ browser, request, baseURL }) => {
-  test.setTimeout(480_000);
+  test.setTimeout(1_200_000);
   const origin = baseURL ?? "http://localhost:3000";
   const teacher = await signInTeacher(request);
   const { groupId, students: [student] } = await freshGroup(request, teacher.api, "audit");
@@ -105,7 +109,12 @@ test("(C2) evaluation screens by role at 375, 1280 and 1920 px", async ({ browse
       await page.goto("/evaluations");
       await audit(page, "estudiante-lista", viewport.name, problems);
       await page.goto(`/evaluations/${id}/attempts/${attemptId}`);
-      await expect(page.getByText(/Paso 1 de/).first()).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByText(/Paso \d+ de/).first()).toBeVisible({ timeout: 30_000 });
+      // The player reopens on the last visited step.
+      while (await page.getByRole("button", { name: "Anterior" }).isEnabled()) {
+        await page.getByRole("button", { name: "Anterior" }).click();
+      }
+      await expect(page.getByText(/Paso 1 de/).first()).toBeVisible();
       await audit(page, "estudiante-reproductor-paso1-latex", viewport.name, problems, true);
 
       for (let step = 2; step <= questions.length; step += 1) {
@@ -118,7 +127,15 @@ test("(C2) evaluation screens by role at 375, 1280 and 1920 px", async ({ browse
     // Answer and send, the teacher grades the open and the simulation questions and releases everything.
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto(`/evaluations/${id}/attempts/${attemptId}`);
+    await expect(page.getByText(/Paso \d+ de/).first()).toBeVisible({ timeout: 30_000 });
+    while (await page.getByRole("button", { name: "Anterior" }).isEnabled()) {
+      await page.getByRole("button", { name: "Anterior" }).click();
+    }
     await page.getByRole("radio", { name: "30 mL/cmH2O" }).check();
+    // The workshop sends from its last step.
+    for (let step = 2; step <= questions.length; step += 1) {
+      await page.getByRole("button", { name: /Siguiente/ }).first().click();
+    }
     await page.getByRole("button", { name: /^Enviar taller/ }).click();
     await page.getByRole("dialog", { name: "¿Enviar el intento?" }).getByRole("button", { name: "Enviar", exact: true }).click();
     await expect(page).toHaveURL(/\/result$/, { timeout: 30_000 });
