@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E July Monitoreo layout (Bloque 5, C10)
-* Descripción: A FREE session (Simular Paciente → "Aleatorio") on the July Monitoreo console at 1920×1080 and 1280×720 checks the control order of DISENO_BLOQUE5 §6.3 by role and accessible name with boundingBox (1 px tolerance): the regions Valores < Curvas < Controles in x; the left column in y (logos, "Modo del monitor", "Paciente activo", then Confirmar and Cancelar in ONE row — compared in x, not y — the pending status, "Ajustar" and the value cards list); the input row FiO₂ < Volumen corriente < PEEP in x and above the alarms, the signal chip, the zoom group and the curves; the right column in y (group "Modo ventilatorio" with "Asesoría IA" to its right, then the separate "Más modos (PSV, CPAP, SIMV)" button, the I:E slider and status, inspiratory time and pause, the disabled expiratory pause, the rate spinbutton and slider, "Más parámetros", "Estado de la mecánica" and "Ver alertas detalladas"); the session strip in x (Control del tiempo < Mostrar caso clínico < Finalizar sesión). Also: no horizontal scroll, curves canvas at least 360 px high, and "Ver alertas detalladas" opening the 380 px "Alertas detalladas" drawer without resizing the console, closed by Escape with the focus back on the button. The session is finished at the end of each viewport. v0.1 (Bloque 5, C10): first version. v0.2 (Bloque 5, W5-1): the bounding-box order helpers moved to support/layout-order.ts. Depends on @playwright/test and the simulator and layout order e2e helpers.
-* Versión: 0.2
+* Descripción: A FREE session (Simular Paciente → "Aleatorio") on the July Monitoreo console at 1920×1080 and 1280×720 checks the control order of DISENO_BLOQUE5 §6.3 by role and accessible name with boundingBox (1 px tolerance): the regions Valores < Curvas < Controles in x; the left column in y (logos, "Modo del monitor", "Paciente activo", "Ajustar" and the value cards list; since Ajustes A no Confirmar, Cancelar nor pending status); the input row FiO₂ < Volumen corriente < PEEP in x and above the alarms, the signal chip, the zoom group and the curves; the right column in y (group "Modo ventilatorio" with "Asesoría IA" to its right, then the separate "Más modos (PSV, CPAP, SIMV)" button, the I:E slider and status, inspiratory time and pause, the disabled expiratory pause, the rate spinbutton and slider, "Más parámetros", "Estado de la mecánica" and "Ver alertas detalladas"); the session strip in x (Control del tiempo < Mostrar caso clínico < Finalizar sesión). Also: no horizontal scroll, curves canvas at least 360 px high, and "Ver alertas detalladas" opening the 380 px "Alertas detalladas" drawer without resizing the console, closed by Escape with the focus back on the button. The session is finished at the end of each viewport. v0.1 (Bloque 5, C10): first version. v0.2 (Bloque 5, W5-1): the bounding-box order helpers moved to support/layout-order.ts. v0.3 (Ajustes A, A1): the automatic application removed Confirmar, Cancelar and the pending status from the left column. Depends on @playwright/test and the simulator and layout order e2e helpers.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,23 +20,18 @@ async function checkOrder(page: Page): Promise<void> {
 
   await expectHorizontalOrder([["Valores", values], ["Curvas", curves], ["Controles", controls]]);
 
-  // Left column.
-  const confirm = values.getByRole("button", { name: "Confirmar" });
-  const cancel = values.getByRole("button", { name: "Cancelar" });
-
+  // Left column (Ajustes A: the changes apply on their own, so there is no Confirmar, Cancelar nor pending counter).
   await expectVerticalOrder([
     ["logo VentyLab", values.getByRole("img", { name: "VentyLab" })],
     ["logo Univalle", values.getByRole("img", { name: "Univalle" })],
     ["Modo del monitor", values.getByRole("group", { name: "Modo del monitor" })],
     ["Paciente activo", values.getByRole("status", { name: "Paciente activo" })],
-    ["Confirmar", confirm],
-    ["pending status", values.getByRole("status").filter({ hasText: /cambios? pendientes?$/ })],
     ["Ajustar", values.getByRole("button", { name: "Ajustar" })],
     ["Valores del monitor", values.getByRole("list", { name: "Valores del monitor" })],
   ]);
-  // Confirmar and Cancelar share one row (July's Enviar / Detener): compare x, not y.
-  await expectHorizontalOrder([["Confirmar", confirm], ["Cancelar", cancel]]);
-  expect(Math.abs((await boxOf(confirm, "Confirmar")).y - (await boxOf(cancel, "Cancelar")).y)).toBeLessThanOrEqual(TOLERANCE_PX);
+  await expect(page.getByRole("button", { name: "Confirmar" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Cancelar" })).toHaveCount(0);
+  await expect(values.getByRole("status").filter({ hasText: /cambios? pendientes?$/ })).toHaveCount(0);
 
   // Centre.
   const fio2 = page.getByRole("spinbutton", { name: "Fracción inspirada de oxígeno" });

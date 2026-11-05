@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AlarmsBar
-* Descripción: Top alarms bar of the generic ventilator console. Shows the active alarms sorted by priority (high > medium > low), each with a priority color token, an icon and the priority text (never color alone); one live region kept mounted around the list and the "Sin alarmas activas" text so the first alarm is announced; a 2-minute silence button with a visible countdown that mutes the sound only (its accessible name combines the state and the action); an optional sound toggle, off by default, that beeps per new high/medium alarm and once when a silence runs out while a high/medium alarm is still active; the session alarm history (derived inside the console from the adapter alarm updates, or the adapter's own history when provided) and the alarm limits panel, both as disclosure panels. Depends on React, MUI icons, the alarm helpers and hooks, AlarmLimitsPanel and the alarms bar styles. v1.2 (Bloque 5, C9): `variant="july"` (the July Monitoreo console): "Historial de alarmas" and "Límites" open the "Alertas detalladas" drawer (`onOpenDetails`, aria-expanded / aria-controls from `detailsOpen` / `detailsId`) instead of the inline panels, and below a 1100 px console the actions are icon-only with their accessible names kept (Silenciar, Sonido, Historial, Límites); AlarmHistoryList is exported and `renderDetails` renders the drawer after the bar with the same events.
-* Versión: 1.2
+* Descripción: Top alarms bar of the generic ventilator console. Shows the active alarms sorted by priority (high > medium > low), each with a priority color token, an icon and the priority text (never color alone); one live region kept mounted around the list and the "Sin alarmas activas" text so the first alarm is announced; a 2-minute silence button with a visible countdown that mutes the sound only (its accessible name combines the state and the action); an optional sound toggle, off by default, that beeps per new high/medium alarm and once when a silence runs out while a high/medium alarm is still active; the session alarm history (derived inside the console from the adapter alarm updates, or the adapter's own history when provided) and the alarm limits panel, both as disclosure panels. Depends on React, MUI icons, the alarm helpers and hooks, AlarmLimitsPanel and the alarms bar styles. v1.2 (Bloque 5, C9): `variant="july"` (the July Monitoreo console): "Historial de alarmas" and "Límites" open the "Alertas detalladas" drawer (`onOpenDetails`, aria-expanded / aria-controls from `detailsOpen` / `detailsId`) instead of the inline panels, and below a 1100 px console the actions are icon-only with their accessible names kept (Silenciar, Sonido, Historial, Límites); AlarmHistoryList is exported and `renderDetails` renders the drawer after the bar with the same events. v1.3 (Bloque A): with `onAlarmHelp` every active alarm (and every onset of AlarmHistoryList) is a button named "¿Cómo estabilizar? <alarma>" that asks the host for the stabilisation help of that alarm.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,12 +22,13 @@ import type { ComponentType, ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { ALARM_PRIORITY_COPY } from "./config/console-controls.config";
 import { AlarmLimitsPanel } from "./alarm-limits-panel";
-import { formatCountdown, formatEventTime, sortAlarms } from "./console-alarms";
+import { alarmHelpTarget, alarmLabelOf, formatCountdown, formatEventTime, sortAlarms } from "./console-alarms";
 import { createWebAudioBeeper, SYSTEM_CLOCK, useAlarmHistory, useAlarmSilence, useAlarmSound } from "./use-console-alarms";
 import type { AlarmBeeperFactory, ConsoleClock } from "./use-console-alarms";
 import type {
   ConsoleAlarm,
   ConsoleAlarmEvent,
+  ConsoleAlarmHelpTarget,
   ConsoleAlarmLimit,
   ConsoleAlarmLimitChange,
   ConsoleAlarmPriority,
@@ -50,6 +51,8 @@ export const ALARMS_COPY = {
   onset: "Inicio",
   clear: "Fin",
   limits: "Límites",
+  /** v1.3: accessible name of an alarm that opens its stabilisation help. */
+  help: (label: string) => `¿Cómo estabilizar? ${label}`,
 } as const;
 
 const PRIORITY_ICONS: Readonly<Record<ConsoleAlarmPriority, ComponentType<{ className?: string, "aria-hidden"?: boolean }>>> = {
@@ -75,6 +78,8 @@ export type AlarmsBarProps = {
   detailsId?: string | undefined
   /** v1.2 (July): renders the details drawer next to the bar with the same session events. */
   renderDetails?: ((events: readonly ConsoleAlarmEvent[]) => ReactNode) | undefined
+  /** v1.3: makes every alarm a button that opens its "¿Cómo estabilizar?" help. */
+  onAlarmHelp?: ((target: ConsoleAlarmHelpTarget) => void) | undefined
 };
 
 type Panel = "none" | "history" | "limits";
@@ -85,8 +90,8 @@ function PriorityIcon({ priority }: { priority: ConsoleAlarmPriority }) {
   return <Icon className={cx(styles.icon)} aria-hidden />;
 }
 
-/** The session alarm events, newest first (inline panel and July details drawer). */
-export function AlarmHistoryList({ events }: { events: readonly ConsoleAlarmEvent[] }) {
+/** The session alarm events, newest first (inline panel and July details drawer); onsets open the help when offered. */
+export function AlarmHistoryList({ events, onAlarmHelp }: { events: readonly ConsoleAlarmEvent[], onAlarmHelp?: ((target: ConsoleAlarmHelpTarget) => void) | undefined }) {
   if (events.length === 0) {
     return <p className={cx(styles.hint)}>{ALARMS_COPY.historyEmpty}</p>;
   }
@@ -99,7 +104,11 @@ export function AlarmHistoryList({ events }: { events: readonly ConsoleAlarmEven
           <span className={cx(styles.kind)}>{event.kind === "onset" ? ALARMS_COPY.onset : ALARMS_COPY.clear}</span>
           <PriorityIcon priority={event.priority} />
           <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[event.priority]}</span>
-          <span className={cx(styles.message)}>{event.message}</span>
+          {onAlarmHelp && event.kind === "onset" ? (
+            <button type="button" className={cx(styles.helpButton, styles.message)} aria-label={ALARMS_COPY.help(alarmLabelOf(event))} onClick={() => onAlarmHelp(alarmHelpTarget(event))}>
+              {event.message}
+            </button>
+          ) : <span className={cx(styles.message)}>{event.message}</span>}
         </li>
       ))}
     </ol>
@@ -119,6 +128,7 @@ export function AlarmsBar({
   detailsOpen = false,
   detailsId,
   renderDetails,
+  onAlarmHelp,
 }: AlarmsBarProps) {
   const [panel, setPanel] = useState<Panel>("none");
   const derivedHistory = useAlarmHistory(alarms, clock);
@@ -148,9 +158,25 @@ export function AlarmsBar({
               <ul className={cx(styles.list)}>
                 {sorted.map((alarm) => (
                   <li key={alarm.id} className={cx(styles.alarm)} data-priority={alarm.priority}>
-                    <PriorityIcon priority={alarm.priority} />
-                    <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
-                    <span className={cx(styles.message)}>{alarm.message}</span>
+                    {onAlarmHelp ? (
+                      <button
+                        type="button"
+                        className={cx(styles.helpButton)}
+                        aria-label={ALARMS_COPY.help(alarmLabelOf(alarm))}
+                        title={ALARMS_COPY.help(alarmLabelOf(alarm))}
+                        onClick={() => onAlarmHelp(alarmHelpTarget(alarm))}
+                      >
+                        <PriorityIcon priority={alarm.priority} />
+                        <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
+                        <span className={cx(styles.message)}>{alarm.message}</span>
+                      </button>
+                    ) : (
+                      <>
+                        <PriorityIcon priority={alarm.priority} />
+                        <span className={cx(styles.priority)}>{ALARM_PRIORITY_COPY[alarm.priority]}</span>
+                        <span className={cx(styles.message)}>{alarm.message}</span>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>

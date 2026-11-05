@@ -14,6 +14,7 @@ export * from "./engine.errors";
 export * from "./engine-version";
 export * from "./ventilator-limits";
 export { DEFAULT_ALARM_THRESHOLDS } from "./alarms";
+export { DEFAULT_EVOLUTION_THRESHOLDS } from "./patient-evolution";
 export { predictedBodyWeightKg, mechanicalPowerJPerMin } from "./cycle-metrics";
 export {
   alveolarPo2,

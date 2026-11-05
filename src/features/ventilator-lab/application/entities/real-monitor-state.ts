@@ -1,0 +1,182 @@
+/*
+* Funcionalidad: Real monitor state for the AI help
+* Descripción: Builds the RealMonitorStateDTO the real-mode AI routes receive (Bloque A, DISENO_AJUSTES_A §5: POST
+*   /api/simulation/real/alarm-help and /assist) from the real console adapter snapshot: the ventilation mode, the
+*   shown settings (console units back to the contract units: FiO2 % → fraction), the last breath metrics and the
+*   reported SpO2 and CO2 (PCO2 as EtCO2), the active alarm codes (UPPER_CASE only, at most 20), the client alarm
+*   limits and a short recent trend (at most 20 points, newest last, `secondsAgo` from now). The trend recorder keeps
+*   one point every TREND_INTERVAL_MS outside React. Values that are missing or not finite are left out; the server
+*   validates the DTO again. The AI only reads this state: nothing here reaches the ventilator commands. Depends on the
+*   console contract types and the generated contract.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+import type { components } from "@shared/api-client/generated/schema";
+import type { ConsoleMetricValue, VentilatorConsoleAdapter } from "@shared/ventilator-console";
+
+export type RealMonitorState = components["schemas"]["RealMonitorStateDTO"];
+type TrendPoint = components["schemas"]["RealMonitorTrendPointDTO"];
+type MonitorSettings = NonNullable<RealMonitorState["settings"]>;
+type MonitorMetrics = NonNullable<RealMonitorState["metrics"]>;
+type MonitorLimits = NonNullable<RealMonitorState["limits"]>;
+
+/** RealMonitorStateDTO: at most 20 alarm codes and 20 trend points. */
+export const MAX_STATE_ALARMS = 20;
+export const MAX_TREND_POINTS = 20;
+/** One trend point every 15 s: 20 points cover the last 5 minutes. */
+export const TREND_INTERVAL_MS = 15_000;
+const MAX_MODE_LENGTH = 20;
+const ALARM_CODE = /^[A-Z][A-Z0-9_]*$/;
+
+function finite(value: number | null | undefined): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+// The real adapter wraps its derived metrics in readings; the console helper is not imported (lazy boundary).
+function metricValue(value: ConsoleMetricValue | undefined): number | undefined {
+  if (value === null || value === undefined) {
+    return undefined;
+  }
+
+  return finite(typeof value === "number" ? value : value.value);
+}
+
+/** Only the defined fields, so the DTO never carries undefined keys. */
+function compact<T extends Record<string, number | undefined>>(record: T): { [K in keyof T]?: number } {
+  const result: { [K in keyof T]?: number } = {};
+
+  (Object.keys(record) as (keyof T)[]).forEach((key) => {
+    const value = record[key];
+
+    if (value !== undefined) {
+      result[key] = value;
+    }
+  });
+
+  return result;
+}
+
+function settingsOf(adapter: VentilatorConsoleAdapter): MonitorSettings {
+  const values = adapter.settings.applied;
+  const fio2 = finite(values.fio2);
+
+  return compact({
+    tidalVolumeMl: finite(values.tidalVolume),
+    respiratoryRateBpm: finite(values.respiratoryRate),
+    peepCmH2O: finite(values.peep),
+    fio2: fio2 === undefined ? undefined : Math.round(fio2) / 100,
+    inspiratoryTimeS: finite(values.inspiratoryTime),
+    inspiratoryPressureCmH2O: finite(values.inspiratoryPressure),
+    pressureSupportCmH2O: finite(values.pressureSupport),
+  });
+}
+
+function metricsOf(adapter: VentilatorConsoleAdapter): MonitorMetrics {
+  const { metrics, patient } = adapter;
+
+  return compact({
+    peakPressureCmH2O: metricValue(metrics.peakPressure),
+    plateauPressureCmH2O: metricValue(metrics.plateauPressure),
+    totalPeepCmH2O: metricValue(metrics.totalPeep),
+    autoPeepCmH2O: metricValue(metrics.autoPeep),
+    exhaledTidalVolumeMl: metricValue(metrics.exhaledTidalVolume),
+    measuredRespiratoryRateBpm: metricValue(metrics.totalRespiratoryRate),
+    minuteVolumeLpm: metricValue(metrics.minuteVolume),
+    spo2Percent: finite(patient.values.spo2),
+    etco2MmHg: finite(patient.values.pco2),
+  });
+}
+
+const LIMIT_FIELDS: Readonly<Record<string, keyof MonitorLimits>> = {
+  highPressure: "highPressureCmH2O",
+  lowTidalVolume: "lowTidalVolumeMl",
+  highTidalVolume: "highTidalVolumeMl",
+  highRespiratoryRate: "highRespiratoryRateBpm",
+};
+
+function limitsOf(adapter: VentilatorConsoleAdapter): MonitorLimits {
+  const limits: MonitorLimits = {};
+
+  (adapter.alarmLimits ?? []).forEach((limit) => {
+    const field = Object.prototype.hasOwnProperty.call(LIMIT_FIELDS, limit.id) ? LIMIT_FIELDS[limit.id] : undefined;
+    const value = finite(limit.value);
+
+    if (field !== undefined && value !== undefined) {
+      limits[field] = value;
+    }
+  });
+
+  return limits;
+}
+
+function alarmsOf(adapter: VentilatorConsoleAdapter): string[] {
+  const codes = adapter.alarms.map((alarm) => alarm.type).filter((code) => ALARM_CODE.test(code));
+
+  return [...new Set(codes)].slice(0, MAX_STATE_ALARMS);
+}
+
+/** One recorded trend sample, at its wall-clock time. */
+type TrendSample = Omit<TrendPoint, "secondsAgo"> & { atMs: number };
+
+export type MonitorTrend = {
+  /** Records the snapshot when TREND_INTERVAL_MS passed since the last point (no React state). */
+  record: (adapter: VentilatorConsoleAdapter, nowMs: number) => void
+  /** The recorded points, newest last, with their seconds before `nowMs`. */
+  points: (nowMs: number) => TrendPoint[]
+};
+
+export function createMonitorTrend(intervalMs: number = TREND_INTERVAL_MS, maxPoints: number = MAX_TREND_POINTS): MonitorTrend {
+  let samples: TrendSample[] = [];
+
+  return {
+    record(adapter, nowMs) {
+      const last = samples.at(-1);
+
+      if (last !== undefined && nowMs - last.atMs < intervalMs) {
+        return;
+      }
+
+      const sample = {
+        atMs: nowMs,
+        ...compact({
+          peakPressureCmH2O: metricValue(adapter.metrics.peakPressure),
+          exhaledTidalVolumeMl: metricValue(adapter.metrics.exhaledTidalVolume),
+          respiratoryRateBpm: metricValue(adapter.metrics.totalRespiratoryRate),
+          spo2Percent: finite(adapter.patient.values.spo2),
+        }),
+      };
+
+      // A snapshot without any value (no breath yet) is not a trend point.
+      if (Object.keys(sample).length > 1) {
+        samples = [...samples, sample].slice(-maxPoints);
+      }
+    },
+    points(nowMs) {
+      return samples.map(({ atMs, ...values }) => ({ secondsAgo: Math.max(0, Math.round((nowMs - atMs) / 1000)), ...values }));
+    },
+  };
+}
+
+/** The monitor state of the real console for the AI help (built when the help is asked). */
+export function buildRealMonitorState(adapter: VentilatorConsoleAdapter, trend: readonly TrendPoint[] = [], caseId?: string | null): RealMonitorState {
+  const mode = adapter.mode.current.trim();
+  const settings = settingsOf(adapter);
+  const metrics = metricsOf(adapter);
+  const limits = limitsOf(adapter);
+  const alarms = alarmsOf(adapter);
+
+  return {
+    ...(mode !== "" && mode !== "—" ? { mode: mode.slice(0, MAX_MODE_LENGTH) } : {}),
+    ...(Object.keys(settings).length > 0 ? { settings } : {}),
+    ...(Object.keys(metrics).length > 0 ? { metrics } : {}),
+    alarms,
+    ...(Object.keys(limits).length > 0 ? { limits } : {}),
+    ...(trend.length > 0 ? { trend: trend.slice(-MAX_TREND_POINTS) } : {}),
+    ...(caseId ? { caseId } : {}),
+  };
+}

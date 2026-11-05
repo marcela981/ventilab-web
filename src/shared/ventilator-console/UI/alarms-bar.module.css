@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Alarms bar styles
-* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels, plus the persistent live region around the alarm list. Console and design-system tokens only. v1.2 (Bloque 5, C9): the July variant goes icon-only below a 1100 px console (the action texts stay for screen readers) so the bar fits one line at 1280.
-* Versión: 1.2
+* Descripción: Styles of the ventilator console alarms bar on the dark console surface: active alarms with the priority fill tokens (high/medium/low) plus icon and text, the silence/sound/history/limits action buttons, and the history and alarm limits disclosure panels, plus the persistent live region around the alarm list. Console and design-system tokens only. v1.2 (Bloque 5, C9): the July variant goes icon-only below a 1100 px console (the action texts stay for screen readers) so the bar fits one line at 1280. v1.3 (Bloque A): an alarm (or a history onset) that opens its "¿Cómo estabilizar?" help is a button that keeps the alarm look, with the console focus ring.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,6 +77,28 @@
 
 .icon {
   font-size: var(--vl-space-4);
+}
+
+/* An alarm that opens its "¿Cómo estabilizar?" help: the alarm look, as a button. */
+.helpButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vl-space-1);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.helpButton:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--vl-radius-sm);
 }
 
 .priority {

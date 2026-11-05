@@ -10,7 +10,10 @@
 *   The send is disabled while pending and a failure is shown in Spanish. Depends on React, MUI (Alert, Button,
 *   Stepper), the simulator patient entry point, the workspace session, the form entity, metrics, random patient and
 *   mapper, the step components, the load case dialog and the patient form styles.
-* Versión: 0.1
+*   v0.2 (Bloque A, request B → A): `?case=<clinicalCaseId>` (the "Practícalo en el simulador" links of the lessons,
+*   /simulador?tab=simular&case=<id>) loads that catalog case into the form as "Cargar caso" does, once per id and
+*   without starting the session; an unknown or unpublished id is ignored silently.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,8 +26,9 @@ import Button from "@mui/material/Button";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Stepper from "@mui/material/Stepper";
-import { useCallback, useMemo, useReducer, useState } from "react";
-import { useStartPractice } from "@features/simulator/patient.entry";
+import { useRouter } from "next/router";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { fetchCasePatientPreset, useStartPractice } from "@features/simulator/patient.entry";
 import type { CasePatientPreset } from "@features/simulator/patient.entry";
 import { cx } from "@shared/lib/class-names";
 import {
@@ -60,6 +64,11 @@ export const PATIENT_FORM_COPY = {
   submitting: "Enviando…",
 } as const;
 
+/** The `case` query value: one non-empty id (a repeated or blank parameter is ignored). */
+function caseIdOf(value: string | string[] | undefined): string | null {
+  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+}
+
 export function PatientFormPanel() {
   const { start } = useWorkspaceSession();
   const practice = useStartPractice({ onStarted: start });
@@ -83,6 +92,21 @@ export function PatientFormPanel() {
     });
     setDialogOpen(false);
   }, []);
+
+  // ?case=<id>: load that catalog case once (never start it); an unknown id is ignored.
+  const router = useRouter();
+  const queryCase = router.isReady ? caseIdOf(router.query.case) : null;
+  const requestedCaseRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (queryCase === null || requestedCaseRef.current === queryCase) {
+      return;
+    }
+
+    // Once per id (the panel stays mounted across the tabs): a later "Cargar caso" or "Limpiar" is not overridden.
+    requestedCaseRef.current = queryCase;
+    fetchCasePatientPreset(queryCase).then(loadPreset, () => undefined);
+  }, [loadPreset, queryCase]);
 
   const loadRandom = () => {
     dispatch({ type: "load", values: randomPatientValues(), loadedCase: null, notice: RANDOM_PATIENT_NOTICE });

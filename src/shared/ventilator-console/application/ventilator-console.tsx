@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: VentilatorConsole
-* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms, the console store and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms). v1.3: the built-in controls report pending edits through `adapter.onPendingChange`. v1.4 (generic source state): `capabilities.patientMonitor: false` hides the patient monitor zone; a frame source with `status: "no-data"` greys the curves under an overlay and makes the console read-only (the slots receive `readOnly: true`) until it is live again; the read-only reason (`permissions.readOnlyReason`, else the no-data message) is shown next to the "Solo lectura" badge and describes the built-in disabled controls. v1.5: the built-in controls receive `permissions.pendingResetKey` (drop unconfirmed edits when it changes). v1.6 (W2, Bloque 1): `adapter` may be a `ConsoleAdapterStore` (stable identity, immutable snapshots at ≤ 4 Hz); every zone (alarms, numeric monitor, curves, patient monitor, controls, function slots) is a memoised component that reads only its slice with useSyncExternalStore, so a new snapshot re-renders only the zones whose slice changed and the console shell re-renders only when its layout (mode, read-only state, zone visibility) changes. A plain adapter object still works (it is wrapped in a static store per object). v1.7 (Bloque 5, C3): opt-in `layout="july"` (default `classic`, unchanged for the replay, the case editor, its preview and the recording player, D28): the July three columns (july-layout.module.css; DISENO_BLOQUE5 §6.1-§6.3): left `region "Valores"` with the logos, the `leftTop` slot (monitor mode, patient), Confirmar / Cancelar with the pending counter and the value cards (the patient vitals join them); centre with the input row FiO2 | Vt/Pinsp/PS | PEEP, the alarms, the July curves (`curvesToolbarStart` slot for the signal chip) and the `curvesFooter` slot; right `complementary "Controles"` with the mode head, VOL CTRL / PRES CTRL (+ `assistSlot`) and "Más modos", timing, rate, "Más parámetros", the maneuvers slot, the `rightFooter` slot and the keyboard hint. One pending store per console shares the edits between the zones; Enter / Escape are handled on the console root for the elements marked `data-console-control`; `confirmSummary` (Real) makes Confirmar open the summary of every change. `header` renders above the columns; `modeSlot` renders at the top of the right column; `controlsSlot={null}` drops the July controls (a read-only console). Pass stable slot nodes (or nodes that subscribe on their own) so the console shell is not re-rendered by its owner. v1.8 (Bloque 5, C5): July `cards` (a MonitorCardsController with a stable identity: the host's per-user preference; omitted, one in memory) and `cardsLockedReason` (EXAM: "Ajustar" disabled, the preference applied read-only). v1.9 (Bloque 5, C6): the July root provides the console drawers (one open at a time: Asesoría IA, Alertas detalladas, Caso clínico) to everything rendered inside, slots included. v2.0 (Bloque 5, C9): with the built-in alarms the July layout uses JulyAlarmsZone (the alarms bar opens the "Alertas detalladas" drawer with the validation alerts, the alarm history and the limits; icon-only at 1280) and the right column ends with JulyMechanicsAlerts ("Estado de la mecánica", "Alertas (n)", "Ver alertas detalladas") before the host `rightFooter`.
-* Versión: 2.0
+* Descripción: Generic ventilator console screen composed from an adapter (it does not know whether data comes from the simulator, a replay or a real ventilator): header with the current mode and a read-only badge, an alarms slot across the top, numeric monitoring in the left column, the curves zone (and the patient monitor below it) in the centre and the mode/controls slots on the right, like a bedside ventilator. Slots accept a node or a render function that receives the adapter and the read-only flag; an omitted alarms slot renders the AlarmsBar and an omitted controls slot renders ConsoleControls (mode selector + pending→confirm parameters) from the adapter, while `null` hides them. An optional maneuvers slot renders only when the adapter declares the maneuvers capability. `variant` switches the controls between a running ventilator ("Confirmar") and the case editor configuration ("Aplicar"). Uses the dark console surface tokens; below 1024 px the zones stack and a Spanish notice recommends a horizontal tablet or a computer. Depends on React, the console zones, the controls and alarms bar, useConsoleWaveforms, the console store and the console layout styles. v1.2: normal ranges merge per key as config defaults < range props < `adapter.ranges`; the curves keep their subscription across adapter rebuilds for the same frame source (see useConsoleWaveforms). v1.3: the built-in controls report pending edits through `adapter.onPendingChange`. v1.4 (generic source state): `capabilities.patientMonitor: false` hides the patient monitor zone; a frame source with `status: "no-data"` greys the curves under an overlay and makes the console read-only (the slots receive `readOnly: true`) until it is live again; the read-only reason (`permissions.readOnlyReason`, else the no-data message) is shown next to the "Solo lectura" badge and describes the built-in disabled controls. v1.5: the built-in controls receive `permissions.pendingResetKey` (drop unconfirmed edits when it changes). v1.6 (W2, Bloque 1): `adapter` may be a `ConsoleAdapterStore` (stable identity, immutable snapshots at ≤ 4 Hz); every zone (alarms, numeric monitor, curves, patient monitor, controls, function slots) is a memoised component that reads only its slice with useSyncExternalStore, so a new snapshot re-renders only the zones whose slice changed and the console shell re-renders only when its layout (mode, read-only state, zone visibility) changes. A plain adapter object still works (it is wrapped in a static store per object). v1.7 (Bloque 5, C3): opt-in `layout="july"` (default `classic`, unchanged for the replay, the case editor, its preview and the recording player, D28): the July three columns (july-layout.module.css; DISENO_BLOQUE5 §6.1-§6.3): left `region "Valores"` with the logos, the `leftTop` slot (monitor mode, patient), Confirmar / Cancelar with the pending counter and the value cards (the patient vitals join them); centre with the input row FiO2 | Vt/Pinsp/PS | PEEP, the alarms, the July curves (`curvesToolbarStart` slot for the signal chip) and the `curvesFooter` slot; right `complementary "Controles"` with the mode head, VOL CTRL / PRES CTRL (+ `assistSlot`) and "Más modos", timing, rate, "Más parámetros", the maneuvers slot, the `rightFooter` slot and the keyboard hint. One pending store per console shares the edits between the zones; Enter / Escape are handled on the console root for the elements marked `data-console-control`; `confirmSummary` (Real) makes Confirmar open the summary of every change. `header` renders above the columns; `modeSlot` renders at the top of the right column; `controlsSlot={null}` drops the July controls (a read-only console). Pass stable slot nodes (or nodes that subscribe on their own) so the console shell is not re-rendered by its owner. v1.8 (Bloque 5, C5): July `cards` (a MonitorCardsController with a stable identity: the host's per-user preference; omitted, one in memory) and `cardsLockedReason` (EXAM: "Ajustar" disabled, the preference applied read-only). v1.9 (Bloque 5, C6): the July root provides the console drawers (one open at a time: Asesoría IA, Alertas detalladas, Caso clínico) to everything rendered inside, slots included. v2.0 (Bloque 5, C9): with the built-in alarms the July layout uses JulyAlarmsZone (the alarms bar opens the "Alertas detalladas" drawer with the validation alerts, the alarm history and the limits; icon-only at 1280) and the right column ends with JulyMechanicsAlerts ("Estado de la mecánica", "Alertas (n)", "Ver alertas detalladas") before the host `rightFooter`. v2.1 (Ajustes A, A1): the July layout applies the edits on its own by default (`applyMode="auto"`, DISENO_AJUSTES_A §3.1): the pending store is the debounce buffer of a per-console scheduler (july-auto-apply.ts) that confirms through the same `adapter.onConfirm` at 0 ms for buttons, keys, the mode toggle and "Más modos" and 300 ms after the last slider or wheel change (`autoApplyDelays` overrides them per source); Enter applies now what is still debouncing, Escape drops it, and a console that became read-only meanwhile drops it unsent. Auto mode has no Confirmar, Cancelar, pending counter, keyboard hint, "Modo pendiente" note nor pending validation alert; `applyMode="confirm"` keeps them (with `confirmSummary`). The classic layout is unchanged. v2.2 (Ajustes A, A4): the VentyLab logo image is declared at its new displayed size (80 × 40). v2.3 (Bloque A): July `renderAlarmHelp` (the host "¿Cómo estabilizar?" help of an alarm; the built-in alarms become buttons).
+* Versión: 2.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -10,7 +10,7 @@
 */
 
 import Image from "next/image";
-import { memo, useId, useMemo, useState } from "react";
+import { memo, useEffect, useId, useMemo, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import { CONSOLE_NO_DATA_MESSAGE } from "./config/console.config";
@@ -27,7 +27,10 @@ import type { AlarmBeeperFactory, ConsoleClock } from "./use-console-alarms";
 import { ConsoleDrawersProvider } from "./console-drawers";
 import { CurvesZone } from "./curves-zone";
 import { JulyAlarmsZone, JulyMechanicsAlerts } from "./july-alerts";
-import { handleJulyKeyDown, JulyConfirmActions } from "./july-confirm";
+import type { AlarmHelpRenderer } from "./july-alerts";
+import { AUTO_APPLY_DEBOUNCE_MS, createAutoApplyScheduler } from "./july-auto-apply";
+import type { AutoApplyDelays, ConsoleApplyMode } from "./july-auto-apply";
+import { applyPendingNow, handleJulyAutoKeyDown, handleJulyKeyDown, JulyAutoApplyState, JulyConfirmActions } from "./july-confirm";
 import { JULY_CONTROLS_COPY, JulyInputRow, JulyModeToggle, JulyMoreParameters, JulyRate, JulyTiming } from "./july-controls";
 import { MonitorCards } from "./monitor-cards";
 import type { MonitorCardsController } from "./monitor-cards";
@@ -53,7 +56,8 @@ export const CONSOLE_COPY = {
 /** v1.7: `july` is the July three-column Monitoreo layout; `classic` (default) the original one. */
 export type ConsoleLayoutKind = "classic" | "july";
 
-const LOGO_VENTYLAB = { src: "/images/logo.png", width: 128, height: 64 } as const;
+// Ajustes A (A4): the 2:1 mark at its displayed size (40 px tall at >= 1100 px), so next/image picks 1x / 2x for it.
+const LOGO_VENTYLAB = { src: "/images/logo.png", width: 80, height: 40 } as const;
 const LOGO_UNIVALLE = { src: "/images/logo-univalle.svg", width: 180, height: 21 } as const;
 
 export type ConsoleSlotContext = {
@@ -99,7 +103,14 @@ export type VentilatorConsoleProps = {
   beeperFactory?: AlarmBeeperFactory
   /** v1.7: `july` opts into the July three-column layout (default `classic`). */
   layout?: ConsoleLayoutKind
-  /** v1.7 (July): Confirmar opens a summary of every change before emitting (the real ventilator, D19). */
+  /**
+   * v2.1 (July): `auto` (default) applies every edit on its own (0 ms for buttons, keys and the mode, 300 ms after the
+   * last slider or wheel change); `confirm` keeps Confirmar / Cancelar. The classic layout always confirms.
+   */
+  applyMode?: ConsoleApplyMode
+  /** v2.1 (July auto): per kind of input, the delay before an edit applies (default AUTO_APPLY_DEBOUNCE_MS). */
+  autoApplyDelays?: Partial<AutoApplyDelays>
+  /** v1.7 (July, confirm mode): Confirmar opens a summary of every change before emitting (the real ventilator, D19). */
   confirmSummary?: boolean
   /** v1.7 (July): left column under the logos (monitor mode selector, patient status). */
   leftTop?: ReactNode
@@ -115,6 +126,8 @@ export type VentilatorConsoleProps = {
   cards?: MonitorCardsController | undefined
   /** v1.8 (July): why "Ajustar" is unavailable (EXAM, D29); the preference still applies. */
   cardsLockedReason?: string | undefined
+  /** v2.3 (July, built-in alarms): every alarm opens the "¿Cómo estabilizar?" drawer with this host help. */
+  renderAlarmHelp?: AlarmHelpRenderer | undefined
   className?: string
 };
 
@@ -312,6 +325,8 @@ function JulyConsoleView({
   applicability,
   clock,
   beeperFactory,
+  applyMode = "auto",
+  autoApplyDelays,
   confirmSummary = false,
   leftTop,
   assistSlot,
@@ -320,31 +335,63 @@ function JulyConsoleView({
   rightFooter,
   cards,
   cardsLockedReason,
+  renderAlarmHelp,
   className,
 }: ConsoleViewProps) {
   const [pending] = useState(createPendingControlsStore);
   const [summary] = useState(() => createExternalStore(false));
   const reasonId = useId();
   const alertsId = useId();
+  const auto = applyMode === "auto";
+  const discreteDelay = autoApplyDelays?.discrete ?? AUTO_APPLY_DEBOUNCE_MS.discrete;
+  const continuousDelay = autoApplyDelays?.continuous ?? AUTO_APPLY_DEBOUNCE_MS.continuous;
+  // One scheduler per store (a plain adapter object gets a new static store per object) and delays.
+  const scheduler = useMemo(() => createAutoApplyScheduler({
+    apply: () => {
+      // Read-only meanwhile (control lost, no data): what was still debouncing is dropped, never sent.
+      if (selectLayout(store.getSnapshot()).readOnly) {
+        pending.dispatch({ type: "reset" });
+      } else {
+        applyPendingNow(store, pending);
+      }
+    },
+    delays: () => ({ discrete: discreteDelay, continuous: continuousDelay }),
+  }), [store, pending, discreteDelay, continuousDelay]);
   const { readOnly, readOnlyReason } = layout;
   const describedBy = readOnly && readOnlyReason ? reasonId : undefined;
   const slotProps = { store, readOnly, readOnlyReason };
-  const zone = { store, pending, readOnly, describedBy, applicability };
+  const zone = { store, pending, readOnly, describedBy, applicability, applyMode, onEdit: auto ? scheduler.schedule : undefined };
   const controls = controlsSlot !== null;
   const builtInAlarms = alarmsSlot === undefined;
-  const alerts = { store, pending, metricRanges, drawerId: alertsId };
+  const alerts = { store, pending, metricRanges, drawerId: alertsId, pendingAlert: !auto };
+
+  // Unmounted or replaced: what was still debouncing is dropped, never applied afterwards.
+  useEffect(() => () => {
+    if (scheduler.cancel()) {
+      pending.dispatch({ type: "reset" });
+    }
+  }, [scheduler, pending]);
   const alarms = builtInAlarms
-    ? <JulyAlarmsZone {...alerts} readOnly={readOnly} clock={clock} beeperFactory={beeperFactory} />
+    ? <JulyAlarmsZone {...alerts} readOnly={readOnly} clock={clock} beeperFactory={beeperFactory} renderAlarmHelp={renderAlarmHelp} />
     : renderSlot({ ...slotProps, slot: alarmsSlot });
   const mode = renderSlot({ ...slotProps, slot: modeSlot });
   const maneuvers = layout.maneuvers ? renderSlot({ ...slotProps, slot: maneuversSlot }) : null;
   const confirmOptions = { store, pending, readOnly, confirmSummary, summary };
 
   const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (controls) {
+    if (!controls) {
+      return;
+    }
+
+    if (auto) {
+      handleJulyAutoKeyDown(event, { store, pending, readOnly, scheduler });
+    } else {
       handleJulyKeyDown(event, confirmOptions);
     }
   };
+  const applyState = auto
+    ? <JulyAutoApplyState store={store} pending={pending} readOnly={readOnly} readOnlyReason={readOnlyReason} reasonId={reasonId} />
+    : <JulyConfirmActions {...confirmOptions} readOnlyReason={readOnlyReason} reasonId={reasonId} />;
 
   return (
     <ConsoleDrawersProvider>
@@ -364,7 +411,7 @@ function JulyConsoleView({
               <Image {...LOGO_UNIVALLE} alt={CONSOLE_COPY.logoUnivalle} unoptimized className={cx(julyStyles.logoUnivalle)} />
             </div>
             {leftTop}
-            {controls ? <JulyConfirmActions {...confirmOptions} readOnlyReason={readOnlyReason} reasonId={reasonId} /> : null}
+            {controls ? applyState : null}
             <MonitorCards
               store={store}
               metricRanges={metricRanges}
@@ -398,7 +445,7 @@ function JulyConsoleView({
             {maneuvers}
             {builtInAlarms ? <JulyMechanicsAlerts {...alerts} /> : null}
             {rightFooter}
-            {controls && !readOnly ? <p className={cx(julyStyles.hint)}>{JULY_CONTROLS_COPY.keyboardHint}</p> : null}
+            {controls && !readOnly && !auto ? <p className={cx(julyStyles.hint)}>{JULY_CONTROLS_COPY.keyboardHint}</p> : null}
           </aside>
         </div>
       </section>

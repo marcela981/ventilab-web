@@ -11,7 +11,10 @@
 *   telemetry heartbeat every 500 ms keeps the source live while a test asserts (one batch went stale under load).
 *   v0.4 (Bloque 5, C8): the July real console: the mode selector and "Reserva activa" in the left column, the chip in
 *   the curves zone, "Comandos recientes" collapsed, and Confirmar opening the summary instead of sending (D19).
-* Versión: 0.4
+*   v0.5 (Ajustes A, A2): the operator's PEEP change is sent on its own after the debounce (one POST, the value shown
+*   with "Enviando", no summary dialog, the console still editable) and "Deshacer último cambio" sits in the left
+*   column, disabled with nothing to undo.
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -230,20 +233,34 @@ describe("RealMonitor", () => {
     expect(screen.getByTestId("real-monitor-latency")).toBeInTheDocument();
     expect(screen.getByTestId("real-monitor-operator")).toHaveTextContent("Controlas el equipo");
 
-    // July layout (C8): left column, chip in the curves, collapsed commands, the summary before any command.
+    // July layout (C8): left column, chip in the curves, collapsed commands. Ajustes A: the change goes out on its own.
     const values = screen.getByRole("region", { name: "Valores" });
+    const posts: unknown[] = [];
 
+    server.use(http.post(url("/api/ventilator/commands"), async({ request }) => {
+      posts.push(await request.json());
+
+      return HttpResponse.json(envelope({ commandId: "c1", reservationId: "r1", status: "PENDING" }), { status: 202 });
+    }));
     expect(within(values).getByRole("group", { name: "Modo del monitor" })).toBeInTheDocument();
     expect(within(values).getByRole("status", { name: "Reserva activa" })).toHaveTextContent("Reserva activa · Ana Gómez");
+    expect(within(values).getByRole("button", { name: "Deshacer último cambio" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Curvas" })).getByRole("status", { name: "Estado de la señal" })).toBe(chip());
     expect(screen.getByRole("button", { name: /^Comandos recientes/ })).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
-    fireEvent.click(screen.getByRole("button", { name: "Confirmar" }));
-    const summary = await screen.findByRole("dialog", { name: "Revisar los cambios antes de enviarlos" });
 
-    expect(within(summary).getByRole("button", { name: "Enviar al ventilador" })).toBeInTheDocument();
-    fireEvent.click(within(summary).getByRole("button", { name: "Volver" }));
-    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Revisar los cambios antes de enviarlos" })).not.toBeInTheDocument());
+    const peep = () => screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
+    const peepStatus = () => document.querySelector("[data-parameter='peep'] [aria-live='polite']");
+
+    // The asked value stays shown with its status; no summary dialog, and the console stays editable.
+    await waitFor(() => expect(peep()).toHaveAttribute("aria-valuenow", "6"));
+    expect(peepStatus()).toHaveTextContent("Enviando");
+    expect(peepStatus()).toHaveAttribute("data-send-status", "sending");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => expect(posts).toHaveLength(1));
+    expect(posts[0]).toMatchObject({ mode: "VCV", peep: 6 });
+    expect(screen.getByRole("button", { name: "Aumentar PEEP" })).toBeEnabled();
 
     const limits = openLimits();
 

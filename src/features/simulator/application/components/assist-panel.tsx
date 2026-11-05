@@ -15,7 +15,12 @@
 *   v1.2 (W6, Bloque 4): the rating carries the SIMULATOR_ASSIST surface (thesis analytics by surface).
 *   v1.3 (Bloque 5, C6): a console drawer of 380 px that takes the focus when it opens; Escape inside the panel closes it (a dialog inside it closes
 *   first: MUI stops that Escape).
-* Versión: 1.3
+*   v1.4 (Bloque A): an answer whose `done.source` is DETERMINISTIC (no provider answered) carries the shared label
+*   "Respuesta automática (IA no disponible)" and is not rated (the ratings measure the language model).
+*   v1.5 (Bloque A): with `realMonitor` (the real console) the request is POST /simulation/real/assist with the
+*   monitor state read at that moment, the intro speaks of the ventilator and an answer is rated as an AI_CALL (its
+*   aiCallId) with the SIMULATOR_ASSIST surface. The AI never sends commands to the ventilator.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -33,7 +38,9 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
   AI_ERROR_CODES,
+  AiFallbackLabel,
   COMPOSER_COPY,
+  isFallbackSource,
   isNearLimit,
   MessageBubble,
   MessageList,
@@ -43,10 +50,12 @@ import {
 import { AiRatingWidget } from "@shared/ai-rating";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
+import { realAssistRequest } from "../../api/services/simulation-alarm-help.service";
+import type { RealMonitorStateDTO } from "../../api/services/simulation-alarm-help.service";
 import { assistStreamRequest } from "../../api/services/simulation-assist.service";
-import { ASSIST_QUESTION_MAX_LENGTH, ASSIST_RATING_TARGET_TYPE } from "../config/sim-assist.config";
+import { AI_CALL_RATING_TARGET_TYPE, ASSIST_QUESTION_MAX_LENGTH, ASSIST_RATING_SURFACE, ASSIST_RATING_TARGET_TYPE } from "../config/sim-assist.config";
 import { getAssistErrorMessage } from "../entities/assist-error-messages";
-import { isAssistDone } from "../entities/sim-assist.entity";
+import { isAssistDone, isRealAssistDone } from "../entities/sim-assist.entity";
 import type { AssistPolicy, AssistStreamDone, AssistTurn } from "../entities/sim-assist.entity";
 import styles from "../../UI/assist-panel.module.css";
 
@@ -62,6 +71,10 @@ export const ASSIST_PANEL_COPY = {
   stopped: "Respuesta detenida. No se registró esta asesoría.",
   confirmTitle: "¿Solicitar asesoría con penalización?",
   confirmCancel: "Cancelar",
+  realIntro: "La asesoría revisa el estado actual del ventilador (ajustes, mediciones y alarmas recientes). Puedes escribir una pregunta concreta o dejarla vacía. La IA solo sugiere: nunca envía comandos al ventilador.",
+  realAnswers: "Asesorías de esta conexión",
+  realTyping: "Analizando el ventilador…",
+  realStopped: "Respuesta detenida.",
 } as const;
 
 export type AssistPanelProps = {
@@ -73,7 +86,18 @@ export type AssistPanelProps = {
   history: readonly AssistTurn[]
   onAnswered: (turn: AssistTurn) => void
   onClose: () => void
+  /** v1.5: the real monitor state; the request goes to the real-mode assistance with it. */
+  realMonitor?: (() => RealMonitorStateDTO) | undefined
 };
+
+/** Done metadata of either route as one turn: a session answer has its AI_HELP event, a real one only its AI call. */
+function doneTurnOf(done: unknown, real: boolean): Pick<AssistTurn, "id" | "aiHelpEventId" | "aiCallId" | "source"> | null {
+  if (real) {
+    return isRealAssistDone(done) ? { id: done.aiCallId, aiHelpEventId: null, aiCallId: done.aiCallId, source: done.source } : null;
+  }
+
+  return isAssistDone(done) ? { id: done.aiHelpEventId, aiHelpEventId: done.aiHelpEventId, aiCallId: done.aiCallId, source: done.source } : null;
+}
 
 function AnswerView({ turn }: { turn: AssistTurn }) {
   return (
@@ -83,14 +107,23 @@ function AnswerView({ turn }: { turn: AssistTurn }) {
         text={turn.answer}
         isStreaming={false}
         announce={false}
-        footer={<AiRatingWidget targetType={ASSIST_RATING_TARGET_TYPE} targetId={turn.aiHelpEventId} surface="SIMULATOR_ASSIST" />}
+        footer={isFallbackSource(turn.source)
+          ? <AiFallbackLabel />
+          : (
+            <AiRatingWidget
+              targetType={turn.aiHelpEventId === null ? AI_CALL_RATING_TARGET_TYPE : ASSIST_RATING_TARGET_TYPE}
+              targetId={turn.aiHelpEventId ?? turn.aiCallId}
+              surface={ASSIST_RATING_SURFACE}
+            />
+          )}
       />
     </div>
   );
 }
 
-export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClose }: AssistPanelProps) {
+export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClose, realMonitor }: AssistPanelProps) {
   const stream = useStreamingResponse<AssistStreamDone>();
+  const real = realMonitor !== undefined;
   const [question, setQuestion] = useState("");
   const [asked, setAsked] = useState("");
   const [confirming, setConfirming] = useState(false);
@@ -99,13 +132,13 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
   const panelRef = useRef<HTMLElement | null>(null);
   const isStreaming = stream.status === "streaming";
   const showCounter = isNearLimit(question.length, ASSIST_QUESTION_MAX_LENGTH);
-  const done = stream.status === "done" && isAssistDone(stream.done) ? stream.done : null;
-  const recorded = done !== null && history.some((turn) => turn.aiHelpEventId === done.aiHelpEventId);
+  const done = stream.status === "done" ? doneTurnOf(stream.done, real) : null;
+  const recorded = done !== null && history.some((turn) => turn.id === done.id);
 
   // A finished answer joins the session list (owned by the launcher) with the text the stream ended with.
   useEffect(() => {
     if (done !== null && !recorded) {
-      onAnswered({ aiHelpEventId: done.aiHelpEventId, aiCallId: done.aiCallId, source: done.source, question: asked, answer: stream.text });
+      onAnswered({ ...done, question: asked, answer: stream.text });
     }
   }, [asked, done, onAnswered, recorded, stream.text]);
 
@@ -115,7 +148,7 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
     setConfirming(false);
     setAsked(typed.trim());
     setQuestion("");
-    void stream.start(assistStreamRequest(sessionId, typed)).then((outcome) => {
+    void stream.start(realMonitor ? realAssistRequest(realMonitor(), typed) : assistStreamRequest(sessionId, typed)).then((outcome) => {
       // Refused before any frame (quota, provider down, network): give the question back, unless a new one was typed.
       if (outcome.status === "error" && !outcome.streamStarted) {
         setQuestion((current) => (current === "" ? typed : current));
@@ -161,20 +194,20 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
         </IconButton>
       </header>
       <div className={cx(styles.body)}>
-        <p className={cx(styles.intro)}>{ASSIST_PANEL_COPY.intro}</p>
+        <p className={cx(styles.intro)}>{real ? ASSIST_PANEL_COPY.realIntro : ASSIST_PANEL_COPY.intro}</p>
         {policy.status === "penalty" ? <Alert severity="warning">{policy.message}</Alert> : null}
         {history.length > 0 ? (
-          <MessageList label={ASSIST_PANEL_COPY.answers}>
-            {history.map((turn) => <AnswerView key={turn.aiHelpEventId} turn={turn} />)}
+          <MessageList label={real ? ASSIST_PANEL_COPY.realAnswers : ASSIST_PANEL_COPY.answers}>
+            {history.map((turn) => <AnswerView key={turn.id} turn={turn} />)}
           </MessageList>
         ) : null}
         {showCurrent ? (
           <div className={cx(styles.turn)}>
             {asked === "" ? null : <MessageBubble role="user" content={asked} />}
             {stream.status === "error" && stream.text === "" ? null : (
-              <StreamingMessage text={stream.text} isStreaming={isStreaming} typingLabel={ASSIST_PANEL_COPY.typing} />
+              <StreamingMessage text={stream.text} isStreaming={isStreaming} typingLabel={real ? ASSIST_PANEL_COPY.realTyping : ASSIST_PANEL_COPY.typing} />
             )}
-            {stream.status === "aborted" ? <p className={cx(styles.note)} role="status">{ASSIST_PANEL_COPY.stopped}</p> : null}
+            {stream.status === "aborted" ? <p className={cx(styles.note)} role="status">{real ? ASSIST_PANEL_COPY.realStopped : ASSIST_PANEL_COPY.stopped}</p> : null}
           </div>
         ) : null}
         {error ? (

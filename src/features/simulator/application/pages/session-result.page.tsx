@@ -15,7 +15,12 @@
 *   v1.2 (W6, Bloque 1): the result content (mode note, score, objectives, breakdown, evolution) is
 *   SessionResultContent, and SessionResultSummary loads it for one session without the page chrome, so the
 *   /simulador workspace shows the result in a dialog; the page renders the same content.
-* Versión: 1.2
+*   v1.3 (Bloque A): the server patient outcome ("Paciente fallecido" as the first, prominent block, with the times
+*   of the first critical state, the arrest and the death) and the debrief timeline ("Línea de tiempo": decisions,
+*   alarm onsets and patient status changes at their simulated mm:ss). An EXAM summary with `resultsWithheld` shows
+*   "Entregado — en espera de resultados" instead of the score, breakdown, objectives, timeline and evolution (with
+*   only the grade released, the score and a note that the correction comes later).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,6 +44,8 @@ import {
   EVALUATIONS_LIST_URL,
   SIMULATOR_URL,
 } from "../config/simulator.routes";
+import { describeDebriefItem, formatDebriefTime, PATIENT_STATUS_LABELS } from "../entities/sim-debrief.entity";
+import type { DebriefItem, SimulationOutcome } from "../entities/sim-debrief.entity";
 import { buildEvolution, safetyViolations, timeToStabilize } from "../entities/sim-result.entity";
 import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../entities/sim-result.entity";
 import { formatScore, formatSessionDuration, sessionStatusLabel, simulationModeLabel } from "../entities/simulator.entity";
@@ -95,6 +102,18 @@ export const RESULT_PAGE_COPY = {
   mismatch: "La repetición local no coincide del todo con el resultado del servidor. El resultado oficial es el del servidor.",
   viewReplay: "Ver repetición",
   backToCatalog: "Volver al simulador",
+  outcome: "Desenlace del paciente",
+  finalStatus: (label: string) => `Estado final del paciente: ${label}`,
+  firstCritical: "Inicio del estado crítico",
+  arrest: "Paro cardíaco",
+  deceased: "Fallecimiento",
+  deceasedNote: "El paciente falleció durante la simulación. Revisa la línea de tiempo para ver qué decisiones y alarmas lo precedieron.",
+  timeline: "Línea de tiempo",
+  timelineNote: "Tiempo simulado (mm:ss): decisiones, alarmas al aparecer y cambios de estado del paciente.",
+  noTimeline: "No hay eventos registrados en la línea de tiempo.",
+  withheld: "Entregado — en espera de resultados",
+  withheldNote: "Tu docente publicará la nota y la corrección de la parte práctica cuando libere los resultados del examen.",
+  withheldAnswers: "La corrección detallada (objetivos, desglose, desenlace y línea de tiempo) estará disponible cuando el docente libere las respuestas.",
 } as const;
 
 export const TARGET_STATUS_COPY = {
@@ -135,6 +154,90 @@ function ServerScore({ summary }: { summary: SessionSummary }) {
         <dt>{RESULT_PAGE_COPY.duration}</dt>
         <dd>{formatSessionDuration(summary.durationMs)}</dd>
       </dl>
+    </section>
+  );
+}
+
+/** The server patient outcome; a deceased patient gets the most prominent title of the debrief. */
+function PatientOutcome({ outcome }: { outcome: SimulationOutcome }) {
+  const { status } = outcome;
+
+  if (status === null) {
+    return null;
+  }
+
+  const deceased = status === "DECEASED";
+
+  return (
+    <section className={cx(styles.card, styles.outcomeCard)} data-status={status} aria-labelledby="result-outcome-title">
+      <h2 id="result-outcome-title" className={cx(styles.outcomeTitle)}>
+        {deceased ? PATIENT_STATUS_LABELS.DECEASED : RESULT_PAGE_COPY.finalStatus(PATIENT_STATUS_LABELS[status])}
+      </h2>
+      {deceased ? <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.deceasedNote}</p> : null}
+      <dl className={cx(styles.facts)} aria-label={RESULT_PAGE_COPY.outcome}>
+        {outcome.firstCriticalAtMs !== null ? (
+          <>
+            <dt>{RESULT_PAGE_COPY.firstCritical}</dt>
+            <dd>{formatDebriefTime(outcome.firstCriticalAtMs)}</dd>
+          </>
+        ) : null}
+        {outcome.arrestAtMs !== null ? (
+          <>
+            <dt>{RESULT_PAGE_COPY.arrest}</dt>
+            <dd>{formatDebriefTime(outcome.arrestAtMs)}</dd>
+          </>
+        ) : null}
+        {outcome.deceasedAtMs !== null ? (
+          <>
+            <dt>{RESULT_PAGE_COPY.deceased}</dt>
+            <dd>{formatDebriefTime(outcome.deceasedAtMs)}</dd>
+          </>
+        ) : null}
+      </dl>
+    </section>
+  );
+}
+
+function DebriefTimeline({ timeline }: { timeline: readonly DebriefItem[] }) {
+  return (
+    <section className={cx(styles.card)} aria-labelledby="result-timeline-title">
+      <h2 id="result-timeline-title" className={cx(styles.cardTitle)}>{RESULT_PAGE_COPY.timeline}</h2>
+      <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.timelineNote}</p>
+      {timeline.length === 0 ? <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.noTimeline}</p> : (
+        <ol className={cx(styles.timeline)} aria-label={RESULT_PAGE_COPY.timeline}>
+          {timeline.map((item, index) => (
+            <li
+              // The server list is ordered and immutable: time + position is a stable key.
+              key={`${item.simTimeMs}-${index}`}
+              className={cx(styles.timelineItem)}
+              data-kind={item.kind}
+              {...(item.kind === "DECISION" ? {} : { "data-code": item.code })}
+            >
+              <time className={cx(styles.timelineTime)}>{formatDebriefTime(item.simTimeMs)}</time>
+              <span className={cx(styles.timelineText)}>{describeDebriefItem(item)}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+/** EXAM before the teacher release: no score, correction or debrief; with the grade alone, the score only. */
+function WithheldResult({ summary }: { summary: SessionSummary }) {
+  if (summary.score !== null) {
+    return (
+      <>
+        <ServerScore summary={summary} />
+        <p className={cx(styles.note)} role="note">{RESULT_PAGE_COPY.withheldAnswers}</p>
+      </>
+    );
+  }
+
+  return (
+    <section className={cx(styles.card)} aria-labelledby="result-withheld-title">
+      <h2 id="result-withheld-title" className={cx(styles.cardTitle)}>{RESULT_PAGE_COPY.withheld}</h2>
+      <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.withheldNote}</p>
     </section>
   );
 }
@@ -282,6 +385,8 @@ export function SessionResultContent({ result }: SessionResultContentProps) {
     );
   } else if (!summary) {
     body = <LoadingState label={RESULT_PAGE_COPY.loading} />;
+  } else if (summary.resultsWithheld) {
+    body = <WithheldResult summary={summary} />;
   } else {
     let evolutionBody;
 
@@ -304,10 +409,12 @@ export function SessionResultContent({ result }: SessionResultContentProps) {
 
     body = (
       <>
+        {summary.outcome ? <PatientOutcome outcome={summary.outcome} /> : null}
         <ServerScore summary={summary} />
         <Objectives summary={summary} />
         {/* The server breakdown is shown whenever the summary carries one (teachers too), and always for EXAM. */}
         {exam || summary.breakdown.length > 0 ? <Breakdown breakdown={summary.breakdown} /> : null}
+        {summary.outcome?.status || summary.timeline.length > 0 ? <DebriefTimeline timeline={summary.timeline} /> : null}
         <section className={cx(styles.card)} aria-labelledby="result-evolution-title">
           <h2 id="result-evolution-title" className={cx(styles.cardTitle)}>{RESULT_PAGE_COPY.evolution}</h2>
           <p className={cx(styles.muted)}>{RESULT_PAGE_COPY.evolutionNote}</p>

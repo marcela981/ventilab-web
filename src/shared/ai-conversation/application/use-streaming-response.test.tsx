@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useStreamingResponse tests
-* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, unmounting aborts, and the aborted outcome reports whether any frame arrived (streamStarted, true even for a delta still buffered for the next frame). v1.3 (W7, Bloque 2): the aborted outcome carries `announced` (null without a start frame); the early `start` frame is exposed as announced in the state and in the aborted outcome. Depends on vitest, Testing Library, msw and the shared SSE test helpers.
-* Versión: 1.3
+* Descripción: Tests of the generic AI answer stream hook against msw serving real text/event-stream bodies: deltas accumulate and `done` resolves with its metadata (extra fields and sources included), an `event: error` frame and a 429 before the stream become ApiError state, abort keeps the partial text (also the text still buffered for the next frame) and ignores later frames, a new start after a lost connection resets the state, a start while another stream runs aborts it without leaking its buffered or late text, reset returns to idle, deltas are committed once per animation frame, unmounting aborts, and the aborted outcome reports whether any frame arrived (streamStarted, true even for a delta still buffered for the next frame). v1.3 (W7, Bloque 2): the aborted outcome carries `announced` (null without a start frame); the early `start` frame is exposed as announced in the state and in the aborted outcome. v1.4 (Bloque A): the `rules` frame of the alarm help is kept in the state, also after an error frame, and cleared by the next start. Depends on vitest, Testing Library, msw and the shared SSE test helpers.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,7 +14,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
-import { controlledStream, deltaFrame, doneFrame, errorFrame, sseResponse, startFrame } from "./sse-test-helpers";
+import { controlledStream, deltaFrame, doneFrame, errorFrame, rulesFrame, sseResponse, startFrame } from "./sse-test-helpers";
 import { useStreamingResponse } from "./use-streaming-response";
 
 const PATH = "/api/tutor/conversations/c1/messages";
@@ -97,6 +97,25 @@ describe("useStreamingResponse", () => {
     expect(result.current.done).toEqual(done);
     expect(result.current.done?.sources).toHaveLength(1);
     expect(body).toEqual({ message: "¿Qué es la PEEP?" });
+  });
+
+  it("keeps the rules frame of the alarm help, also after an error, and clears it on the next start", async() => {
+    const rules = { alarmCode: "HIGH_PRESSURE", rules: [{ id: "r1", text: "Revisa secreciones.", reference: "Hess 2019" }] };
+
+    server.use(http.post(URL, () => sseResponse([rulesFrame(rules), deltaFrame("Baja el Vt."), errorFrame("ai.provider_unavailable", "Sin IA")])));
+    const { result } = renderHook(() => useStreamingResponse());
+
+    await act(async() => {
+      await expect(result.current.start(REQUEST)).resolves.toMatchObject({ status: "error", streamStarted: true });
+    });
+    expect(result.current.rules).toEqual(rules);
+    expect(result.current.text).toBe("Baja el Vt.");
+
+    server.use(http.post(URL, () => sseResponse([deltaFrame("Hola"), doneFrame(DONE)])));
+    await act(async() => {
+      await result.current.start(REQUEST);
+    });
+    expect(result.current.rules).toBeNull();
   });
 
   it("turns an error frame into an ApiError and keeps the received text", async() => {

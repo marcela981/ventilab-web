@@ -17,7 +17,9 @@
 *   screen rules are gone); the session strip (compact bar above the columns), the round "Asesoría IA" icon button
 *   next to the mode toggle, the patient status of the left column, and the definite height of the July console area
 *   (--vl-monitor-height, set by the host) from 1024 × 700 px; v2.0 also takes the minimum height of the July console (C8).
-* Versión: 2.0
+*   v2.1 (Bloque A): the engine patient status chip under the patient status (warning while unstable or critical,
+*   error in arrest or deceased).
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -461,4 +463,31 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Engine patient status (engine 2.0.0): "Inestable · gravedad 45 %", "Paciente fallecido". */
+.patientCondition {
+  margin: 0;
+  padding: var(--vl-space-1) var(--vl-space-2);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text);
+  background: var(--vl-console-surface-raised);
+  border: 1px solid var(--vl-color-success);
+  border-radius: var(--vl-radius-md);
+}
+
+.patientCondition[data-status="UNSTABLE"],
+.patientCondition[data-status="CRITICAL"] {
+  border-color: var(--vl-color-warning);
+}
+
+.patientCondition[data-status="CRITICAL"] {
+  font-weight: 700;
+}
+
+.patientCondition[data-status="ARREST"],
+.patientCondition[data-status="DECEASED"] {
+  font-weight: 700;
+  color: var(--vl-color-error);
+  border-color: var(--vl-color-error);
 }

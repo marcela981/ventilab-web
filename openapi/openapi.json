@@ -2326,7 +2326,8 @@
               "ASSISTANT",
               "NOTES_ANALYSIS",
               "EVALUATION_FEEDBACK",
-              "SIMULATOR_ASSIST"
+              "SIMULATOR_ASSIST",
+              "SIM_ALARM"
             ],
             "example": "POPUP",
             "type": "string"
@@ -2342,7 +2343,8 @@
               "GRADE_FEEDBACK",
               "MESSAGE",
               "NOTES_ANALYSIS",
-              "SIM_ASSIST"
+              "SIM_ASSIST",
+              "AI_CALL"
             ],
             "example": "MESSAGE",
             "type": "string"
@@ -18498,6 +18500,249 @@
         ],
         "type": "object"
       },
+      "RealAlarmHelpDTO": {
+        "properties": {
+          "alarmCode": {
+            "description": "Alarm code (engine or ventilator), e.g. HIGH_PRESSURE, LOW_SPO2",
+            "example": "HIGH_PRESSURE",
+            "type": "string"
+          },
+          "language": {
+            "description": "Answer language; defaults to the request language",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "example": "es",
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/RealMonitorStateDTO"
+          }
+        },
+        "required": [
+          "alarmCode",
+          "state"
+        ],
+        "type": "object"
+      },
+      "RealAssistDTO": {
+        "properties": {
+          "language": {
+            "description": "Answer language; defaults to the request language",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "example": "es",
+            "type": "string"
+          },
+          "question": {
+            "description": "User question",
+            "example": "¿Qué reviso primero?",
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "state": {
+            "$ref": "#/components/schemas/RealMonitorStateDTO"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "type": "object"
+      },
+      "RealMonitorLimitsDTO": {
+        "properties": {
+          "highPressureCmH2O": {
+            "description": "Client high pressure limit (cmH2O)",
+            "example": 40,
+            "type": "number"
+          },
+          "highRespiratoryRateBpm": {
+            "description": "Client high respiratory rate limit (breaths/min)",
+            "example": 35,
+            "type": "number"
+          },
+          "highTidalVolumeMl": {
+            "description": "Client high exhaled volume limit (mL)",
+            "example": 800,
+            "type": "number"
+          },
+          "lowTidalVolumeMl": {
+            "description": "Client low exhaled volume limit (mL)",
+            "example": 200,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "RealMonitorMetricsDTO": {
+        "properties": {
+          "autoPeepCmH2O": {
+            "description": "Auto-PEEP (cmH2O)",
+            "example": 1,
+            "type": "number"
+          },
+          "etco2MmHg": {
+            "description": "End-tidal CO2 (mmHg)",
+            "example": 38,
+            "type": "number"
+          },
+          "exhaledTidalVolumeMl": {
+            "description": "Exhaled tidal volume (mL)",
+            "example": 440,
+            "type": "number"
+          },
+          "measuredRespiratoryRateBpm": {
+            "description": "Measured respiratory rate (breaths/min)",
+            "example": 16,
+            "type": "number"
+          },
+          "minuteVolumeLpm": {
+            "description": "Minute volume (L/min)",
+            "example": 7,
+            "type": "number"
+          },
+          "peakPressureCmH2O": {
+            "description": "Peak pressure of the last breath (cmH2O)",
+            "example": 28,
+            "type": "number"
+          },
+          "plateauPressureCmH2O": {
+            "description": "Plateau pressure (cmH2O)",
+            "example": 24,
+            "type": "number"
+          },
+          "spo2Percent": {
+            "description": "SpO2 (%)",
+            "example": 94,
+            "type": "number"
+          },
+          "totalPeepCmH2O": {
+            "description": "Total PEEP (cmH2O)",
+            "example": 9,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "RealMonitorSettingsDTO": {
+        "properties": {
+          "fio2": {
+            "description": "Reported FiO2 (fraction)",
+            "example": 0.5,
+            "type": "number"
+          },
+          "inspiratoryPressureCmH2O": {
+            "description": "Reported inspiratory pressure (cmH2O above PEEP)",
+            "example": 15,
+            "type": "number"
+          },
+          "inspiratoryTimeS": {
+            "description": "Reported inspiratory time (s)",
+            "example": 1,
+            "type": "number"
+          },
+          "peepCmH2O": {
+            "description": "Reported PEEP (cmH2O)",
+            "example": 8,
+            "type": "number"
+          },
+          "pressureSupportCmH2O": {
+            "description": "Reported pressure support (cmH2O)",
+            "example": 10,
+            "type": "number"
+          },
+          "respiratoryRateBpm": {
+            "description": "Reported respiratory rate (breaths/min)",
+            "example": 16,
+            "type": "number"
+          },
+          "tidalVolumeMl": {
+            "description": "Reported tidal volume (mL)",
+            "example": 450,
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "RealMonitorStateDTO": {
+        "properties": {
+          "alarms": {
+            "description": "Active alarm codes of the ventilator and the client limits",
+            "example": [
+              "HIGH_PRESSURE"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "caseId": {
+            "description": "Clinical case loaded on the monitor, if any",
+            "example": "engine-ards-obese",
+            "maxLength": 100,
+            "type": "string"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/RealMonitorLimitsDTO"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RealMonitorMetricsDTO"
+          },
+          "mode": {
+            "description": "Reported ventilation mode",
+            "example": "VCV",
+            "maxLength": 20,
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/RealMonitorSettingsDTO"
+          },
+          "trend": {
+            "description": "Recent window, newest last",
+            "items": {
+              "$ref": "#/components/schemas/RealMonitorTrendPointDTO"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "RealMonitorTrendPointDTO": {
+        "properties": {
+          "exhaledTidalVolumeMl": {
+            "description": "Exhaled tidal volume (mL)",
+            "example": 440,
+            "type": "number"
+          },
+          "peakPressureCmH2O": {
+            "description": "Peak pressure (cmH2O)",
+            "example": 28,
+            "type": "number"
+          },
+          "respiratoryRateBpm": {
+            "description": "Respiratory rate (breaths/min)",
+            "example": 16,
+            "type": "number"
+          },
+          "secondsAgo": {
+            "description": "Seconds before now (0 = latest)",
+            "example": 30,
+            "type": "number"
+          },
+          "spo2Percent": {
+            "description": "SpO2 (%)",
+            "example": 94,
+            "type": "number"
+          }
+        },
+        "required": [
+          "secondsAgo"
+        ],
+        "type": "object"
+      },
       "RealtimeHealthDTO": {
         "properties": {
           "connectedUsers": {
@@ -20579,6 +20824,28 @@
         ],
         "type": "object"
       },
+      "SimulationAlarmHelpDTO": {
+        "properties": {
+          "alarmCode": {
+            "description": "Alarm code (engine or ventilator), e.g. HIGH_PRESSURE, LOW_SPO2",
+            "example": "HIGH_PRESSURE",
+            "type": "string"
+          },
+          "language": {
+            "description": "Answer language; defaults to the request language",
+            "enum": [
+              "en",
+              "es"
+            ],
+            "example": "es",
+            "type": "string"
+          }
+        },
+        "required": [
+          "alarmCode"
+        ],
+        "type": "object"
+      },
       "SimulationAssistDTO": {
         "properties": {
           "language": {
@@ -20597,6 +20864,42 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "SimulationDebriefItemDTO": {
+        "properties": {
+          "changes": {
+            "description": "Changed settings of a decision",
+            "items": {
+              "$ref": "#/components/schemas/SimulationSettingChangeDTO"
+            },
+            "type": "array"
+          },
+          "code": {
+            "description": "Alarm code or patient status (absent for decisions)",
+            "example": "LOW_SPO2",
+            "type": "string"
+          },
+          "kind": {
+            "description": "Item kind",
+            "enum": [
+              "DECISION",
+              "ALARM",
+              "PATIENT_STATUS"
+            ],
+            "example": "DECISION",
+            "type": "string"
+          },
+          "simTimeMs": {
+            "description": "Simulated time in ms",
+            "example": 15000,
+            "type": "number"
+          }
+        },
+        "required": [
+          "simTimeMs",
+          "kind"
+        ],
         "type": "object"
       },
       "SimulationEventDTO": {
@@ -20725,6 +21028,57 @@
         ],
         "type": "object"
       },
+      "SimulationOutcomeDTO": {
+        "properties": {
+          "arrestAtMs": {
+            "description": "Simulated time of the cardiac arrest, in ms",
+            "example": 600000,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "deceasedAtMs": {
+            "description": "Simulated time of death, in ms",
+            "example": 630000,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "firstCriticalAtMs": {
+            "description": "Simulated time the patient first turned critical, in ms",
+            "example": 360000,
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "status": {
+            "description": "Final patient status; null for sessions without patient evolution (engine 1.0.0)",
+            "enum": [
+              "STABLE",
+              "UNSTABLE",
+              "CRITICAL",
+              "ARREST",
+              "DECEASED",
+              null
+            ],
+            "example": "DECEASED",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "firstCriticalAtMs",
+          "arrestAtMs",
+          "deceasedAtMs"
+        ],
+        "type": "object"
+      },
       "SimulationSessionDTO": {
         "properties": {
           "attemptId": {
@@ -20805,7 +21159,7 @@
             ]
           },
           "score": {
-            "description": "Stored server-computed score, null until the session ends",
+            "description": "Stored server-computed score; null until the session ends, and for an EXAM student until the teacher releases the grade",
             "example": null,
             "type": [
               "number",
@@ -20982,6 +21336,11 @@
             ],
             "description": "Own patient form of a FREE session started with one (shown after a reload, in the list and in the replay); null otherwise"
           },
+          "resultsWithheld": {
+            "description": "True when an EXAM student is not shown part of the results yet (the teacher has not released the grade or the answers)",
+            "example": false,
+            "type": "boolean"
+          },
           "settings": {
             "description": "Current ventilator settings",
             "example": {
@@ -21001,7 +21360,7 @@
             "type": "string"
           },
           "targets": {
-            "description": "Clinical target status",
+            "description": "Clinical target status; empty for an EXAM student until the teacher releases the answers",
             "example": [
               {
                 "id": "SPO2",
@@ -21023,6 +21382,7 @@
           "metrics",
           "alarms",
           "targets",
+          "resultsWithheld",
           "patient"
         ],
         "type": "object"
@@ -21035,7 +21395,7 @@
             "type": "number"
           },
           "breakdown": {
-            "description": "Justified score per rubric criterion",
+            "description": "Justified score per rubric criterion; empty for an EXAM student until the teacher releases the answers",
             "example": [
               {
                 "criterion": "TARGETS_REACHED",
@@ -21069,10 +21429,33 @@
             "example": "0192f1c2-7c1e-7a8b-9c0d-1e2f3a4b5c6d",
             "type": "string"
           },
+          "outcome": {
+            "anyOf": [
+              {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/SimulationOutcomeDTO"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Patient outcome; null for summaries stored before the engine 2.0.0"
+          },
+          "resultsWithheld": {
+            "description": "True when an EXAM student is not shown part of the results yet (the teacher has not released the grade or the answers)",
+            "example": false,
+            "type": "boolean"
+          },
           "score": {
-            "description": "Server-computed score between 0 and 1",
+            "description": "Server-computed score between 0 and 1; null for an EXAM student until the teacher releases the grade",
             "example": 0.82,
-            "type": "number"
+            "type": [
+              "number",
+              "null"
+            ]
           },
           "simTimeMs": {
             "description": "Simulated time scored in ms",
@@ -21085,7 +21468,7 @@
             "type": "string"
           },
           "targets": {
-            "description": "Final clinical target status",
+            "description": "Final clinical target status; empty for an EXAM student until the teacher releases the answers",
             "example": [
               {
                 "id": "SPO2",
@@ -21094,6 +21477,13 @@
             ],
             "items": {
               "type": "object"
+            },
+            "type": "array"
+          },
+          "timeline": {
+            "description": "Debrief timeline: decisions, alarm onsets and patient status changes in simulated time order (at most 200)",
+            "items": {
+              "$ref": "#/components/schemas/SimulationDebriefItemDTO"
             },
             "type": "array"
           }
@@ -21108,7 +21498,56 @@
           "targets",
           "score",
           "breakdown",
-          "aiHelpCount"
+          "resultsWithheld",
+          "aiHelpCount",
+          "outcome",
+          "timeline"
+        ],
+        "type": "object"
+      },
+      "SimulationSettingChangeDTO": {
+        "properties": {
+          "field": {
+            "description": "Ventilator setting",
+            "example": "peepCmH2O",
+            "type": "string"
+          },
+          "from": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Previous value",
+            "example": 5
+          },
+          "to": {
+            "description": "New value",
+            "example": 12,
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "required": [
+          "field",
+          "from",
+          "to"
         ],
         "type": "object"
       },
@@ -25348,7 +25787,8 @@
               "ASSISTANT",
               "NOTES_ANALYSIS",
               "EVALUATION_FEEDBACK",
-              "SIMULATOR_ASSIST"
+              "SIMULATOR_ASSIST",
+              "SIM_ALARM"
             ],
             "example": "POPUP",
             "type": "string"
@@ -25364,7 +25804,8 @@
               "GRADE_FEEDBACK",
               "MESSAGE",
               "NOTES_ANALYSIS",
-              "SIM_ASSIST"
+              "SIM_ASSIST",
+              "AI_CALL"
             ],
             "example": "MESSAGE",
             "type": "string"
@@ -29255,7 +29696,8 @@
                 "GRADE_FEEDBACK",
                 "MESSAGE",
                 "NOTES_ANALYSIS",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "AI_CALL"
               ],
               "example": "MESSAGE",
               "type": "string"
@@ -29273,7 +29715,8 @@
                 "ASSISTANT",
                 "NOTES_ANALYSIS",
                 "EVALUATION_FEEDBACK",
-                "SIMULATOR_ASSIST"
+                "SIMULATOR_ASSIST",
+                "SIM_ALARM"
               ],
               "example": "POPUP",
               "type": "string"
@@ -29309,7 +29752,9 @@
                 "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "SIM_CASE_INTERPRETATION",
+                "SIM_ALARM_HELP"
               ],
               "example": "FREE_CHAT",
               "type": "string"
@@ -29499,7 +29944,8 @@
                 "GRADE_FEEDBACK",
                 "MESSAGE",
                 "NOTES_ANALYSIS",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "AI_CALL"
               ],
               "example": "MESSAGE",
               "type": "string"
@@ -29517,7 +29963,8 @@
                 "ASSISTANT",
                 "NOTES_ANALYSIS",
                 "EVALUATION_FEEDBACK",
-                "SIMULATOR_ASSIST"
+                "SIMULATOR_ASSIST",
+                "SIM_ALARM"
               ],
               "example": "POPUP",
               "type": "string"
@@ -29553,7 +30000,9 @@
                 "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "SIM_CASE_INTERPRETATION",
+                "SIM_ALARM_HELP"
               ],
               "example": "FREE_CHAT",
               "type": "string"
@@ -29761,7 +30210,9 @@
                 "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "SIM_CASE_INTERPRETATION",
+                "SIM_ALARM_HELP"
               ],
               "example": "FREE_CHAT",
               "type": "string"
@@ -29945,7 +30396,9 @@
                 "MODULE_QA",
                 "FREE_CHAT",
                 "TOPIC_CHECK",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "SIM_CASE_INTERPRETATION",
+                "SIM_ALARM_HELP"
               ],
               "example": "FREE_CHAT",
               "type": "string"
@@ -31155,7 +31608,8 @@
                 "GRADE_FEEDBACK",
                 "MESSAGE",
                 "NOTES_ANALYSIS",
-                "SIM_ASSIST"
+                "SIM_ASSIST",
+                "AI_CALL"
               ],
               "example": "MESSAGE",
               "type": "string"
@@ -70373,6 +70827,242 @@
         ]
       }
     },
+    "/api/simulation/real/alarm-help": {
+      "post": {
+        "description": "Deterministic rules for the alarm with the recent telemetry sent by the client, then an AI suggestion. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.\n\n**Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.",
+        "operationId": "realAlarmHelp",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RealAlarmHelpDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "description": "Server-sent event stream; the operation description lists its events",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Server-sent event stream with the rules and the suggestion"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests or daily AI quota reached (Retry-After header)"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "How to stabilize an alarm of the physical ventilator",
+        "tags": [
+          "Simulation"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "ventilator:control"
+        ]
+      }
+    },
+    "/api/simulation/real/assist": {
+      "post": {
+        "description": "Guidance on the recent telemetry sent by the client and the loaded case, optionally answering a question. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.\n\n**Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.",
+        "operationId": "realAssist",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RealAssistDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "description": "Server-sent event stream; the operation description lists its events",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Server-sent event stream with the answer"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing permission"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests or daily AI quota reached (Retry-After header)"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "AI assistance on the physical ventilator",
+        "tags": [
+          "Simulation"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "ventilator:control"
+        ]
+      }
+    },
     "/api/simulation/reserve": {
       "delete": {
         "description": "Releases the active reservation when the caller holds it, created it, leads or supervises its group, or is an admin\n\n**Required access:** bearer token holding `simulation:control`; minimum role STUDENT.",
@@ -71474,6 +72164,163 @@
         "x-min-role": "STUDENT",
         "x-required-permissions": [
           "simulation:read"
+        ]
+      }
+    },
+    "/api/simulation/sessions/{id}/alarm-help": {
+      "post": {
+        "description": "Deterministic rules for the alarm in the current context, then an AI suggestion. EXAM sessions follow the assistance policy of the evaluation (ALLOWED_WITH_PENALTY only); every completed answer is recorded as an AI_HELP event of kind ALARM_HELP. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.\n\n**Required access:** bearer token holding `simulation:control`; minimum role STUDENT.",
+        "operationId": "alarmHelp",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationAlarmHelpDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "description": "Server-sent event stream; the operation description lists its events",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Server-sent event stream with the rules and the suggestion"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ValidationError": {
+                    "$ref": "#/components/examples/ValidationError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "UnauthorizedError": {
+                    "$ref": "#/components/examples/UnauthorizedError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ForbiddenError": {
+                    "$ref": "#/components/examples/ForbiddenError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Missing permission, session of another user or assistance disabled in this exam"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "NotFoundError": {
+                    "$ref": "#/components/examples/NotFoundError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Simulation session not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ConflictError": {
+                    "$ref": "#/components/examples/ConflictError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "The simulation session is not active"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "TooManyRequestsError": {
+                    "$ref": "#/components/examples/TooManyRequestsError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Too many requests or daily AI quota reached (Retry-After header)"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "InternalServerError": {
+                    "$ref": "#/components/examples/InternalServerError"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unexpected server error"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "How to stabilize an alarm of my active simulation session",
+        "tags": [
+          "Simulation"
+        ],
+        "x-min-role": "STUDENT",
+        "x-required-permissions": [
+          "simulation:control"
         ]
       }
     },

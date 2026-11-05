@@ -12,7 +12,8 @@
 *   v1.1: ΔP described as Pplat minus the end-expiratory PEEP (not a total PEEP). v1.2 (T8): optional `modeOptionsFor(reportedMode)` narrows the mode selector to the modes a command may target. Depends on the breath metrics, the reported state and the console contract. v1.3 (T9): optional `pendingResetKey` passed to the console permissions.
 *   v1.4 (W10, Bloque 1): optional alarm limits and their change callback (the AlarmLimitsPanel of the real console).
 *   v1.5 (Bloque 5, C4): the derived metrics add Pmedia and the flow extremes of the last breath (July value cards).
-* Versión: 1.5
+*   v1.6 (Ajustes A, A2): optional auto-send input: `desired` values and mode (queued or in flight) shown over the reported ones until they settle, `sendStatus` per parameter, and `onCancel` / `onApplyNow` (Escape / Enter of the July console).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -47,6 +48,9 @@ export const DERIVED_DRIVING_PRESSURE_LABEL = {
   description: "Pplat menos la PEEP medida al final de la espiración (no es la PEEP total)",
 } as const;
 
+/** Ajustes A (A2): what the operator asked for and the device does not run yet (console units). */
+export type RealDesiredSettings = { values: Readonly<Record<string, number>>, mode: string | null };
+
 export type RealConsoleAdapterInput = {
   /** The stable hub source ({sourceId, subscribe}). */
   frames: ConsoleFrameSource
@@ -63,7 +67,14 @@ export type RealConsoleAdapterInput = {
   pendingResetKey?: string | number | undefined
   limits?: ConsoleLimits
   inFlight?: ConsoleSettings["inFlight"]
+  /** Ajustes A (A2): auto-send status per parameter (shown next to each control, never blocks editing). */
+  sendStatus?: ConsoleSettings["sendStatus"]
+  /** Ajustes A (A2): values and mode queued or in flight, shown over the reported ones until they settle. */
+  desired?: RealDesiredSettings
   onConfirm?: (confirmation: ConsoleConfirmation) => void
+  /** Ajustes A (A2): Escape and Enter of the July auto mode (drop the queue, send it now). */
+  onCancel?: () => void
+  onApplyNow?: () => void
   /** Mode options for the reported mode (default: every mode the backend accepts). */
   modeOptionsFor?: (reportedMode: string | null) => readonly ConsoleModeOption[]
   /** W10: alarm limits of the console (client-side, real-alarm-limits) and their change callback. */
@@ -101,6 +112,9 @@ const IGNORE_CONFIRMATION = () => undefined;
 
 export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): VentilatorConsoleAdapter {
   const reportedSettings = input.reported.settings ?? {};
+  const desired = input.desired;
+  // The values the operator asked for replace the reported ones only while they are queued or in flight.
+  const shown = desired && Object.keys(desired.values).length > 0 ? { ...reportedSettings, ...desired.values } : reportedSettings;
   const patient = patientOf(input.reported);
 
   return {
@@ -111,11 +125,12 @@ export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): Ventila
       ...(input.statusMessage === undefined ? {} : { statusMessage: input.statusMessage }),
     },
     settings: {
-      current: reportedSettings,
-      applied: reportedSettings,
+      current: shown,
+      applied: shown,
       ...(input.inFlight === undefined ? {} : { inFlight: input.inFlight }),
+      ...(input.sendStatus === undefined ? {} : { sendStatus: input.sendStatus }),
     },
-    mode: { current: input.reported.mode ?? UNKNOWN_MODE, options: input.modeOptionsFor ? input.modeOptionsFor(input.reported.mode) : REAL_MODE_OPTIONS },
+    mode: { current: desired?.mode ?? input.reported.mode ?? UNKNOWN_MODE, options: input.modeOptionsFor ? input.modeOptionsFor(input.reported.mode) : REAL_MODE_OPTIONS },
     metrics: toDerivedMetrics(input.metrics),
     patient,
     capabilities: { patientMonitor: Object.keys(patient.values).length > 0 },
@@ -127,6 +142,8 @@ export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): Ventila
     },
     limits: input.limits ?? {},
     onConfirm: input.onConfirm ?? IGNORE_CONFIRMATION,
+    ...(input.onCancel === undefined ? {} : { onCancel: input.onCancel }),
+    ...(input.onApplyNow === undefined ? {} : { onApplyNow: input.onApplyNow }),
     ...(input.alarmLimits === undefined ? {} : { alarmLimits: input.alarmLimits }),
     ...(input.onAlarmLimitsChange === undefined ? {} : { onAlarmLimitsChange: input.onAlarmLimitsChange }),
   };

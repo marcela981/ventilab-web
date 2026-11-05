@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Fake LLM core tests
-* Descripción: The fake OpenAI-compatible server parses its options (port, chunk delay) and rejects invalid ones, answers JSON (topic guard and notes analysis) to full or JSON-format requests and markdown to streamed ones, and frames a stream as OpenAI deltas that rebuild the answer, then a usage chunk and [DONE]. Depends on vitest and the fake LLM core. v0.2 (cierre IA): start mode and Retry-After options, the per-request prompt directive and the response plan of every fault injection mode (ok, 429 with Retry-After, 500, timeout, drop-mid-stream, malformed-json).
-* Versión: 0.2
+* Descripción: The fake OpenAI-compatible server parses its options (port, chunk delay) and rejects invalid ones, answers JSON (topic guard and notes analysis) to full or JSON-format requests and markdown to streamed ones, and frames a stream as OpenAI deltas that rebuild the answer, then a usage chunk and [DONE]. Depends on vitest and the fake LLM core. v0.2 (cierre IA): start mode and Retry-After options, the per-request prompt directive and the response plan of every fault injection mode (ok, 429 with Retry-After, 500, timeout, drop-mid-stream, malformed-json). v0.3 (Bloque A): the case interpretation prompt gets a JSON echoing the curated values (also streamed), and an unreadable curated block falls back to the usual answers.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,6 +17,8 @@ import {
   DEFAULT_PORT,
   DEFAULT_RETRY_AFTER_S,
   GRADE_FEEDBACK_ANSWER,
+  interpretationAnswer,
+  INTERPRETATION_RATIONALE,
   JSON_ANSWER,
   MODES,
   parseArgs,
@@ -27,6 +29,31 @@ import {
   STREAM_ANSWER,
   streamFrames,
 } from "./fake-llm-core.mjs";
+
+describe("case interpretation (Bloque A)", () => {
+  const curated = { complianceMlPerCmH2O: { curated: 30, min: 21, max: 39 }, shuntScale: { curated: 1, min: 0.7, max: 1.3 }, broken: { min: 1 } };
+  const request = (block) => ({
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: "Eres un intensivista…" },
+      { role: "user", content: `<historia_clinica>\nCaso: SDRA grave inestable\n</historia_clinica>\n\n<parametros_curados>\n${block}\n</parametros_curados>` },
+    ],
+  });
+
+  it("echoes every curated value with a stable trajectory", () => {
+    const answer = { complianceMlPerCmH2O: 30, shuntScale: 1, trajectory: "STABLE", rationale: INTERPRETATION_RATIONALE };
+
+    expect(interpretationAnswer(request(JSON.stringify(curated)))).toEqual(answer);
+    expect(JSON.parse(replyFor(request(JSON.stringify(curated))))).toEqual(answer);
+    expect(JSON.parse(replyFor({ ...request(JSON.stringify(curated)), stream: true }))).toEqual(answer);
+  });
+
+  it("falls back to the usual answers without a readable curated block", () => {
+    expect(interpretationAnswer(request("{not json"))).toBeNull();
+    expect(interpretationAnswer({ messages: [{ role: "user", content: "hola" }] })).toBeNull();
+    expect(JSON.parse(replyFor(request("[1, 2]")))).toEqual(JSON_ANSWER);
+  });
+});
 
 describe("parseArgs", () => {
   it("uses the defaults and the FAKE_LLM_PORT variable", () => {

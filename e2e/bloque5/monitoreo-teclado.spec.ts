@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E keyboard of the July Monitoreo console (Bloque 5, W5-1)
-* Descripción: The pending edits of the July console with the keyboard (DISENO_BLOQUE5 §6.8, hint "Esc: cancelar · Enter: confirmar") on a FREE session (Simular Paciente → "Aleatorio") at 1280×720: ArrowUp on the PEEP spinbutton makes one pending change ("1 cambio pendiente", Confirmar enabled), Enter confirms it (back to "Sin cambios pendientes" with the new value kept); another ArrowUp then Escape drops the pending edit and restores the confirmed value. The Real variant (Enter opens the summary, Escape closes it keeping the edits) needs device telemetry, which the local stack does not have (the Real console stays read-only without data), so it is covered by the component tests only. The session is finished at the end. v0.1 (Bloque 5, W5-1): first version. Depends on @playwright/test and the simulator e2e helpers.
-* Versión: 0.1
+* Descripción: The keyboard of the July console with the automatic application (DISENO_AJUSTES_A §3.1, A-4) on a FREE session (Simular Paciente → "Aleatorio") at 1280×720: no Confirmar nor keyboard hint; ArrowUp on the PEEP spinbutton applies at once and the value stays; Escape right after a step of the rate slider (inside its 300 ms debounce) drops it, and Enter right after another step applies it now. The Real variant (the 500 ms auto-send) needs device telemetry, which the local stack does not have (the Real console stays read-only without data), so it is covered by the component tests only. The session is finished at the end. v0.1 (Bloque 5, W5-1): first version. v0.2 (Ajustes A, A1): rewritten for the automatic application (it covered Confirmar / Cancelar). Depends on @playwright/test and the simulator e2e helpers.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,39 +14,43 @@ import { COMPACT_VIEWPORT, finishWorkspaceSession, startPatientSession } from ".
 
 test.use({ viewport: COMPACT_VIEWPORT });
 
-test("Enter confirms and Escape cancels the pending edits", async ({ page }) => {
+test("edits apply on their own; Enter applies and Escape drops a slider change still debouncing", async ({ page }) => {
   test.setTimeout(180_000);
   await startPatientSession(page);
-  const values = page.getByRole("region", { name: "Valores" });
-  const pending = values.getByRole("status").filter({ hasText: /^(Sin cambios pendientes|\d+ cambios? pendientes?)$/ });
-  const confirm = values.getByRole("button", { name: "Confirmar" });
   const peep = page.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
+  const rate = page.getByRole("complementary", { name: "Controles" }).getByRole("slider", { name: "Frecuencia respiratoria" });
+  const rateValue = async () => Number(await rate.inputValue());
 
-  await expect(page.getByText("Esc: cancelar · Enter: confirmar")).toBeVisible();
-  await expect(pending).toHaveText("Sin cambios pendientes");
+  // No confirmation UI any more (Ajustes A).
+  await expect(page.getByRole("button", { name: "Confirmar" })).toHaveCount(0);
+  await expect(page.getByText("Esc: cancelar · Enter: confirmar")).toHaveCount(0);
+
+  // A key on a spinbutton applies at once and the value stays.
   const initial = Number(await peep.getAttribute("aria-valuenow"));
 
-  // Enter confirms.
   await peep.focus();
   await page.keyboard.press("ArrowUp");
-  await expect(pending).toHaveText("1 cambio pendiente");
-  await expect(confirm).toBeEnabled();
   const edited = Number(await peep.getAttribute("aria-valuenow"));
 
   expect(edited).toBeGreaterThan(initial);
-  await page.keyboard.press("Enter");
-  await expect(pending).toHaveText("Sin cambios pendientes", { timeout: 15_000 });
-  await expect(confirm).toBeDisabled();
+  await page.waitForTimeout(1000);
   await expect.poll(async () => Number(await peep.getAttribute("aria-valuenow"))).toBe(edited);
 
-  // Escape cancels and restores the confirmed value.
-  await peep.focus();
-  await page.keyboard.press("ArrowUp");
-  await expect(pending).toHaveText("1 cambio pendiente");
-  expect(Number(await peep.getAttribute("aria-valuenow"))).toBeGreaterThan(edited);
+  // Escape right after a slider step (inside its 300 ms debounce) drops it.
+  const before = await rateValue();
+
+  await rate.focus();
+  await page.keyboard.press("ArrowRight");
   await page.keyboard.press("Escape");
-  await expect(pending).toHaveText("Sin cambios pendientes");
-  await expect.poll(async () => Number(await peep.getAttribute("aria-valuenow"))).toBe(edited);
+  await expect.poll(rateValue).toBe(before);
+  await page.waitForTimeout(1000);
+  expect(await rateValue()).toBe(before);
+
+  // Enter right after a slider step applies it now; it stays.
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(1000);
+  expect(await rateValue()).toBeGreaterThan(before);
 
   await finishWorkspaceSession(page);
 });

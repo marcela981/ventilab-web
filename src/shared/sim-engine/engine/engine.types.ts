@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Tipos del motor fisiológico
 * Descripción: GENERATED — do not edit; run node scripts/sync-sim-engine.mjs. Vendored copy of ventylab-server/src/features/simulation/domain/engine/engine.types.ts. Contratos del motor de simulación determinista: caso clínico, ajustes del ventilador, eventos, estado interno, muestras de onda, métricas por ciclo, intercambio gaseoso, alarmas, objetivos y resultado de repetición
-* Versión: 1.0
+* Versión: 2.0 (evolución opcional del paciente: gravedad, frecuencia cardíaca, estado y alarmas del paciente)
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -119,6 +119,35 @@ export interface AlarmThresholds {
   readonly highTidalVolumeMlPerKgPbw: number;
   readonly highRespiratoryRateBpm: number;
   readonly autoPeepCmH2O: number;
+  readonly lowSpo2Percent: number;
+  readonly lowMapMmHg: number;
+  readonly tachycardiaBpm: number;
+  readonly bradycardiaBpm: number;
+}
+
+export interface EvolutionThresholds {
+  readonly hypoxemiaSpo2Percent: number;
+  readonly acidosisPh: number;
+  readonly plateauMaxCmH2O: number;
+  readonly drivingPressureMaxCmH2O: number;
+  readonly autoPeepMaxCmH2O: number;
+  readonly hypotensionMapMmHg: number;
+  readonly criticalSpo2Percent: number;
+  readonly criticalPh: number;
+  readonly criticalMapMmHg: number;
+}
+
+// Optional time-evolution block (engine 2.0.0). Without it the engine keeps the 1.0.0 behaviour.
+export interface EvolutionProfile {
+  readonly initialSeverity: number;
+  readonly minSeverity: number;
+  readonly progressionRatePerMin: number;
+  readonly viliRatePerMin: number;
+  readonly recoveryRatePerMin: number;
+  readonly arrestAfterCriticalMin: number;
+  readonly deathAfterArrestMin: number;
+  readonly baselineHeartRateBpm: number;
+  readonly thresholds?: Partial<EvolutionThresholds>;
 }
 
 export interface EngineCase {
@@ -133,6 +162,7 @@ export interface EngineCase {
   readonly events: readonly CaseEvent[];
   readonly targets: EngineTargets;
   readonly alarmThresholds?: Partial<AlarmThresholds>;
+  readonly evolution?: EvolutionProfile;
 }
 
 export interface EngineOptions {
@@ -254,6 +284,22 @@ export interface GasExchangeState {
   meanArterialPressureMmHg: number;
 }
 
+export type PatientStatus = "STABLE" | "UNSTABLE" | "CRITICAL" | "ARREST" | "DECEASED";
+
+export type PatientInsult = "HYPOXEMIA" | "ACIDOSIS" | "LUNG_INJURY_RISK" | "AIR_TRAPPING" | "HYPOTENSION";
+
+export interface PatientState {
+  status: PatientStatus;
+  severity: number;
+  heartRateBpm: number;
+  insults: PatientInsult[];
+  criticalExposureMin: number;
+  arrestElapsedMin: number;
+  firstCriticalAtMs: number | null;
+  arrestAtMs: number | null;
+  deceasedAtMs: number | null;
+}
+
 export interface WaveformSample {
   readonly simTimeMs: number;
   readonly pressureCmH2O: number;
@@ -335,6 +381,9 @@ export interface EngineState {
   gas: GasExchangeState;
   appliedCaseEvents: AppliedCaseEvent[];
   waveform: WaveformRingState;
+  // Null without an evolution block (engine 1.0.0 behaviour).
+  patient: PatientState | null;
+  evolutionThresholds: EvolutionThresholds | null;
 }
 
 export type AlarmCode =
@@ -344,7 +393,12 @@ export type AlarmCode =
   | "APNEA"
   | "HIGH_RESPIRATORY_RATE"
   | "AUTO_PEEP"
-  | "DISCONNECTION";
+  | "DISCONNECTION"
+  | "LOW_SPO2"
+  | "LOW_MAP"
+  | "TACHYCARDIA"
+  | "BRADYCARDIA"
+  | "CARDIAC_ARREST";
 
 export type AlarmSeverity = "HIGH" | "MEDIUM";
 
@@ -381,6 +435,19 @@ export interface GasExchangeSnapshot {
 
 export interface HemodynamicSnapshot {
   readonly meanArterialPressureMmHg: number;
+  // Null without an evolution block (engine 1.0.0 behaviour).
+  readonly heartRateBpm: number | null;
+}
+
+export interface PatientSnapshot {
+  readonly status: PatientStatus;
+  readonly severity: number;
+  readonly heartRateBpm: number;
+  readonly insults: readonly PatientInsult[];
+  readonly criticalExposureMin: number;
+  readonly firstCriticalAtMs: number | null;
+  readonly arrestAtMs: number | null;
+  readonly deceasedAtMs: number | null;
 }
 
 export interface ConditionsSnapshot {
@@ -401,6 +468,8 @@ export interface EngineMetrics {
   readonly conditions: ConditionsSnapshot;
   readonly alarms: readonly Alarm[];
   readonly targets: readonly TargetStatus[];
+  // Null without an evolution block (engine 1.0.0 behaviour).
+  readonly patient: PatientSnapshot | null;
 }
 
 export interface ReplayResult {

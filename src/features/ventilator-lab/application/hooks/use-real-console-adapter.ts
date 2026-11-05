@@ -21,7 +21,8 @@
 *   v1.5 (W10, Bloque 1): optional `alarmLimits` gives the console the client alarm limits of the source
 *   (real-alarm-limits: kept in the store closure, changed from the AlarmLimitsPanel, evaluated on every published
 *   snapshot against the derived metrics, never while there is no data).
-* Versión: 1.5
+*   v1.6 (Ajustes A, A2): passes the auto-send options (desired values and mode, send status, onCancel, onApplyNow); the caller options reach the store in a layout effect, so a desired value replaces the console edit before paint.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -29,7 +30,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useSocketEvent } from "@shared/realtime";
 import type { VentilatorTelemetryFrame } from "@shared/realtime";
 import { createExternalStore, createUiThrottle, reuseUnchangedSlices } from "@shared/ventilator-console";
@@ -51,6 +52,7 @@ import { computeBreathMetrics, createBreathDetector, EMPTY_BREATH_METRICS } from
 import type { BreathMetrics } from "../entities/breath-detection";
 import { applyAlarmLimitChanges, DEFAULT_REAL_ALARM_LIMITS, evaluateAlarmLimits } from "../entities/real-alarm-limits";
 import { buildRealConsoleAdapter } from "../entities/real-console-adapter";
+import type { RealDesiredSettings } from "../entities/real-console-adapter";
 import { EMPTY_REPORTED_STATE, reduceReportedState } from "../entities/reported-settings";
 import type { ReportedState } from "../entities/reported-settings";
 import { applyDeviceAlarm, frameAlarmsToConsole, mergeConsoleAlarms, NO_DATA_ALARM_MESSAGE, noDataAlarm } from "../entities/telemetry-alarms";
@@ -72,7 +74,12 @@ export type UseRealConsoleAdapterOptions = {
   pendingResetKey?: string | number
   limits?: ConsoleLimits
   inFlight?: ConsoleSettings["inFlight"]
+  /** Ajustes A (A2): the auto-send status, the desired values and the Escape / Enter callbacks of the July console. */
+  sendStatus?: ConsoleSettings["sendStatus"]
+  desired?: RealDesiredSettings
   onConfirm?: (confirmation: ConsoleConfirmation) => void
+  onCancel?: () => void
+  onApplyNow?: () => void
   modeOptionsFor?: (reportedMode: string | null) => readonly ConsoleModeOption[]
   /** W10: the console offers the client alarm limits (AlarmLimitsPanel, real-alarm-limits). Default false. */
   alarmLimits?: boolean
@@ -151,7 +158,11 @@ type CallerOptions = {
   pendingResetKey: string | number | undefined
   limits: ConsoleLimits | undefined
   inFlight: ConsoleSettings["inFlight"]
+  sendStatus: ConsoleSettings["sendStatus"]
+  desired: RealDesiredSettings | undefined
   onConfirm: ((confirmation: ConsoleConfirmation) => void) | undefined
+  onCancel: (() => void) | undefined
+  onApplyNow: (() => void) | undefined
   modeOptionsFor: ((reportedMode: string | null) => readonly ConsoleModeOption[]) | undefined
   alarmLimits: boolean
 };
@@ -211,7 +222,11 @@ function createSourceStore(sourceId: string, initial: CallerOptions): SourceStor
       pendingResetKey: options.pendingResetKey,
       ...(options.limits === undefined ? {} : { limits: options.limits }),
       inFlight: options.inFlight,
+      ...(options.sendStatus === undefined ? {} : { sendStatus: options.sendStatus }),
+      ...(options.desired === undefined ? {} : { desired: options.desired }),
       ...(options.onConfirm === undefined ? {} : { onConfirm: options.onConfirm }),
+      ...(options.onCancel === undefined ? {} : { onCancel: options.onCancel }),
+      ...(options.onApplyNow === undefined ? {} : { onApplyNow: options.onApplyNow }),
       ...(options.modeOptionsFor === undefined ? {} : { modeOptionsFor: options.modeOptionsFor }),
       ...(withLimits ? { alarmLimits, onAlarmLimitsChange } : {}),
     });
@@ -264,14 +279,18 @@ export function useRealConsoleAdapter({
   pendingResetKey,
   limits,
   inFlight,
+  sendStatus,
+  desired,
   onConfirm,
+  onCancel,
+  onApplyNow,
   modeOptionsFor,
   alarmLimits = false,
   uiThrottleMs = LIVE_UI_THROTTLE_MS,
 }: UseRealConsoleAdapterOptions): ConsoleAdapterStore | null {
   const options = useMemo<CallerOptions>(
-    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor, alarmLimits }),
-    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, onConfirm, modeOptionsFor, alarmLimits],
+    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, sendStatus, desired, onConfirm, onCancel, onApplyNow, modeOptionsFor, alarmLimits }),
+    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, sendStatus, desired, onConfirm, onCancel, onApplyNow, modeOptionsFor, alarmLimits],
   );
   // One store per source; its first snapshot uses the options of the render that creates it. A new source replaces
   // the entry during render (no effect round trip), like the console curve ring.
@@ -285,8 +304,9 @@ export function useRealConsoleAdapter({
 
   const { target } = current;
 
-  // The caller options reach the store at once (declared first, so the live toggle below commits with them).
-  useEffect(() => {
+  // The caller options reach the store before paint (a layout effect, so the auto-send desired value replaces the
+  // console edit in the same frame; it also runs before the live toggle below).
+  useLayoutEffect(() => {
     target?.setOptions(options);
   }, [target, options]);
 

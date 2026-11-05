@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Fake LLM core (automated tests)
-* Descripción: Pure helpers of the fake OpenAI-compatible chat completions server used by the Block 2 E2E specs (TutorAI deepen, questions, notes analysis): option parsing, the deterministic reply for a request (JSON with `onTopic` and a notes analysis when the caller asks for JSON or a full completion, a Spanish markdown answer when it streams), the split of that answer into delta chunks and the OpenAI SSE frames (deltas, usage, [DONE]). Without real provider keys the backend has no fake provider; pointing OPENAI_BASE_URL at this server exercises the real server path (conversation, messages, AI call telemetry and ratings). Depends on nothing. v0.2 (Bloque 3, Ola 4): a grade feedback prompt (it asks for the `{"overall": …, "perQuestion": …}` JSON) gets a parseable grade feedback with a fixed overall text, so the evaluation result shows LLM feedback instead of the deterministic fallback. v0.3 (cierre IA): fault injection. Modes `ok` (default, the answers above), `429` (rate limit with Retry-After), `500`, `timeout` (never answers), `drop-mid-stream` (part of the answer, then the connection is destroyed) and `malformed-json` (an unparseable completion body or SSE chunk). The mode of a request is, in order: a `[[fake-llm:<mode>]]` directive anywhere in its prompt (per request, e.g. typed in a TutorAI question), the mode set at runtime through the admin route (PUT /__fake-llm/mode) and the start mode (--mode or FAKE_LLM_MODE). planResponse turns a mode and a request into a response plan (status, headers, chunks and how it ends) that the server executes.
-* Versión: 0.3
+* Descripción: Pure helpers of the fake OpenAI-compatible chat completions server used by the Block 2 E2E specs (TutorAI deepen, questions, notes analysis): option parsing, the deterministic reply for a request (JSON with `onTopic` and a notes analysis when the caller asks for JSON or a full completion, a Spanish markdown answer when it streams), the split of that answer into delta chunks and the OpenAI SSE frames (deltas, usage, [DONE]). Without real provider keys the backend has no fake provider; pointing OPENAI_BASE_URL at this server exercises the real server path (conversation, messages, AI call telemetry and ratings). Depends on nothing. v0.2 (Bloque 3, Ola 4): a grade feedback prompt (it asks for the `{"overall": …, "perQuestion": …}` JSON) gets a parseable grade feedback with a fixed overall text, so the evaluation result shows LLM feedback instead of the deterministic fallback. v0.3 (cierre IA): fault injection. Modes `ok` (default, the answers above), `429` (rate limit with Retry-After), `500`, `timeout` (never answers), `drop-mid-stream` (part of the answer, then the connection is destroyed) and `malformed-json` (an unparseable completion body or SSE chunk). The mode of a request is, in order: a `[[fake-llm:<mode>]]` directive anywhere in its prompt (per request, e.g. typed in a TutorAI question), the mode set at runtime through the admin route (PUT /__fake-llm/mode) and the start mode (--mode or FAKE_LLM_MODE). planResponse turns a mode and a request into a response plan (status, headers, chunks and how it ends) that the server executes. v0.4 (Bloque A): the simulator case interpretation prompt (its `<parametros_curados>` block, SIM_CASE_INTERPRETATION) gets a valid strict JSON that echoes the curated value of every parameter, a STABLE trajectory and a short rationale, so the session starts with the interpretation accepted (source LLM) and the curated physiology unchanged.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -110,11 +110,55 @@ export const GRADE_FEEDBACK_ANSWER = {
   perQuestion: [],
 };
 
+export const INTERPRETATION_RATIONALE = "Interpretación de prueba (proveedor falso de E2E): se conservan los valores curados del caso.";
+
+const CURATED_BLOCK = /<parametros_curados>\s*([\s\S]*?)\s*<\/parametros_curados>/;
+
+/**
+ * The simulator case interpretation answer: every curated parameter ({name: {curated, min, max}}) echoed with its
+ * curated value, so the server accepts it unchanged. Null when the prompt has no readable curated block.
+ */
+export function interpretationAnswer(body) {
+  const match = CURATED_BLOCK.exec(promptText(body));
+
+  if (!match) {
+    return null;
+  }
+
+  let curated;
+
+  try {
+    curated = JSON.parse(match[1]);
+  } catch {
+    return null;
+  }
+
+  if (curated === null || typeof curated !== "object" || Array.isArray(curated)) {
+    return null;
+  }
+
+  const values = {};
+
+  for (const [name, band] of Object.entries(curated)) {
+    if (band !== null && typeof band === "object" && typeof band.curated === "number" && Number.isFinite(band.curated)) {
+      values[name] = band.curated;
+    }
+  }
+
+  return { ...values, trajectory: "STABLE", rationale: INTERPRETATION_RATIONALE };
+}
+
 // The grade feedback prompt of the backend ends with its JSON format: {"overall": "...", "perQuestion": [...]}.
 const isGradeFeedbackRequest = (body) => /"overall"/.test(promptText(body)) && /"perQuestion"/.test(promptText(body));
 
 /** Text the fake answers for one chat completions request body. */
 export function replyFor(body) {
+  const interpretation = interpretationAnswer(body);
+
+  if (interpretation !== null) {
+    return JSON.stringify(interpretation);
+  }
+
   if (isGradeFeedbackRequest(body)) {
     return JSON.stringify(GRADE_FEEDBACK_ANSWER);
   }

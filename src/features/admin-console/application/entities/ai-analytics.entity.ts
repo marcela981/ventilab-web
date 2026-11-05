@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: AI analytics rules
-* Descripción: Pure rules of /admin/ai: the filters kept in the URL (Bogota calendar days from/to, use case, provider, model, prompt version, rated output type, surface and scope; unknown enum values are dropped), their URL writer, the API queries of the telemetry stats (`/api/admin/ai-telemetry/stats`: range, use case, provider, model) and of the rating stats and CSV (`/api/admin/ai-ratings/stats` and `export.csv`: the same plus prompt version, target type, surface and scope), the Spanish labels of the use cases, target types, surfaces, scopes and QUEST dimensions, and the label of one rating group. The AiRatingGroup read model keeps the API values as they are. No statistic is computed here. Depends on the admin console date range entity and the admin console DTOs. v1.1 (B4, DISENO_BLOQUE4 §2.7): the enum lists (use cases with MODULE_QA, target types, surfaces with EVALUATION_FEEDBACK and SIMULATOR_ASSIST, scopes) are the keys of label records typed against the generated contract, so a new value in the API fails the type check until it gets its label; the surface and scope filters and the group surface and scope ("unknown" for ratings the server cannot place).
-* Versión: 1.1
+* Descripción: Pure rules of /admin/ai: the filters kept in the URL (Bogota calendar days from/to, use case, provider, model, prompt version, rated output type, surface and scope; unknown enum values are dropped), their URL writer, the API queries of the telemetry stats (`/api/admin/ai-telemetry/stats`: range, use case, provider, model) and of the rating stats and CSV (`/api/admin/ai-ratings/stats` and `export.csv`: the same plus prompt version, target type, surface and scope), the Spanish labels of the use cases, target types, surfaces, scopes and QUEST dimensions, and the label of one rating group. The AiRatingGroup read model keeps the API values as they are. No statistic is computed here. Depends on the admin console date range entity and the admin console DTOs. v1.1 (B4, DISENO_BLOQUE4 §2.7): the enum lists (use cases with MODULE_QA, target types, surfaces with EVALUATION_FEEDBACK and SIMULATOR_ASSIST, scopes) are the keys of label records typed against the generated contract, so a new value in the API fails the type check until it gets its label; the surface and scope filters and the group surface and scope ("unknown" for ratings the server cannot place). v1.2 (Bloque A): labels of the simulator use cases SIM_CASE_INTERPRETATION and SIM_ALARM_HELP, the AI_CALL target type and the SIM_ALARM surface.
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,6 +37,8 @@ export const AI_USE_CASE_LABELS: Readonly<Record<AiUseCase, string>> = {
   FREE_CHAT: "Chat libre",
   TOPIC_CHECK: "Verificación de tema",
   SIM_ASSIST: "Asistencia en simulación",
+  SIM_CASE_INTERPRETATION: "Interpretación del caso clínico",
+  SIM_ALARM_HELP: "Ayuda de alarmas del simulador",
 };
 
 export const AI_TARGET_TYPE_LABELS: Readonly<Record<AiRatingTargetType, string>> = {
@@ -44,6 +46,7 @@ export const AI_TARGET_TYPE_LABELS: Readonly<Record<AiRatingTargetType, string>>
   MESSAGE: "Mensaje del asistente",
   NOTES_ANALYSIS: "Análisis de notas",
   SIM_ASSIST: "Asistencia en simulación",
+  AI_CALL: "Llamada de IA",
 };
 
 export const AI_SURFACE_LABELS: Readonly<Record<AiRatingSurface, string>> = {
@@ -53,6 +56,7 @@ export const AI_SURFACE_LABELS: Readonly<Record<AiRatingSurface, string>> = {
   NOTES_ANALYSIS: "Análisis de notas",
   EVALUATION_FEEDBACK: "Retroalimentación de evaluaciones",
   SIMULATOR_ASSIST: "Asistente del simulador",
+  SIM_ALARM: "Alarmas del simulador",
 };
 
 export const AI_SCOPE_LABELS: Readonly<Record<AiRatingScope, string>> = {

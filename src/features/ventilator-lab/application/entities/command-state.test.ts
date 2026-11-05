@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator command UI state tests
-* Descripción: The pure command state machine of the live console: one command at a time (a second confirmation while one is in flight, or before the 429 Retry-After, is ignored), sending → awaiting on the 202 SENT, statuses that arrive before the 202 are applied once it arrives, ACKED/APPLIED wait until the device REPORTS the confirmed values (the state never carries a display value) and give up after REPORT_WAIT_MS, REJECTED/TIMEOUT/lost/failed leave a warning on the parameter (the console goes back to the reported value) and free the console, a new confirmation clears the warning, older or foreign statuses are ignored, 422 violations and the 429 wait reach the notice; the recent list merges the history read with the live statuses. v1.1 (T8 review fix): W3 an accepted change not reported within REPORT_WAIT_MS keeps sending blocked until the device reports it (or a reset); W1 a one-step change is not taken as applied while the old value is reported; W2 a request that may have been sent stays locked (uncertain) until the report or the end of the wait. v1.2 (T8 review fix 2): W6 the uncertain wait ends early on a REJECTED of a new command and its end consults the buffered statuses and the history (accepted → blocked, rejected → freed, unreadable → blocked, no trace → not sent); W5 «Usar los valores que informa el equipo» lifts the unreported block. v1.3 (T8 review fix 3): W1 the abandoned accepted values are named and listed before a command carries a different value; W2 only the caller's own early REJECTED/ACKED counts; a TIMEOUT history match keeps sending blocked as unknown; a console reset keeps the block. v1.4 (T8 review fix 4): B1 an abandoned accepted mode change is named and a command carrying the reported mode is warned (cleared by a report of that mode or a later accepted command that knowingly carried a mode); B2 an abandoned one-step change keeps its pre-command base (450 → 460 stays abandoned while 450 is reported); S2 a later accepted command clears only the abandoned values whose field it carried; the carry key changes when the report moves. Depends on vitest and the command state entity.
-* Versión: 1.4
+* Descripción: The pure command state machine of the live console: one command at a time (a second confirmation while one is in flight, or before the 429 Retry-After, is ignored), sending → awaiting on the 202 SENT, statuses that arrive before the 202 are applied once it arrives, ACKED/APPLIED wait until the device REPORTS the confirmed values (the state never carries a display value) and give up after REPORT_WAIT_MS, REJECTED/TIMEOUT/lost/failed leave a warning on the parameter (the console goes back to the reported value) and free the console, a new confirmation clears the warning, older or foreign statuses are ignored, 422 violations and the 429 wait reach the notice; the recent list merges the history read with the live statuses. v1.1 (T8 review fix): W3 an accepted change not reported within REPORT_WAIT_MS keeps sending blocked until the device reports it (or a reset); W1 a one-step change is not taken as applied while the old value is reported; W2 a request that may have been sent stays locked (uncertain) until the report or the end of the wait. v1.2 (T8 review fix 2): W6 the uncertain wait ends early on a REJECTED of a new command and its end consults the buffered statuses and the history (accepted → blocked, rejected → freed, unreadable → blocked, no trace → not sent); W5 «Usar los valores que informa el equipo» lifts the unreported block. v1.3 (T8 review fix 3): W1 the abandoned accepted values are named and listed before a command carries a different value; W2 only the caller's own early REJECTED/ACKED counts; a TIMEOUT history match keeps sending blocked as unknown; a console reset keeps the block. v1.4 (T8 review fix 4): B1 an abandoned accepted mode change is named and a command carrying the reported mode is warned (cleared by a report of that mode or a later accepted command that knowingly carried a mode); B2 an abandoned one-step change keeps its pre-command base (450 → 460 stays abandoned while 450 is reported); S2 a later accepted command clears only the abandoned values whose field it carried; the carry key changes when the report moves. Depends on vitest and the command state entity. v1.5 (Ajustes A, A2): the auto-send selectors (outcome per parameter, the 429 read-only reason, the blocks the queue waits on).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,9 +18,12 @@ import {
   carriedMode,
   carriedValues,
   carryKey,
+  commandBlockReason,
   commandBusyReason,
   commandInFlight,
   commandNoticeView,
+  commandOutcomeFor,
+  commandRateLimitReason,
   COMMAND_STATE_COPY,
   commandReducer,
   formatCommandParams,
@@ -609,6 +612,52 @@ describe("commandReducer", () => {
 
     expect(state.active).toBeNull();
     expect(state.notice).toEqual({ tone: "error", message: "No hay cambios para enviar.", details: [] });
+  });
+});
+
+describe("auto-send selectors (Ajustes A)", () => {
+  it("keeps the outcome null while the command is active, then reports it applied", () => {
+    const sending = run([submitted()]);
+
+    expect(commandOutcomeFor(sending, "l1", COMMAND)).toBeNull();
+
+    const applied = run([accepted("ACKED"), { type: "reported", report: { mode: "VCV", settings: { peep: 8 } }, at: 200 }], sending);
+
+    expect(commandOutcomeFor(applied, "l1", COMMAND)).toEqual({ rejected: {}, notes: {}, modeApplied: false });
+  });
+
+  it("gives the server reason of a rejected parameter", () => {
+    const rejected = run([submitted(), accepted("SENT"), { type: "status", event: statusEvent("c1", "REJECTED", "out_of_order"), at: 200 }]);
+
+    expect(commandOutcomeFor(rejected, "l1", COMMAND)).toEqual({ rejected: { peep: "motivo informado: «out_of_order»" }, notes: {}, modeApplied: false });
+  });
+
+  it("notes an accepted value the device does not report yet, and the mode it runs", () => {
+    const modeCommand: MappedCommand = { ...COMMAND, mode: "SIMV", modeChanged: true, request: { ...COMMAND.request, mode: "SIMV" } };
+    const unreported = run([
+      { type: "submitted", localId: "l1", command: modeCommand, at: 0 },
+      accepted("ACKED", 100),
+      { type: "tick", at: 100 + REPORT_WAIT_MS },
+    ]);
+
+    expect(commandOutcomeFor(unreported, "l1", modeCommand)).toEqual({ rejected: {}, notes: { peep: COMMAND_STATE_COPY.unreportedTag }, modeApplied: true });
+  });
+
+  it("makes only the 429 wait read-only and reports the blocks the queue waits on", () => {
+    const sending = run([submitted()]);
+
+    expect(commandRateLimitReason(sending, 0)).toBeNull();
+    expect(commandBlockReason(sending, 0)).toBeNull();
+
+    const limited = run([{ type: "failed", localId: "l1", description: { message: "Demasiados", violations: [], retryAfterS: 3, mayHaveBeenSent: false }, at: 1_000 }], sending);
+
+    expect(commandRateLimitReason(limited, 1_500)).toBe("Demasiados cambios seguidos: podrás enviar otro en 3 s.");
+    expect(commandBlockReason(limited, 1_500)).toBe(commandRateLimitReason(limited, 1_500));
+    expect(commandRateLimitReason(limited, 4_000)).toBeNull();
+
+    const unreported = run([submitted(), accepted("ACKED", 100), { type: "tick", at: 100 + REPORT_WAIT_MS }]);
+
+    expect(commandBlockReason(unreported, 100 + REPORT_WAIT_MS)).toBe(COMMAND_STATE_COPY.unreported);
   });
 });
 

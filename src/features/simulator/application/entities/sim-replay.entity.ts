@@ -14,7 +14,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { ENGINE_VERSION } from "@shared/sim-engine";
+import { ENGINE_VERSION, engineReplaysVersion } from "@shared/sim-engine";
 import type { EngineMetrics } from "@shared/sim-engine";
 import { ALARM_LABELS } from "../config/sim-console.config";
 import { EVENT_MARK_KINDS, MARK_LABELS } from "../config/sim-result.config";
@@ -114,5 +114,5 @@ export function replayVersionWarning(replay: Pick<SessionReplay, "engineVersion"
     return replay.warning ?? REPLAY_VERSION_COPY.mismatch(replay.engineVersion, replay.currentEngineVersion ?? bundled);
   }
 
-  return replay.engineVersion === bundled ? null : REPLAY_VERSION_COPY.mismatch(replay.engineVersion, bundled);
+  return engineReplaysVersion(replay.engineVersion, bundled) ? null : REPLAY_VERSION_COPY.mismatch(replay.engineVersion, bundled);
 }

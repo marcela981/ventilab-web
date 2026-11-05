@@ -6,7 +6,9 @@
 *   v1.3 (W6, Bloque 1): the own patient of a FREE session is kept (checked by parseSessionPatient) in the session
 *   state, replay and history; the started session carries the patient of the start request (not echoed by the server).
 *   v1.4 (W8, Bloque 1): the patient preset of a clinical case detail ("Cargar caso" of the Simular Paciente form).
-* Versión: 1.4
+*   v1.5 (Bloque A): the summary score is nullable (an EXAM student before the teacher release) and carries
+*   `resultsWithheld`, the patient `outcome` and the debrief `timeline` (malformed items dropped).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -18,6 +20,7 @@ import type { TargetStatus } from "@shared/sim-engine";
 import { OBJECTIVE_DEFINITIONS } from "../../application/config/sim-console.config";
 import { CASE_DIFFICULTIES } from "../../application/config/simulator.config";
 import type { CaseDifficulty } from "../../application/config/simulator.config";
+import { parseOutcome, parseTimeline } from "../../application/entities/sim-debrief.entity";
 import type { ScoreCriterion, SessionExamLink, SessionSummary } from "../../application/entities/sim-result.entity";
 import { sessionDurationMs } from "../../application/entities/simulator.entity";
 import { parseSessionPatient } from "../../application/entities/sim-patient.entity";
@@ -157,7 +160,10 @@ export function toSessionSummary(dto: SimulationSessionSummaryDTO): SessionSumma
     targets: targets.flatMap(toTargetStatus),
     score: dto.score,
     breakdown: breakdown.flatMap(toScoreCriterion),
+    resultsWithheld: dto.resultsWithheld === true,
     aiHelpCount: dto.aiHelpCount,
+    outcome: parseOutcome(dto.outcome),
+    timeline: parseTimeline(dto.timeline),
   };
 }
 

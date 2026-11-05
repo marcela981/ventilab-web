@@ -435,4 +435,10 @@ describe("checkEngineVersion", () => {
     expect(checkEngineVersion("FREE", "0.9.0", "1.0.0")).toMatchObject({ status: "warning" });
     expect(checkEngineVersion("EXAM", "0.9.0", "1.0.0")).toMatchObject({ status: "blocked" });
   });
+
+  it("treats a 1.x session on the 2.x engine as a match (it reproduces it exactly), but not the reverse", () => {
+    expect(checkEngineVersion("EXAM", "1.0.0", "2.0.0")).toEqual({ status: "match" });
+    expect(checkEngineVersion("FREE", "1.0.0", "2.0.0")).toEqual({ status: "match" });
+    expect(checkEngineVersion("EXAM", "2.0.0", "1.0.0")).toMatchObject({ status: "blocked" });
+  });
 });

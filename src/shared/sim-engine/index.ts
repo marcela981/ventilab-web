@@ -17,7 +17,7 @@
 
 export type * from "./engine/engine.types";
 export { EngineValidationError, type EngineErrorCode } from "./engine/engine.errors";
-export { ENGINE_VERSION } from "./engine/engine-version";
+export { ENGINE_VERSION, engineReplaysVersion } from "./engine/engine-version";
 export {
   DEFAULT_VENTILATOR_SETTINGS,
   FLOW_PATTERNS,

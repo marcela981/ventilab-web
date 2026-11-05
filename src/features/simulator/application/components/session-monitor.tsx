@@ -20,7 +20,12 @@
 *   (TimeControls), Confirmar / Cancelar / Enter / Escape and the mode toggle stay enabled and the assist follows the
 *   assistance policy. `curvesToolbarStart` is the host seam for the signal chip. The replay keeps the classic layout
 *   (D28).
-* Versión: 0.2
+*   v0.3 (Bloque A): the patient status area also shows the engine patient status and severity ("Inestable ·
+*   gravedad 45 %", "Paciente fallecido") from the session store (re-rendered only when the text changes, no extra
+*   sampling), and in EXAM the case drawer leaves out the live objectives (they reveal the correction). Every alarm of
+*   the console opens "¿Cómo estabilizar?" (rules + AI suggestion of POST /simulation/sessions/{id}/alarm-help) under
+*   the assistance policy of the session (EXAM DISABLED or unknown: only the alarm description, no request).
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -36,17 +41,24 @@ import { useApiQuery } from "@shared/api-client/use-api-query";
 import { ConfirmDialog } from "@shared/design-system/components/confirm-dialog";
 import { cx } from "@shared/lib/class-names";
 import { VentilatorConsole } from "@shared/ventilator-console";
-import type { MonitorCardsController } from "@shared/ventilator-console";
+import type { ConsoleAlarmHelpTarget, MonitorCardsController } from "@shared/ventilator-console";
+import { sessionAlarmHelpRequest } from "../../api/services/simulation-alarm-help.service";
 import { CLINICAL_CASE_PATH } from "../../api/services/clinical-cases.service";
 import { EVENT_PENDING_WARNING_COUNT } from "../config/sim-console.config";
 import { DEADLINE_WARNING_MS } from "../config/sim-exam.config";
 import { buildSessionResultUrl, SIMULATOR_URL } from "../config/simulator.routes";
 import type { SimulationMode } from "../config/simulator.config";
+import { alarmHelpAvailability } from "../entities/sim-alarm-help.entity";
+import { resolveAssistPolicy } from "../entities/sim-assist.entity";
 import type { AssistancePolicyValue } from "../entities/sim-assist.entity";
 import { formatCountdown } from "../entities/sim-exam.entity";
+import { patientConditionText } from "../entities/sim-debrief.entity";
 import type { SessionPatient } from "../entities/sim-patient.entity";
 import type { SessionBoot } from "../entities/sim-session.entity";
 import { useExamDeadline } from "../hooks/use-exam-deadline";
+import { useSimSessionSlice } from "../hooks/use-sim-session";
+import type { SimSessionSnapshot, SimSessionStore } from "../hooks/use-sim-session";
+import { AlarmHelpPanel } from "./lazy-alarm-help-panel";
 import { AssistLauncher } from "./assist-launcher";
 import { DivergenceDialog } from "./divergence-dialog";
 import { LiveCasePanel, SessionAssistSlot, SessionTimeControls } from "./live-session-widgets";
@@ -80,6 +92,7 @@ export const SESSION_PAGE_COPY = {
   examTimeLeft: "Tiempo restante del examen",
   deadlineReached: "Se alcanzó la fecha límite del examen. Guardando la parte práctica y volviendo al examen…",
   patientStatus: "Paciente activo",
+  patientCondition: "Estado del paciente",
   patientName: (name: string) => `Paciente: ${name}`,
   unnamedPatient: "Paciente simulado",
   caseFallback: "caso clínico",
@@ -149,6 +162,30 @@ function ExamCountdown({ boot }: { boot: SessionBoot }) {
   );
 }
 
+/** The status chip text: only a change of status or of the rounded severity re-renders it. */
+const selectCondition = (snapshot: SimSessionSnapshot): string | null => {
+  const patient = snapshot.metrics?.patient ?? null;
+
+  return patient ? patientConditionText(patient.status, patient.severity) : null;
+};
+const selectPatientStatus = (snapshot: SimSessionSnapshot): string | null => snapshot.metrics?.patient?.status ?? null;
+
+/** Engine patient status (engine 2.0.0 with evolution); nothing for cases without evolution. */
+const PatientCondition = memo(function PatientCondition({ store }: { store: SimSessionStore }) {
+  const text = useSimSessionSlice(store, selectCondition);
+  const status = useSimSessionSlice(store, selectPatientStatus);
+
+  if (text === null || status === null) {
+    return null;
+  }
+
+  return (
+    <p className={cx(styles.patientCondition)} data-status={status} role="status" aria-label={SESSION_PAGE_COPY.patientCondition}>
+      {text}
+    </p>
+  );
+});
+
 type PatientStatusProps = { caseId: string, patient: SessionPatient | null };
 
 /** "Paciente: <nombre>" of the own patient, else the case title (the case query is shared with the case drawer). */
@@ -204,12 +241,22 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
       />
     );
   }, [assistActive, assistHistory, onAssistAnswered, policy, record.mode, renderAssist, renderHostAssist, sessionId, store]);
+  // "¿Cómo estabilizar?": the alarm help follows the same assistance policy as "Asesoría IA" (A-9).
+  const alarmHelp = useMemo(() => alarmHelpAvailability(resolveAssistPolicy(record.mode, policy)), [policy, record.mode]);
+  const renderAlarmHelp = useCallback((target: ConsoleAlarmHelpTarget) => (
+    <AlarmHelpPanel
+      target={target}
+      availability={alarmHelp}
+      buildRequest={alarmHelp.status === "unavailable" ? null : () => sessionAlarmHelpRequest(sessionId, target.code)}
+    />
+  ), [alarmHelp, sessionId]);
   const left = useMemo(() => (
     <>
       {leftTop}
       <PatientStatus caseId={record.caseId} patient={patient} />
+      {store ? <PatientCondition store={store} /> : null}
     </>
-  ), [leftTop, patient, record.caseId]);
+  ), [leftTop, patient, record.caseId, store]);
 
   if (version.status === "blocked") {
     return (
@@ -240,7 +287,7 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
         <ExamCountdown boot={boot} />
         <PendingEventsIndicator count={session.pendingEvents} />
         <div className={cx(styles.sessionActions)}>
-          {store ? <LiveCasePanel store={store} caseId={record.caseId} engineCase={record.engineCase} extra={aside} /> : null}
+          {store ? <LiveCasePanel store={store} caseId={record.caseId} engineCase={record.engineCase} extra={aside} hideObjectives={exam} /> : null}
           <button
             type="button"
             className={cx(styles.endButton)}
@@ -281,6 +328,7 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
             assistSlot={assist}
             curvesToolbarStart={curvesToolbarStart}
             cards={cards}
+            renderAlarmHelp={renderAlarmHelp}
             {...(exam ? { cardsLockedReason: SESSION_PAGE_COPY.cardsLocked } : {})}
             {...applicability}
           />

@@ -1,0 +1,90 @@
+/*
+* Funcionalidad: Alarm help panel styles
+* Descripción: CSS Module of the "¿Cómo estabilizar?" drawer content (Bloque A) on the dark console surface: the alarm
+*   line, the unavailable note of an exam, the rules and suggestion sections, the ordered rule list with its source
+*   reference and the action row. Console and design-system tokens only; no hex or rgb values.
+* Versión: 1.0
+* Autor: Marcela Mazo Castro
+* Proyecto: VentyLab
+* Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
+* Institución: Universidad del Valle
+* Contacto: marcela.mazo@correounivalle.edu.co
+*/
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-3);
+  color: var(--vl-console-text);
+}
+
+.alarm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+  margin: 0;
+  padding: var(--vl-space-2);
+  font: var(--mui-font-body2);
+  background: var(--vl-console-surface-raised);
+  border-inline-start: 3px solid var(--vl-color-warning);
+  border-radius: var(--vl-radius-sm);
+}
+
+.alarmLabel {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.unavailable {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-console-text);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+}
+
+.heading {
+  margin: 0;
+  font: var(--mui-font-subtitle2);
+  color: var(--vl-console-text);
+}
+
+.muted {
+  margin: 0;
+  font: var(--mui-font-body2);
+  color: var(--vl-console-text-muted);
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-2);
+  margin: 0;
+  padding-inline-start: var(--vl-space-5);
+  font: var(--mui-font-body2);
+}
+
+.rule {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vl-space-1);
+}
+
+.reference {
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vl-space-2);
+}
+
+.actions:empty {
+  display: none;
+}

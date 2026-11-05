@@ -18,10 +18,12 @@
 *   (src/features/clinical-cases/domain/clinical-case-physiological-ranges.ts, sin dependencias) en
 *   engine/clinical-cases/, la fuente única de los rangos que muestra el editor de casos (el backend
 *   rechaza con 422 los valores fuera de ellos).
+*   v1.3 (Bloque A): SIM_ENGINE_BACKEND_SRC (ruta relativa a la raíz del repo o absoluta, como BACKEND_SPEC_PATH de
+*   scripts/generate-api.mjs) reemplaza la carpeta src del backend por defecto (worktrees y clones de la CI).
 *   Uso: node scripts/sync-sim-engine.mjs        (escribe la copia)
 *        node scripts/sync-sim-engine.mjs --check (sale con código 1 si la copia difiere del backend)
 *   Depende solo de node:fs y node:path.
-* Versión: 1.2
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -35,7 +37,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const BACKEND_SRC = path.resolve(ROOT, "..", "ventylab-server", "src");
+const EXPLICIT_BACKEND_SRC = (process.env.SIM_ENGINE_BACKEND_SRC ?? "").trim();
+const BACKEND_SRC = EXPLICIT_BACKEND_SRC !== ""
+  ? path.resolve(ROOT, EXPLICIT_BACKEND_SRC)
+  : path.resolve(ROOT, "..", "ventylab-server", "src");
 const ENGINE_SRC = path.join(BACKEND_SRC, "features", "simulation", "domain", "engine");
 const LIMITS_SRC = path.join(BACKEND_SRC, "common", "domain", "ventilator", "ventilator-limits.ts");
 // Physiological ranges of the clinical case definition (no imports): the case editor shows them next to each field.
@@ -268,7 +273,7 @@ async function write(expected) {
 
 async function main() {
   if (!(await exists(ENGINE_SRC)) || !(await exists(LIMITS_SRC)) || !(await exists(RANGES_SRC))) {
-    throw new Error(`Backend engine not found at ${ENGINE_SRC} (the ventylab-server repo must sit next to ventilab-web)`);
+    throw new Error(`Backend engine not found at ${ENGINE_SRC} (the ventylab-server repo must sit next to ventilab-web, or set SIM_ENGINE_BACKEND_SRC)`);
   }
 
   const expected = await buildVendoredFiles();

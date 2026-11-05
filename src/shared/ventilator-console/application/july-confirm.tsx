@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July confirm actions and keyboard
-* Descripción: "Confirmar / Cancelar" of the July layout in the position of July's "Enviar / Detener" (D18), the pending counter and the read-only reason, over the per-console pending store. Confirmar emits the diff once through `adapter.onConfirm` (digital) or, with `confirmSummary` (Real, D19), first opens a summary of every change ("Vt 450 → 500 mL · FR 14 → 16 · Modo VCV → PCV") whose "Enviar al ventilador" (initial focus, so Enter sends) emits it; Escape or "Volver" closes the summary and keeps the edits. Cancelar drops the edits (never stops nor disconnects a device). Both are disabled without pending edits or when read-only; Confirmar also while a confirmed change is being sent or awaited. Also the console keyboard handler: inside an element marked `data-console-control`, Escape cancels the pending edits and Enter on a value control (spinbutton or slider, never a button nor the assist field) confirms in digital and opens the summary in Real; the pending lifecycle (onPendingChange transitions, pendingResetKey) runs here, once per console. v0.1 (Bloque 5, C2): first version. Depends on React, MUI icons, the design-system ConfirmDialog, the console stores, the controls config and the July styles.
-* Versión: 0.1
+* Descripción: "Confirmar / Cancelar" of the July layout in the position of July's "Enviar / Detener" (D18), the pending counter and the read-only reason, over the per-console pending store. Confirmar emits the diff once through `adapter.onConfirm` (digital) or, with `confirmSummary` (Real, D19), first opens a summary of every change ("Vt 450 → 500 mL · FR 14 → 16 · Modo VCV → PCV") whose "Enviar al ventilador" (initial focus, so Enter sends) emits it; Escape or "Volver" closes the summary and keeps the edits. Cancelar drops the edits (never stops nor disconnects a device). Both are disabled without pending edits or when read-only; Confirmar also while a confirmed change is being sent or awaited. Also the console keyboard handler: inside an element marked `data-console-control`, Escape cancels the pending edits and Enter on a value control (spinbutton or slider, never a button nor the assist field) confirms in digital and opens the summary in Real; the pending lifecycle (onPendingChange transitions, pendingResetKey) runs here, once per console. v0.1 (Bloque 5, C2): first version. v0.2 (Ajustes A, A1): the July default is now the automatic application (`applyMode="auto"`, DISENO_AJUSTES_A §3.1): `applyPendingNow` emits the diff like Confirmar but keeps the selected control, `handleJulyAutoKeyDown` makes Enter apply now what is still debouncing (and `adapter.onApplyNow` for a source that debounces on its own side) and Escape drop it (and `adapter.onCancel`), and `JulyAutoApplyState` keeps only the read-only reason and the pending lifecycle (no Confirmar, Cancelar nor counter). The confirm actions stay for `applyMode="confirm"`. Depends on React, MUI icons, the design-system ConfirmDialog, the console stores, the auto apply scheduler type, the controls config and the July styles.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,6 +22,7 @@ import { confirmationCount, pendingConfirmation, selectPendingState, usePendingL
 import type { PendingControlsStore } from "./console-pending-store";
 import { useStoreSelector } from "./console-store";
 import type { ConsoleAdapterStore, WritableStore } from "./console-store";
+import type { AutoApplyScheduler } from "./july-auto-apply";
 import { formatParameterValue } from "./parameter-control";
 import type { ConsoleConfirmation, ConsoleLimits, ConsoleMode, ConsoleSettings, ConsoleSettingValues, VentilatorConsoleAdapter } from "./ventilator-console.entity";
 import styles from "../UI/july-controls.module.css";
@@ -81,6 +82,21 @@ export function confirmPendingNow(store: ConsoleAdapterStore, pending: PendingCo
   pending.dispatch({ type: "reset" });
 
   return true;
+}
+
+/**
+ * Auto apply: emits the pending diff once like Confirmar but keeps the selected control (the wheel keeps working on it
+ * and the focus ring stays); false when nothing is pending.
+ */
+export function applyPendingNow(store: ConsoleAdapterStore, pending: PendingControlsStore): boolean {
+  const { selected } = pending.getSnapshot();
+  const applied = confirmPendingNow(store, pending);
+
+  if (applied && selected !== null) {
+    pending.dispatch({ type: "select", parameter: selected });
+  }
+
+  return applied;
 }
 
 /** Drops the pending edits (emits nothing but `onCancel`); false when nothing is pending. */
@@ -152,6 +168,52 @@ export function handleJulyKeyDown(event: KeyboardEvent<HTMLElement>, options: Ju
   }
 }
 
+export type JulyAutoKeyOptions = {
+  store: ConsoleAdapterStore
+  pending: PendingControlsStore
+  readOnly: boolean
+  scheduler: AutoApplyScheduler
+};
+
+/**
+ * Console keydown in auto mode (A-4), with the same filter as the confirm mode: Enter on a value control applies now
+ * what is still debouncing and asks the source to send what it debounces on its own side (`onApplyNow`); Escape drops
+ * what is still debouncing (and asks the source to drop its own wait through `onCancel`). Nothing else to cancel.
+ */
+export function handleJulyAutoKeyDown(event: KeyboardEvent<HTMLElement>, { store, pending, readOnly, scheduler }: JulyAutoKeyOptions): void {
+  const target = event.target as HTMLElement;
+
+  if (typeof target.closest !== "function" || target.closest("[data-console-control]") === null || readOnly) {
+    return;
+  }
+
+  const { onCancel, onApplyNow } = store.getSnapshot();
+
+  if (event.key === "Escape") {
+    scheduler.cancel();
+
+    // cancelPendingNow already calls onCancel when it dropped something.
+    if (cancelPendingNow(store, pending)) {
+      event.preventDefault();
+    } else if (onCancel) {
+      onCancel();
+      event.preventDefault();
+    }
+
+    return;
+  }
+
+  if (event.key === "Enter" && isValueControl(target)) {
+    const flushed = scheduler.flush();
+
+    onApplyNow?.();
+
+    if (flushed || onApplyNow) {
+      event.preventDefault();
+    }
+  }
+}
+
 const selectSettings = (adapter: VentilatorConsoleAdapter) => adapter.settings;
 const selectMode = (adapter: VentilatorConsoleAdapter) => adapter.mode;
 const selectLimits = (adapter: VentilatorConsoleAdapter) => adapter.limits;
@@ -164,6 +226,32 @@ type JulyConfirmActionsProps = JulyConfirmOptions & {
   /** Id given to the read-only reason (the other July controls reference it). */
   reasonId: string
 };
+
+type JulyAutoApplyStateProps = {
+  store: ConsoleAdapterStore
+  pending: PendingControlsStore
+  readOnly: boolean
+  readOnlyReason: string | undefined
+  /** Id given to the read-only reason (the other July controls reference it). */
+  reasonId: string
+};
+
+/**
+ * Auto mode: no buttons nor counter, only the read-only reason the controls reference, and the pending lifecycle
+ * (onPendingChange while something is debouncing, pendingResetKey), once per console.
+ */
+export const JulyAutoApplyState = memo(function JulyAutoApplyState({ store, pending, readOnly, readOnlyReason, reasonId }: JulyAutoApplyStateProps) {
+  const settings = useStoreSelector(store, selectSettings);
+  const appliedMode = useStoreSelector(store, selectMode).current;
+  const onPendingChange = useStoreSelector(store, selectOnPendingChange);
+  const pendingResetKey = useStoreSelector(store, selectPendingResetKey);
+  const state = useStoreSelector(pending, selectPendingState);
+  const hasPending = useMemo(() => buildConfirmation(state, settings.applied, appliedMode) !== null, [state, settings.applied, appliedMode]);
+
+  usePendingLifecycle(pending, { hasPending, onPendingChange, pendingResetKey });
+
+  return readOnly && readOnlyReason ? <p id={reasonId} className={cx(styles.reason)}>{readOnlyReason}</p> : null;
+});
 
 /** Confirmar / Cancelar, the pending counter, the read-only reason and the Real summary. */
 export const JulyConfirmActions = memo(function JulyConfirmActions(props: JulyConfirmActionsProps) {

@@ -13,7 +13,8 @@
 *   other console drawers): a button of the session strip ("Mostrar caso clínico" / "Ocultar caso clínico",
 *   aria-expanded) opens it, closed by default; inside the drawer, the case, the patient data, the live objectives
 *   and an optional extra block (the own patient of the workspace). The history is fetched only while it is open.
-* Versión: 2.0
+*   v2.1 (Bloque A): `objectives: null` leaves the objectives section out (EXAM: they reveal the correction).
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -66,7 +67,8 @@ export const OBJECTIVE_STATUS_COPY = {
 export type CasePanelProps = {
   caseId: string
   engineCase: EngineCase
-  objectives: readonly ObjectiveRow[]
+  /** null: no objectives section (EXAM). */
+  objectives: readonly ObjectiveRow[] | null
   /** Extra content at the end of the drawer (the own patient of the workspace). */
   extra?: ReactNode
 };
@@ -148,13 +150,17 @@ export function CasePanel({ caseId, engineCase, objectives, extra }: CasePanelPr
             <dt>{CASE_PANEL_COPY.pbw}</dt>
             <dd>{`${patient.predictedBodyWeightKg.toFixed(1)} kg`}</dd>
           </dl>
-          <h3 className={cx(styles.caseHeading)}>
-            {CASE_PANEL_COPY.objectives}
-            {" "}
-            <span className={cx(styles.liveTag)}>{CASE_PANEL_COPY.live}</span>
-          </h3>
-          <p className={cx(styles.caseMuted)}>{CASE_PANEL_COPY.liveNote}</p>
-          {objectives.length === 0 ? (
+          {objectives === null ? null : (
+            <>
+              <h3 className={cx(styles.caseHeading)}>
+                {CASE_PANEL_COPY.objectives}
+                {" "}
+                <span className={cx(styles.liveTag)}>{CASE_PANEL_COPY.live}</span>
+              </h3>
+              <p className={cx(styles.caseMuted)}>{CASE_PANEL_COPY.liveNote}</p>
+            </>
+          )}
+          {objectives === null ? null : objectives.length === 0 ? (
             <p className={cx(styles.caseMuted)}>{CASE_PANEL_COPY.noObjectives}</p>
           ) : (
             <ul className={cx(styles.objectives)} aria-label={`${CASE_PANEL_COPY.objectives} ${CASE_PANEL_COPY.live}`}>
