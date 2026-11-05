@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E helpers of the evaluation area (Bloque 3)
-* Descripción: API setup shared by the Block 3 specs: a teacher session signed in through the API (ana.torres, injected into a browser context like the fresh students), a brand-new STUDENT group of that teacher with brand-new students (so every run starts without attempts and without touching the demo groups), an evaluation built through the authoring API (questions with options, hint, explanation, OPEN_TEXT and SIMULATION questions; optional curriculum level and module), marked READY and assigned to the group with an open window, plus its cleanup (assignments closed, evaluation archived). Also the Tiptap document of a plain prompt and the attempt rows of the grading list. The backend URL comes from E2E_API_URL (default http://localhost:4000). Depends on @playwright/test and the learning e2e helpers.
-* Versión: 0.1
+* Descripción: API setup shared by the Block 3 specs: a teacher session signed in through the API (ana.torres, injected into a browser context like the fresh students), a brand-new STUDENT group of that teacher with brand-new students (so every run starts without attempts and without touching the demo groups), an evaluation built through the authoring API (questions with options, hint, explanation, OPEN_TEXT and SIMULATION questions; optional curriculum level and module), marked READY and assigned to the group with an open window, plus its cleanup (assignments closed, evaluation archived). Also the Tiptap document of a plain prompt and the attempt rows of the grading list. The backend URL comes from E2E_API_URL (default http://localhost:4000). Depends on @playwright/test and the learning e2e helpers. v0.2 (ajustes C1): the results always wait for the teacher release: showResultsImmediately is gone from the spec, and releaseAttemptResults releases the grade alone (GRADE) or with the answers and the AI feedback (GRADE_AND_ANSWERS) through the grading API.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,7 +30,6 @@ export type EvaluationSpec = {
   questions: QuestionSpec[]
   durationMinutes?: number
   maxAttempts?: number
-  showResultsImmediately?: boolean
   levelId?: string | undefined
   moduleId?: string | undefined
 };
@@ -77,7 +76,6 @@ export async function seedEvaluation(teacher: BackendApi, spec: EvaluationSpec, 
     title: spec.title,
     maxAttempts: spec.maxAttempts ?? 1,
     ...(spec.durationMinutes ? { durationMinutes: spec.durationMinutes } : {}),
-    ...(spec.showResultsImmediately === undefined ? {} : { showResultsImmediately: spec.showResultsImmediately }),
     ...(spec.levelId ? { levelId: spec.levelId } : {}),
     ...(spec.moduleId ? { moduleId: spec.moduleId } : {}),
   });
@@ -130,6 +128,13 @@ export async function retireEvaluation(teacher: BackendApi, evaluation: SeededEv
   }
 
   await teacher.call("PATCH", `/api/evaluations/${evaluation.id}/status`, { status: "ARCHIVED" }).catch(() => undefined);
+}
+
+export type ReleaseScope = "GRADE" | "GRADE_AND_ANSWERS";
+
+/** The teacher releases the results of one GRADED attempt: the grade alone or with the answers, explanations and AI feedback. */
+export async function releaseAttemptResults(teacher: BackendApi, attemptId: string, scope: ReleaseScope): Promise<void> {
+  await teacher.call("POST", `/api/evaluation-grading/attempts/${attemptId}/publish`, { scope });
 }
 
 export type MyEvaluationItem = { assignmentId: string, evaluation: { id: string } | null, attempts: { id: string, status: string }[] };
