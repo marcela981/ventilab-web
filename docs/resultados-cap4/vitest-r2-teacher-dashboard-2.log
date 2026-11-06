@@ -1,0 +1,19 @@
+npm notice run ventilab-web@0.1.0 npx
+npm notice run vitest run src/features/teacher-dashboard/application/pages/teacher-dashboard.page.test.tsx --reporter=default --reporter=json --outputFile.json=docs/resultados-cap4/vitest-r2-teacher-dashboard-2.json
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mC:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web[39m
+
+ [32m✓[39m src/features/teacher-dashboard/application/pages/teacher-dashboard.page.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 7127[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mshows the first group with its cards and students from the API [33m 627[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mhighlights only the students the API flags at risk, with the API reasons in Spanish [33m 368[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mfilters by name or email and sorts by an API column [33m 410[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mnever shows the previous group's rows while another group loads [33m 420[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mrenders one page of 25 students at a time and goes back to the first page on a new filter [33m 2778[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mexports the group CSV from the export endpoint [33m 831[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m 17:32:39
+[2m   Duration [22m 11.11s[2m (transform 516ms, setup 426ms, collect 1.92s, tests 7.13s, environment 944ms, prepare 191ms)[22m
+
+JSON report written to C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/docs/resultados-cap4/vitest-r2-teacher-dashboard-2.json

@@ -1,0 +1,239 @@
+npm notice run ventilab-web@0.1.0 e2e
+npm notice run playwright test --project=e2e --pass-with-no-tests --reporter=list,json
+
+Running 54 tests using 1 worker
+
+  ✓   1 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as student (1.6s)
+  ✓   2 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as group member (1.3s)
+  ✓   3 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as teacher (1.1s)
+  -   4 [e2e] › e2e\bloque2\capturas.spec.ts:33:5 › student /learn tabs
+  -   5 [e2e] › e2e\bloque2\capturas.spec.ts:47:5 › teacher curriculum with edit mode
+  -   6 [e2e] › e2e\bloque2\capturas.spec.ts:59:5 › viewer, completion dialog, TutorAI and deepen
+  ✓   7 [e2e] › e2e\bloque2\learning-locks.spec.ts:15:5 › (2) locked level and locked lesson: screen with the missing lessons and 403 from the server (2.3s)
+  ✓   8 [e2e] › e2e\bloque2\learning-offline.spec.ts:28:5 › (6) page views made offline are kept and sent once when the network comes back (9.5s)
+  ✓   9 [e2e] › e2e\bloque2\learning-staff.spec.ts:19:5 › (5) staff previews without locks and opens the CMS page editor from the viewer (8.8s)
+  ✓  10 [e2e] › e2e\bloque2\learning-student.spec.ts:55:5 › (1) student continues at the resume point, completes a lesson, continues to the next one and from the curriculum (5.4s)
+  ✓  11 [e2e] › e2e\bloque2\learning-student.spec.ts:129:5 › (4) Mi Progreso reflects the activity: XP, streak and today's day in the calendar (661ms)
+  ✓  12 [e2e] › e2e\bloque2\lesson-viewer-layout.spec.ts:15:5 › lesson index: right column on desktop, drawer button on mobile (2.3s)
+  ✓  13 [e2e] › e2e\bloque2\tutor-ai.spec.ts:31:5 › (3) TutorAI: deepen with streaming, rate it, one question, a note and its AI analysis (13.1s)
+  ✓  14 [e2e] › e2e\bloque2\tutor-fallback.spec.ts:18:5 › (cierre IA) Profundizar shows the deterministic fallback with its label and no rating (2.9s)
+  ✓  15 [e2e] › e2e\bloque3\attempt-reset.spec.ts:18:5 › (4) teacher resets an attempt and the student can retry (1.1m)
+  -  16 [e2e] › e2e\bloque3\capturas.spec.ts:37:5 › Block 3 key screens
+  ✓  17 [e2e] › e2e\bloque3\exam-autosubmit.spec.ts:16:5 › (3) exam: SIMULATION question, auto-submit when the time runs out, review and publish (1.2m)
+  ✘  18 [e2e] › e2e\bloque3\quiz-feedback.spec.ts:16:5 › (1) quiz: immediate feedback, grade published on submit, AI feedback and its rating (1.8s)
+  ✓  19 [e2e] › e2e\bloque3\staff-builder.spec.ts:26:5 › (5) staff creates an evaluation with an image, assigns it to a group in the builder and activates it (21.6s)
+  ✓  20 [e2e] › e2e\bloque3\student-list.spec.ts:18:5 › (6) the student list is grouped by type, track and level (1.1m)
+  ✘  21 [e2e] › e2e\bloque3\workshop-review.spec.ts:18:5 › (2) workshop: hint, open question, partial score, teacher review and final grade (17.4s)
+  ✘  22 [e2e] › e2e\bloque4\admin-ai-ratings.spec.ts:81:5 › (8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV (622ms)
+  ✓  23 [e2e] › e2e\bloque4\admin-users.spec.ts:27:5 › (4) admin: role change with confirmation, protected superadmin and the Profesores tab (3.4s)
+  ✓  24 [e2e] › e2e\bloque4\back-to-platform.spec.ts:17:5 › (9) "Volver a la plataforma" goes to /simulador (1.2s)
+  -  25 [e2e] › e2e\bloque4\capturas.spec.ts:35:5 › Block 4 key screens
+  ✓  26 [e2e] › e2e\bloque4\directory-group-builder.spec.ts:18:5 › (2) directory: search, select three, Conformar Grupo, the group appears in Grupos and gets a leader (5.2s)
+  ✓  27 [e2e] › e2e\bloque4\lab-group-reservation.spec.ts:23:5 › (3) teacher reserves the ventilator for a group from /teacher/lab and the leader operates it from /simulador (4.6s)
+  ✓  28 [e2e] › e2e\bloque4\profile-avatar.spec.ts:19:5 › (6) profile: upload and remove the profile photo (1.0m)
+  ✓  29 [e2e] › e2e\bloque4\profile-password.spec.ts:64:5 › (5) profile: change password → the previous refresh token fails → sign in with the new one (3.1s)
+  ✓  30 [e2e] › e2e\bloque4\student-detail-scope.spec.ts:18:5 › (7) a teacher without supervision gets 403 on another teacher's student (UI and API) (1.6s)
+  ✓  31 [e2e] › e2e\bloque4\teacher-student-detail.spec.ts:25:5 › (1) teacher: Panel → General → recent student → detail with its five tabs, without notes or AI chats (1.1m)
+  -  32 [e2e] › e2e\bloque5\capturas.spec.ts:85:7 › Block 5 shell and pages at 1280
+  -  33 [e2e] › e2e\bloque5\capturas.spec.ts:145:7 › Block 5 Monitoreo at 1280
+  -  34 [e2e] › e2e\bloque5\capturas.spec.ts:85:7 › Block 5 shell and pages at 1920
+  -  35 [e2e] › e2e\bloque5\capturas.spec.ts:145:7 › Block 5 Monitoreo at 1920
+  -  36 [e2e] › e2e\bloque5\capturas.spec.ts:186:5 › Block 1 Monitoreo captures with the July layout
+  ✓  37 [e2e] › e2e\bloque5\monitoreo-ia.spec.ts:25:5 › Asesoría IA opens a 380 px drawer, answers with the fake LLM and gives the focus back (8.0s)
+  ✓  38 [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1920×1080 (4.5s)
+  ✘  39 [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1280×720 (4.7s)
+  ✓  40 [e2e] › e2e\bloque5\monitoreo-orden.spec.ts:77:5 › July Monitoreo order of the Real monitor at 1920×1080 and 1280×720 (8.0s)
+  ✓  41 [e2e] › e2e\bloque5\monitoreo-tarjetas.spec.ts:39:5 › Ajustar hides, moves with the keyboard, persists across a reload and resets (6.5s)
+  ✓  42 [e2e] › e2e\bloque5\monitoreo-tarjetas.spec.ts:98:5 › a corrupt preference or another user's preference leaves the default cards (3.6s)
+  ✓  43 [e2e] › e2e\bloque5\monitoreo-teclado.spec.ts:17:5 › Enter confirms and Escape cancels the pending edits (3.7s)
+  ✓  44 [e2e] › e2e\bloque5\sidebar.spec.ts:30:5 › collapse and expand persist, the collapsed avatar opens Opciones and the bell works from the sidebar (3.4s)
+  ✓  45 [e2e] › e2e\simulator-connection.spec.ts:22:5 › holder reserves now, connects with control and sees the real monitor (5.9s)
+  ✓  46 [e2e] › e2e\simulator-connection.spec.ts:58:5 › group leader takes control and a non-leader member observes read-only (6.9s)
+  ✘  47 [e2e] › e2e\simulator-exam.spec.ts:24:5 › a SIMULATION question of an exam opens the console in locked mode (32.6s)
+  ✓  48 [e2e] › e2e\simulator-redirects.spec.ts:24:7 › / redirects to /simulador (1.3s)
+  ✓  49 [e2e] › e2e\simulator-redirects.spec.ts:24:7 › /dashboard redirects to /simulador (946ms)
+  ✓  50 [e2e] › e2e\simulator-redirects.spec.ts:32:7 › /simulator redirects to /simulador?tab=simular (977ms)
+  ✓  51 [e2e] › e2e\simulator-redirects.spec.ts:32:7 › /lab redirects to /simulador?tab=conexion (881ms)
+  ✓  52 [e2e] › e2e\simulator-redirects.spec.ts:32:7 › /lab/live redirects to /simulador?tab=monitoreo (908ms)
+  ✓  53 [e2e] › e2e\simulator-student.spec.ts:27:5 › student simulates a patient, keeps the session across tabs, finishes it and replays it from Mis sesiones (11.7s)
+  ✓  54 [e2e] › e2e\simulator-student.spec.ts:89:5 › Monitoreo keeps usable curves at 1280×720 with a long case and the case drawer never resizes the console (4.5s)
+
+
+  1) [e2e] › e2e\bloque3\quiz-feedback.spec.ts:16:5 › (1) quiz: immediate feedback, grade published on submit, AI feedback and its rating 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      42 |
+      43 |     await page.getByRole("radio", { name: "Volumen corriente" }).check();
+    > 44 |     expect((await firstCheck).ok()).toBe(true);
+         |                                     ^
+      45 |     await expect(page.getByText("¡Correcto! 🎉")).toBeVisible();
+      46 |     await expect(page.getByText("En VCV se fija el volumen.")).toBeVisible();
+      47 |
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque3\quiz-feedback.spec.ts:44:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [e2e] › e2e\bloque3\workshop-review.spec.ts:18:5 › (2) workshop: hint, open question, partial score, teacher review and final grade 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('¡Muy bien! 🌟')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('¡Muy bien! 🌟') with timeout 15000ms
+      - waiting for getByText('¡Muy bien! 🌟')
+
+
+      50 |
+      51 |     await page.getByRole("radio", { name: "Presión inspiratoria" }).check();
+    > 52 |     await expect(page.getByText("¡Muy bien! 🌟")).toBeVisible({ timeout: 15_000 });
+         |                                                   ^
+      53 |     await expect(page.getByText("En PCV se fija la presión.")).toBeVisible();
+      54 |
+      55 |     await page.getByRole("button", { name: "Siguiente" }).click();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque3\workshop-review.spec.ts:52:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [e2e] › e2e\bloque4\admin-ai-ratings.spec.ts:81:5 › (8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV 
+
+    Error: GET /api/evaluation-attempts/01a1b2f9-050c-764a-b371-fdaa18427d31/feedback → 404 evaluation.grade_feedback_not_available Feedback is available once the grade is published
+
+       at support\learning.ts:43
+
+      41 |
+      42 |       if (!response.ok()) {
+    > 43 |         throw new Error(`${method} ${path} → ${response.status()} ${payload?.code ?? ""} ${payload?.message ?? ""}`);
+         |               ^
+      44 |       }
+      45 |
+      46 |       return payload?.data as T;
+        at Object.call (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\learning.ts:43:15)
+        at _test.expect.poll.timeout (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\admin-ai-ratings.spec.ts:111:24)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\admin-ai-ratings.spec.ts:110:5
+
+    Error Context: test-results\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1280×720 ───
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "height": 684.46875,
+        "width": 952,
+        "x": 284,
+    -   "y": 44,
+    +   "y": -77,
+      }
+
+      108 |     expect(Math.abs((await boxOf(drawer, "drawer")).width - 380)).toBeLessThanOrEqual(TOLERANCE_PX);
+      109 |     await expect(drawer.getByRole("region", { name: "Alertas de validación" })).toBeVisible();
+    > 110 |     expect(await boxOf(consoleZone, "console")).toEqual(consoleBox);
+          |                                                 ^
+      111 |     await page.keyboard.press("Escape");
+      112 |     await expect(drawer).toHaveCount(0);
+      113 |     await expect(open).toBeFocused();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque5\monitoreo-julio.spec.ts:110:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [e2e] › e2e\simulator-exam.spec.ts:24:5 › a SIMULATION question of an exam opens the console in locked mode 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('group', { name: 'Control del tiempo' })
+    Expected substring: "Velocidad fija ×1 (examen, sin pausa)"
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('group', { name: 'Control del tiempo' }) with timeout 30000ms
+      - waiting for getByRole('group', { name: 'Control del tiempo' })
+
+
+      64 |     const clock = page.getByRole("group", { name: "Control del tiempo" });
+      65 |
+    > 66 |     await expect(clock).toContainText("Velocidad fija ×1 (examen, sin pausa)", { timeout: 30_000 });
+         |                         ^
+      67 |     await expect(clock.getByRole("button")).toHaveCount(0);
+      68 |     await expect(page.getByRole("timer").filter({ hasText: "Tiempo restante del examen" })).toBeVisible();
+      69 |     await expect(page.getByRole("img", { name: CURVES_LABEL })).toBeVisible();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\simulator-exam.spec.ts:66:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [e2e] › e2e\bloque3\quiz-feedback.spec.ts:16:5 › (1) quiz: immediate feedback, grade published on submit, AI feedback and its rating 
+    [e2e] › e2e\bloque3\workshop-review.spec.ts:18:5 › (2) workshop: hint, open question, partial score, teacher review and final grade 
+    [e2e] › e2e\bloque4\admin-ai-ratings.spec.ts:81:5 › (8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV 
+    [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1280×720 ────
+    [e2e] › e2e\simulator-exam.spec.ts:24:5 › a SIMULATION question of an exam opens the console in locked mode 
+  10 skipped
+  39 passed (10.4m)
+exit 1

@@ -41,10 +41,66 @@ Los valores se copian tal como los escriben los instrumentos. No se redondean. S
 | Tiempo | 471,35 s (vitest); 7 min 55,7 s de pared (`time`) |
 | Caso fallido | `src/features/teacher-dashboard/application/pages/teacher-dashboard.page.test.tsx` › "TeacherDashboardPage shows the first group with its cards and students from the API": `Unable to find role="link" and name "Ana Gómez"` |
 | Repetición de ese archivo solo | 13/13 aprobados, 12,82 s (`vitest-rerun-teacher-dashboard.log`) |
+| 3 repeticiones más de ese archivo solo (2026-11-06 17:32–17:33) | 13/13, 13/13 y 13/13 aprobados; 15,83 s, 11,11 s y 9,04 s (`vitest-r2-teacher-dashboard-<1..3>.{log,json}`) |
 
-Crudos: `vitest.json`, `vitest.log`, `vitest-rerun-teacher-dashboard.log`.
+**Intermitente.** Falló 1 vez, en la corrida completa (351 archivos, con la máquina cargada), y pasó las 4 veces que se ejecutó solo. Mecanismo probable, no comprobado: la aserción usa `findByRole` (`teacher-dashboard.page.test.tsx:186`) con el tiempo de espera por defecto de Testing Library (1000 ms; no hay `asyncUtilTimeout` configurado), y desde `9fdcbbb` la página pinta las filas en un pase diferido (`useDeferredValue`, `teacher-dashboard.page.tsx:67`), que con la CPU ocupada puede tardar más de 1 s.
 
-### 1.2 `npm run e2e` (Playwright)
+Crudos: `vitest.json`, `vitest.log`, `vitest-rerun-teacher-dashboard.log`, `vitest-r2-teacher-dashboard-*.{log,json}`.
+
+### 1.2 `npm run e2e` (Playwright), repetida en el entorno de `LOCAL_STACK.md`
+
+Corrida del 2026-11-06 17:21:03 → 17:31:28 (−05:00). La corrida anterior, del mismo día en otro entorno, queda en el anexo A.
+
+Entorno de esta corrida:
+
+- Se detuvo el stack Docker `ventylab-local` (sin borrar volúmenes) y se arrancó `ventylab-server-postgres` en 55432 (`LOCAL_STACK.md` §3.1).
+- Base: `prisma migrate deploy` (aplicó las migraciones pendientes), luego la secuencia de reinicio de §6: `demo:reset`, `prisma:seed`, el `UPDATE` de niveles, `demo:seed`, `seed-clinical-cases.ts` y `seed-evaluation.ts`. Todos terminaron con exit 0 (`entorno-siembra.log`).
+- Backend en el host: `npm run build` y `OPENAI_BASE_URL=http://127.0.0.1:4910/v1 OPENAI_API_KEY=local node dist/main`, en :4000 (`ventylab-server` `results/cap4` `77881f8`, igual a `origin/main` más un commit de documentación).
+- LLM falso: `scripts/e2e/fake-llm.mjs` en 127.0.0.1:4910.
+- Web: el mismo build de la sección 1 (`2fbf674`), con `next start -p 3000`. El `buildId` servido coincide con `.next/BUILD_ID` y los 18 chunks de `/auth/login` responden 200.
+- `E2E_AUTH_MAX_AGE_H=0`: las sesiones se inician de nuevo.
+
+Comprobaciones previas (`e2e-r2-precheck.json`, 2026-11-06T22:19:46Z):
+
+| Comprobación | Resultado |
+|---|---|
+| `GET /health/ready` | 200, `{"status":"ready"}` |
+| Inicio de sesión `superadmin@ventylab.demo` | 200, rol `ADMIN` |
+| Currículo sembrado (sección `mecanica`) | Prerequisitos (2 módulos), Nivel Principiante (6), Nivel Intermedio (6), Nivel Avanzado (8) y Demo · Fundamentos (2); sección `ventylab`: 3 niveles de 2 módulos |
+| El backend alcanza al LLM falso | `POST /api/tutor/pages/12155882-…/deepen` como `estudiante01`: 200 `text/event-stream` con "**Respuesta de prueba (proveedor falso de E2E).**"; el log del LLM falso registra `stream (mode ok)` |
+
+Resultados (`e2e-r2.json`, `e2e-r2.log`):
+
+| Métrica | Valor |
+|---|---|
+| Especificaciones | 36 archivos `*.spec.ts` del proyecto `e2e`, más `support/auth.setup.ts` del proyecto `setup` |
+| Casos | 54 (3 de `setup` + 51 de `e2e`) |
+| Aprobados | 39 (3 de `setup` + 36 de `e2e`) |
+| Fallidos | **5** |
+| Omitidos | 10 (las capturas: requieren `E2E_CAPTURES=1`) |
+| Tiempo | 10,4 min (622,81 s) |
+
+Clasificación de los fallos. Las pruebas, la base y el código se revisaron solo para leer, y la evidencia está en `e2e-r2-fallos/` (contexto de la página y captura de cada fallo).
+
+**Causa común: los dos repositorios no son de la misma época.** El servidor (`77881f8` = `origin/main`) incluye `eefab67` "feat(evaluation): hold every result until the teacher releases it" y el motor 2.0.0 (`ENGINE_VERSION = "2.0.0"`, `src/features/simulation/domain/engine/engine-version.ts:11`). La web medida (`2fbf674`) va 63 commits por detrás de `origin/master` y no tiene sus contrapartes: `b7e0799` (retención de resultados), `96ef1a8` (tipos del contrato), `c781bd0` (specs del Bloque 3 alineadas), `a2df5a1` (motor 2.0.0) y `b039cf0`. Su motor es 1.0.0 (`src/shared/sim-engine/engine/engine-version.ts:12`). Cada repositorio funciona como fue diseñado; lo que falla es la combinación.
+
+| Especificación (aserción) | Qué muestra | Causa | Clasificación |
+|---|---|---|---|
+| `bloque3/quiz-feedback.spec.ts:44` (`firstCheck.ok()` = `true`) | alerta "No se encontró la evaluación o ya no tienes acceso a ella." al comprobar "Volumen corriente" | la web llama `POST /api/my-evaluations/attempts/{id}/answers/{qid}/check` (`evaluations.service.ts:24`); esa ruta no existe en el servidor (`eefab67` la eliminó) | **Entorno** (versiones desalineadas) |
+| `bloque3/workshop-review.spec.ts:52` (`¡Muy bien! 🌟` visible) | la misma alerta al comprobar "Presión inspiratoria"; el intento queda `PENDING_REVIEW` sin fechas de publicación | la misma ruta `/check` eliminada | **Entorno** (versiones desalineadas) |
+| `bloque4/admin-ai-ratings.spec.ts:111` (`GET …/feedback`) | 404 `evaluation.grade_feedback_not_available`; en la base, el intento está `GRADED`, con `grade_published_at` y `answers_released_at` nulos | el servidor retiene todo resultado hasta que el docente lo libera (`eefab67`); la spec de esta web no libera (la de `c781bd0` llama `releaseAttemptResults`) | **Entorno** (versiones desalineadas) |
+| `bloque5/monitoreo-julio.spec.ts:110` (caja de la consola, `y` 44 → −77 a 1280×720) | aviso "Esta sesión se creó con el motor 2.0.0 y este navegador ejecuta el motor 1.0.0…" sobre la consola (~120 px); a 1920×1080 pasa | con el aviso, la consola (44 + 684,5 px) excede los 720 px; el clic en "Ver alertas detalladas" desplaza ~121 px. Que el aviso cause el desborde se deduce de la geometría de la caja y de la captura | **Entorno** (versiones del motor desalineadas) |
+| `simulator-exam.spec.ts:66` ("Control del tiempo" con "Velocidad fija ×1 (examen, sin pausa)") | alerta "Examen bloqueado: … la sesión usa el motor 2.0.0 y este navegador ejecuta el motor 1.0.0" | `checkEngineVersion` bloquea un EXAMEN ante cualquier diferencia de versión (`sim-session.entity.ts:139-140`), como está diseñado | **Entorno** (versiones del motor desalineadas) |
+
+Ninguno de los 5 se clasifica como **defecto del producto**. Tampoco son defectos de la prueba: cada spec está de acuerdo con su propio build de la web, y las versiones alineadas existen en `origin/master`.
+
+Sobre los otros 10 fallos de la corrida anterior (anexo A):
+- 4 eran el 401 del superadmin y 1 la falta del currículo; con la base sembrada según `LOCAL_STACK.md`, pasan.
+- `learning-locks`, `tutor-ai`, `monitoreo-ia`, `monitoreo-orden` y `simulator-connection` también pasan en esta corrida.
+
+### Anexo A. Corrida anterior de `npm run e2e` (2026-11-06 08:05:52 → 08:19:55, stack Docker `ventylab-local`)
+
+Backend en Docker (`ventylab-local-backend-1`), base con 50 estudiantes de carga, sin `prisma:seed` completo, y no se verificó que el backend alcanzara al LLM falso. Crudos: `e2e.json`, `e2e.log`, `e2e-inicio.txt`.
 
 | Métrica | Valor |
 |---|---|
@@ -186,8 +242,9 @@ Crudos: `bundle.json`, `bundle.log`, `bundle-rutas-bloque5.json`, `bundle-rutas-
 
 **Fallos**
 
-- vitest: 1 fallo de 3382 (`teacher-dashboard.page.test.tsx`). El mismo archivo, corrido solo, pasa 13/13, así que el fallo es intermitente en la corrida completa. No se investigó la causa.
-- E2E: 15 fallos de 51 casos del proyecto `e2e`. Cuatro fallan al iniciar sesión como `superadmin@ventylab.demo` (401). `student-list` dice que el currículo sembrado no tiene dos niveles de Mecánica con módulos. Estos cinco apuntan a una diferencia de datos de la base actual frente al montaje de `LOCAL_STACK.md` (semilla de currículo, `SUPERADMIN_EMAIL`), pero no se comprobó. De los otros diez no se determinó la causa.
+- vitest: 1 fallo de 3382 (`teacher-dashboard.page.test.tsx`), intermitente: pasa las 4 veces que se ejecuta solo (sección 1.1).
+- E2E en el entorno de `LOCAL_STACK.md`: 5 fallos de 51, los 5 clasificados como entorno por versiones desalineadas entre la web y el servidor (sección 1.2). La corrida anterior (anexo A) tuvo 15.
+- **Versiones desalineadas.** La web medida (`2fbf674`, motor 1.0.0) está 63 commits por detrás de `origin/master`; el servidor (`origin/main`, motor 2.0.0) incluye la retención de resultados de `eefab67`. Esto afecta a toda la sección 1 y también puede afectar a las mediciones del simulador de la sección 2: en el modo libre, la web muestra un aviso de versión del motor sobre la consola. Que ese aviso explique el alto del canvas de curvas (1040×602 ahora, 1040×650 el 2026-11-04) es una hipótesis que no se comprobó. Para resultados representativos del sistema actual, conviene repetir las mediciones con la web en `origin/master` (o en una rama que tenga `b7e0799`…`c781bd0` y `a2df5a1`/`b039cf0`) contra el servidor `main`.
 
 **Diferencias con el montaje del 2026-11-04**
 

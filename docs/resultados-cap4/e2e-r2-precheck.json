@@ -1,0 +1,24 @@
+{
+  "at": "2026-11-06T22:19:46.749Z",
+  "healthReady": {
+    "status": 200,
+    "body": {
+      "status": "ready"
+    }
+  },
+  "superadminLogin": {
+    "status": 200,
+    "role": "ADMIN",
+    "gotToken": true
+  },
+  "studentLogin": {
+    "status": 200,
+    "gotToken": true
+  },
+  "deepen": {
+    "status": 200,
+    "contentType": "text/event-stream; charset=utf-8",
+    "bytes": 1386,
+    "head": "event: start\ndata: {\"conversationId\":\"01a1b2f2-5011-738d-bc77-152737c10040\",\"messageId\":\"01a1b2f2-5017-75bc-8843-0c425babeb4e\"}\n\nevent: delta\ndata: {\"text\":\"**Respuesta de prueba (p\"}\n\nevent: delta\ndata: {\"text\":\"roveedor falso de E2E).*\"}\n\nevent: delta\ndata: {\"text\":\"*\\n\\nLa ecuación del movim\"}\n\nevent: delta\ndata: {\"text\":\"iento relaciona la presi\"}\n\nevent: delta\ndata: {\"text\":\"ón en la vía aére"
+  }
+}
