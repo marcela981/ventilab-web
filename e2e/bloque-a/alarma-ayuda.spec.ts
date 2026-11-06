@@ -4,9 +4,9 @@
 *   alarms bar is a button "¿Cómo estabilizar? SpO₂ baja": it opens the 380 px "¿Cómo estabilizar?" drawer with the
 *   deterministic rules of the server ("Qué revisar primero", each with its source) and then the streamed suggestion
 *   of the fake LLM with "¿Te fue útil?" (rated as an AI_CALL of the SIM_ALARM surface); the request body carries
-*   only the alarm code and the language. Escape closes the drawer. Needs the fake LLM (scripts/e2e/fake-llm.mjs).
+*   the alarm code, the language and (v1.1, fix sim-assist-current-state) the console context. Escape closes the drawer. Needs the fake LLM (scripts/e2e/fake-llm.mjs).
 *   Depends on @playwright/test and the e2e support helpers.
-* Versión: 1.0
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -37,7 +37,8 @@ test("an alarm opens its rules and the AI suggestion, which can be rated", async
 
   await expect(drawer).toBeVisible();
   expect(Math.abs((await boxOf(drawer, "alarm help drawer")).width - 380)).toBeLessThanOrEqual(TOLERANCE_PX);
-  expect((await helpRequest).postDataJSON()).toEqual({ alarmCode: "LOW_SPO2", language: "es" });
+  // fix sim-assist-current-state: the body also carries the console context (simulated time and snapshot).
+  expect((await helpRequest).postDataJSON()).toMatchObject({ alarmCode: "LOW_SPO2", language: "es", simTimeMs: expect.any(Number) });
 
   const rules = drawer.getByRole("list", { name: "Qué revisar primero" });
 
