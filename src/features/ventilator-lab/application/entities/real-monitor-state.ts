@@ -8,7 +8,11 @@
 *   one point every TREND_INTERVAL_MS outside React. Values that are missing or not finite are left out; the server
 *   validates the DTO again. The AI only reads this state: nothing here reaches the ventilator commands. Depends on the
 *   console contract types and the generated contract.
-* Versión: 1.0
+*   v1.1 (fix sim-assist-current-state): the active alarms also go with their priority and, for the client alarm
+*   limits, the measured value and the limit (alarmDetails); the state carries when the latest telemetry frame arrived
+*   (lastFrameAt) and its age when the help is asked (dataAgeMs: the server and the panel flag it past 2 s), and the
+*   case loaded on the monitor when there is one.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -24,6 +28,20 @@ type TrendPoint = components["schemas"]["RealMonitorTrendPointDTO"];
 type MonitorSettings = NonNullable<RealMonitorState["settings"]>;
 type MonitorMetrics = NonNullable<RealMonitorState["metrics"]>;
 type MonitorLimits = NonNullable<RealMonitorState["limits"]>;
+type MonitorAlarmDetail = NonNullable<RealMonitorState["alarmDetails"]>[number];
+
+/** When the latest telemetry frame arrived (wall clock of the console) and the time the help is asked. */
+export type MonitorFreshness = { lastFrameAt: number | null, now: number };
+
+const PRIORITIES: Readonly<Record<string, MonitorAlarmDetail["priority"]>> = { high: "HIGH", medium: "MEDIUM", low: "LOW" };
+
+/** The client alarm limits behind an alarm code: the measured metric and the limit id (real-alarm-limits rules). */
+const LIMIT_ALARMS: Readonly<Record<string, { limit: string, metric: "peakPressure" | "exhaledTidalVolume" | "totalRespiratoryRate" }>> = {
+  HIGH_PRESSURE: { limit: "highPressure", metric: "peakPressure" },
+  LOW_VOLUME: { limit: "lowTidalVolume", metric: "exhaledTidalVolume" },
+  HIGH_VOLUME: { limit: "highTidalVolume", metric: "exhaledTidalVolume" },
+  HIGH_RESPIRATORY_RATE: { limit: "highRespiratoryRate", metric: "totalRespiratoryRate" },
+};
 
 /** RealMonitorStateDTO: at most 20 alarm codes and 20 trend points. */
 export const MAX_STATE_ALARMS = 20;
@@ -120,6 +138,54 @@ function alarmsOf(adapter: VentilatorConsoleAdapter): string[] {
   return [...new Set(codes)].slice(0, MAX_STATE_ALARMS);
 }
 
+/** Each active alarm with its priority and, when a client limit raised it, the measured value and the limit. */
+function alarmDetailsOf(adapter: VentilatorConsoleAdapter): MonitorAlarmDetail[] {
+  const seen = new Set<string>();
+  const details: MonitorAlarmDetail[] = [];
+
+  adapter.alarms.forEach((alarm) => {
+    if (!ALARM_CODE.test(alarm.type) || seen.has(alarm.type) || details.length >= MAX_STATE_ALARMS) {
+      return;
+    }
+
+    seen.add(alarm.type);
+
+    const limitRule = LIMIT_ALARMS[alarm.type];
+    const limit = limitRule ? (adapter.alarmLimits ?? []).find((entry) => entry.id === limitRule.limit) : undefined;
+    const value = limitRule ? metricValue(adapter.metrics[limitRule.metric]) : undefined;
+    const threshold = finite(limit?.value);
+    const priority = PRIORITIES[alarm.priority];
+
+    details.push({
+      code: alarm.type,
+      ...(value === undefined ? {} : { value }),
+      ...(threshold === undefined ? {} : { threshold }),
+      ...(priority === undefined ? {} : { priority }),
+    });
+  });
+
+  return details;
+}
+
+export type FrameClock = {
+  /** Records that new telemetry reached the console at `nowMs` (no React state). */
+  mark: (nowMs: number) => void
+  /** When the latest telemetry arrived, or null before the first one. */
+  lastAt: () => number | null
+};
+
+/** v1.1: when the latest telemetry frame reached the console, kept outside React like the trend. */
+export function createFrameClock(): FrameClock {
+  let lastAt: number | null = null;
+
+  return {
+    mark(nowMs) {
+      lastAt = nowMs;
+    },
+    lastAt: () => lastAt,
+  };
+}
+
 /** One recorded trend sample, at its wall-clock time. */
 type TrendSample = Omit<TrendPoint, "secondsAgo"> & { atMs: number };
 
@@ -163,14 +229,25 @@ export function createMonitorTrend(intervalMs: number = TREND_INTERVAL_MS, maxPo
 }
 
 /** The monitor state of the real console for the AI help (built when the help is asked). */
-export function buildRealMonitorState(adapter: VentilatorConsoleAdapter, trend: readonly TrendPoint[] = [], caseId?: string | null): RealMonitorState {
+export function buildRealMonitorState(
+  adapter: VentilatorConsoleAdapter,
+  trend: readonly TrendPoint[] = [],
+  caseId?: string | null,
+  freshness?: MonitorFreshness,
+): RealMonitorState {
   const mode = adapter.mode.current.trim();
   const settings = settingsOf(adapter);
   const metrics = metricsOf(adapter);
   const limits = limitsOf(adapter);
   const alarms = alarmsOf(adapter);
+  const alarmDetails = alarmDetailsOf(adapter);
+  const lastFrameAt = freshness?.lastFrameAt ?? null;
 
   return {
+    ...(alarmDetails.length > 0 ? { alarmDetails } : {}),
+    ...(lastFrameAt === null || freshness === undefined
+      ? {}
+      : { lastFrameAt: new Date(lastFrameAt).toISOString(), dataAgeMs: Math.max(0, Math.round(freshness.now - lastFrameAt)) }),
     ...(mode !== "" && mode !== "—" ? { mode: mode.slice(0, MAX_MODE_LENGTH) } : {}),
     ...(Object.keys(settings).length > 0 ? { settings } : {}),
     ...(Object.keys(metrics).length > 0 ? { metrics } : {}),

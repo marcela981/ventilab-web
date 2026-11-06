@@ -44,6 +44,7 @@ function snapshot(overrides: Partial<VentilatorConsoleAdapter> = {}): Ventilator
 describe("buildRealMonitorState", () => {
   it("maps the snapshot to the contract units and keeps only valid alarm codes", () => {
     expect(buildRealMonitorState(snapshot())).toEqual({
+      alarmDetails: [{ code: "HIGH_PRESSURE", value: 28, threshold: 40, priority: "HIGH" }, { code: "NO_DATA", priority: "HIGH" }],
       mode: "VCV",
       settings: { tidalVolumeMl: 450, respiratoryRateBpm: 16, peepCmH2O: 8, fio2: 0.5, inspiratoryTimeS: 1 },
       metrics: { peakPressureCmH2O: 28, totalPeepCmH2O: 9, exhaledTidalVolumeMl: 440, measuredRespiratoryRateBpm: 16, spo2Percent: 94, etco2MmHg: 38 },
@@ -61,10 +62,26 @@ describe("buildRealMonitorState", () => {
     );
 
     expect(state).toEqual({
+      alarmDetails: alarms.slice(0, MAX_STATE_ALARMS).map((alarm) => ({ code: alarm.type, priority: "LOW" })),
       alarms: alarms.slice(0, MAX_STATE_ALARMS).map((alarm) => alarm.type),
       trend: [{ secondsAgo: 30, spo2Percent: 92 }],
       caseId: "engine-ards-unstable",
     });
+  });
+});
+
+describe("buildRealMonitorState freshness (fix sim-assist-current-state)", () => {
+  it("carries when the latest frame arrived and its age when the help is asked", () => {
+    const state = buildRealMonitorState(snapshot(), [], null, { lastFrameAt: Date.UTC(2026, 10, 5, 23, 48, 33), now: Date.UTC(2026, 10, 5, 23, 48, 36, 500) });
+
+    expect(state).toMatchObject({ lastFrameAt: "2026-11-05T23:48:33.000Z", dataAgeMs: 3500 });
+  });
+
+  it("leaves the freshness out before any frame arrived", () => {
+    const state = buildRealMonitorState(snapshot(), [], null, { lastFrameAt: null, now: 1000 });
+
+    expect(state).not.toHaveProperty("lastFrameAt");
+    expect(state).not.toHaveProperty("dataAgeMs");
   });
 });
 
