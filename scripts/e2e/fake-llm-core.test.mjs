@@ -12,7 +12,10 @@
 import { describe, expect, it } from "vitest";
 import {
   chunkText,
+  CLAIMS_STABLE_ANSWER,
   completionPayload,
+  ECHO_MARKER,
+  modeReplyFor,
   DEFAULT_CHUNK_DELAY_MS,
   DEFAULT_PORT,
   DEFAULT_RETRY_AFTER_S,
@@ -88,7 +91,7 @@ describe("fault injection", () => {
   const payloadsOf = (chunks) => chunks.map((chunk) => JSON.parse(chunk.replace(/^data: /, "")));
 
   it("lists every mode and rejects unknown ones", () => {
-    expect(MODES).toEqual(["ok", "429", "500", "timeout", "drop-mid-stream", "malformed-json"]);
+    expect(MODES).toEqual(["ok", "429", "500", "timeout", "drop-mid-stream", "malformed-json", "echo", "claims-stable"]);
     expect(parseMode(" DROP-MID-STREAM ")).toBe("drop-mid-stream");
     expect(() => parseMode("crash")).toThrow(/Unknown mode/);
   });
@@ -187,5 +190,50 @@ describe("streamFrames", () => {
 
   it("splits text into chunks of the given size", () => {
     expect(chunkText("abcdef", 4)).toEqual(["abcd", "ef"]);
+  });
+});
+
+describe("simulator answer modes (fix sim-assist-current-state)", () => {
+  const STATE = {
+    simTime: "01:16",
+    simTimeS: 76.2,
+    patient: { status: "CRITICAL", severityPercent: 69 },
+    alarms: [{ code: "LOW_SPO2", priority: "HIGH", value: 72.2, threshold: 90 }],
+    vitals: { spo2Percent: 72.2, pao2MmHg: 38, paco2MmHg: 33.4, ph: 7.48, mapMmHg: 66, heartRateBpm: 107 },
+  };
+  const body = (tag, state) => ({ stream: true, messages: [{ role: "user", content: `<${tag}>\n${JSON.stringify(state)}\n</${tag}>\n\n<pregunta>\nx\n</pregunta>` }] });
+
+  it("echoes the values of the state block it received, readable and as JSON", () => {
+    const answer = modeReplyFor("echo", body("estado_actual", STATE));
+    const [line, json] = answer.split("\n");
+
+    expect(line).toBe(`${ECHO_MARKER}: t = 01:16 · SpO2 72.2 % · PaO2 38 mmHg · PaCO2 33.4 mmHg · pH 7.48 · PAM 66 mmHg · FC 107 lpm · gravedad 69 % · alarmas LOW_SPO2`);
+    expect(JSON.parse(json)).toMatchObject({ simTimeS: 76.2, status: "CRITICAL", spo2Percent: 72.2, mapMmHg: 66, alarms: ["LOW_SPO2"] });
+  });
+
+  it("echoes the real monitor state too", () => {
+    const real = { source: "REAL_VENTILATOR", dataAgeS: 3.5, stale: true, alarms: [{ code: "HIGH_PRESSURE" }], metrics: { spo2Percent: 93, peakPressureCmH2O: 42 } };
+
+    expect(JSON.parse(modeReplyFor("echo", body("estado_actual", real)).split("\n")[1])).toMatchObject({ source: "REAL_VENTILATOR", spo2Percent: 93, peakPressureCmH2O: 42, dataAgeS: 3.5, stale: true });
+  });
+
+  it("claims a stable patient in claims-stable mode and streams it", () => {
+    const plan = planResponse("claims-stable", body("estado_monitor", STATE));
+    const text = plan.chunks.slice(0, -2).map((frame) => JSON.parse(frame.replace(/^data: /, "")).choices[0].delta.content).join("");
+
+    expect(text).toBe(CLAIMS_STABLE_ANSWER);
+  });
+
+  it("reads the state block of the user message even when the system prompt names the tag", () => {
+    const withSystem = { ...body("estado_actual", STATE), messages: [{ role: "system", content: "Basa el análisis SOLO en el bloque <estado_actual> (simTime)." }, ...body("estado_actual", STATE).messages] };
+
+    expect(modeReplyFor("echo", withSystem)).toContain("SpO2 72.2 %");
+  });
+
+  it("keeps the normal answers for other prompts and the old state block", () => {
+    expect(modeReplyFor("echo", { stream: true, messages: [{ role: "user", content: "hola" }] })).toBeNull();
+    expect(modeReplyFor("ok", body("estado_actual", STATE))).toBeNull();
+    expect(modeReplyFor("echo", body("estado_simulacion", { gases: { spo2Percent: 90.6 }, mapMmHg: 80 }))).toContain("SpO2 90.6 %");
+    expect(parseMode("echo")).toBe("echo");
   });
 });

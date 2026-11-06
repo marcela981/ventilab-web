@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Fake LLM core (automated tests)
-* Descripción: Pure helpers of the fake OpenAI-compatible chat completions server used by the Block 2 E2E specs (TutorAI deepen, questions, notes analysis): option parsing, the deterministic reply for a request (JSON with `onTopic` and a notes analysis when the caller asks for JSON or a full completion, a Spanish markdown answer when it streams), the split of that answer into delta chunks and the OpenAI SSE frames (deltas, usage, [DONE]). Without real provider keys the backend has no fake provider; pointing OPENAI_BASE_URL at this server exercises the real server path (conversation, messages, AI call telemetry and ratings). Depends on nothing. v0.2 (Bloque 3, Ola 4): a grade feedback prompt (it asks for the `{"overall": …, "perQuestion": …}` JSON) gets a parseable grade feedback with a fixed overall text, so the evaluation result shows LLM feedback instead of the deterministic fallback. v0.3 (cierre IA): fault injection. Modes `ok` (default, the answers above), `429` (rate limit with Retry-After), `500`, `timeout` (never answers), `drop-mid-stream` (part of the answer, then the connection is destroyed) and `malformed-json` (an unparseable completion body or SSE chunk). The mode of a request is, in order: a `[[fake-llm:<mode>]]` directive anywhere in its prompt (per request, e.g. typed in a TutorAI question), the mode set at runtime through the admin route (PUT /__fake-llm/mode) and the start mode (--mode or FAKE_LLM_MODE). planResponse turns a mode and a request into a response plan (status, headers, chunks and how it ends) that the server executes. v0.4 (Bloque A): the simulator case interpretation prompt (its `<parametros_curados>` block, SIM_CASE_INTERPRETATION) gets a valid strict JSON that echoes the curated value of every parameter, a STABLE trajectory and a short rationale, so the session starts with the interpretation accepted (source LLM) and the curated physiology unchanged.
-* Versión: 0.4
+* Descripción: Pure helpers of the fake OpenAI-compatible chat completions server used by the Block 2 E2E specs (TutorAI deepen, questions, notes analysis): option parsing, the deterministic reply for a request (JSON with `onTopic` and a notes analysis when the caller asks for JSON or a full completion, a Spanish markdown answer when it streams), the split of that answer into delta chunks and the OpenAI SSE frames (deltas, usage, [DONE]). Without real provider keys the backend has no fake provider; pointing OPENAI_BASE_URL at this server exercises the real server path (conversation, messages, AI call telemetry and ratings). Depends on nothing. v0.2 (Bloque 3, Ola 4): a grade feedback prompt (it asks for the `{"overall": …, "perQuestion": …}` JSON) gets a parseable grade feedback with a fixed overall text, so the evaluation result shows LLM feedback instead of the deterministic fallback. v0.3 (cierre IA): fault injection. Modes `ok` (default, the answers above), `429` (rate limit with Retry-After), `500`, `timeout` (never answers), `drop-mid-stream` (part of the answer, then the connection is destroyed) and `malformed-json` (an unparseable completion body or SSE chunk). The mode of a request is, in order: a `[[fake-llm:<mode>]]` directive anywhere in its prompt (per request, e.g. typed in a TutorAI question), the mode set at runtime through the admin route (PUT /__fake-llm/mode) and the start mode (--mode or FAKE_LLM_MODE). planResponse turns a mode and a request into a response plan (status, headers, chunks and how it ends) that the server executes. v0.4 (Bloque A): the simulator case interpretation prompt (its `<parametros_curados>` block, SIM_CASE_INTERPRETATION) gets a valid strict JSON that echoes the curated value of every parameter, a STABLE trajectory and a short rationale, so the session starts with the interpretation accepted (source LLM) and the curated physiology unchanged. v0.5 (fix sim-assist-current-state): answer modes `echo` (a simulator help prompt gets the values of the state block it received, as a readable line and a JSON line after ECO DEL ESTADO RECIBIDO, so an E2E compares what reached the provider with the screen) and `claims-stable` (it always claims a stable patient with the initial-case vitals, to exercise the coherence validator); other prompts keep their answers.
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,7 +16,12 @@ export const FAKE_MODEL = "fake-llm-e2e";
 export const DEFAULT_RETRY_AFTER_S = 30;
 
 // Fault injection modes; `ok` is the normal behaviour.
-export const MODES = Object.freeze(["ok", "429", "500", "timeout", "drop-mid-stream", "malformed-json"]);
+// v0.5 (fix sim-assist-current-state): two answer modes for the simulator help prompts. `echo` answers with the values of
+// the state block it received (<estado_actual>, <estado_monitor> or <estado_simulacion>) plus a JSON line, so an E2E
+// can compare what reached the provider with the screen; `claims-stable` always claims a stable patient with the
+// initial-case vitals, to exercise the coherence validator (regeneration, then the deterministic suggestion). Other
+// prompts keep their normal answers in both modes.
+export const MODES = Object.freeze(["ok", "429", "500", "timeout", "drop-mid-stream", "malformed-json", "echo", "claims-stable"]);
 export const DEFAULT_MODE = "ok";
 // Admin route (127.0.0.1 only): GET returns {mode}, PUT {"mode": "<mode>"} changes it until the next PUT or a restart.
 export const ADMIN_MODE_PATH = "/__fake-llm/mode";
@@ -151,6 +156,90 @@ export function interpretationAnswer(body) {
 // The grade feedback prompt of the backend ends with its JSON format: {"overall": "...", "perQuestion": [...]}.
 const isGradeFeedbackRequest = (body) => /"overall"/.test(promptText(body)) && /"perQuestion"/.test(promptText(body));
 
+const STATE_BLOCK = /<(estado_actual|estado_monitor|estado_simulacion)>\s*([\s\S]*?)\s*<\/\1>/;
+/** First line of an echo answer; the JSON of the received values follows it on the next line. */
+export const ECHO_MARKER = "ECO DEL ESTADO RECIBIDO";
+export const CLAIMS_STABLE_ANSWER = "El paciente está estable. La SpO2 en 89 % es aceptable y el pH y la PaCO2 están dentro de rangos normales.";
+
+/** The simulator state block of a help prompt, parsed; null for any other prompt or an unparseable block. */
+export function simulatorStateOf(body) {
+  // Only the user messages carry the data blocks (the system prompt names the tag in its instructions).
+  const userText = (body?.messages ?? []).filter((message) => message?.role === "user").map((message) => (typeof message?.content === "string" ? message.content : "")).join("\n");
+  const match = STATE_BLOCK.exec(userText);
+
+  if (!match) {
+    return null;
+  }
+
+  try {
+    const state = JSON.parse(match[2]);
+
+    return state !== null && typeof state === "object" ? state : null;
+  } catch {
+    return null;
+  }
+}
+
+const numberOr = (...values) => values.find((value) => typeof value === "number" && Number.isFinite(value)) ?? null;
+
+/** The values an echo answer repeats: the current state of a session (1.3.0 / 1.1.0 or older) or of the real monitor. */
+export function echoValues(state) {
+  const vitals = state.vitals ?? state.gases ?? {};
+  const metrics = state.metrics ?? {};
+  const alarms = Array.isArray(state.alarms) ? state.alarms.map((alarm) => (typeof alarm === "string" ? alarm : alarm?.code)).filter(Boolean) : [];
+
+  return {
+    source: state.source ?? "SIMULATION",
+    simTime: state.simTime ?? null,
+    simTimeS: numberOr(state.simTimeS),
+    status: state.patient?.status ?? null,
+    severityPercent: numberOr(state.patient?.severityPercent, typeof state.patient?.severity === "number" ? Math.round(state.patient.severity * 100) : undefined),
+    spo2Percent: numberOr(vitals.spo2Percent, metrics.spo2Percent),
+    pao2MmHg: numberOr(vitals.pao2MmHg),
+    paco2MmHg: numberOr(vitals.paco2MmHg),
+    ph: numberOr(vitals.ph),
+    mapMmHg: numberOr(vitals.mapMmHg, state.mapMmHg),
+    heartRateBpm: numberOr(vitals.heartRateBpm, state.patient?.heartRateBpm),
+    peakPressureCmH2O: numberOr(state.ventilation?.peakPressureCmH2O, state.lastCycle?.peakPressureCmH2O, metrics.peakPressureCmH2O),
+    dataAgeS: numberOr(state.dataAgeS),
+    stale: state.stale === true,
+    alarms,
+  };
+}
+
+/** Echo answer: a readable line with the received values (cited as the state gives them) and their JSON. */
+export function echoAnswer(state) {
+  const values = echoValues(state);
+  const parts = [
+    values.simTime === null ? null : `t = ${values.simTime}`,
+    values.spo2Percent === null ? null : `SpO2 ${values.spo2Percent} %`,
+    values.pao2MmHg === null ? null : `PaO2 ${values.pao2MmHg} mmHg`,
+    values.paco2MmHg === null ? null : `PaCO2 ${values.paco2MmHg} mmHg`,
+    values.ph === null ? null : `pH ${values.ph}`,
+    values.mapMmHg === null ? null : `PAM ${values.mapMmHg} mmHg`,
+    values.heartRateBpm === null ? null : `FC ${values.heartRateBpm} lpm`,
+    values.severityPercent === null ? null : `gravedad ${values.severityPercent} %`,
+    values.alarms.length === 0 ? null : `alarmas ${values.alarms.join(", ")}`,
+  ].filter((part) => part !== null);
+
+  return `${ECHO_MARKER}: ${parts.join(" · ")}\n${JSON.stringify(values)}`;
+}
+
+/** Text of a request in an answer mode (echo, claims-stable); null when the mode does not change the answer. */
+export function modeReplyFor(mode, body) {
+  if (mode !== "echo" && mode !== "claims-stable") {
+    return null;
+  }
+
+  const state = simulatorStateOf(body);
+
+  if (state === null) {
+    return null;
+  }
+
+  return mode === "echo" ? echoAnswer(state) : CLAIMS_STABLE_ANSWER;
+}
+
 /** Text the fake answers for one chat completions request body. */
 export function replyFor(body) {
   const interpretation = interpretationAnswer(body);
@@ -188,8 +277,7 @@ export function promptText(body) {
 }
 
 /** OpenAI `chat.completion` payload of a non-streamed request. */
-export function completionPayload(body) {
-  const text = replyFor(body);
+export function completionPayload(body, text = replyFor(body)) {
 
   return {
     id: "chatcmpl-fake",
@@ -201,8 +289,7 @@ export function completionPayload(body) {
 }
 
 /** SSE frames (`data: ...\n\n`) of a streamed request, in order: deltas, the usage chunk and [DONE]. */
-export function streamFrames(body) {
-  const text = replyFor(body);
+export function streamFrames(body, text = replyFor(body)) {
   const frames = chunkText(text).map((delta) => ({
     id: "chatcmpl-fake",
     object: "chat.completion.chunk",
@@ -291,9 +378,13 @@ export function planResponse(mode, body, { retryAfterSeconds = DEFAULT_RETRY_AFT
           end: "end",
         }
         : { status: 200, headers: JSON_HEADERS, chunks: ["{\"id\": \"chatcmpl-fake\", \"object\": \"chat.completion\", \"choices\": [{\"message\": "], streamed: false, end: "end" };
-    default:
+    default: {
+      // ok, echo and claims-stable; the last two change only the answer of a simulator help prompt.
+      const text = modeReplyFor(mode, body) ?? replyFor(body);
+
       return streamed
-        ? { status: 200, headers: SSE_HEADERS, chunks: streamFrames(body), streamed: true, end: "end" }
-        : { status: 200, headers: JSON_HEADERS, chunks: [JSON.stringify(completionPayload(body))], streamed: false, end: "end" };
+        ? { status: 200, headers: SSE_HEADERS, chunks: streamFrames(body, text), streamed: true, end: "end" }
+        : { status: 200, headers: JSON_HEADERS, chunks: [JSON.stringify(completionPayload(body, text))], streamed: false, end: "end" };
+    }
   }
 }
