@@ -1,7 +1,10 @@
 /*
 * Funcionalidad: July console layout styles
 * Descripción: The July three-column layout of the ventilator console (DISENO_BLOQUE5 §6.1): the root declares the `vl-monitor` inline-size container; fixed side columns of 260 / 250 px (16.25rem / 15.625rem) with 12 px gaps when the console is at least 1100 px wide, July's minimums 240 / 230 px (15rem / 14.375rem) with 8 px gaps below; the centre takes the rest and never scrolls (the curves fill its remaining height, at least 360 px), while the side columns scroll on their own; the drawers and banners never change the canvas width. The root fills the height its host gives it; below 700 px of height the page scrolls instead, and below 1024 px of viewport the columns stack under the small-screen notice. Never a horizontal scroll. Also the logos, the right column head and the value cards list. Console and design-system tokens only. v0.1 (Bloque 5, C3): first version. v0.2 (Bloque 5, C5): the "Ajustar" bar and the adjustable cards (handle, Subir / Bajar / Ocultar tools, hidden cards dimmed). v0.3 (Bloque 5, C6): smaller logos below a 1100 px console. v0.4 (Bloque 5, C8): the root is a growing flex item (the host is a flex column with a min-height): the centre (input row, alarms, curves ≥ 360 px, footer) sizes the row, the side columns are size-contained and scroll inside it, so with banners or a short host the page scrolls instead of clipping the curves. v0.5 (Ajustes A, A4): smaller logos, existing space tokens only: VentyLab 40 px tall (32 px below a 1100 px console), width from its 2:1 aspect; Univalle scaled with it (112 px, 88 px below 1100 px).
-* Versión: 0.5
+*   v0.6 (fix sim-assist-current-state): from 1440 px an open side drawer ("Asesoría IA", "¿Cómo estabilizar?",
+*   "Alertas detalladas", "Caso clínico") pushes the console instead of covering it: the root makes room for the
+*   23.75rem drawer, so the columns and the curves reflow; narrower screens keep the overlay.
+* Versión: 0.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -283,5 +286,12 @@
   .left,
   .right {
     contain: none;
+  }
+}
+
+/* v0.6: from 1440 px an open drawer pushes the console (its curves reflow); narrower, it overlays. */
+@media (min-width: 1440px) {
+  .root:has([data-console-drawer]) {
+    padding-inline-end: 23.75rem;
   }
 }

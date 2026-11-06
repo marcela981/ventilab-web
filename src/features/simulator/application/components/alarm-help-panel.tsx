@@ -11,7 +11,10 @@
 *   warning. "Detener" aborts the stream; unmounting (drawer closed, another alarm) aborts it too. Errors use the
 *   assist error messages. Depends on React, MUI, @shared/ai-conversation, @shared/ai-rating, the simulator assist
 *   config and entities and the alarm help CSS Module.
-* Versión: 1.0
+*   v1.1 (fix sim-assist-current-state): `buildRequest` may be async (a session first flushes its pending events and
+*   reads its current simulated time); the suggestion shows the state the server analyzed ("Analizado en t = mm:ss ·
+*   gravedad X %") and a suggestion the AI kept contradicting carries "La IA no pudo analizar el estado actual".
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -22,13 +25,14 @@
 import StopIcon from "@mui/icons-material/Stop";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
-import { useCallback, useEffect, useId, useMemo, useRef } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { AI_ERROR_CODES, AiFallbackLabel, COMPOSER_COPY, isFallbackSource, StreamingMessage, useStreamingResponse } from "@shared/ai-conversation";
 import type { StreamRequest } from "@shared/ai-conversation";
 import { AiRatingWidget } from "@shared/ai-rating";
 import { cx } from "@shared/lib/class-names";
 import type { ConsoleAlarmHelpTarget } from "@shared/ventilator-console";
 import { AI_CALL_RATING_TARGET_TYPE, ALARM_HELP_RATING_SURFACE } from "../config/sim-assist.config";
+import { analysisHeader, HELP_CONTEXT_COPY, isInconsistentNotice, parseHelpAnalysis } from "../entities/sim-help-context.entity";
 import { getAssistErrorMessage } from "../entities/assist-error-messages";
 import { isAlarmHelpDone, parseAlarmRules } from "../entities/sim-alarm-help.entity";
 import type { AlarmHelpAvailability, AlarmHelpDone } from "../entities/sim-alarm-help.entity";
@@ -52,8 +56,11 @@ export const ALARM_HELP_PANEL_COPY = {
 
 export type AlarmHelpPanelProps = {
   target: ConsoleAlarmHelpTarget
-  /** Builds the stream request when the help is asked; null when the help is unavailable (no request is ever sent). */
-  buildRequest: (() => StreamRequest) | null
+  /**
+   * Builds the stream request when the help is asked (v1.1: possibly after the bounded flush of the session events);
+   * null when the help is unavailable (no request is ever sent).
+   */
+  buildRequest: (() => StreamRequest | Promise<StreamRequest>) | null
   availability: AlarmHelpAvailability
 };
 
@@ -66,13 +73,23 @@ export function AlarmHelpPanel({ target, buildRequest, availability }: AlarmHelp
   const rules = useMemo(() => parseAlarmRules(stream.rules), [stream.rules]);
   const done = stream.status === "done" && isAlarmHelpDone(stream.done) ? stream.done : null;
   const fallback = done !== null && isFallbackSource(done.source);
+  const inconsistent = done !== null && isInconsistentNotice(done);
+  const analyzed = done === null ? null : analysisHeader(parseHelpAnalysis(done));
+  const [preparing, setPreparing] = useState(false);
   const error = stream.status === "error" && stream.error ? stream.error : null;
   const { start } = stream;
 
   const ask = useCallback(() => {
-    if (buildRequest) {
-      void start(buildRequest());
+    if (!buildRequest) {
+      return;
     }
+
+    setPreparing(true);
+    void Promise.resolve(buildRequest()).then((request: StreamRequest) => {
+      setPreparing(false);
+
+      return start(request);
+    }, () => setPreparing(false));
   }, [buildRequest, start]);
   // The host rebuilds its props with the alarms (≤ 4 Hz): the automatic start reads the latest ones, once per mount.
   const autoStartRef = useRef<(() => void) | null>(null);
@@ -88,7 +105,9 @@ export function AlarmHelpPanel({ target, buildRequest, availability }: AlarmHelp
 
   let footer = null;
 
-  if (done && fallback) {
+  if (done && inconsistent) {
+    footer = <AiFallbackLabel label={HELP_CONTEXT_COPY.inconsistent} />;
+  } else if (done && fallback) {
     footer = <AiFallbackLabel label={ALARM_HELP_PANEL_COPY.fallback} />;
   } else if (done) {
     footer = <AiRatingWidget targetType={AI_CALL_RATING_TARGET_TYPE} targetId={done.aiCallId} surface={ALARM_HELP_RATING_SURFACE} />;
@@ -107,7 +126,8 @@ export function AlarmHelpPanel({ target, buildRequest, availability }: AlarmHelp
       ) : (
         <>
           {availability.status === "penalty" ? <Alert severity="warning">{availability.message}</Alert> : null}
-          {stream.status === "idle" && availability.status === "penalty" ? (
+          {preparing && stream.status === "idle" ? <p className={cx(styles.muted)} role="status">{ALARM_HELP_PANEL_COPY.rulesLoading}</p> : null}
+          {stream.status === "idle" && availability.status === "penalty" && !preparing ? (
             <Button variant="contained" onClick={ask}>{ALARM_HELP_PANEL_COPY.request}</Button>
           ) : null}
           {stream.status === "idle" ? null : (
@@ -130,6 +150,7 @@ export function AlarmHelpPanel({ target, buildRequest, availability }: AlarmHelp
           {stream.status === "idle" || (stream.status === "error" && stream.text === "") ? null : (
             <section className={cx(styles.section)} aria-labelledby={suggestionId}>
               <h3 id={suggestionId} className={cx(styles.heading)}>{ALARM_HELP_PANEL_COPY.suggestion}</h3>
+              {analyzed === null ? null : <p className={cx(styles.analyzed)}>{analyzed}</p>}
               <StreamingMessage text={stream.text} isStreaming={isStreaming} typingLabel={ALARM_HELP_PANEL_COPY.typing} footer={footer} />
               {stream.status === "aborted" ? <p className={cx(styles.muted)} role="status">{ALARM_HELP_PANEL_COPY.stopped}</p> : null}
               <p className={cx(styles.muted)}>{ALARM_HELP_PANEL_COPY.note}</p>

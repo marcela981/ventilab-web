@@ -26,7 +26,8 @@
 *   live console) and the console has "Asesoría IA" next to the mode toggle (POST /api/simulation/real/assist with
 *   the same monitor state, rated as an AI_CALL of SIMULATOR_ASSIST). The AI only suggests; nothing it returns reaches
 *   the ventilator commands.
-* Versión: 0.3
+*   v0.4 (fix sim-assist-current-state): the case loaded in the workspace (`?case=`) goes with the AI help state.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -54,6 +55,7 @@ import {
 } from "@features/ventilator-lab/live.entry";
 import type { ServerClock } from "@features/ventilator-lab/live.entry";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useRouter } from "next/router";
 import type { ReactNode } from "react";
 import { cx } from "@shared/lib/class-names";
 import type { ConsoleAlarmHelpTarget, MonitorCardsController } from "@shared/ventilator-console";
@@ -185,6 +187,9 @@ function renderRealAssist(getMonitorState: () => RealMonitorStateDTO, live: bool
 export function RealMonitor({ header = null, leftTop = null, statusChip = null, cards }: RealMonitorProps = {}) {
   const connection = useLabConnection();
   const { reservation, socketOnline, isOperator, canControl } = connection;
+  const router = useRouter();
+  // The case loaded in the workspace, when there is one: the AI help names it.
+  const caseId = typeof router.query.case === "string" && router.query.case.trim() !== "" ? router.query.case.trim() : null;
   const { settings } = useLabSettings();
   const staleAfterMs = settings["telemetry.staleAfterMs"];
   const device = useDeviceStatus();
@@ -266,6 +271,7 @@ export function RealMonitor({ header = null, leftTop = null, statusChip = null, 
         placeholder={<>{header}{strip}</>}
         renderAlarmHelp={renderRealAlarmHelp}
         renderAssist={renderRealAssist}
+        caseId={caseId}
         {...(readOnlyReason === undefined ? {} : { readOnlyReason })}
       />
     </div>

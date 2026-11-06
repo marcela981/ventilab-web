@@ -345,3 +345,43 @@ describe("AI assist panel", () => {
     expect(screen.getByRole("button", { name: "Asesoría IA" })).toBeDisabled();
   });
 });
+
+describe("AI assist panel on the current state (fix sim-assist-current-state)", () => {
+  it("sends the console context after the bounded flush and shows the state the server analyzed", async() => {
+    const bodies: unknown[] = [];
+    const helpContext = vi.fn(async() => await Promise.resolve({ simTimeMs: 76_200, unsentChanges: false, clientSnapshot: { spo2Percent: 72.2, status: "CRITICAL" } }));
+
+    server.use(http.post(ASSIST_URL, async({ request }) => {
+      bodies.push(await request.json());
+
+      return sseResponse([
+        deltaFrame("Prioriza la oxigenación."),
+        doneFrame({ aiHelpEventId: "help-9", aiCallId: "call-9", source: "LLM", analysis: { simTimeMs: 76_200, severity: 0.48, patientStatus: "CRITICAL" } }),
+      ]);
+    }));
+    renderWithSwr(<AssistLauncher sessionId="s1" mode="FREE" active helpContext={helpContext} />);
+
+    const panel = await openPanel();
+
+    requestAssist();
+
+    expect(await within(panel).findByText("Analizado en t = 01:16 · gravedad 48 %")).toBeInTheDocument();
+    expect(helpContext).toHaveBeenCalledTimes(1);
+    expect(bodies).toEqual([{ language: "es", simTimeMs: 76_200, clientSnapshot: { spo2Percent: 72.2, status: "CRITICAL" } }]);
+  });
+
+  it("says the AI could not analyze the current state when the server sent the deterministic suggestion instead", async() => {
+    server.use(http.post(ASSIST_URL, () => sseResponse([
+      deltaFrame("Sube la PEEP y revisa la FiO2."),
+      doneFrame({ aiHelpEventId: "help-10", aiCallId: "call-10", source: "DETERMINISTIC", notice: "INCONSISTENT_STATE", analysis: { simTimeMs: 1000, severity: 0.7, patientStatus: "CRITICAL" } }),
+    ])));
+    renderLauncher();
+
+    const panel = await openPanel();
+
+    requestAssist();
+
+    expect(await within(panel).findByText("La IA no pudo analizar el estado actual")).toBeInTheDocument();
+    expect(within(panel).queryByText("¿Te fue útil?")).not.toBeInTheDocument();
+  });
+});

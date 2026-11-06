@@ -28,7 +28,9 @@
 #   v1.7 (Bloque A): suma los E2E digitales del simulador de e2e/bloque-a (aplicación automática, paciente fallecido
 #   con el caso inestable a ×4, mejoría con el ajuste correcto, ayuda de alarma con el LLM falso y repetición igual a
 #   la sesión en vivo). modo-real queda fuera: necesita un broker MQTT de prueba y el ventilador falso.
-# Versión: 1.7
+#   v1.8 (fix sim-assist-current-state): suma bloque-a/asesoria-estado-actual (la ayuda de IA analiza el paciente
+#   crítico de la pantalla, con el LLM falso en modo echo y claims-stable).
+# Versión: 1.8
 # Autor: Marcela Mazo Castro
 # Proyecto: VentyLab
 # Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -272,6 +274,7 @@ jobs:
           e2e/bloque-a/paciente-fallecido.spec.ts
           e2e/bloque-a/mejoria.spec.ts
           e2e/bloque-a/alarma-ayuda.spec.ts
+          e2e/bloque-a/asesoria-estado-actual.spec.ts
           e2e/bloque-a/repeticion.spec.ts
 
       - name: Stack logs

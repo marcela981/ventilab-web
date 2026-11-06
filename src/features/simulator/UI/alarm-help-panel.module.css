@@ -2,8 +2,9 @@
 * Funcionalidad: Alarm help panel styles
 * Descripción: CSS Module of the "¿Cómo estabilizar?" drawer content (Bloque A) on the dark console surface: the alarm
 *   line, the unavailable note of an exam, the rules and suggestion sections, the ordered rule list with its source
-*   reference and the action row. Console and design-system tokens only; no hex or rgb values.
-* Versión: 1.0
+*   reference and the action row. Console and design-system tokens only; no hex or rgb values. v1.1 (fix
+*   sim-assist-current-state): the analyzed-state line above the suggestion.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -87,4 +88,11 @@
 
 .actions:empty {
   display: none;
+}
+
+/* v1.1: the state the server analyzed above the suggestion. */
+.analyzed {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-console-text-muted);
 }

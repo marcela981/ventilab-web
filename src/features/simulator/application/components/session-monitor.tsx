@@ -25,7 +25,9 @@
 *   sampling), and in EXAM the case drawer leaves out the live objectives (they reveal the correction). Every alarm of
 *   the console opens "¿Cómo estabilizar?" (rules + AI suggestion of POST /simulation/sessions/{id}/alarm-help) under
 *   the assistance policy of the session (EXAM DISABLED or unknown: only the alarm description, no request).
-* Versión: 0.3
+*   v0.4 (fix sim-assist-current-state): "Asesoría IA" and "¿Cómo estabilizar?" send the console context of the session
+*   (session.helpContext: bounded flush of the pending events, current simulated time and snapshot).
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -211,7 +213,7 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
   const { sessionId, assistHistory, onAssistAnswered } = host;
   const { boot, version, session, controllable, deadlineReached, endError } = running;
   const { record } = boot;
-  const { store } = session;
+  const { store, helpContext } = session;
   const paused = session.status === "paused";
   const exam = record.mode === "EXAM";
   const patient = record.patient ?? null;
@@ -236,20 +238,23 @@ function RunningSessionView({ host, running, renderAssist, assistancePolicy, asi
         mode={record.mode}
         policy={policy}
         active={assistActive}
+        helpContext={helpContext}
         history={assistHistory}
         onAnswered={onAssistAnswered}
       />
     );
-  }, [assistActive, assistHistory, onAssistAnswered, policy, record.mode, renderAssist, renderHostAssist, sessionId, store]);
+  }, [assistActive, assistHistory, onAssistAnswered, policy, record.mode, renderAssist, renderHostAssist, helpContext, sessionId, store]);
   // "¿Cómo estabilizar?": the alarm help follows the same assistance policy as "Asesoría IA" (A-9).
   const alarmHelp = useMemo(() => alarmHelpAvailability(resolveAssistPolicy(record.mode, policy)), [policy, record.mode]);
   const renderAlarmHelp = useCallback((target: ConsoleAlarmHelpTarget) => (
     <AlarmHelpPanel
       target={target}
       availability={alarmHelp}
-      buildRequest={alarmHelp.status === "unavailable" ? null : () => sessionAlarmHelpRequest(sessionId, target.code)}
+      buildRequest={alarmHelp.status === "unavailable"
+        ? null
+        : async () => sessionAlarmHelpRequest(sessionId, target.code, await helpContext().catch(() => null))}
     />
-  ), [alarmHelp, sessionId]);
+  ), [alarmHelp, helpContext, sessionId]);
   const left = useMemo(() => (
     <>
       {leftTop}
