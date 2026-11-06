@@ -1,0 +1,83 @@
+{
+  "meta": {
+    "label": "cap4-1920x1080",
+    "flow": "simulador",
+    "scenario": "replay-x8",
+    "kind": "replay",
+    "multiplier": 8,
+    "cpuThrottlingRate": 1,
+    "durationS": 60,
+    "warmupS": 5,
+    "caseTitle": "Pulmón normal: postoperatorio inmediato",
+    "pageUrl": "/simulador",
+    "replayRestarts": 7,
+    "webCommit": "2fbf674",
+    "browser": "chromium 156.0.8078.4",
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "measuredAt": "2026-11-06T13:24:03.503Z"
+  },
+  "probe": {
+    "windowMs": 60023,
+    "raf": {
+      "frames": 3600,
+      "fps": 59.98,
+      "p50FrameMs": 16.7,
+      "p95FrameMs": 16.8,
+      "maxFrameMs": 17.1,
+      "framesOver50Ms": 0
+    },
+    "longTasks": {
+      "count": 0,
+      "totalMs": 0,
+      "maxMs": 0,
+      "supported": true
+    },
+    "react": {
+      "hookAttached": true,
+      "bundleType": 0,
+      "commits": 227,
+      "commitsPerSecond": 3.78,
+      "maxCommitsInOneSecond": 5
+    },
+    "canvases": [
+      {
+        "label": "(sin etiqueta)",
+        "width": 836,
+        "height": 448,
+        "connected": false,
+        "paintFrames": 26,
+        "paintFps": 0.43,
+        "drawCalls": 402
+      },
+      {
+        "label": "Curvas de presión, flujo y volumen",
+        "width": 836,
+        "height": 448,
+        "connected": true,
+        "paintFrames": 3152,
+        "paintFps": 52.51,
+        "drawCalls": 15792
+      }
+    ],
+    "heapUsedMb": 11.2
+  },
+  "mainThreadPerSecond": {
+    "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
+    "TaskDuration": 80.69,
+    "ScriptDuration": 23.41,
+    "LayoutDuration": 4.43,
+    "RecalcStyleDuration": 1.19,
+    "LayoutCount": 3.92,
+    "RecalcStyleCount": 5.6
+  },
+  "workers": [
+    {
+      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
+      "rawKb": 27.6,
+      "gzipKb": 8.9
+    }
+  ]
+}

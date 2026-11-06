@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-11-06T13:30:45.321Z",
+  "method": "gzip (zlib default level) over .next/static/chunks/**/*.js",
+  "totalFiles": 262,
+  "top": [
+    {
+      "file": "static/chunks/2bd9703c.c3c20035af93d0ec.js",
+      "rawKb": 258.3,
+      "gzipKb": 74.4
+    },
+    {
+      "file": "static/chunks/pages/_app-ac64d0664b7b7215.js",
+      "rawKb": 193.2,
+      "gzipKb": 65.8
+    },
+    {
+      "file": "static/chunks/4897.213f5d356dd8d591.js",
+      "rawKb": 191.4,
+      "gzipKb": 61.5
+    },
+    {
+      "file": "static/chunks/framework-d7945a8ad0653f37.js",
+      "rawKb": 185.3,
+      "gzipKb": 58.5
+    },
+    {
+      "file": "static/chunks/6d2b60a9.f306c01359f84162.js",
+      "rawKb": 161.8,
+      "gzipKb": 52.9
+    },
+    {
+      "file": "static/chunks/4620.98c58a9c2bf8e732.js",
+      "rawKb": 143.3,
+      "gzipKb": 42.6
+    },
+    {
+      "file": "static/chunks/polyfills-42372ed130431b0a.js",
+      "rawKb": 110,
+      "gzipKb": 38.7
+    },
+    {
+      "file": "static/chunks/main-64dc06e9bcad1437.js",
+      "rawKb": 125.5,
+      "gzipKb": 36.6
+    },
+    {
+      "file": "static/chunks/60db774e.e99aee58e08f0db1.js",
+      "rawKb": 93.9,
+      "gzipKb": 29.7
+    },
+    {
+      "file": "static/chunks/7564-59ead4d03137ccb1.js",
+      "rawKb": 84.1,
+      "gzipKb": 27.6
+    },
+    {
+      "file": "static/chunks/2672.c9348946fdab45ba.js",
+      "rawKb": 80,
+      "gzipKb": 27.3
+    },
+    {
+      "file": "static/chunks/bbce1c15.5e92324cee9ee362.js",
+      "rawKb": 78.4,
+      "gzipKb": 24.6
+    },
+    {
+      "file": "static/chunks/909d4e34.b08eaa2d645b9344.js",
+      "rawKb": 78.8,
+      "gzipKb": 23.7
+    },
+    {
+      "file": "static/chunks/5344-f3a1f2fb8e41e0ec.js",
+      "rawKb": 78.3,
+      "gzipKb": 23.6
+    },
+    {
+      "file": "static/chunks/9786-d5b42fd41a3a7707.js",
+      "rawKb": 72.7,
+      "gzipKb": 23.2
+    }
+  ]
+}

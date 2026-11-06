@@ -1,0 +1,12 @@
+npm notice run ventilab-web@0.1.0 perf:bundle
+npm notice run node ./scripts/perf/bundle-sizes.mjs --json docs/resultados-cap4/bundle.json
+| Ruta | Propio gz (KB) | First load gz (KB) | First load sin comprimir (KB) |
+|---|---|---|---|
+| compartido (_app + main) | — | 205 | 624.6 |
+| `/simulador` | 52.6 | 257.6 | 780.7 |
+| `/simulator` | no existe en el build | — | — |
+| `/simulator/sessions/[sessionId]` | 138.1 | 343.1 | 1024.2 |
+| `/simulator/sessions/[sessionId]/replay` | 128.8 | 333.8 | 996.1 |
+| `/simulator/sessions/[sessionId]/result` | 93.9 | 298.9 | 894.6 |
+| `/lab/live` | no existe en el build | — | — |
+| `/lab/recordings/[recordingId]` | 123 | 328 | 980.9 |

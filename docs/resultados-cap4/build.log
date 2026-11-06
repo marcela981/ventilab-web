@@ -1,0 +1,88 @@
+npm notice run ventilab-web@0.1.0 prebuild
+npm notice run npm run validate:curriculum
+npm notice run ventilab-web@0.1.0 validate:curriculum
+npm notice run node ./scripts/validate-curriculum.mjs
+ℹ️ Validating curriculum consistency...
+⚠️ curriculumData.js not found — skipping curriculum validation.
+⚠️ Run this script locally once curriculumData.js is in place.
+npm notice run ventilab-web@0.1.0 build
+npm notice run next build --webpack
+▲ Next.js 16.1.1 (webpack)
+
+  Skipping validation of types
+  Creating an optimized production build ...
+✓ Compiled successfully in 17.9s
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/56) ...
+  Generating static pages using 7 workers (14/56) 
+  Generating static pages using 7 workers (28/56) 
+  Generating static pages using 7 workers (42/56) 
+✓ Generating static pages using 7 workers (56/56) in 4.6s
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (pages)
+┌ ○ /
+├   /_app
+├ ○ /404
+├ ○ /500
+├ ○ /admin/ai
+├ ○ /admin/audit
+├ ○ /admin/research
+├ ○ /admin/settings
+├ ○ /admin/status
+├ ○ /admin/users
+├ ○ /assistant
+├ ○ /assistant/[conversationId]
+├ ○ /auth/access-denied
+├ ○ /auth/forgot-password
+├ ○ /auth/login
+├ ○ /auth/register
+├ ○ /content
+├ ○ /content/pages/[pageId]
+├ ○ /dashboard
+├ ○ /evaluations
+├ ○ /evaluations/[evaluationId]
+├ ○ /evaluations/[evaluationId]/attempts/[attemptId]
+├ ○ /evaluations/[evaluationId]/attempts/[attemptId]/result
+├ ○ /evaluations/manage
+├ ○ /evaluations/manage/[evaluationId]/assignments
+├ ○ /evaluations/manage/[evaluationId]/edit
+├ ○ /evaluations/manage/new
+├ ○ /grading
+├ ○ /grading/attempts/[attemptId]
+├ ○ /grading/evaluations/[evaluationId]
+├ ○ /groups
+├ ○ /groups/[groupId]
+├ ○ /lab/recordings
+├ ○ /lab/recordings/[recordingId]
+├ ○ /lab/reservations
+├ ○ /learn
+├ ○ /learn/[sectionId]
+├ ○ /learn/modules/[moduleId]
+├ ○ /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]
+├ ○ /learn/modules/[moduleId]/print
+├ ○ /me
+├ ○ /me/grades
+├ ○ /me/notes
+├ ○ /my-group
+├ ○ /notifications
+├ ○ /profile
+├ ○ /simulador
+├ ○ /simulator/cases
+├ ○ /simulator/cases/[id]/edit
+├ ○ /simulator/cases/new
+├ ○ /simulator/sessions/[sessionId]
+├ ○ /simulator/sessions/[sessionId]/replay
+├ ○ /simulator/sessions/[sessionId]/result
+├ ○ /teacher
+├ ○ /teacher/lab
+├ ○ /teacher/students
+└ ○ /teacher/students/[userId]
+
+○  (Static)  prerendered as static content
+
+
+real	1m31.119s
+user	0m0.075s
+sys	0m0.181s

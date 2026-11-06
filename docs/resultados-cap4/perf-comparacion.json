@@ -1,0 +1,668 @@
+[
+  {
+    "viewport": "1920x1080",
+    "scenario": "live-x1",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:21:47.118Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.97,
+      "framesOver50": 0,
+      "maxFrameMs": 17.3,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "1040x602",
+          "paintFps": 59.32
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.9,
+      "mainThreadMsPerS": 66.25,
+      "scriptMsPerS": 17.6
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T10:21:35.150Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.99,
+      "framesOver50": 0,
+      "maxFrameMs": 17.2,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "1040x650",
+          "paintFps": 59.41
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 13.1,
+      "mainThreadMsPerS": 70.93,
+      "scriptMsPerS": 19.25
+    },
+    "fixed": {
+      "commit": "9fdcbbb",
+      "measuredAt": "2026-11-04T13:34:29.823Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.98,
+      "framesOver50": 0,
+      "maxFrameMs": 17.4,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "1040x650",
+          "paintFps": 59.1
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.8,
+      "mainThreadMsPerS": 60.43,
+      "scriptMsPerS": 17.02
+    },
+    "diffsOver10": []
+  },
+  {
+    "viewport": "1920x1080",
+    "scenario": "live-x1-cpu4",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:22:56.216Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.95,
+      "framesOver50": 0,
+      "maxFrameMs": 33.4,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "1040x602",
+          "paintFps": 59.68
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.9,
+      "mainThreadMsPerS": 332.69,
+      "scriptMsPerS": 111.13
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:10:17.238Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.95,
+      "framesOver50": 0,
+      "maxFrameMs": 33.4,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "1040x650",
+          "paintFps": 59.69
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.9,
+      "mainThreadMsPerS": 213.91,
+      "scriptMsPerS": 61.37
+    },
+    "fixed": {
+      "commit": "9fdcbbb",
+      "measuredAt": "2026-11-04T13:35:38.560Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.95,
+      "framesOver50": 0,
+      "maxFrameMs": 50,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "1040x650",
+          "paintFps": 59.73
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.7,
+      "mainThreadMsPerS": 225.93,
+      "scriptMsPerS": 63.23
+    },
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "mainThreadMsPerS",
+        "base": 213.91,
+        "now": 332.69,
+        "pct": 55.5
+      },
+      {
+        "vs": "after",
+        "metric": "scriptMsPerS",
+        "base": 61.37,
+        "now": 111.13,
+        "pct": 81.1
+      },
+      {
+        "vs": "fixed",
+        "metric": "maxFrameMs",
+        "base": 50,
+        "now": 33.4,
+        "pct": -33.2
+      },
+      {
+        "vs": "fixed",
+        "metric": "mainThreadMsPerS",
+        "base": 225.93,
+        "now": 332.69,
+        "pct": 47.3
+      },
+      {
+        "vs": "fixed",
+        "metric": "scriptMsPerS",
+        "base": 63.23,
+        "now": 111.13,
+        "pct": 75.8
+      }
+    ]
+  },
+  {
+    "viewport": "1920x1080",
+    "scenario": "replay-x8",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:24:03.503Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 59.98,
+      "framesOver50": 0,
+      "maxFrameMs": 17.1,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "836x448",
+          "paintFps": 52.51
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.78,
+      "maxCommits1s": 5,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 11.2,
+      "mainThreadMsPerS": 80.69,
+      "scriptMsPerS": 23.41
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:11:24.584Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 59.96,
+      "framesOver50": 0,
+      "maxFrameMs": 33.2,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "836x448",
+          "paintFps": 51.55
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.77,
+      "maxCommits1s": 5,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 11.8,
+      "mainThreadMsPerS": 76.83,
+      "scriptMsPerS": 22.23
+    },
+    "fixed": null,
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "maxFrameMs",
+        "base": 33.2,
+        "now": 17.1,
+        "pct": -48.5
+      }
+    ]
+  },
+  {
+    "viewport": "1920x1080",
+    "scenario": "replay-x8-cpu4",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:25:10.413Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 59.89,
+      "framesOver50": 0,
+      "maxFrameMs": 33.4,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "836x448",
+          "paintFps": 55.18
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.83,
+      "maxCommits1s": 6,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 11.5,
+      "mainThreadMsPerS": 382.71,
+      "scriptMsPerS": 127.39
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:12:31.596Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 59.57,
+      "framesOver50": 0,
+      "maxFrameMs": 33.5,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "836x448",
+          "paintFps": 58.11
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 4.05,
+      "maxCommits1s": 6,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 13.6,
+      "mainThreadMsPerS": 295.65,
+      "scriptMsPerS": 84.42
+    },
+    "fixed": null,
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "heapEndMb",
+        "base": 13.6,
+        "now": 11.5,
+        "pct": -15.4
+      },
+      {
+        "vs": "after",
+        "metric": "mainThreadMsPerS",
+        "base": 295.65,
+        "now": 382.71,
+        "pct": 29.4
+      },
+      {
+        "vs": "after",
+        "metric": "scriptMsPerS",
+        "base": 84.42,
+        "now": 127.39,
+        "pct": 50.9
+      }
+    ]
+  },
+  {
+    "viewport": "1280x720",
+    "scenario": "live-x1",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:26:26.084Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.99,
+      "framesOver50": 0,
+      "maxFrameMs": 17,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "448x360",
+          "paintFps": 59.42
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.9,
+      "mainThreadMsPerS": 69.14,
+      "scriptMsPerS": 18.49
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:17:28.208Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.97,
+      "framesOver50": 0,
+      "maxFrameMs": 17.6,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "448x360",
+          "paintFps": 59.87
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.8,
+      "mainThreadMsPerS": 71.56,
+      "scriptMsPerS": 20.14
+    },
+    "fixed": null,
+    "diffsOver10": []
+  },
+  {
+    "viewport": "1280x720",
+    "scenario": "live-x1-cpu4",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:27:35.132Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.94,
+      "framesOver50": 0,
+      "maxFrameMs": 50,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "448x360",
+          "paintFps": 59.75
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 13.3,
+      "mainThreadMsPerS": 324.62,
+      "scriptMsPerS": 103.26
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:18:37.139Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": null,
+      "rafFps": 59.97,
+      "framesOver50": 0,
+      "maxFrameMs": 33.3,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "448x360",
+          "paintFps": 59.7
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 1,
+      "maxCommits1s": 1,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.7,
+      "mainThreadMsPerS": 195.35,
+      "scriptMsPerS": 55.87
+    },
+    "fixed": null,
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "maxFrameMs",
+        "base": 33.3,
+        "now": 50,
+        "pct": 50.2
+      },
+      {
+        "vs": "after",
+        "metric": "mainThreadMsPerS",
+        "base": 195.35,
+        "now": 324.62,
+        "pct": 66.2
+      },
+      {
+        "vs": "after",
+        "metric": "scriptMsPerS",
+        "base": 55.87,
+        "now": 103.26,
+        "pct": 84.8
+      }
+    ]
+  },
+  {
+    "viewport": "1280x720",
+    "scenario": "replay-x8",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:28:42.456Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 58.99,
+      "framesOver50": 8,
+      "maxFrameMs": 333.3,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "868x448",
+          "paintFps": 52.78
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.82,
+      "maxCommits1s": 7,
+      "longTasks": 2,
+      "longTaskMaxMs": 154,
+      "heapEndMb": 11.6,
+      "mainThreadMsPerS": 109.68,
+      "scriptMsPerS": 34.31
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:19:44.406Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 59.97,
+      "framesOver50": 0,
+      "maxFrameMs": 17.1,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "868x448",
+          "paintFps": 51.71
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.77,
+      "maxCommits1s": 5,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 11.8,
+      "mainThreadMsPerS": 82.74,
+      "scriptMsPerS": 24.33
+    },
+    "fixed": null,
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "maxCommits1s",
+        "base": 5,
+        "now": 7,
+        "pct": 40
+      },
+      {
+        "vs": "after",
+        "metric": "longTasks",
+        "base": 0,
+        "now": 2,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "longTaskMaxMs",
+        "base": 0,
+        "now": 154,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "framesOver50",
+        "base": 0,
+        "now": 8,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "maxFrameMs",
+        "base": 17.1,
+        "now": 333.3,
+        "pct": 1849.1
+      },
+      {
+        "vs": "after",
+        "metric": "mainThreadMsPerS",
+        "base": 82.74,
+        "now": 109.68,
+        "pct": 32.6
+      },
+      {
+        "vs": "after",
+        "metric": "scriptMsPerS",
+        "base": 24.33,
+        "now": 34.31,
+        "pct": 41
+      }
+    ]
+  },
+  {
+    "viewport": "1280x720",
+    "scenario": "replay-x8-cpu4",
+    "now": {
+      "commit": "2fbf674",
+      "measuredAt": "2026-11-06T13:29:50.087Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 57.81,
+      "framesOver50": 9,
+      "maxFrameMs": 600.1,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "868x448",
+          "paintFps": 52.32
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.8,
+      "maxCommits1s": 5,
+      "longTasks": 4,
+      "longTaskMaxMs": 138,
+      "heapEndMb": 12,
+      "mainThreadMsPerS": 341.09,
+      "scriptMsPerS": 102.79
+    },
+    "after": {
+      "commit": "5131946",
+      "measuredAt": "2026-11-04T12:20:51.316Z",
+      "browser": "chromium 156.0.8078.4",
+      "replayRestarts": 7,
+      "rafFps": 59.71,
+      "framesOver50": 0,
+      "maxFrameMs": 50,
+      "curves": [
+        {
+          "label": "Curvas de presión, flujo y volumen",
+          "size": "868x448",
+          "paintFps": 57.31
+        }
+      ],
+      "otherCanvases": [],
+      "commitsPerS": 3.96,
+      "maxCommits1s": 6,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.4,
+      "mainThreadMsPerS": 280.85,
+      "scriptMsPerS": 79.43
+    },
+    "fixed": null,
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "maxCommits1s",
+        "base": 6,
+        "now": 5,
+        "pct": -16.7
+      },
+      {
+        "vs": "after",
+        "metric": "longTasks",
+        "base": 0,
+        "now": 4,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "longTaskMaxMs",
+        "base": 0,
+        "now": 138,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "framesOver50",
+        "base": 0,
+        "now": 9,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "maxFrameMs",
+        "base": 50,
+        "now": 600.1,
+        "pct": 1100.2
+      },
+      {
+        "vs": "after",
+        "metric": "mainThreadMsPerS",
+        "base": 280.85,
+        "now": 341.09,
+        "pct": 21.4
+      },
+      {
+        "vs": "after",
+        "metric": "scriptMsPerS",
+        "base": 79.43,
+        "now": 102.79,
+        "pct": 29.4
+      }
+    ]
+  }
+]

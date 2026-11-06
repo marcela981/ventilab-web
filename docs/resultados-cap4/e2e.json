@@ -1,0 +1,3249 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=e2e",
+      "--pass-with-no-tests",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\playwright.config.ts",
+    "rootDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/support[\\\\/]auth\\.setup\\.ts$/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "e2e",
+        "name": "e2e",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [
+          "/perf[\\\\/]/"
+        ],
+        "testMatch": [
+          "/.*\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "perf",
+        "name": "perf",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/perf[\\\\/].*\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "e2e",
+        "testDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e",
+        "snapshotDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e",
+        "testIgnore": {},
+        "testMatch": {},
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "channel": "chromium",
+          "storageState": "e2e/.auth/student.json"
+        },
+        "dependencies": [
+          "setup"
+        ],
+        "ignoreSnapshots": false,
+        "__projectId": "e2e"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "support\\auth.setup.ts",
+      "file": "support/auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "sign in as student",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3303,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:05:56.417Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-72c728a87c4c72564a48",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        },
+        {
+          "title": "sign in as group member",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1469,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:03.035Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-f08c4e564d1f87c35a19",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        },
+        {
+          "title": "sign in as teacher",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2540,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:04.539Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-735c4aa1397d4200d80e",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\capturas.spec.ts",
+      "file": "bloque2/capturas.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "student /learn tabs",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                    "line": 23,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:07.789Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                        "line": 23,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "efd00ffa9c6b2ccbb8ee-9b279e0eeca81e835d10",
+          "file": "bloque2/capturas.spec.ts",
+          "line": 33,
+          "column": 5
+        },
+        {
+          "title": "teacher curriculum with edit mode",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                    "line": 23,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:07.790Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                        "line": 23,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "efd00ffa9c6b2ccbb8ee-82d1fadbed1b0842f19f",
+          "file": "bloque2/capturas.spec.ts",
+          "line": 47,
+          "column": 5
+        },
+        {
+          "title": "viewer, completion dialog, TutorAI and deepen",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                    "line": 23,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:07.790Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\capturas.spec.ts",
+                        "line": 23,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "efd00ffa9c6b2ccbb8ee-0fbd3652095d471297f8",
+          "file": "bloque2/capturas.spec.ts",
+          "line": 59,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\learning-locks.spec.ts",
+      "file": "bloque2/learning-locks.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(2) locked level and locked lesson: screen with the missing lessons and 403 from the server",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32110,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })\nExpected: \u001b[32m\"locked\"\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })\nExpected: \u001b[32m\"locked\"\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })\u001b[22m\n\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-locks.spec.ts:26:25",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-locks.spec.ts",
+                      "column": 25,
+                      "line": 26
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m     \u001b[36mconst\u001b[39m level \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"listitem\"\u001b[39m)\u001b[33m.\u001b[39mfilter({ has\u001b[33m:\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m { level\u001b[33m:\u001b[39m \u001b[35m4\u001b[39m\u001b[33m,\u001b[39m name\u001b[33m:\u001b[39m \u001b[32m\"Nivel Intermedio\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }) })\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m     \u001b[36mawait\u001b[39m expect(level)\u001b[33m.\u001b[39mtoHaveAttribute(\u001b[32m\"data-status\"\u001b[39m\u001b[33m,\u001b[39m \u001b[32m\"locked\"\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m     \u001b[36mawait\u001b[39m expect(level)\u001b[33m.\u001b[39mtoContainText(\u001b[32m\"Bloqueado\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m     \u001b[36mawait\u001b[39m expect(level)\u001b[33m.\u001b[39mtoContainText(\u001b[32m\"Completa el nivel anterior para desbloquear\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"list\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Módulos de Nivel Intermedio\"\u001b[39m }))\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-locks.spec.ts",
+                        "column": 25,
+                        "line": 26
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAttribute\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })\nExpected: \u001b[32m\"locked\"\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveAttribute\" getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })\u001b[22m\n\n\n  24 |     const level = page.getByRole(\"listitem\").filter({ has: page.getByRole(\"heading\", { level: 4, name: \"Nivel Intermedio\", exact: true }) });\n  25 |\n> 26 |     await expect(level).toHaveAttribute(\"data-status\", \"locked\", { timeout: 30_000 });\n     |                         ^\n  27 |     await expect(level).toContainText(\"Bloqueado\");\n  28 |     await expect(level).toContainText(\"Completa el nivel anterior para desbloquear\");\n  29 |     await expect(page.getByRole(\"list\", { name: \"Módulos de Nivel Intermedio\" })).toHaveCount(0);\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-locks.spec.ts:26:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:08.654Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-locks.spec.ts",
+                    "column": 25,
+                    "line": 26
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a7c2c1e2076c2e5d31d6-c95c37bc3b9cfc42d6bf",
+          "file": "bloque2/learning-locks.spec.ts",
+          "line": 15,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\learning-offline.spec.ts",
+      "file": "bloque2/learning-offline.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(6) page views made offline are kept and sent once when the network comes back",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:42.672Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9758120ce406b8c12e6-e89c77356d8f5a64ab98",
+          "file": "bloque2/learning-offline.spec.ts",
+          "line": 28,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\learning-staff.spec.ts",
+      "file": "bloque2/learning-staff.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(5) staff previews without locks and opens the CMS page editor from the viewer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9299,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:06:53.429Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7ac627d3668467bd4b5b-d38f45b3c1c7bddc393f",
+          "file": "bloque2/learning-staff.spec.ts",
+          "line": 19,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\learning-student.spec.ts",
+      "file": "bloque2/learning-student.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(1) student continues at the resume point, completes a lesson, continues to the next one and from the curriculum",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-student.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6015,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:07:02.778Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-student.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b04544e0390f8861e981-dbe8909c9430ae8b4909",
+          "file": "bloque2/learning-student.spec.ts",
+          "line": 55,
+          "column": 5
+        },
+        {
+          "title": "(4) Mi Progreso reflects the activity: XP, streak and today's day in the calendar",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-student.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 845,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:07:09.662Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\learning-student.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b04544e0390f8861e981-81f49996951ba00403d0",
+          "file": "bloque2/learning-student.spec.ts",
+          "line": 129,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\lesson-viewer-layout.spec.ts",
+      "file": "bloque2/lesson-viewer-layout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "lesson index: right column on desktop, drawer button on mobile",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2639,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:07:10.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bef01b95dd6749db0686-53f48a08160111611d04",
+          "file": "bloque2/lesson-viewer-layout.spec.ts",
+          "line": 15,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\tutor-ai.spec.ts",
+      "file": "bloque2/tutor-ai.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(3) TutorAI: deepen with streaming, rate it, one question, a note and its AI analysis",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 46,
+                  "error": {
+                    "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)",
+                    "stack": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\tutor-ai.spec.ts:33:17",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                      "column": 13,
+                      "line": 72
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msupport\\learning.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mresponse\u001b[33m.\u001b[39mok()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Sign-in of ${email} failed (${response.status()})`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m     }\n \u001b[90m 74 |\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mreturn\u001b[39m ((\u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()) \u001b[36mas\u001b[39m \u001b[33mEnvelope\u001b[39m\u001b[33m<\u001b[39m\u001b[33mLoginData\u001b[39m\u001b[33m>\u001b[39m)\u001b[33m.\u001b[39mdata\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                        "column": 13,
+                        "line": 72
+                      },
+                      "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n\n   at support\\learning.ts:72\n\n  70 |\n  71 |     if (!response.ok()) {\n> 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);\n     |             ^\n  73 |     }\n  74 |\n  75 |     return ((await response.json()) as Envelope<LoginData>).data;\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque2\\tutor-ai.spec.ts:33:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:07:13.379Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque2-tutor-ai--3-TutorA-e6bc5--a-note-and-its-AI-analysis-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque2-tutor-ai--3-TutorA-e6bc5--a-note-and-its-AI-analysis-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                    "column": 13,
+                    "line": 72
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "98f011a66cfa97f5cd05-c61986461d817d11d2bc",
+          "file": "bloque2/tutor-ai.spec.ts",
+          "line": 31,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque2\\tutor-fallback.spec.ts",
+      "file": "bloque2/tutor-fallback.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(cierre IA) Profundizar shows the deterministic fallback with its label and no rating",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3756,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:07:14.714Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9b4d31ce01846b5a68b0-197fb999ab3b2b072875",
+          "file": "bloque2/tutor-fallback.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\attempt-reset.spec.ts",
+      "file": "bloque3/attempt-reset.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(4) teacher resets an attempt and the student can retry",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 66320,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:07:19.018Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b30c2b0a86796361f46c-a6e65906f1fd4c474c24",
+          "file": "bloque3/attempt-reset.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\capturas.spec.ts",
+      "file": "bloque3/capturas.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Block 3 key screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\capturas.spec.ts",
+                    "line": 21,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:08:25.347Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\capturas.spec.ts",
+                        "line": 21,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "80743d445915eb1e9a28-35102dbe1e33aa771e0d",
+          "file": "bloque3/capturas.spec.ts",
+          "line": 37,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\exam-autosubmit.spec.ts",
+      "file": "bloque3/exam-autosubmit.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(3) exam: SIMULATION question, auto-submit when the time runs out, review and publish",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 71818,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:08:25.361Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9f6e389e3405e1a2d6d7-6f7878e278bbd112626c",
+          "file": "bloque3/exam-autosubmit.spec.ts",
+          "line": 16,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\quiz-feedback.spec.ts",
+      "file": "bloque3/quiz-feedback.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(1) quiz: immediate feedback, grade published on submit, AI feedback and its rating",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2001,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\quiz-feedback.spec.ts:44:37",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\quiz-feedback.spec.ts",
+                      "column": 37,
+                      "line": 44
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 42 |\u001b[39m\n \u001b[90m 43 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"radio\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Volumen corriente\"\u001b[39m })\u001b[33m.\u001b[39mcheck()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 44 |\u001b[39m     expect((\u001b[36mawait\u001b[39m firstCheck)\u001b[33m.\u001b[39mok())\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 45 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[32m\"¡Correcto! 🎉\"\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 46 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[32m\"En VCV se fija el volumen.\"\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 47 |\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\quiz-feedback.spec.ts",
+                        "column": 37,
+                        "line": 44
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  42 |\n  43 |     await page.getByRole(\"radio\", { name: \"Volumen corriente\" }).check();\n> 44 |     expect((await firstCheck).ok()).toBe(true);\n     |                                     ^\n  45 |     await expect(page.getByText(\"¡Correcto! 🎉\")).toBeVisible();\n  46 |     await expect(page.getByText(\"En VCV se fija el volumen.\")).toBeVisible();\n  47 |\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\quiz-feedback.spec.ts:44:37"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:09:37.210Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\quiz-feedback.spec.ts",
+                    "column": 37,
+                    "line": 44
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3a20106a09bf2a5bee72-1f48bdacb36ce24cd9a3",
+          "file": "bloque3/quiz-feedback.spec.ts",
+          "line": 16,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\staff-builder.spec.ts",
+      "file": "bloque3/staff-builder.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(5) staff creates an evaluation with an image, assigns it to a group in the builder and activates it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [
+                {
+                  "type": "skip-step",
+                  "description": "Image upload skipped: file storage is \"not_configured\" (no SUPABASE_* configured; the local stack has no other storage adapter and POST /api/media answers 503)."
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21358,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[B3 E2E (5)] Image upload skipped: file storage is \"not_configured\" (no SUPABASE_* configured; the local stack has no other storage adapter and POST /api/media answers 503).\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:09:40.572Z",
+                  "annotations": [
+                    {
+                      "type": "skip-step",
+                      "description": "Image upload skipped: file storage is \"not_configured\" (no SUPABASE_* configured; the local stack has no other storage adapter and POST /api/media answers 503)."
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "37e61e7cae662a573424-89669aae41cb6f824e46",
+          "file": "bloque3/staff-builder.spec.ts",
+          "line": 26,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\student-list.spec.ts",
+      "file": "bloque3/student-list.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(6) the student list is grouped by type, track and level",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 61377,
+                  "error": {
+                    "message": "Error: two Mecánica levels with modules in the seeded curriculum\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m1\u001b[39m",
+                    "stack": "Error: two Mecánica levels with modules in the seeded curriculum\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m1\u001b[39m\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\student-list.spec.ts:26:88",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\student-list.spec.ts",
+                      "column": 88,
+                      "line": 26
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 24 |\u001b[39m   \u001b[36mconst\u001b[39m ventylab \u001b[33m=\u001b[39m levels\u001b[33m.\u001b[39mfind((level) \u001b[33m=>\u001b[39m level\u001b[33m.\u001b[39mtrack \u001b[33m===\u001b[39m \u001b[32m\"ventylab\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m   expect(mecanica\u001b[33m.\u001b[39mlength\u001b[33m,\u001b[39m \u001b[32m\"two Mecánica levels with modules in the seeded curriculum\"\u001b[39m)\u001b[33m.\u001b[39mtoBeGreaterThanOrEqual(\u001b[35m2\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                                                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m   expect(ventylab\u001b[33m,\u001b[39m \u001b[32m\"a VentyLab level in the seeded curriculum\"\u001b[39m)\u001b[33m.\u001b[39mtoBeDefined()\u001b[33m;\u001b[39m\n \u001b[90m 28 |\u001b[39m   \u001b[36mconst\u001b[39m [firstLevel\u001b[33m,\u001b[39m secondLevel] \u001b[33m=\u001b[39m mecanica \u001b[36mas\u001b[39m [\u001b[36mtypeof\u001b[39m mecanica[number]\u001b[33m,\u001b[39m \u001b[36mtypeof\u001b[39m mecanica[number]]\u001b[33m;\u001b[39m\n \u001b[90m 29 |\u001b[39m   \u001b[36mconst\u001b[39m tag \u001b[33m=\u001b[39m runTag()\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\student-list.spec.ts",
+                        "column": 88,
+                        "line": 26
+                      },
+                      "message": "Error: two Mecánica levels with modules in the seeded curriculum\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2\u001b[39m\nReceived:    \u001b[31m1\u001b[39m\n\n  24 |   const ventylab = levels.find((level) => level.track === \"ventylab\");\n  25 |\n> 26 |   expect(mecanica.length, \"two Mecánica levels with modules in the seeded curriculum\").toBeGreaterThanOrEqual(2);\n     |                                                                                        ^\n  27 |   expect(ventylab, \"a VentyLab level in the seeded curriculum\").toBeDefined();\n  28 |   const [firstLevel, secondLevel] = mecanica as [typeof mecanica[number], typeof mecanica[number]];\n  29 |   const tag = runTag();\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\student-list.spec.ts:26:88"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:10:02.462Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-student-list--6-th-fa7fe-ped-by-type-track-and-level-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-student-list--6-th-fa7fe-ped-by-type-track-and-level-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\student-list.spec.ts",
+                    "column": 88,
+                    "line": 26
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a3642ad1555460b7bf00-1b97af0116ebe27dec02",
+          "file": "bloque3/student-list.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque3\\workshop-review.spec.ts",
+      "file": "bloque3/workshop-review.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(2) workshop: hint, open question, partial score, teacher review and final grade",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17546,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('¡Muy bien! 🌟')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('¡Muy bien! 🌟') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('¡Muy bien! 🌟')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('¡Muy bien! 🌟')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('¡Muy bien! 🌟') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('¡Muy bien! 🌟')\u001b[22m\n\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\workshop-review.spec.ts:52:51",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\workshop-review.spec.ts",
+                      "column": 51,
+                      "line": 52
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 50 |\u001b[39m\n \u001b[90m 51 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"radio\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Presión inspiratoria\"\u001b[39m })\u001b[33m.\u001b[39mcheck()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 52 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[32m\"¡Muy bien! 🌟\"\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m15\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 53 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByText(\u001b[32m\"En PCV se fija la presión.\"\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 54 |\u001b[39m\n \u001b[90m 55 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Siguiente\"\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\workshop-review.spec.ts",
+                        "column": 51,
+                        "line": 52
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('¡Muy bien! 🌟')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByText('¡Muy bien! 🌟') with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByText('¡Muy bien! 🌟')\u001b[22m\n\n\n  50 |\n  51 |     await page.getByRole(\"radio\", { name: \"Presión inspiratoria\" }).check();\n> 52 |     await expect(page.getByText(\"¡Muy bien! 🌟\")).toBeVisible({ timeout: 15_000 });\n     |                                                   ^\n  53 |     await expect(page.getByText(\"En PCV se fija la presión.\")).toBeVisible();\n  54 |\n  55 |     await page.getByRole(\"button\", { name: \"Siguiente\" }).click();\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\workshop-review.spec.ts:52:51"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:04.599Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque3\\workshop-review.spec.ts",
+                    "column": 51,
+                    "line": 52
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f7a98b15d687377477a6-ad8c6b3bc7b6bd7d4ad1",
+          "file": "bloque3/workshop-review.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\admin-ai-ratings.spec.ts",
+      "file": "bloque4/admin-ai-ratings.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 667,
+                  "error": {
+                    "message": "Error: GET /api/evaluation-attempts/01a1b0fc-423c-77fa-88df-56f938f02368/feedback → 404 evaluation.grade_feedback_not_available Feedback is available once the grade is published",
+                    "stack": "Error: GET /api/evaluation-attempts/01a1b0fc-423c-77fa-88df-56f938f02368/feedback → 404 evaluation.grade_feedback_not_available Feedback is available once the grade is published\n    at Object.call (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:43:15)\n    at _test.expect.poll.timeout (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\admin-ai-ratings.spec.ts:111:24)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\admin-ai-ratings.spec.ts:110:5",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                      "column": 15,
+                      "line": 43
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msupport\\learning.ts:43\n\n\u001b[0m \u001b[90m 41 |\u001b[39m\n \u001b[90m 42 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mresponse\u001b[33m.\u001b[39mok()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 43 |\u001b[39m         \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`${method} ${path} → ${response.status()} ${payload?.code ?? \"\"} ${payload?.message ?? \"\"}`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 44 |\u001b[39m       }\n \u001b[90m 45 |\u001b[39m\n \u001b[90m 46 |\u001b[39m       \u001b[36mreturn\u001b[39m payload\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mdata \u001b[36mas\u001b[39m \u001b[33mT\u001b[39m\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                        "column": 15,
+                        "line": 43
+                      },
+                      "message": "Error: GET /api/evaluation-attempts/01a1b0fc-423c-77fa-88df-56f938f02368/feedback → 404 evaluation.grade_feedback_not_available Feedback is available once the grade is published\n\n   at support\\learning.ts:43\n\n  41 |\n  42 |       if (!response.ok()) {\n> 43 |         throw new Error(`${method} ${path} → ${response.status()} ${payload?.code ?? \"\"} ${payload?.message ?? \"\"}`);\n     |               ^\n  44 |       }\n  45 |\n  46 |       return payload?.data as T;\n    at Object.call (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:43:15)\n    at _test.expect.poll.timeout (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\admin-ai-ratings.spec.ts:111:24)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\admin-ai-ratings.spec.ts:110:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:23.687Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                    "column": 15,
+                    "line": 43
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "5f80d8936ac11fa6ba57-7c1a9334dda3301295e4",
+          "file": "bloque4/admin-ai-ratings.spec.ts",
+          "line": 81,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\admin-users.spec.ts",
+      "file": "bloque4/admin-users.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(4) admin: role change with confirmation, protected superadmin and the Profesores tab",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 138,
+                  "error": {
+                    "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)",
+                    "stack": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at staffSession (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\panel.ts:33:86)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\admin-users.spec.ts:29:17",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                      "column": 13,
+                      "line": 72
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msupport\\learning.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mresponse\u001b[33m.\u001b[39mok()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Sign-in of ${email} failed (${response.status()})`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m     }\n \u001b[90m 74 |\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mreturn\u001b[39m ((\u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()) \u001b[36mas\u001b[39m \u001b[33mEnvelope\u001b[39m\u001b[33m<\u001b[39m\u001b[33mLoginData\u001b[39m\u001b[33m>\u001b[39m)\u001b[33m.\u001b[39mdata\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                        "column": 13,
+                        "line": 72
+                      },
+                      "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n\n   at support\\learning.ts:72\n\n  70 |\n  71 |     if (!response.ok()) {\n> 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);\n     |             ^\n  73 |     }\n  74 |\n  75 |     return ((await response.json()) as Envelope<LoginData>).data;\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at staffSession (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\panel.ts:33:86)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\admin-users.spec.ts:29:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:25.458Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-admin-users--4-adm-93f99-dmin-and-the-Profesores-tab-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-admin-users--4-adm-93f99-dmin-and-the-Profesores-tab-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                    "column": 13,
+                    "line": 72
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d026afd029fee15fbb02-3b9952c1f6ec61d9a813",
+          "file": "bloque4/admin-users.spec.ts",
+          "line": 27,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\back-to-platform.spec.ts",
+      "file": "bloque4/back-to-platform.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(9) \"Volver a la plataforma\" goes to /simulador",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1630,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:26.567Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "94aaedd6d66de915932d-f027f5a270977fb2663a",
+          "file": "bloque4/back-to-platform.spec.ts",
+          "line": 17,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\capturas.spec.ts",
+      "file": "bloque4/capturas.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Block 4 key screens",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\capturas.spec.ts",
+                    "line": 24,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:28.489Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\capturas.spec.ts",
+                        "line": 24,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "895bb493fef6cf1fa4e8-ce4420841a328130fda6",
+          "file": "bloque4/capturas.spec.ts",
+          "line": 35,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\directory-group-builder.spec.ts",
+      "file": "bloque4/directory-group-builder.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(2) directory: search, select three, Conformar Grupo, the group appears in Grupos and gets a leader",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4885,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:28.511Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "93605a6b7e6f8fd4abcc-7f27f3234a26d4c18055",
+          "file": "bloque4/directory-group-builder.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\lab-group-reservation.spec.ts",
+      "file": "bloque4/lab-group-reservation.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(3) teacher reserves the ventilator for a group from /teacher/lab and the leader operates it from /simulador",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 61604,
+                  "error": {
+                    "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)",
+                    "stack": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at staffSession (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\panel.ts:33:86)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\lab-group-reservation.spec.ts:27:17",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                      "column": 13,
+                      "line": 72
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msupport\\learning.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mresponse\u001b[33m.\u001b[39mok()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Sign-in of ${email} failed (${response.status()})`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m     }\n \u001b[90m 74 |\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mreturn\u001b[39m ((\u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()) \u001b[36mas\u001b[39m \u001b[33mEnvelope\u001b[39m\u001b[33m<\u001b[39m\u001b[33mLoginData\u001b[39m\u001b[33m>\u001b[39m)\u001b[33m.\u001b[39mdata\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                        "column": 13,
+                        "line": 72
+                      },
+                      "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n\n   at support\\learning.ts:72\n\n  70 |\n  71 |     if (!response.ok()) {\n> 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);\n     |             ^\n  73 |     }\n  74 |\n  75 |     return ((await response.json()) as Envelope<LoginData>).data;\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at staffSession (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\panel.ts:33:86)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\lab-group-reservation.spec.ts:27:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:11:33.430Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                    "column": 13,
+                    "line": 72
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "587ba946799cb4a23ff9-f2f8a64c8549c207c023",
+          "file": "bloque4/lab-group-reservation.spec.ts",
+          "line": 23,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\profile-avatar.spec.ts",
+      "file": "bloque4/profile-avatar.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(6) profile: upload and remove the profile photo",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1612,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\profile-avatar.spec.ts:34:35",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\profile-avatar.spec.ts",
+                      "column": 35,
+                      "line": 34
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 32 |\u001b[39m\n \u001b[90m 33 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m\"profile-avatar-input\"\u001b[39m)\u001b[33m.\u001b[39msetInputFiles({ name\u001b[33m:\u001b[39m \u001b[32m\"foto.png\"\u001b[39m\u001b[33m,\u001b[39m mimeType\u001b[33m:\u001b[39m \u001b[32m\"image/png\"\u001b[39m\u001b[33m,\u001b[39m buffer\u001b[33m:\u001b[39m \u001b[33mPNG\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 34 |\u001b[39m     expect((\u001b[36mawait\u001b[39m uploaded)\u001b[33m.\u001b[39mok())\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                   \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 35 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"status\"\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m\"Foto de perfil actualizada correctamente\"\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible({ timeout\u001b[33m:\u001b[39m \u001b[35m30\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m expect(avatar\u001b[33m.\u001b[39mlocator(\u001b[32m\"img\"\u001b[39m))\u001b[33m.\u001b[39mtoHaveAttribute(\u001b[32m\"src\"\u001b[39m\u001b[33m,\u001b[39m \u001b[35m/.+/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\profile-avatar.spec.ts",
+                        "column": 35,
+                        "line": 34
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  32 |\n  33 |     await page.getByTestId(\"profile-avatar-input\").setInputFiles({ name: \"foto.png\", mimeType: \"image/png\", buffer: PNG });\n> 34 |     expect((await uploaded).ok()).toBe(true);\n     |                                   ^\n  35 |     await expect(page.getByRole(\"status\").filter({ hasText: \"Foto de perfil actualizada correctamente\" })).toBeVisible({ timeout: 30_000 });\n  36 |     await expect(avatar.locator(\"img\")).toHaveAttribute(\"src\", /.+/);\n  37 |\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\profile-avatar.spec.ts:34:35"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:12:35.984Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\profile-avatar.spec.ts",
+                    "column": 35,
+                    "line": 34
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b921afccf46813b41fbf-a03d7a40025a01e4c9db",
+          "file": "bloque4/profile-avatar.spec.ts",
+          "line": 19,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\profile-password.spec.ts",
+      "file": "bloque4/profile-password.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(5) profile: change password → the previous refresh token fails → sign in with the new one",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3594,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:12:38.801Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "633cf97142ce898d3d1b-d0a23371340fc38745de",
+          "file": "bloque4/profile-password.spec.ts",
+          "line": 64,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\student-detail-scope.spec.ts",
+      "file": "bloque4/student-detail-scope.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(7) a teacher without supervision gets 403 on another teacher's student (UI and API)",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 61070,
+                  "error": {
+                    "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)",
+                    "stack": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at staffSession (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\panel.ts:33:86)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\student-detail-scope.spec.ts:22:17",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                      "column": 13,
+                      "line": 72
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msupport\\learning.ts:72\n\n\u001b[0m \u001b[90m 70 |\u001b[39m\n \u001b[90m 71 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33m!\u001b[39mresponse\u001b[33m.\u001b[39mok()) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 72 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`Sign-in of ${email} failed (${response.status()})`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 73 |\u001b[39m     }\n \u001b[90m 74 |\u001b[39m\n \u001b[90m 75 |\u001b[39m     \u001b[36mreturn\u001b[39m ((\u001b[36mawait\u001b[39m response\u001b[33m.\u001b[39mjson()) \u001b[36mas\u001b[39m \u001b[33mEnvelope\u001b[39m\u001b[33m<\u001b[39m\u001b[33mLoginData\u001b[39m\u001b[33m>\u001b[39m)\u001b[33m.\u001b[39mdata\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                        "column": 13,
+                        "line": 72
+                      },
+                      "message": "Error: Sign-in of superadmin@ventylab.demo failed (401)\n\n   at support\\learning.ts:72\n\n  70 |\n  71 |     if (!response.ok()) {\n> 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);\n     |             ^\n  73 |     }\n  74 |\n  75 |     return ((await response.json()) as Envelope<LoginData>).data;\n    at apiSignIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts:72:13)\n    at staffSession (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\panel.ts:33:86)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque4\\student-detail-scope.spec.ts:22:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:12:42.739Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-student-detail-sco-6aa09-acher-s-student-UI-and-API--e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque4-student-detail-sco-6aa09-acher-s-student-UI-and-API--e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\learning.ts",
+                    "column": 13,
+                    "line": 72
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c520a7be1e98a40c8746-dc3294f374db87859be2",
+          "file": "bloque4/student-detail-scope.spec.ts",
+          "line": 18,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque4\\teacher-student-detail.spec.ts",
+      "file": "bloque4/teacher-student-detail.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "(1) teacher: Panel → General → recent student → detail with its five tabs, without notes or AI chats",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3792,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:44.527Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ee6f312103087ee08e69-721697e52e0132256372",
+          "file": "bloque4/teacher-student-detail.spec.ts",
+          "line": 25,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\capturas.spec.ts",
+      "file": "bloque5/capturas.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Block 5 shell and pages at 1280",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 33,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:48.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 33,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "653c6aeb2518624b2bb8-a03670e578a4d83155fc",
+          "file": "bloque5/capturas.spec.ts",
+          "line": 85,
+          "column": 7
+        },
+        {
+          "title": "Block 5 Monitoreo at 1280",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 33,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:48.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 33,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "653c6aeb2518624b2bb8-0e10cdef37e53b084e00",
+          "file": "bloque5/capturas.spec.ts",
+          "line": 145,
+          "column": 7
+        },
+        {
+          "title": "Block 5 shell and pages at 1920",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 33,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:48.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 33,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "653c6aeb2518624b2bb8-a2dcc5d9d0a5ebfd13a7",
+          "file": "bloque5/capturas.spec.ts",
+          "line": 85,
+          "column": 7
+        },
+        {
+          "title": "Block 5 Monitoreo at 1920",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 33,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:48.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 33,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "653c6aeb2518624b2bb8-39eb2ae96eceafcf40d1",
+          "file": "bloque5/capturas.spec.ts",
+          "line": 145,
+          "column": 7
+        },
+        {
+          "title": "Block 1 Monitoreo captures with the July layout",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                },
+                {
+                  "type": "skip",
+                  "description": "screenshots only with E2E_CAPTURES=1",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                    "line": 33,
+                    "column": 6
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:48.640Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    },
+                    {
+                      "type": "skip",
+                      "description": "screenshots only with E2E_CAPTURES=1",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\capturas.spec.ts",
+                        "line": 33,
+                        "column": 6
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "653c6aeb2518624b2bb8-c0c0a4ed5da001e1b784",
+          "file": "bloque5/capturas.spec.ts",
+          "line": 186,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\monitoreo-ia.spec.ts",
+      "file": "bloque5/monitoreo-ia.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Asesoría IA opens a 380 px drawer, answers with the fake LLM and gives the focus back",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 64961,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('complementary', { name: 'Asesoría IA' })\nTimeout: 60000ms\n\u001b[32m- Expected substring  -  1\u001b[39m\n\u001b[31m+ Received string     + 12\u001b[39m\n\n\u001b[32m- Respuesta de prueba (proveedor falso de E2E).\u001b[39m\n\u001b[31m+ Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):\u001b[39m\n\u001b[31m+ Todavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.\u001b[39m\n\u001b[31m+ Lo que va bien:\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ SpO2 dentro del objetivo del caso (92.04).\u001b[39m\n\u001b[31m+ PaCO2 dentro del objetivo del caso (45).\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ Lo que conviene revisar:\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ PaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ Modifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('complementary', { name: 'Asesoría IA' }) with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('complementary', { name: 'Asesoría IA' })\u001b[22m\n\u001b[2m    2 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m      - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Analizando la simulación…Pregunta (opcional)Pregunta (opcional)DetenerSolicitar asesoría\"\u001b[22m\n\u001b[2m    3 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m      - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Cargando contenido…¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\"\u001b[22m\n\u001b[2m    116 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m        - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):\u001b[22m\n\u001b[2mTodavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.\u001b[22m\n\u001b[2mLo que va bien:\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mSpO2 dentro del objetivo del caso (92.04).\u001b[22m\n\u001b[2mPaCO2 dentro del objetivo del caso (45).\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mLo que conviene revisar:\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mPaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mModifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('complementary', { name: 'Asesoría IA' })\nTimeout: 60000ms\n\u001b[32m- Expected substring  -  1\u001b[39m\n\u001b[31m+ Received string     + 12\u001b[39m\n\n\u001b[32m- Respuesta de prueba (proveedor falso de E2E).\u001b[39m\n\u001b[31m+ Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):\u001b[39m\n\u001b[31m+ Todavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.\u001b[39m\n\u001b[31m+ Lo que va bien:\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ SpO2 dentro del objetivo del caso (92.04).\u001b[39m\n\u001b[31m+ PaCO2 dentro del objetivo del caso (45).\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ Lo que conviene revisar:\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ PaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ Modifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('complementary', { name: 'Asesoría IA' }) with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('complementary', { name: 'Asesoría IA' })\u001b[22m\n\u001b[2m    2 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m      - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Analizando la simulación…Pregunta (opcional)Pregunta (opcional)DetenerSolicitar asesoría\"\u001b[22m\n\u001b[2m    3 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m      - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Cargando contenido…¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\"\u001b[22m\n\u001b[2m    116 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m        - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):\u001b[22m\n\u001b[2mTodavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.\u001b[22m\n\u001b[2mLo que va bien:\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mSpO2 dentro del objetivo del caso (92.04).\u001b[22m\n\u001b[2mPaCO2 dentro del objetivo del caso (45).\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mLo que conviene revisar:\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mPaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mModifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\"\u001b[22m\n\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-ia.spec.ts:52:24",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-ia.spec.ts",
+                      "column": 24,
+                      "line": 52
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 50 |\u001b[39m   \u001b[90m// Answer from the fake LLM, then the rating.\u001b[39m\n \u001b[90m 51 |\u001b[39m   \u001b[36mawait\u001b[39m drawer\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Solicitar asesoría\"\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 52 |\u001b[39m   \u001b[36mawait\u001b[39m expect(drawer)\u001b[33m.\u001b[39mtoContainText(\u001b[33mFAKE_ANSWER\u001b[39m\u001b[33m.\u001b[39mreplace(\u001b[35m/\\*/g\u001b[39m\u001b[33m,\u001b[39m \u001b[32m\"\"\u001b[39m)\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m60\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                        \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 53 |\u001b[39m   \u001b[36mconst\u001b[39m helpful \u001b[33m=\u001b[39m drawer\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Sí, fue útil\"\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 54 |\u001b[39m\n \u001b[90m 55 |\u001b[39m   \u001b[36mawait\u001b[39m expect(helpful)\u001b[33m.\u001b[39mtoBeEnabled({ timeout\u001b[33m:\u001b[39m \u001b[35m30\u001b[39m_000 })\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-ia.spec.ts",
+                        "column": 24,
+                        "line": 52
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('complementary', { name: 'Asesoría IA' })\nTimeout: 60000ms\n\u001b[32m- Expected substring  -  1\u001b[39m\n\u001b[31m+ Received string     + 12\u001b[39m\n\n\u001b[32m- Respuesta de prueba (proveedor falso de E2E).\u001b[39m\n\u001b[31m+ Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):\u001b[39m\n\u001b[31m+ Todavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.\u001b[39m\n\u001b[31m+ Lo que va bien:\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ SpO2 dentro del objetivo del caso (92.04).\u001b[39m\n\u001b[31m+ PaCO2 dentro del objetivo del caso (45).\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ Lo que conviene revisar:\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ PaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.\u001b[39m\n\u001b[31m+\u001b[39m\n\u001b[31m+ Modifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\u001b[39m\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('complementary', { name: 'Asesoría IA' }) with timeout 60000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('complementary', { name: 'Asesoría IA' })\u001b[22m\n\u001b[2m    2 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m      - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Analizando la simulación…Pregunta (opcional)Pregunta (opcional)DetenerSolicitar asesoría\"\u001b[22m\n\u001b[2m    3 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m      - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Cargando contenido…¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\"\u001b[22m\n\u001b[2m    116 × locator resolved to <aside id=\"_r_1r_\" tabindex=\"-1\" aria-labelledby=\"_r_27_\" class=\"assist-panel_panel__b60ah\">…</aside>\u001b[22m\n\u001b[2m        - unexpected value \"Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):\u001b[22m\n\u001b[2mTodavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.\u001b[22m\n\u001b[2mLo que va bien:\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mSpO2 dentro del objetivo del caso (92.04).\u001b[22m\n\u001b[2mPaCO2 dentro del objetivo del caso (45).\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mLo que conviene revisar:\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mPaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2mModifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría\"\u001b[22m\n\n\n  50 |   // Answer from the fake LLM, then the rating.\n  51 |   await drawer.getByRole(\"button\", { name: \"Solicitar asesoría\" }).click();\n> 52 |   await expect(drawer).toContainText(FAKE_ANSWER.replace(/\\*/g, \"\"), { timeout: 60_000 });\n     |                        ^\n  53 |   const helpful = drawer.getByRole(\"button\", { name: \"Sí, fue útil\" });\n  54 |\n  55 |   await expect(helpful).toBeEnabled({ timeout: 30_000 });\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-ia.spec.ts:52:24"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:13:48.660Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-ia.spec.ts",
+                    "column": 24,
+                    "line": 52
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "439cf3c6907af9bd3be3-1b2ac8d92161e83c1049",
+          "file": "bloque5/monitoreo-ia.spec.ts",
+          "line": 25,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\monitoreo-julio.spec.ts",
+      "file": "bloque5/monitoreo-julio.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "July Monitoreo control order at 1920×1080",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4787,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:14:55.588Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9b98617cdb2778d0bb06-432213c8e3c51a7bfc24",
+          "file": "bloque5/monitoreo-julio.spec.ts",
+          "line": 88,
+          "column": 7
+        },
+        {
+          "title": "July Monitoreo control order at 1280×720",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4938,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"height\": 684.46875,\u001b[22m\n\u001b[2m    \"width\": 952,\u001b[22m\n\u001b[2m    \"x\": 284,\u001b[22m\n\u001b[32m-   \"y\": 44,\u001b[39m\n\u001b[31m+   \"y\": -77,\u001b[39m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"height\": 684.46875,\u001b[22m\n\u001b[2m    \"width\": 952,\u001b[22m\n\u001b[2m    \"x\": 284,\u001b[22m\n\u001b[32m-   \"y\": 44,\u001b[39m\n\u001b[31m+   \"y\": -77,\u001b[39m\n\u001b[2m  }\u001b[22m\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-julio.spec.ts:110:49",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-julio.spec.ts",
+                      "column": 49,
+                      "line": 110
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 108 |\u001b[39m     expect(\u001b[33mMath\u001b[39m\u001b[33m.\u001b[39mabs((\u001b[36mawait\u001b[39m boxOf(drawer\u001b[33m,\u001b[39m \u001b[32m\"drawer\"\u001b[39m))\u001b[33m.\u001b[39mwidth \u001b[33m-\u001b[39m \u001b[35m380\u001b[39m))\u001b[33m.\u001b[39mtoBeLessThanOrEqual(\u001b[33mTOLERANCE_PX\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 109 |\u001b[39m     \u001b[36mawait\u001b[39m expect(drawer\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"region\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Alertas de validación\"\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 110 |\u001b[39m     expect(\u001b[36mawait\u001b[39m boxOf(consoleZone\u001b[33m,\u001b[39m \u001b[32m\"console\"\u001b[39m))\u001b[33m.\u001b[39mtoEqual(consoleBox)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                 \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 111 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mkeyboard\u001b[33m.\u001b[39mpress(\u001b[32m\"Escape\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 112 |\u001b[39m     \u001b[36mawait\u001b[39m expect(drawer)\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 113 |\u001b[39m     \u001b[36mawait\u001b[39m expect(open)\u001b[33m.\u001b[39mtoBeFocused()\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-julio.spec.ts",
+                        "column": 49,
+                        "line": 110
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[2m    \"height\": 684.46875,\u001b[22m\n\u001b[2m    \"width\": 952,\u001b[22m\n\u001b[2m    \"x\": 284,\u001b[22m\n\u001b[32m-   \"y\": 44,\u001b[39m\n\u001b[31m+   \"y\": -77,\u001b[39m\n\u001b[2m  }\u001b[22m\n\n  108 |     expect(Math.abs((await boxOf(drawer, \"drawer\")).width - 380)).toBeLessThanOrEqual(TOLERANCE_PX);\n  109 |     await expect(drawer.getByRole(\"region\", { name: \"Alertas de validación\" })).toBeVisible();\n> 110 |     expect(await boxOf(consoleZone, \"console\")).toEqual(consoleBox);\n      |                                                 ^\n  111 |     await page.keyboard.press(\"Escape\");\n  112 |     await expect(drawer).toHaveCount(0);\n  113 |     await expect(open).toBeFocused();\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-julio.spec.ts:110:49"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:15:00.722Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque5\\monitoreo-julio.spec.ts",
+                    "column": 49,
+                    "line": 110
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9b98617cdb2778d0bb06-ce9d3917d928bb635c0f",
+          "file": "bloque5/monitoreo-julio.spec.ts",
+          "line": 88,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\monitoreo-orden.spec.ts",
+      "file": "bloque5/monitoreo-orden.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "July Monitoreo order of the Real monitor at 1920×1080 and 1280×720",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 180238,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:15:06.903Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a41d2cdac8854af33286-542b05329d2624387503",
+          "file": "bloque5/monitoreo-orden.spec.ts",
+          "line": 77,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\monitoreo-tarjetas.spec.ts",
+      "file": "bloque5/monitoreo-tarjetas.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Ajustar hides, moves with the keyboard, persists across a reload and resets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6433,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:08.422Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "556abf8e74d03731b8c2-9e385f77049dadc114c3",
+          "file": "bloque5/monitoreo-tarjetas.spec.ts",
+          "line": 39,
+          "column": 5
+        },
+        {
+          "title": "a corrupt preference or another user's preference leaves the default cards",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3573,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:15.277Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "556abf8e74d03731b8c2-159077c07d25222286af",
+          "file": "bloque5/monitoreo-tarjetas.spec.ts",
+          "line": 98,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\monitoreo-teclado.spec.ts",
+      "file": "bloque5/monitoreo-teclado.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Enter confirms and Escape cancels the pending edits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3821,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:18.875Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "ded0118d7f8e89d74886-3ff656575d03abdb6319",
+          "file": "bloque5/monitoreo-teclado.spec.ts",
+          "line": 17,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "bloque5\\sidebar.spec.ts",
+      "file": "bloque5/sidebar.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "collapse and expand persist, the collapsed avatar opens Opciones and the bell works from the sidebar",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3198,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:22.724Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "99fae52221925227d724-9086749cd582101d3d08",
+          "file": "bloque5/sidebar.spec.ts",
+          "line": 30,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "simulator-connection.spec.ts",
+      "file": "simulator-connection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "holder reserves now, connects with control and sees the real monitor",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 14,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 31785,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: '1. Reserva del ventilador' })\nExpected pattern: \u001b[32m/Reserva:\\s*Activa\\s*·\\s*\\d+ min restantes/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('region', { name: '1. Reserva del ventilador' }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: '1. Reserva del ventilador' })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: '1. Reserva del ventilador' })\nExpected pattern: \u001b[32m/Reserva:\\s*Activa\\s*·\\s*\\d+ min restantes/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('region', { name: '1. Reserva del ventilador' }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: '1. Reserva del ventilador' })\u001b[22m\n\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts:35:31",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts",
+                      "column": 31,
+                      "line": 35
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 33 |\u001b[39m\n \u001b[90m 34 |\u001b[39m   \u001b[36mtry\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 35 |\u001b[39m     \u001b[36mawait\u001b[39m expect(reservation)\u001b[33m.\u001b[39mtoContainText(\u001b[35m/Reserva:\\s*Activa\\s*·\\s*\\d+ min restantes/\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 36 |\u001b[39m     \u001b[36mawait\u001b[39m connect(page)\u001b[33m;\u001b[39m\n \u001b[90m 37 |\u001b[39m     \u001b[36mawait\u001b[39m expect(connectionCard(page))\u001b[33m.\u001b[39mtoContainText(\u001b[35m/Control:\\s*Controlas el equipo/\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m15\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m 38 |\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts",
+                        "column": 31,
+                        "line": 35
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('region', { name: '1. Reserva del ventilador' })\nExpected pattern: \u001b[32m/Reserva:\\s*Activa\\s*·\\s*\\d+ min restantes/\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('region', { name: '1. Reserva del ventilador' }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('region', { name: '1. Reserva del ventilador' })\u001b[22m\n\n\n  33 |\n  34 |   try {\n> 35 |     await expect(reservation).toContainText(/Reserva:\\s*Activa\\s*·\\s*\\d+ min restantes/, { timeout: 30_000 });\n     |                               ^\n  36 |     await connect(page);\n  37 |     await expect(connectionCard(page)).toContainText(/Control:\\s*Controlas el equipo/, { timeout: 15_000 });\n  38 |\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts:35:31"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:25.951Z",
+                  "annotations": [
+                    {
+                      "type": "serial",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts",
+                        "line": 0,
+                        "column": 0
+                      }
+                    }
+                  ],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts",
+                    "column": 31,
+                    "line": 35
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "839607b8f48c2508d33c-3d182624634361d116a5",
+          "file": "simulator-connection.spec.ts",
+          "line": 22,
+          "column": 5
+        },
+        {
+          "title": "group leader takes control and a non-leader member observes read-only",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "serial",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-connection.spec.ts",
+                    "line": 0,
+                    "column": 0
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:58.071Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "839607b8f48c2508d33c-08ad6b91ee912531e9cd",
+          "file": "simulator-connection.spec.ts",
+          "line": 58,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "simulator-exam.spec.ts",
+      "file": "simulator-exam.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a SIMULATION question of an exam opens the console in locked mode",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 15,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32885,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('group', { name: 'Control del tiempo' })\nExpected substring: \u001b[32m\"Velocidad fija ×1 (examen, sin pausa)\"\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('group', { name: 'Control del tiempo' }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('group', { name: 'Control del tiempo' })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('group', { name: 'Control del tiempo' })\nExpected substring: \u001b[32m\"Velocidad fija ×1 (examen, sin pausa)\"\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('group', { name: 'Control del tiempo' }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('group', { name: 'Control del tiempo' })\u001b[22m\n\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-exam.spec.ts:66:25",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-exam.spec.ts",
+                      "column": 25,
+                      "line": 66
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 64 |\u001b[39m     \u001b[36mconst\u001b[39m clock \u001b[33m=\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"group\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Control del tiempo\"\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 65 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 66 |\u001b[39m     \u001b[36mawait\u001b[39m expect(clock)\u001b[33m.\u001b[39mtoContainText(\u001b[32m\"Velocidad fija ×1 (examen, sin pausa)\"\u001b[39m\u001b[33m,\u001b[39m { timeout\u001b[33m:\u001b[39m \u001b[35m30\u001b[39m_000 })\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 67 |\u001b[39m     \u001b[36mawait\u001b[39m expect(clock\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m))\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"timer\"\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m\"Tiempo restante del examen\"\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 69 |\u001b[39m     \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"img\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[33mCURVES_LABEL\u001b[39m }))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-exam.spec.ts",
+                        "column": 25,
+                        "line": 66
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('group', { name: 'Control del tiempo' })\nExpected substring: \u001b[32m\"Velocidad fija ×1 (examen, sin pausa)\"\u001b[39m\nTimeout: 30000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" getByRole('group', { name: 'Control del tiempo' }) with timeout 30000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('group', { name: 'Control del tiempo' })\u001b[22m\n\n\n  64 |     const clock = page.getByRole(\"group\", { name: \"Control del tiempo\" });\n  65 |\n> 66 |     await expect(clock).toContainText(\"Velocidad fija ×1 (examen, sin pausa)\", { timeout: 30_000 });\n     |                         ^\n  67 |     await expect(clock.getByRole(\"button\")).toHaveCount(0);\n  68 |     await expect(page.getByRole(\"timer\").filter({ hasText: \"Tiempo restante del examen\" })).toBeVisible();\n  69 |     await expect(page.getByRole(\"img\", { name: CURVES_LABEL })).toBeVisible();\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-exam.spec.ts:66:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:18:58.813Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\simulator-exam.spec.ts",
+                    "column": 25,
+                    "line": 66
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "713233d68947209794d4-995e5e6a731aed11502a",
+          "file": "simulator-exam.spec.ts",
+          "line": 24,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "simulator-redirects.spec.ts",
+      "file": "simulator-redirects.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "/ redirects to /simulador",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1238,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:32.963Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "582211c78519776a35eb-601d12ac5c1efa9302e6",
+          "file": "simulator-redirects.spec.ts",
+          "line": 24,
+          "column": 7
+        },
+        {
+          "title": "/dashboard redirects to /simulador",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 950,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:34.528Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "582211c78519776a35eb-e33275f4bf6a855fe910",
+          "file": "simulator-redirects.spec.ts",
+          "line": 24,
+          "column": 7
+        },
+        {
+          "title": "/simulator redirects to /simulador?tab=simular",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 873,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:35.499Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "582211c78519776a35eb-368f305871395e1168fd",
+          "file": "simulator-redirects.spec.ts",
+          "line": 32,
+          "column": 7
+        },
+        {
+          "title": "/lab redirects to /simulador?tab=conexion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 903,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:36.399Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "582211c78519776a35eb-7c0be928ef76a7c5df33",
+          "file": "simulator-redirects.spec.ts",
+          "line": 32,
+          "column": 7
+        },
+        {
+          "title": "/lab/live redirects to /simulador?tab=monitoreo",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1028,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:37.324Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "582211c78519776a35eb-70ed69bf2d2dfebce9a0",
+          "file": "simulator-redirects.spec.ts",
+          "line": 32,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "simulator-student.spec.ts",
+      "file": "simulator-student.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "student simulates a patient, keeps the session across tabs, finishes it and replays it from Mis sesiones",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11911,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:38.390Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6966e008aaccd87b5b2f-a75b74e87e10553d9dd8",
+          "file": "simulator-student.spec.ts",
+          "line": 27,
+          "column": 5
+        },
+        {
+          "title": "Monitoreo keeps usable curves at 1280×720 with a long case and the case drawer never resizes the console",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 16,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4208,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-06T13:19:50.324Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6966e008aaccd87b5b2f-0d0ba0f3c1801c98456f",
+          "file": "simulator-student.spec.ts",
+          "line": 89,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-06T13:05:54.986Z",
+    "duration": 839975.2609999999,
+    "expected": 28,
+    "skipped": 11,
+    "unexpected": 15,
+    "flaky": 0
+  }
+}

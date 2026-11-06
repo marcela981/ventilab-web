@@ -1,0 +1,24 @@
+npm notice run ventilab-web@0.1.0 npx
+npm notice run vitest run src/features/teacher-dashboard/application/pages/teacher-dashboard.page.test.tsx
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mC:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web[39m
+
+ [32m✓[39m src/features/teacher-dashboard/application/pages/teacher-dashboard.page.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 7474[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mshows the first group with its cards and students from the API [33m 775[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mhighlights only the students the API flags at risk, with the API reasons in Spanish [33m 406[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mstates the passing grade and the API risk thresholds in the legend [33m 355[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mmarks how the caller follows each group in the selector [33m 557[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mfilters by name or email and sorts by an API column [33m 766[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mexpands a row with its progress labelled by the curriculum titles [33m 510[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mcharts the group histogram of the selected evaluation, the group module averages and one student's module progress [33m 350[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mreads the group of the URL and writes the chosen group to it [33m 553[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mnever shows the previous group's rows while another group loads [33m 636[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mshows the error of the new group instead of the previous group's rows [33m 459[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mrenders one page of 25 students at a time and goes back to the first page on a new filter [33m 1285[2mms[22m[39m
+   [33m[2m✓[22m[39m TeacherDashboardPage[2m > [22mexports the group CSV from the export endpoint [33m 675[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m 00:03:52
+[2m   Duration [22m 12.82s[2m (transform 697ms, setup 739ms, collect 2.60s, tests 7.47s, environment 1.16s, prepare 211ms)[22m
+
