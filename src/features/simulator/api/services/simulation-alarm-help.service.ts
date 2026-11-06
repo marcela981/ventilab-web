@@ -5,8 +5,9 @@
 *   /api/simulation/real/alarm-help with the monitor state the client sends) and the AI assistance of the real monitor
 *   (POST /api/simulation/real/assist). The answers are Spanish. The state is the RealMonitorStateDTO of the contract;
 *   the AI only suggests, it never sends commands to the ventilator. Depends on the shared stream request type and the
-*   generated contract.
-* Versión: 1.0
+*   generated contract. v1.1 (fix sim-assist-current-state): the session alarm help carries the console context
+*   (current simulated time, unsent changes and a snapshot) like the assistance.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,6 +17,8 @@
 
 import type { StreamRequest } from "@shared/ai-conversation";
 import type { components } from "@shared/api-client/generated/schema";
+import { helpContextBody } from "../../application/entities/sim-help-context.entity";
+import type { SessionHelpContext } from "../../application/entities/sim-help-context.entity";
 
 export type SimulationAlarmHelpDTO = components["schemas"]["SimulationAlarmHelpDTO"];
 export type RealAlarmHelpDTO = components["schemas"]["RealAlarmHelpDTO"];
@@ -29,8 +32,9 @@ export const SIMULATION_SESSION_ALARM_HELP_PATH = "/api/simulation/sessions/{id}
 export const REAL_ALARM_HELP_PATH = "/api/simulation/real/alarm-help";
 export const REAL_ASSIST_PATH = "/api/simulation/real/assist";
 
-export function sessionAlarmHelpRequest(sessionId: string, alarmCode: string): StreamRequest {
-  const body: SimulationAlarmHelpDTO = { alarmCode, language: HELP_LANGUAGE };
+/** v1.1: the console context (current simulated time, unsent changes, snapshot) so the server analyzes the patient now. */
+export function sessionAlarmHelpRequest(sessionId: string, alarmCode: string, context?: SessionHelpContext | null): StreamRequest {
+  const body: SimulationAlarmHelpDTO = { alarmCode, language: HELP_LANGUAGE, ...helpContextBody(context) };
 
   return { path: SIMULATION_SESSION_ALARM_HELP_PATH.replace("{id}", encodeURIComponent(sessionId)), body };
 }

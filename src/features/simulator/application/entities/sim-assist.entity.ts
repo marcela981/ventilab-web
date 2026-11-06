@@ -11,8 +11,9 @@
 *   conversation module, so the console chunk does not load it. Depends on the generated OpenAPI types.
 *   v1.1 (Bloque A): the real monitor assistance (POST /simulation/real/assist) answers without an AI_HELP event: a
 *   turn has its own `id` (the AI_HELP event of a session, else the AI call) and `aiHelpEventId` may be null;
-*   isRealAssistDone checks its `done` ({aiCallId, source}).
-* Versión: 1.1
+*   isRealAssistDone checks its `done` ({aiCallId, source}). v1.2 (fix sim-assist-current-state): a turn keeps the
+*   state the server analyzed (`done.analysis`) and whether the AI kept contradicting it (notice INCONSISTENT_STATE).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -23,6 +24,7 @@
 import type { StreamDoneMetadata } from "@shared/ai-conversation";
 import type { components } from "@shared/api-client/generated/schema";
 import type { SimulationMode } from "../config/simulator.config";
+import type { HelpAnalysis } from "./sim-help-context.entity";
 
 export type AssistancePolicyValue = components["schemas"]["ClinicalCaseRubricDTO"]["assistancePolicy"];
 
@@ -96,4 +98,8 @@ export type AssistTurn = {
   question: string
   answer: string
   source: AssistStreamDone["source"]
+  /** v1.2 (fix sim-assist-current-state): the state the server analyzed, from `done.analysis`. */
+  analysis?: HelpAnalysis | null | undefined
+  /** The AI kept contradicting the current state: the deterministic suggestion was sent (INCONSISTENT_STATE). */
+  inconsistent?: boolean | undefined
 };

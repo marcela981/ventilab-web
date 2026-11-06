@@ -169,3 +169,36 @@ describe("AlarmHelpPanel", () => {
     expect(requests).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("AlarmHelpPanel on the current state (fix sim-assist-current-state)", () => {
+  it("builds the request after the console context resolves and shows the analyzed state", async() => {
+    const bodies: unknown[] = [];
+
+    server.use(http.post(HELP_URL, async({ request }) => {
+      bodies.push(await request.json());
+
+      return sseResponse([
+        rulesFrame({ alarmCode: TARGET.code, rules: [] }),
+        deltaFrame("Revisa la oxigenación."),
+        doneFrame({ aiCallId: "call-a", source: "LLM", aiHelpEventId: "help-a", analysis: { simTimeMs: 78_000, severity: 0.7, patientStatus: "CRITICAL" } }),
+      ]);
+    }));
+    const buildRequest = async() => sessionAlarmHelpRequest("s1", TARGET.code, await Promise.resolve({ simTimeMs: 78_000, unsentChanges: true }));
+
+    renderWithSwr(<AlarmHelpPanel target={TARGET} availability={{ status: "available" }} buildRequest={buildRequest} />);
+
+    expect(await screen.findByText("Analizado en t = 01:18 · gravedad 70 %")).toBeInTheDocument();
+    expect(bodies).toEqual([{ alarmCode: TARGET.code, language: "es", simTimeMs: 78_000, unsentChanges: true }]);
+  });
+
+  it("labels a suggestion the AI kept contradicting", async() => {
+    server.use(http.post(HELP_URL, () => sseResponse([
+      rulesFrame({ alarmCode: TARGET.code, rules: [] }),
+      deltaFrame("Sube la FiO2."),
+      doneFrame({ aiCallId: "call-b", source: "DETERMINISTIC", notice: "INCONSISTENT_STATE" }),
+    ])));
+    renderWithSwr(<AlarmHelpPanel target={TARGET} availability={{ status: "available" }} buildRequest={() => sessionAlarmHelpRequest("s1", TARGET.code)} />);
+
+    expect(await screen.findByText("La IA no pudo analizar el estado actual")).toBeInTheDocument();
+  });
+});

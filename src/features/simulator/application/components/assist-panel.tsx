@@ -20,7 +20,11 @@
 *   v1.5 (Bloque A): with `realMonitor` (the real console) the request is POST /simulation/real/assist with the
 *   monitor state read at that moment, the intro speaks of the ventilator and an answer is rated as an AI_CALL (its
 *   aiCallId) with the SIMULATOR_ASSIST surface. The AI never sends commands to the ventilator.
-* Versión: 1.5
+*   v1.6 (fix sim-assist-current-state): a session request first asks `helpContext` (bounded flush of the pending
+*   events, current simulated time and snapshot of the console) and sends it; each answer shows the state the server
+*   analyzed ("Analizado en t = mm:ss · gravedad X %", or the age of the device data in real mode) and an answer the
+*   AI kept contradicting carries "La IA no pudo analizar el estado actual" (deterministic suggestion, not rated).
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -38,6 +42,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import {
   AI_ERROR_CODES,
+  type StreamRequest,
   AiFallbackLabel,
   COMPOSER_COPY,
   isFallbackSource,
@@ -57,6 +62,8 @@ import { AI_CALL_RATING_TARGET_TYPE, ASSIST_QUESTION_MAX_LENGTH, ASSIST_RATING_S
 import { getAssistErrorMessage } from "../entities/assist-error-messages";
 import { isAssistDone, isRealAssistDone } from "../entities/sim-assist.entity";
 import type { AssistPolicy, AssistStreamDone, AssistTurn } from "../entities/sim-assist.entity";
+import { analysisHeader, HELP_CONTEXT_COPY, isInconsistentNotice, parseHelpAnalysis } from "../entities/sim-help-context.entity";
+import type { SessionHelpContext } from "../entities/sim-help-context.entity";
 import styles from "../../UI/assist-panel.module.css";
 
 // TODO(i18n): move to a simulator namespace in src/i18n.
@@ -88,26 +95,35 @@ export type AssistPanelProps = {
   onClose: () => void
   /** v1.5: the real monitor state; the request goes to the real-mode assistance with it. */
   realMonitor?: (() => RealMonitorStateDTO) | undefined
+  /** v1.6: the console context of a session request (bounded flush, current simulated time, snapshot). */
+  helpContext?: (() => Promise<SessionHelpContext | null>) | undefined
 };
 
 /** Done metadata of either route as one turn: a session answer has its AI_HELP event, a real one only its AI call. */
-function doneTurnOf(done: unknown, real: boolean): Pick<AssistTurn, "id" | "aiHelpEventId" | "aiCallId" | "source"> | null {
+function doneTurnOf(done: unknown, real: boolean): Pick<AssistTurn, "id" | "aiHelpEventId" | "aiCallId" | "source" | "analysis" | "inconsistent"> | null {
+  const context = { analysis: parseHelpAnalysis(done), inconsistent: isInconsistentNotice(done) };
+
   if (real) {
-    return isRealAssistDone(done) ? { id: done.aiCallId, aiHelpEventId: null, aiCallId: done.aiCallId, source: done.source } : null;
+    return isRealAssistDone(done) ? { id: done.aiCallId, aiHelpEventId: null, aiCallId: done.aiCallId, source: done.source, ...context } : null;
   }
 
-  return isAssistDone(done) ? { id: done.aiHelpEventId, aiHelpEventId: done.aiHelpEventId, aiCallId: done.aiCallId, source: done.source } : null;
+  return isAssistDone(done) ? { id: done.aiHelpEventId, aiHelpEventId: done.aiHelpEventId, aiCallId: done.aiCallId, source: done.source, ...context } : null;
 }
 
 function AnswerView({ turn }: { turn: AssistTurn }) {
+  const header = analysisHeader(turn.analysis ?? null);
+
   return (
     <div className={cx(styles.turn)}>
       {turn.question === "" ? null : <MessageBubble role="user" content={turn.question} />}
+      {header === null ? null : <p className={cx(styles.analyzed)} data-stale={turn.analysis?.stale === true}>{header}</p>}
       <StreamingMessage
         text={turn.answer}
         isStreaming={false}
         announce={false}
-        footer={isFallbackSource(turn.source)
+        footer={turn.inconsistent === true
+          ? <AiFallbackLabel label={HELP_CONTEXT_COPY.inconsistent} />
+          : isFallbackSource(turn.source)
           ? <AiFallbackLabel />
           : (
             <AiRatingWidget
@@ -121,16 +137,18 @@ function AnswerView({ turn }: { turn: AssistTurn }) {
   );
 }
 
-export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClose, realMonitor }: AssistPanelProps) {
+export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClose, realMonitor, helpContext }: AssistPanelProps) {
   const stream = useStreamingResponse<AssistStreamDone>();
   const real = realMonitor !== undefined;
   const [question, setQuestion] = useState("");
   const [asked, setAsked] = useState("");
   const [confirming, setConfirming] = useState(false);
+  // v1.6: the bounded flush of the pending events runs before the request.
+  const [preparing, setPreparing] = useState(false);
   const titleId = useId();
   const counterId = useId();
   const panelRef = useRef<HTMLElement | null>(null);
-  const isStreaming = stream.status === "streaming";
+  const isStreaming = stream.status === "streaming" || preparing;
   const showCounter = isNearLimit(question.length, ASSIST_QUESTION_MAX_LENGTH);
   const done = stream.status === "done" ? doneTurnOf(stream.done, real) : null;
   const recorded = done !== null && history.some((turn) => turn.id === done.id);
@@ -148,12 +166,27 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
     setConfirming(false);
     setAsked(typed.trim());
     setQuestion("");
-    void stream.start(realMonitor ? realAssistRequest(realMonitor(), typed) : assistStreamRequest(sessionId, typed)).then((outcome) => {
+    void (async () => {
+      let request: StreamRequest;
+
+      if (realMonitor) {
+        request = realAssistRequest(realMonitor(), typed);
+      } else {
+        setPreparing(true);
+
+        const context = helpContext ? await helpContext().catch(() => null) : null;
+
+        setPreparing(false);
+        request = assistStreamRequest(sessionId, typed, context);
+      }
+
+      const outcome = await stream.start(request);
+
       // Refused before any frame (quota, provider down, network): give the question back, unless a new one was typed.
       if (outcome.status === "error" && !outcome.streamStarted) {
         setQuestion((current) => (current === "" ? typed : current));
       }
-    });
+    })();
   };
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -182,11 +215,11 @@ export function AssistPanel({ id, sessionId, policy, history, onAnswered, onClos
     }
   };
 
-  const showCurrent = stream.status !== "idle" && !recorded;
+  const showCurrent = (stream.status !== "idle" || preparing) && !recorded;
   const error = stream.status === "error" && stream.error ? stream.error : null;
 
   return (
-    <aside ref={panelRef} id={id} className={cx(styles.panel)} aria-labelledby={titleId} tabIndex={-1} onKeyDown={onKeyDown}>
+    <aside ref={panelRef} id={id} className={cx(styles.panel)} aria-labelledby={titleId} tabIndex={-1} onKeyDown={onKeyDown} data-console-drawer="assist">
       <header className={cx(styles.header)}>
         <h2 id={titleId} className={cx(styles.title)}>{ASSIST_PANEL_COPY.title}</h2>
         <IconButton aria-label={ASSIST_PANEL_COPY.close} onClick={onClose} size="small">

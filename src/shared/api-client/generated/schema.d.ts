@@ -5708,7 +5708,7 @@ export interface paths {
         put?: never;
         /**
          * How to stabilize an alarm of the physical ventilator
-         * @description Deterministic rules for the alarm with the recent telemetry sent by the client, then an AI suggestion. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
+         * @description Deterministic rules for the alarm with the recent telemetry sent by the client, then an AI suggestion. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source, analysis, notice?}` (plus `aiHelpEventId` for a simulation session; `analysis` is the state the answer used: `{simTimeMs, severity, patientStatus}` for a session, `{dataAgeMs, stale}` in real mode; `notice` INCONSISTENT_STATE when the AI contradicted the current state twice and the rule-based suggestion was sent; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
          *
          *     **Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.
          */
@@ -5730,7 +5730,7 @@ export interface paths {
         put?: never;
         /**
          * AI assistance on the physical ventilator
-         * @description Guidance on the recent telemetry sent by the client and the loaded case, optionally answering a question. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
+         * @description Guidance on the recent telemetry sent by the client and the loaded case, optionally answering a question. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source, analysis, notice?}` (plus `aiHelpEventId` for a simulation session; `analysis` is the state the answer used: `{simTimeMs, severity, patientStatus}` for a session, `{dataAgeMs, stale}` in real mode; `notice` INCONSISTENT_STATE when the AI contradicted the current state twice and the rule-based suggestion was sent; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
          *
          *     **Required access:** bearer token holding `ventilator:control`; minimum role STUDENT.
          */
@@ -5874,7 +5874,7 @@ export interface paths {
         put?: never;
         /**
          * How to stabilize an alarm of my active simulation session
-         * @description Deterministic rules for the alarm in the current context, then an AI suggestion. EXAM sessions follow the assistance policy of the evaluation (ALLOWED_WITH_PENALTY only); every completed answer is recorded as an AI_HELP event of kind ALARM_HELP. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source}` (plus `aiHelpEventId` for a simulation session; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
+         * @description Deterministic rules for the alarm in the current context, then an AI suggestion. The state is rebuilt by a server replay up to the simulated time the console sends (simTimeMs, validated like the assistance) and the suggestion is checked against it before it is sent. EXAM sessions follow the assistance policy of the evaluation (ALLOWED_WITH_PENALTY only); every completed answer is recorded as an AI_HELP event of kind ALARM_HELP. Responds text/event-stream: `event: rules` with `{alarmCode, rules: [{id, text, reference}]}` (deterministic, always first in the alarm help), `event: delta` with `{text}` per fragment, then `event: done` with `{aiCallId, source, analysis, notice?}` (plus `aiHelpEventId` for a simulation session; `analysis` is the state the answer used: `{simTimeMs, severity, patientStatus}` for a session, `{dataAgeMs, stale}` in real mode; `notice` INCONSISTENT_STATE when the AI contradicted the current state twice and the rule-based suggestion was sent; `source` is LLM or DETERMINISTIC; rate an LLM answer with ai-ratings targetType AI_CALL, targetId = aiCallId, surface SIM_ALARM for alarms), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts use the regular JSON error envelope. The AI only suggests: it never sends commands to a ventilator.
          *
          *     **Required access:** bearer token holding `simulation:control`; minimum role STUDENT.
          */
@@ -5896,7 +5896,7 @@ export interface paths {
         put?: never;
         /**
          * Ask the AI assistant about my active simulation session
-         * @description Guides the student on the current state of one of their ACTIVE sessions (what is going well, what to review and why), optionally answering a question. EXAM sessions are allowed only when the rubric assistance policy is ALLOWED_WITH_PENALTY; every completed answer is recorded as an AI_HELP event, which the score penalizes in that case. When no AI provider answers, the rule-based advisor answers instead. Responds text/event-stream: `event: delta` with `{text}` per fragment, then `event: done` with `{aiHelpEventId, aiCallId, source}` (`source` is LLM or DETERMINISTIC; rate the answer with ai-ratings targetType SIM_ASSIST and targetId = aiHelpEventId), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts (validation, 403, 404, 409, 429 with Retry-After) use the regular JSON error envelope. Closing the connection cancels the AI call and no AI_HELP event is recorded.
+         * @description Guides the student on the current state of one of their ACTIVE sessions (what is going well, what to review and why), optionally answering a question. The state is rebuilt by a server replay up to the simulated time the console sends (simTimeMs, validated against the last stored event, the wall-clock bound and the exam deadline); the console snapshot is only compared with it. The answer is checked against that state before it is sent: an answer that claims stability with a critical patient or cites other vitals is regenerated once, then replaced by the rule-based suggestion with notice INCONSISTENT_STATE. EXAM sessions are allowed only when the rubric assistance policy is ALLOWED_WITH_PENALTY; every completed answer is recorded as an AI_HELP event, which the score penalizes in that case. When no AI provider answers, the rule-based advisor answers instead. Responds text/event-stream: `event: delta` with `{text}` per fragment, then `event: done` with `{aiHelpEventId, aiCallId, source, analysis: {simTimeMs, severity, patientStatus}, notice?}` (`source` is LLM or DETERMINISTIC; rate the answer with ai-ratings targetType SIM_ASSIST and targetId = aiHelpEventId), or `event: error` with `{code, message}` if the answer fails after it started. Errors before the stream starts (validation, 403, 404, 409, 429 with Retry-After) use the regular JSON error envelope. Closing the connection cancels the AI call and no AI_HELP event is recorded.
          *
          *     **Required access:** bearer token holding `simulation:control`; minimum role STUDENT.
          */
@@ -9599,6 +9599,91 @@ export interface components {
              * @example 2026-0001
              */
             studentCode: string | null;
+        };
+        ClientSimulationSnapshotDTO: {
+            /** @description Active alarms shown, with their priority */
+            alarms?: components["schemas"]["ClientSnapshotAlarmDTO"][];
+            /**
+             * @description Heart rate shown (beats/min)
+             * @example 107
+             */
+            heartRateBpm?: number;
+            /**
+             * @description Mean arterial pressure shown (mmHg)
+             * @example 66
+             */
+            mapMmHg?: number;
+            /**
+             * @description PaCO2 shown (mmHg)
+             * @example 33.4
+             */
+            paco2MmHg?: number;
+            /**
+             * @description PaO2 shown (mmHg)
+             * @example 38
+             */
+            pao2MmHg?: number;
+            /**
+             * @description pH shown
+             * @example 7.48
+             */
+            ph?: number;
+            settings?: components["schemas"]["ClientSnapshotSettingsDTO"];
+            /**
+             * @description Patient severity shown (0..1)
+             * @example 0.69
+             */
+            severity?: number;
+            /**
+             * @description SpO2 shown (%)
+             * @example 72.2
+             */
+            spo2Percent?: number;
+            /**
+             * @description Patient status shown
+             * @example CRITICAL
+             */
+            status?: string;
+        };
+        ClientSnapshotAlarmDTO: {
+            /**
+             * @description Active alarm code
+             * @example LOW_SPO2
+             */
+            code?: string;
+            /**
+             * @description Alarm priority shown by the console
+             * @example HIGH
+             * @enum {string}
+             */
+            severity?: "HIGH" | "MEDIUM" | "LOW";
+        };
+        ClientSnapshotSettingsDTO: {
+            /**
+             * @description Applied FiO2 (fraction)
+             * @example 0.9
+             */
+            fio2?: number;
+            /**
+             * @description Applied ventilation mode
+             * @example VCV
+             */
+            mode?: string;
+            /**
+             * @description Applied PEEP (cmH2O)
+             * @example 5
+             */
+            peepCmH2O?: number;
+            /**
+             * @description Applied respiratory rate (breaths/min)
+             * @example 22
+             */
+            respiratoryRateBpm?: number;
+            /**
+             * @description Applied tidal volume (mL)
+             * @example 420
+             */
+            tidalVolumeMl?: number;
         };
         ClinicalCaseAttemptsDTO: {
             /** @description Attempts, most recent first */
@@ -18511,6 +18596,29 @@ export interface components {
             question?: string;
             state: components["schemas"]["RealMonitorStateDTO"];
         };
+        RealMonitorAlarmDTO: {
+            /**
+             * @description Alarm code
+             * @example HIGH_PRESSURE
+             */
+            code: string;
+            /**
+             * @description Alarm priority shown by the console
+             * @example HIGH
+             * @enum {string}
+             */
+            priority?: "HIGH" | "MEDIUM" | "LOW";
+            /**
+             * @description Limit it crossed
+             * @example 40
+             */
+            threshold?: number;
+            /**
+             * @description Measured value that raised the alarm
+             * @example 42
+             */
+            value?: number;
+        };
         RealMonitorLimitsDTO: {
             /**
              * @description Client high pressure limit (cmH2O)
@@ -18618,6 +18726,8 @@ export interface components {
             tidalVolumeMl?: number;
         };
         RealMonitorStateDTO: {
+            /** @description Active alarms with their value, limit and priority (same codes as alarms) */
+            alarmDetails?: components["schemas"]["RealMonitorAlarmDTO"][];
             /**
              * @description Active alarm codes of the ventilator and the client limits
              * @example [
@@ -18630,6 +18740,16 @@ export interface components {
              * @example engine-ards-obese
              */
             caseId?: string;
+            /**
+             * @description Age of the latest telemetry frame when the help was asked (ms, console clock); over 2000 the data is stale
+             * @example 120
+             */
+            dataAgeMs?: number;
+            /**
+             * @description When the console received the latest telemetry frame (ISO 8601)
+             * @example 2026-11-05T23:48:36.311Z
+             */
+            lastFrameAt?: string;
             limits?: components["schemas"]["RealMonitorLimitsDTO"];
             metrics?: components["schemas"]["RealMonitorMetricsDTO"];
             /**
@@ -19939,14 +20059,28 @@ export interface components {
              * @example HIGH_PRESSURE
              */
             alarmCode: string;
+            /** @description What the console shows; only compared with the server replay (a divergence is logged), never used as the state */
+            clientSnapshot?: components["schemas"]["ClientSimulationSnapshotDTO"];
             /**
              * @description Answer language; defaults to the request language
              * @example es
              * @enum {string}
              */
             language?: "en" | "es";
+            /**
+             * @description Current simulated time of the console (ms). The server rebuilds the state up to it: never behind the last stored event (a lag up to 1 s is moved up to it), never ahead of the elapsed wall time × session multiplier (+ tolerance) or the exam deadline. Without it the server estimates the time from the wall clock.
+             * @example 76200
+             */
+            simTimeMs?: number;
+            /**
+             * @description true when the console could not send its pending changes before asking (bounded flush timed out)
+             * @example false
+             */
+            unsentChanges?: boolean;
         };
         SimulationAssistDTO: {
+            /** @description What the console shows; only compared with the server replay (a divergence is logged), never used as the state */
+            clientSnapshot?: components["schemas"]["ClientSimulationSnapshotDTO"];
             /**
              * @description Answer language; defaults to the request language
              * @example es
@@ -19958,6 +20092,16 @@ export interface components {
              * @example ¿Por qué sigue sonando la alarma de presión alta?
              */
             question?: string;
+            /**
+             * @description Current simulated time of the console (ms). The server rebuilds the state up to it: never behind the last stored event (a lag up to 1 s is moved up to it), never ahead of the elapsed wall time × session multiplier (+ tolerance) or the exam deadline. Without it the server estimates the time from the wall clock.
+             * @example 76200
+             */
+            simTimeMs?: number;
+            /**
+             * @description true when the console could not send its pending changes before asking (bounded flush timed out)
+             * @example false
+             */
+            unsentChanges?: boolean;
         };
         SimulationDebriefItemDTO: {
             /** @description Changed settings of a decision */
@@ -46999,7 +47143,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Missing permission, session of another user or assistance disabled in this exam */
+            /** @description Missing permission, session of another user, assistance disabled in this exam or simTimeMs ahead of the session bound */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -47017,7 +47161,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description The simulation session is not active */
+            /** @description The simulation session is not active, or simTimeMs is behind the last stored event */
             409: {
                 headers: {
                     [name: string]: unknown;

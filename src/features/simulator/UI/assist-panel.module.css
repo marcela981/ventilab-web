@@ -5,7 +5,9 @@
 *   scrollable list of answers and the current stream, and the question form with its counter and actions. Design
 *   tokens (--vl-color-*, --vl-space-*, --vl-radius-*, --vl-shadow-*, --vl-z-*) only; no hex or rgb values.
 *   v1.1 (Bloque 5, C6): 380 px (23.75rem) from 600 px, like the other July console drawers (D26).
-* Versión: 1.1
+*   v1.2 (fix sim-assist-current-state): the analyzed-state line above an answer (warning tone when the device data
+*   is stale).
+* Versión: 1.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -106,4 +108,15 @@
 
 .panel:focus {
   outline: none;
+}
+
+/* v1.2: the state the server analyzed above an answer. */
+.analyzed {
+  margin: 0;
+  font: var(--mui-font-caption);
+  color: var(--vl-color-text-muted);
+}
+
+.analyzed[data-stale="true"] {
+  color: var(--vl-color-warning);
 }

@@ -14,7 +14,8 @@
 *   detalladas" and "Caso clínico"); closing it (button or Escape) returns the focus to the launcher.
 *   v2.1 (Bloque A): `realMonitor` (the real monitor of Monitoreo) makes the panel ask POST /simulation/real/assist with
 *   the monitor state read at each request; the real monitor has no exam policy (allowed).
-* Versión: 2.1
+*   v2.2 (fix sim-assist-current-state): `helpContext` (the session console context) is handed to the panel.
+* Versión: 2.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -30,6 +31,7 @@ import type { SimulationMode } from "../config/simulator.config";
 import { resolveAssistPolicy } from "../entities/sim-assist.entity";
 import type { AssistancePolicyValue, AssistTurn } from "../entities/sim-assist.entity";
 import type { RealMonitorStateDTO } from "../../api/services/simulation-alarm-help.service";
+import type { SessionHelpContext } from "../entities/sim-help-context.entity";
 import { AssistPanel } from "./lazy-assist-panel";
 import styles from "../../UI/session-console.module.css";
 
@@ -53,9 +55,11 @@ export type AssistLauncherProps = {
   onAnswered?: ((turn: AssistTurn) => void) | undefined
   /** v2.1: the real monitor state, read at each request (the panel then asks the real-mode assistance). */
   realMonitor?: (() => RealMonitorStateDTO) | undefined
+  /** v2.2: the console context of a session request (bounded flush, current simulated time, snapshot). */
+  helpContext?: (() => Promise<SessionHelpContext | null>) | undefined
 };
 
-export function AssistLauncher({ sessionId, mode, policy: policyValue, active, history: hostHistory, onAnswered: hostOnAnswered, realMonitor }: AssistLauncherProps) {
+export function AssistLauncher({ sessionId, mode, policy: policyValue, active, history: hostHistory, onAnswered: hostOnAnswered, realMonitor, helpContext }: AssistLauncherProps) {
   const policy = resolveAssistPolicy(mode, policyValue);
   const { open, setOpen, toggle, close, triggerRef } = useConsoleDrawer(ASSIST_DRAWER_KEY);
   const [ownHistory, setOwnHistory] = useState<AssistTurn[]>([]);
@@ -95,7 +99,16 @@ export function AssistLauncher({ sessionId, mode, policy: policyValue, active, h
       </button>
       {disabled ? <span id={reasonId} className={cx(styles.visuallyHidden)}>{policy.reason}</span> : null}
       {open && active && !disabled ? (
-        <AssistPanel id={panelId} sessionId={sessionId} policy={policy} history={history} onAnswered={onAnswered} onClose={onClose} realMonitor={realMonitor} />
+        <AssistPanel
+          id={panelId}
+          sessionId={sessionId}
+          policy={policy}
+          history={history}
+          onAnswered={onAnswered}
+          onClose={onClose}
+          realMonitor={realMonitor}
+          helpContext={helpContext}
+        />
       ) : null}
     </span>
   );

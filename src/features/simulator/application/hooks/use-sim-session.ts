@@ -46,7 +46,10 @@
 *   whole boot whose unchanged slices keep their identity, so the console zones re-render only when their own slice
 *   changes. The hook itself re-renders only when the status or the applied settings change (no `simTimeMs` or
 *   `objectives` in the view any more: read them from `store`, e.g. with useSimSessionSlice).
-* Versión: 1.9
+*   v1.10 (fix sim-assist-current-state): `helpContext()` prepares an AI help request: it flushes the pending events
+*   (at most HELP_FLUSH_TIMEOUT_MS; the simulation keeps running) and returns the current simulated time of the store,
+*   whether changes stayed unsent and a snapshot of what the console shows, so the server analyzes the patient now.
+* Versión: 1.10
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -76,6 +79,8 @@ import {
   sendSimulationEventsKeepalive,
 } from "../../api/services/simulation-sessions.service";
 import { EVENT_ACK_TIMEOUT_MS, RESYNC_SETTLE_TIMEOUT_MS, UI_REFRESH_INTERVAL_MS } from "../config/sim-console.config";
+import { buildClientSnapshot, HELP_FLUSH_TIMEOUT_MS } from "../entities/sim-help-context.entity";
+import type { SessionHelpContext } from "../entities/sim-help-context.entity";
 import { TIME_MULTIPLIERS } from "../config/simulator.config";
 import type { TimeMultiplier } from "../config/simulator.config";
 import type { ClientSessionEvent, SessionBoot } from "../entities/sim-session.entity";
@@ -177,6 +182,11 @@ export type SimSessionView = {
   divergenceCause: DivergenceCause | null
   /** Stops the event queue and waits (bounded) for its last flush; call before rebuilding the session. */
   settle: () => Promise<void>
+  /**
+   * v1.10: flushes the pending events (bounded) and returns the context of an AI help request: the current simulated
+   * time, whether changes stayed unsent and what the console shows; null without a running session.
+   */
+  helpContext: () => Promise<SessionHelpContext | null>
   /** Events waiting to be acknowledged by the server. */
   pendingEvents: number
   workerError: string | null
@@ -748,6 +758,27 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     queue.dispose();
   }, []);
 
+  const helpContext = useCallback(async(): Promise<SessionHelpContext | null> => {
+    const queue = queueRef.current;
+
+    if (queue) {
+      // Bounded: the help never waits on a slow network; what stays queued is reported as unsent.
+      await flushWithin(queue.flush(), HELP_FLUSH_TIMEOUT_MS, depsRef.current.queueTimers);
+    }
+
+    const snapshot: SimSessionSnapshot | null = handle?.store.getSnapshot() ?? null;
+
+    if (snapshot === null) {
+      return null;
+    }
+
+    return {
+      simTimeMs: snapshot.simTimeMs,
+      unsentChanges: (queue?.snapshot().length ?? 0) > 0,
+      clientSnapshot: buildClientSnapshot(snapshot.metrics, snapshot.applied),
+    };
+  }, [handle]);
+
   const statusStore: ExternalStore<StatusSource> = handle?.store ?? NO_SESSION;
   // The hook re-renders only when the status or the applied settings change, never per batch.
   const status = useStoreSelector(statusStore, selectStatus);
@@ -775,6 +806,7 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     diverged,
     divergenceCause,
     settle,
+    helpContext,
     pendingEvents,
     workerError,
     ending,
@@ -784,6 +816,6 @@ export function useSimSession({ boot, blocked, deps = {} }: UseSimSessionOptions
     end,
   }), [
     adapter, store, applicability, status, multiplier, multiplierOptions, changeError, dismissChangeError, syncError, diverged,
-    divergenceCause, settle, pendingEvents, workerError, ending, pause, resume, setMultiplier, end,
+    divergenceCause, settle, helpContext, pendingEvents, workerError, ending, pause, resume, setMultiplier, end,
   ]);
 }
