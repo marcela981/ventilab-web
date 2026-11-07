@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Resultados medidos del frontend para el Capítulo 4
-* Descripción: Resultados de los instrumentos existentes de ventilab-web (vitest, Playwright E2E, sonda de rendimiento del simulador y tamaños del bundle), sin cambiar el código. La corrida principal (2026-11-06/07) usa la web en origin/master (3e4c78b), alineada con el servidor main (motor 2.0.0 en los dos), en el entorno de LOCAL_STACK.md; se compara con las mediciones del 2026-11-04 (docs/bloque5/perf.md). Las dos corridas anteriores, con la web 2fbf674 desalineada, quedan como anexos A y B. Todos los números salen de los archivos crudos de esta carpeta.
-* Versión: 0.2
+* Descripción: Resultados de los instrumentos existentes de ventilab-web (vitest, Playwright E2E, sonda de rendimiento del simulador y tamaños del bundle), sin cambiar el código. La corrida principal (2026-11-06/07) usa la web en origin/master (3e4c78b), alineada con el servidor main (motor 2.0.0 en los dos), en el entorno de LOCAL_STACK.md; se compara con las mediciones del 2026-11-04 (docs/bloque5/perf.md). Las dos corridas anteriores, con la web 2fbf674 desalineada, quedan como anexos A y B. Todos los números salen de los archivos crudos de esta carpeta. v0.3: la prueba asesoria-estado-actual corregida (solo la prueba) y repetida 3 veces.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -100,13 +100,29 @@ Clasificación de los fallos. Las pruebas, la base y el código se revisaron sol
 |---|---|---|---|
 | `bloque-a/modo-real.spec.ts:42` (`modo-real.spec.ts:60`, PEEP `aria-disabled` = `false`) | en modo Real no aparece el control de PEEP (`element(s) not found`, 60 s) | la spec necesita un broker MQTT de prueba, `scripts/e2e/fake-ventilator.mjs` y un backend conectado a ellos; su cabecera dice "Not in the CI job: it needs a TEST MQTT broker, the fake ventilator and a backend wired to them". `LOCAL_STACK.md` no los levanta y el backend arrancó sin `MQTT_BROKER_URL` | **Entorno** (sin dispositivo simulado) |
 | `bloque-a/modo-real-asesoria.spec.ts:37` (`:47`, valor de la tarjeta Ppico no nulo) | el monitor Real nunca muestra Ppico (60 s); la página ofrece "Reservar ahora" | el mismo requisito: sin broker ni ventilador falso no llega telemetría | **Entorno** (sin dispositivo simulado) |
-| `bloque-a/asesoria-estado-actual.spec.ts:110` ("¿Cómo estabilizar?" de la alarma SpO2 baja) | `SyntaxError: Unexpected non-whitespace character after JSON at position 269` en `echoIn` (`:61`). El panel muestra la respuesta correcta: "Analizado en t = 01:07 · gravedad 64 %" y el eco con `"status":"CRITICAL"`, `"spo2Percent":74.4`, `"alarms":["LOW_SPO2"]` | el texto del eco aparece dos veces en el panel: en el párrafo visible y en la región `aria-live` visualmente oculta que `StreamingMessage` agrega a propósito (`src/shared/ai-conversation/application/streaming-message.tsx:74`). `innerText` incluye las dos copias, y `echoIn` corta desde la primera `{` hasta la última `}`, con lo que junta dos JSON. Repetida sola 3 veces, falla 3 de 3 con el mismo error (posiciones 269, 269 y 267), así que no es intermitente | **Defecto de la prueba**, no del producto ni del entorno (ver nota) |
+| `bloque-a/asesoria-estado-actual.spec.ts:110` ("¿Cómo estabilizar?" de la alarma SpO2 baja) | `SyntaxError: Unexpected non-whitespace character after JSON at position 269` en `echoIn` (`:61`). El panel muestra la respuesta correcta: "Analizado en t = 01:07 · gravedad 64 %" y el eco con `"status":"CRITICAL"`, `"spo2Percent":74.4`, `"alarms":["LOW_SPO2"]` | el texto del eco aparece dos veces en el panel: en el párrafo visible y en la región `aria-live` visualmente oculta que `StreamingMessage` agrega a propósito (`src/shared/ai-conversation/application/streaming-message.tsx:74`). `innerText` incluye las dos copias, y `echoIn` corta desde la primera `{` hasta la última `}`, con lo que junta dos JSON. Repetida sola 3 veces, falla 3 de 3 con el mismo error (posiciones 269, 269 y 267), así que no es intermitente | **Defecto de la prueba**, no del producto ni del entorno (ver nota). Corregido en la prueba; con la corrección pasa 3 de 3 (ver "Corrección de la prueba") |
 
 Nota sobre el tercer fallo. No es ni "entorno" ni "defecto del producto": lo que la prueba quiere comprobar (que la ayuda analiza el estado crítico actual) se ve en la página, y lo que falla es cómo la prueba extrae el JSON. En la misma spec pasan el caso de "Asesoría IA" (`:78`), que usa el mismo `echoIn`, y el de `claims-stable` (`:128`). No se comprobó por qué el panel de "Asesoría IA" no deja la segunda copia en `innerText`.
 
 Ningún fallo se clasifica como **defecto del producto**.
 
 Efecto secundario de la corrida: `e2e/ajustes-c/visual-audit.spec.ts` guarda, por diseño, capturas en `docs/ajustes-c/capturas/` y sobrescribió 30 PNG versionados. Se restauraron con `git restore` antes de este commit; no forman parte de los resultados.
+
+**Corrección de la prueba (2026-11-07).** En la rama `test/asesoria-visible-echo`, creada desde `origin/master` (`3e4c78b`), el commit `07e6ae2` ("test(e2e): lee solo la respuesta visible en asesoria-estado-actual") cambia solo `e2e/bloque-a/asesoria-estado-actual.spec.ts`: `echoIn` lee el texto de una copia del panel sin las regiones `aria-live`, en lugar de `innerText`, de modo que toma el JSON de la respuesta visible y no de la copia oculta para lectores de pantalla. El producto no cambió. Con ese cambio la línea de la prueba pasa de `:110` a `:121`.
+
+Se corrió la spec completa 3 veces contra el mismo build de producción (`buildId` `M5v5yhxT5VkZ3P-aX0mnU`), el mismo backend y el LLM falso, sin reiniciar la base: `npx playwright test --project=e2e e2e/bloque-a/asesoria-estado-actual.spec.ts --repeat-each=3 --workers=1 --reporter=list,json` (2026-11-07 06:27:51 → 06:31:24 −05:00).
+
+| Métrica | Valor |
+|---|---|
+| Casos | 12: 3 de `setup` + 3 casos de la spec × 3 repeticiones |
+| Aprobados | 12 (0 fallidos, 0 intermitentes, 0 omitidos) |
+| "¿Cómo estabilizar?" (`:121`) | 3 de 3 aprobados (22,3 s, 22,0 s y 22,2 s) |
+| "Asesoría IA" (`:89`) | 3 de 3 aprobados |
+| `claims-stable` (`:139`) | 3 de 3 aprobados |
+| Tiempo | 211,26 s (3,5 min) |
+| RAM libre | 757 / 12128 MB antes de levantar los servicios; 368 / 12128 MB con los servicios arriba, antes de la prueba (`ram-correccion.log`) |
+
+Crudos: `e2e-correccion-x3.json`, `e2e-correccion-x3.log`, `e2e-correccion-inicio.txt`, `ram-correccion.log`. La E2E completa no se repitió con la corrección; los 98 casos de la tabla de arriba son los de la corrida sin corregir.
 
 ## Paso 2. Rendimiento de la interfaz (RNF-02 y RNF-08)
 
@@ -220,7 +236,7 @@ Crudos: `bundle.json`, `bundle.log`, `bundle-rutas-bloque5.json`, `bundle-rutas-
 **Fallos**
 
 - vitest: 0 fallos de 3656.
-- E2E: 3 fallos de 95. Dos son de **entorno**: las specs de modo real piden un broker MQTT de prueba y el ventilador falso, que `LOCAL_STACK.md` no levanta. Uno es un **defecto de la prueba**: `echoIn` junta las dos copias del eco, la visible y la de la región `aria-live` oculta. Ninguno es defecto del producto.
+- E2E: 3 fallos de 95. Dos son de **entorno**: las specs de modo real piden un broker MQTT de prueba y el ventilador falso, que `LOCAL_STACK.md` no levanta. Uno es un **defecto de la prueba**: `echoIn` junta las dos copias del eco, la visible y la de la región `aria-live` oculta. Se corrigió en la prueba (`07e6ae2`, rama `test/asesoria-visible-echo`) y la spec pasa 3 de 3 veces. Ninguno es defecto del producto.
 - Con la web alineada desaparecen los 5 fallos de entorno de la corrida 2 (anexo B), que venían de las versiones desalineadas: la ruta `/check` eliminada, la retención de resultados y el aviso y el bloqueo por versión del motor. Las specs equivalentes de master pasan.
 - 8 casos de `ajustes-b` se omiten porque la base no tiene el currículo importado (`prisma/import-curriculum.ts`), que `LOCAL_STACK.md` no ejecuta. No se midieron.
 

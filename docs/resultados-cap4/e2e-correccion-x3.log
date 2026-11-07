@@ -1,0 +1,19 @@
+npm notice run ventilab-web@0.1.0 npx
+npm notice run playwright test --project=e2e e2e/bloque-a/asesoria-estado-actual.spec.ts --repeat-each=3 --workers=1 --reporter=list,json
+
+Running 12 tests using 1 worker
+
+  ✓   1 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as student (1.8s)
+  ✓   2 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as group member (1.5s)
+  ✓   3 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as teacher (1.2s)
+  ✓   4 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:89:5 › Asesoría IA analyzes the critical patient on screen, not the initial one (23.5s)
+  ✓   5 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:121:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too (22.3s)
+  ✓   6 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:139:5 › an AI answer that claims stability with a critical patient is replaced by the deterministic suggestion (21.6s)
+  ✓   7 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:89:5 › Asesoría IA analyzes the critical patient on screen, not the initial one (23.0s)
+  ✓   8 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:121:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too (22.0s)
+  ✓   9 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:139:5 › an AI answer that claims stability with a critical patient is replaced by the deterministic suggestion (21.5s)
+  ✓  10 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:89:5 › Asesoría IA analyzes the critical patient on screen, not the initial one (22.5s)
+  ✓  11 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:121:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too (22.2s)
+  ✓  12 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:139:5 › an AI answer that claims stability with a critical patient is replaced by the deterministic suggestion (21.5s)
+
+  12 passed (3.5m)

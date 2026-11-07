@@ -1,0 +1,579 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=e2e",
+      "e2e/bloque-a/asesoria-estado-actual.spec.ts",
+      "--repeat-each=3",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\playwright.config.ts",
+    "rootDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/support[\\\\/]auth\\.setup\\.ts$/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 3,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "e2e",
+        "name": "e2e",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [
+          "/perf[\\\\/]/"
+        ],
+        "testMatch": [
+          "/.*\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "perf",
+        "name": "perf",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/perf[\\\\/].*\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results",
+        "repeatEach": 3,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "e2e",
+        "testDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e",
+        "snapshotDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e",
+        "testIgnore": {},
+        "testMatch": {},
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "channel": "chromium",
+          "storageState": "e2e/.auth/student.json"
+        },
+        "dependencies": [
+          "setup"
+        ],
+        "ignoreSnapshots": false,
+        "__projectId": "e2e"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "support\\auth.setup.ts",
+      "file": "support/auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "sign in as student",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1831,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:27:54.076Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-72c728a87c4c72564a48",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        },
+        {
+          "title": "sign in as group member",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1512,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:27:56.808Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-f08c4e564d1f87c35a19",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        },
+        {
+          "title": "sign in as teacher",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1246,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:27:58.346Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-735c4aa1397d4200d80e",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        }
+      ]
+    },
+    {
+      "title": "bloque-a\\asesoria-estado-actual.spec.ts",
+      "file": "bloque-a/asesoria-estado-actual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Asesoría IA analyzes the critical patient on screen, not the initial one",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23459,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:28:00.550Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-115597bc193e9e5facc3",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22262,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:28:24.377Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-81c97feec7b10d08fc46",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 121,
+          "column": 5
+        },
+        {
+          "title": "an AI answer that claims stability with a critical patient is replaced by the deterministic suggestion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21604,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:28:46.666Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-aca410d9dd7a428daddc",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 139,
+          "column": 5
+        },
+        {
+          "title": "Asesoría IA analyzes the critical patient on screen, not the initial one",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23031,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:29:09.220Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-48057059c893ae5f1c9e",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21957,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:29:32.777Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-1ff5c587084eeb632a80",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 121,
+          "column": 5
+        },
+        {
+          "title": "an AI answer that claims stability with a critical patient is replaced by the deterministic suggestion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21533,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:29:54.761Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-3338836f8cb7e112395a",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 139,
+          "column": 5
+        },
+        {
+          "title": "Asesoría IA analyzes the critical patient on screen, not the initial one",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22546,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:30:17.450Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-be7e5b867d4cfcc0330a",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22165,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:30:40.449Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-ce17c2d2a80c24288cfd",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 121,
+          "column": 5
+        },
+        {
+          "title": "an AI answer that claims stability with a critical patient is replaced by the deterministic suggestion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21513,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T11:31:02.642Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-ea9b20e1e9ac237973d0",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 139,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-07T11:27:53.257Z",
+    "duration": 211258.711,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
