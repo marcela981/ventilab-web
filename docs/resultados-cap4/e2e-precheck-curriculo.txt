@@ -1,0 +1,8 @@
+mecanica|Prerequisitos|2
+mecanica|Nivel Principiante|6
+mecanica|Nivel Intermedio|6
+mecanica|Nivel Avanzado|8
+mecanica|Demo · Fundamentos de ventilación mecánica|2
+ventylab|Principiante|2
+ventylab|Intermedio|2
+ventylab|Avanzado|2

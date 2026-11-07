@@ -1,4 +1,5 @@
-== 1920x1080 2026-11-06T08:20:33-05:00
+2026-11-07T00:19:24-05:00 | antes de perf:sim 1920x1080 | 2587 / 12128 MB
+== 1920x1080 2026-11-07T00:19:24-05:00
 npm notice run ventilab-web@0.1.0 perf:sim
 npm notice run playwright test --project=perf e2e/perf/simulator-perf.spec.ts --workers=1
 
@@ -7,8 +8,8 @@ Running 11 tests using 1 worker
   -   1 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as student
   -   2 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as group member
   -   3 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as teacher
-  ✓   4 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1 (1.2m)
-  ✓   5 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1-cpu4 (1.2m)
+  ✓   4 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1 (1.1m)
+  ✓   5 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1-cpu4 (1.1m)
   -   6 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x4
   ✓   7 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · replay-x8 (1.1m)
   ✓   8 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · replay-x8-cpu4 (1.1m)
@@ -18,8 +19,9 @@ Running 11 tests using 1 worker
 
   7 skipped
   4 passed (4.6m)
-exit 0 2026-11-06T08:25:12-05:00
-== 1280x720 2026-11-06T08:25:12-05:00
+exit 0 2026-11-07T00:24:02-05:00
+2026-11-07T00:24:02-05:00 | antes de perf:sim 1280x720 | 2613 / 12128 MB
+== 1280x720 2026-11-07T00:24:03-05:00
 npm notice run ventilab-web@0.1.0 perf:sim
 npm notice run playwright test --project=perf e2e/perf/simulator-perf.spec.ts --workers=1
 
@@ -29,7 +31,7 @@ Running 11 tests using 1 worker
   -   2 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as group member
   -   3 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as teacher
   ✓   4 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1 (1.2m)
-  ✓   5 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1-cpu4 (1.2m)
+  ✓   5 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x1-cpu4 (1.1m)
   -   6 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · live-x4
   ✓   7 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · replay-x8 (1.1m)
   ✓   8 [perf] › e2e\perf\simulator-perf.spec.ts:75:7 › simulador · replay-x8-cpu4 (1.1m)
@@ -39,4 +41,4 @@ Running 11 tests using 1 worker
 
   7 skipped
   4 passed (4.6m)
-exit 0 2026-11-06T08:29:52-05:00
+exit 0 2026-11-07T00:28:41-05:00

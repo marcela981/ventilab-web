@@ -1,12 +1,12 @@
 npm notice run ventilab-web@0.1.0 perf:bundle
-npm notice run node ./scripts/perf/bundle-sizes.mjs --json docs/resultados-cap4/bundle.json
+npm notice run node ./scripts/perf/bundle-sizes.mjs --json C:\Users\ALEJAN~1\AppData\Local\Temp\claude\dc1c5fbb9d0ec341\40c368bf-1db9-4833-b267-8ed5f4240cc2\scratchpad\aligned\bundle.json
 | Ruta | Propio gz (KB) | First load gz (KB) | First load sin comprimir (KB) |
 |---|---|---|---|
-| compartido (_app + main) | — | 205 | 624.6 |
-| `/simulador` | 52.6 | 257.6 | 780.7 |
+| compartido (_app + main) | — | 208.6 | 637.2 |
+| `/simulador` | 60.3 | 268.9 | 815.8 |
 | `/simulator` | no existe en el build | — | — |
-| `/simulator/sessions/[sessionId]` | 138.1 | 343.1 | 1024.2 |
-| `/simulator/sessions/[sessionId]/replay` | 128.8 | 333.8 | 996.1 |
-| `/simulator/sessions/[sessionId]/result` | 93.9 | 298.9 | 894.6 |
+| `/simulator/sessions/[sessionId]` | 146 | 354.6 | 1061.9 |
+| `/simulator/sessions/[sessionId]/replay` | 134.5 | 343.1 | 1028.1 |
+| `/simulator/sessions/[sessionId]/result` | 103.6 | 312.2 | 936.9 |
 | `/lab/live` | no existe en el build | — | — |
-| `/lab/recordings/[recordingId]` | 123 | 328 | 980.9 |
+| `/lab/recordings/[recordingId]` | 128.4 | 337 | 1009.5 |

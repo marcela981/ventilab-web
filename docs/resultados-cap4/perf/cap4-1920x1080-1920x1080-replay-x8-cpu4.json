@@ -11,19 +11,19 @@
     "caseTitle": "Pulmón normal: postoperatorio inmediato",
     "pageUrl": "/simulador",
     "replayRestarts": 7,
-    "webCommit": "2fbf674",
+    "webCommit": "3e4c78b",
     "browser": "chromium 156.0.8078.4",
     "viewport": {
       "width": 1920,
       "height": 1080
     },
-    "measuredAt": "2026-11-06T13:25:10.413Z"
+    "measuredAt": "2026-11-07T05:24:00.458Z"
   },
   "probe": {
-    "windowMs": 60059,
+    "windowMs": 60033,
     "raf": {
-      "frames": 3597,
-      "fps": 59.89,
+      "frames": 3592,
+      "fps": 59.83,
       "p50FrameMs": 16.7,
       "p95FrameMs": 16.8,
       "maxFrameMs": 33.4,
@@ -38,8 +38,8 @@
     "react": {
       "hookAttached": true,
       "bundleType": 0,
-      "commits": 230,
-      "commitsPerSecond": 3.83,
+      "commits": 241,
+      "commitsPerSecond": 4.01,
       "maxCommitsInOneSecond": 6
     },
     "canvases": [
@@ -57,27 +57,27 @@
         "width": 836,
         "height": 448,
         "connected": true,
-        "paintFrames": 3314,
-        "paintFps": 55.18,
-        "drawCalls": 16608
+        "paintFrames": 3477,
+        "paintFps": 57.92,
+        "drawCalls": 17421
       }
     ],
-    "heapUsedMb": 11.5
+    "heapUsedMb": 11.9
   },
   "mainThreadPerSecond": {
     "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
-    "TaskDuration": 382.71,
-    "ScriptDuration": 127.39,
-    "LayoutDuration": 16.46,
-    "RecalcStyleDuration": 7.08,
-    "LayoutCount": 3.95,
-    "RecalcStyleCount": 5.89
+    "TaskDuration": 384.8,
+    "ScriptDuration": 127.66,
+    "LayoutDuration": 17.36,
+    "RecalcStyleDuration": 7.91,
+    "LayoutCount": 4.11,
+    "RecalcStyleCount": 6.08
   },
   "workers": [
     {
-      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
-      "rawKb": 27.6,
-      "gzipKb": 8.9
+      "url": "/_next/static/chunks/ventylab-sim.068e308c1f150726.js",
+      "rawKb": 32.8,
+      "gzipKb": 10.4
     }
   ]
 }

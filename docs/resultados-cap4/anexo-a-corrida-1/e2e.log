@@ -1,0 +1,580 @@
+npm notice run ventilab-web@0.1.0 e2e
+npm notice run playwright test --project=e2e --pass-with-no-tests --reporter=list,json
+
+Running 54 tests using 1 worker
+
+  ✓   1 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as student (3.3s)
+  ✓   2 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as group member (1.5s)
+  ✓   3 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as teacher (2.5s)
+  -   4 [e2e] › e2e\bloque2\capturas.spec.ts:33:5 › student /learn tabs
+  -   5 [e2e] › e2e\bloque2\capturas.spec.ts:47:5 › teacher curriculum with edit mode
+  -   6 [e2e] › e2e\bloque2\capturas.spec.ts:59:5 › viewer, completion dialog, TutorAI and deepen
+  ✘   7 [e2e] › e2e\bloque2\learning-locks.spec.ts:15:5 › (2) locked level and locked lesson: screen with the missing lessons and 403 from the server (32.1s)
+  ✓   8 [e2e] › e2e\bloque2\learning-offline.spec.ts:28:5 › (6) page views made offline are kept and sent once when the network comes back (10.3s)
+  ✓   9 [e2e] › e2e\bloque2\learning-staff.spec.ts:19:5 › (5) staff previews without locks and opens the CMS page editor from the viewer (9.3s)
+  ✓  10 [e2e] › e2e\bloque2\learning-student.spec.ts:55:5 › (1) student continues at the resume point, completes a lesson, continues to the next one and from the curriculum (6.0s)
+  ✓  11 [e2e] › e2e\bloque2\learning-student.spec.ts:129:5 › (4) Mi Progreso reflects the activity: XP, streak and today's day in the calendar (845ms)
+  ✓  12 [e2e] › e2e\bloque2\lesson-viewer-layout.spec.ts:15:5 › lesson index: right column on desktop, drawer button on mobile (2.6s)
+  ✘  13 [e2e] › e2e\bloque2\tutor-ai.spec.ts:31:5 › (3) TutorAI: deepen with streaming, rate it, one question, a note and its AI analysis (46ms)
+  ✓  14 [e2e] › e2e\bloque2\tutor-fallback.spec.ts:18:5 › (cierre IA) Profundizar shows the deterministic fallback with its label and no rating (3.8s)
+  ✓  15 [e2e] › e2e\bloque3\attempt-reset.spec.ts:18:5 › (4) teacher resets an attempt and the student can retry (1.1m)
+  -  16 [e2e] › e2e\bloque3\capturas.spec.ts:37:5 › Block 3 key screens
+  ✓  17 [e2e] › e2e\bloque3\exam-autosubmit.spec.ts:16:5 › (3) exam: SIMULATION question, auto-submit when the time runs out, review and publish (1.2m)
+  ✘  18 [e2e] › e2e\bloque3\quiz-feedback.spec.ts:16:5 › (1) quiz: immediate feedback, grade published on submit, AI feedback and its rating (2.0s)
+[B3 E2E (5)] Image upload skipped: file storage is "not_configured" (no SUPABASE_* configured; the local stack has no other storage adapter and POST /api/media answers 503).
+  ✓  19 [e2e] › e2e\bloque3\staff-builder.spec.ts:26:5 › (5) staff creates an evaluation with an image, assigns it to a group in the builder and activates it (21.4s)
+  ✘  20 [e2e] › e2e\bloque3\student-list.spec.ts:18:5 › (6) the student list is grouped by type, track and level (1.0m)
+  ✘  21 [e2e] › e2e\bloque3\workshop-review.spec.ts:18:5 › (2) workshop: hint, open question, partial score, teacher review and final grade (17.5s)
+  ✘  22 [e2e] › e2e\bloque4\admin-ai-ratings.spec.ts:81:5 › (8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV (667ms)
+  ✘  23 [e2e] › e2e\bloque4\admin-users.spec.ts:27:5 › (4) admin: role change with confirmation, protected superadmin and the Profesores tab (138ms)
+  ✓  24 [e2e] › e2e\bloque4\back-to-platform.spec.ts:17:5 › (9) "Volver a la plataforma" goes to /simulador (1.6s)
+  -  25 [e2e] › e2e\bloque4\capturas.spec.ts:35:5 › Block 4 key screens
+  ✓  26 [e2e] › e2e\bloque4\directory-group-builder.spec.ts:18:5 › (2) directory: search, select three, Conformar Grupo, the group appears in Grupos and gets a leader (4.9s)
+  ✘  27 [e2e] › e2e\bloque4\lab-group-reservation.spec.ts:23:5 › (3) teacher reserves the ventilator for a group from /teacher/lab and the leader operates it from /simulador (1.0m)
+  ✘  28 [e2e] › e2e\bloque4\profile-avatar.spec.ts:19:5 › (6) profile: upload and remove the profile photo (1.6s)
+  ✓  29 [e2e] › e2e\bloque4\profile-password.spec.ts:64:5 › (5) profile: change password → the previous refresh token fails → sign in with the new one (3.6s)
+  ✘  30 [e2e] › e2e\bloque4\student-detail-scope.spec.ts:18:5 › (7) a teacher without supervision gets 403 on another teacher's student (UI and API) (1.0m)
+  ✓  31 [e2e] › e2e\bloque4\teacher-student-detail.spec.ts:25:5 › (1) teacher: Panel → General → recent student → detail with its five tabs, without notes or AI chats (3.8s)
+  -  32 [e2e] › e2e\bloque5\capturas.spec.ts:85:7 › Block 5 shell and pages at 1280
+  -  33 [e2e] › e2e\bloque5\capturas.spec.ts:145:7 › Block 5 Monitoreo at 1280
+  -  34 [e2e] › e2e\bloque5\capturas.spec.ts:85:7 › Block 5 shell and pages at 1920
+  -  35 [e2e] › e2e\bloque5\capturas.spec.ts:145:7 › Block 5 Monitoreo at 1920
+  -  36 [e2e] › e2e\bloque5\capturas.spec.ts:186:5 › Block 1 Monitoreo captures with the July layout
+  ✘  37 [e2e] › e2e\bloque5\monitoreo-ia.spec.ts:25:5 › Asesoría IA opens a 380 px drawer, answers with the fake LLM and gives the focus back (1.1m)
+  ✓  38 [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1920×1080 (4.8s)
+  ✘  39 [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1280×720 (4.9s)
+  ✘  40 [e2e] › e2e\bloque5\monitoreo-orden.spec.ts:77:5 › July Monitoreo order of the Real monitor at 1920×1080 and 1280×720 (3.0m)
+  ✓  41 [e2e] › e2e\bloque5\monitoreo-tarjetas.spec.ts:39:5 › Ajustar hides, moves with the keyboard, persists across a reload and resets (6.4s)
+  ✓  42 [e2e] › e2e\bloque5\monitoreo-tarjetas.spec.ts:98:5 › a corrupt preference or another user's preference leaves the default cards (3.6s)
+  ✓  43 [e2e] › e2e\bloque5\monitoreo-teclado.spec.ts:17:5 › Enter confirms and Escape cancels the pending edits (3.8s)
+  ✓  44 [e2e] › e2e\bloque5\sidebar.spec.ts:30:5 › collapse and expand persist, the collapsed avatar opens Opciones and the bell works from the sidebar (3.2s)
+  ✘  45 [e2e] › e2e\simulator-connection.spec.ts:22:5 › holder reserves now, connects with control and sees the real monitor (31.8s)
+  -  46 [e2e] › e2e\simulator-connection.spec.ts:58:5 › group leader takes control and a non-leader member observes read-only
+  ✘  47 [e2e] › e2e\simulator-exam.spec.ts:24:5 › a SIMULATION question of an exam opens the console in locked mode (32.9s)
+  ✓  48 [e2e] › e2e\simulator-redirects.spec.ts:24:7 › / redirects to /simulador (1.2s)
+  ✓  49 [e2e] › e2e\simulator-redirects.spec.ts:24:7 › /dashboard redirects to /simulador (950ms)
+  ✓  50 [e2e] › e2e\simulator-redirects.spec.ts:32:7 › /simulator redirects to /simulador?tab=simular (873ms)
+  ✓  51 [e2e] › e2e\simulator-redirects.spec.ts:32:7 › /lab redirects to /simulador?tab=conexion (903ms)
+  ✓  52 [e2e] › e2e\simulator-redirects.spec.ts:32:7 › /lab/live redirects to /simulador?tab=monitoreo (1.0s)
+  ✓  53 [e2e] › e2e\simulator-student.spec.ts:27:5 › student simulates a patient, keeps the session across tabs, finishes it and replays it from Mis sesiones (11.9s)
+  ✓  54 [e2e] › e2e\simulator-student.spec.ts:89:5 › Monitoreo keeps usable curves at 1280×720 with a long case and the case drawer never resizes the console (4.2s)
+
+
+  1) [e2e] › e2e\bloque2\learning-locks.spec.ts:15:5 › (2) locked level and locked lesson: screen with the missing lessons and 403 from the server 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator: getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })
+    Expected: "locked"
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveAttribute" getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) }) with timeout 30000ms
+      - waiting for getByRole('listitem').filter({ has: getByRole('heading', { name: 'Nivel Intermedio', exact: true, level: 4 }) })
+
+
+      24 |     const level = page.getByRole("listitem").filter({ has: page.getByRole("heading", { level: 4, name: "Nivel Intermedio", exact: true }) });
+      25 |
+    > 26 |     await expect(level).toHaveAttribute("data-status", "locked", { timeout: 30_000 });
+         |                         ^
+      27 |     await expect(level).toContainText("Bloqueado");
+      28 |     await expect(level).toContainText("Completa el nivel anterior para desbloquear");
+      29 |     await expect(page.getByRole("list", { name: "Módulos de Nivel Intermedio" })).toHaveCount(0);
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque2\learning-locks.spec.ts:26:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque2-learning-locks--2--96928-ons-and-403-from-the-server-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [e2e] › e2e\bloque2\tutor-ai.spec.ts:31:5 › (3) TutorAI: deepen with streaming, rate it, one question, a note and its AI analysis 
+
+    Error: Sign-in of superadmin@ventylab.demo failed (401)
+
+       at support\learning.ts:72
+
+      70 |
+      71 |     if (!response.ok()) {
+    > 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);
+         |             ^
+      73 |     }
+      74 |
+      75 |     return ((await response.json()) as Envelope<LoginData>).data;
+        at apiSignIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\learning.ts:72:13)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque2\tutor-ai.spec.ts:33:17
+
+    Error Context: test-results\bloque2-tutor-ai--3-TutorA-e6bc5--a-note-and-its-AI-analysis-e2e\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque2-tutor-ai--3-TutorA-e6bc5--a-note-and-its-AI-analysis-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque2-tutor-ai--3-TutorA-e6bc5--a-note-and-its-AI-analysis-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [e2e] › e2e\bloque3\quiz-feedback.spec.ts:16:5 › (1) quiz: immediate feedback, grade published on submit, AI feedback and its rating 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      42 |
+      43 |     await page.getByRole("radio", { name: "Volumen corriente" }).check();
+    > 44 |     expect((await firstCheck).ok()).toBe(true);
+         |                                     ^
+      45 |     await expect(page.getByText("¡Correcto! 🎉")).toBeVisible();
+      46 |     await expect(page.getByText("En VCV se fija el volumen.")).toBeVisible();
+      47 |
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque3\quiz-feedback.spec.ts:44:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque3-quiz-feedback--1-q-53a2a--AI-feedback-and-its-rating-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [e2e] › e2e\bloque3\student-list.spec.ts:18:5 › (6) the student list is grouped by type, track and level 
+
+    Error: two Mecánica levels with modules in the seeded curriculum
+
+    expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 2
+    Received:    1
+
+      24 |   const ventylab = levels.find((level) => level.track === "ventylab");
+      25 |
+    > 26 |   expect(mecanica.length, "two Mecánica levels with modules in the seeded curriculum").toBeGreaterThanOrEqual(2);
+         |                                                                                        ^
+      27 |   expect(ventylab, "a VentyLab level in the seeded curriculum").toBeDefined();
+      28 |   const [firstLevel, secondLevel] = mecanica as [typeof mecanica[number], typeof mecanica[number]];
+      29 |   const tag = runTag();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque3\student-list.spec.ts:26:88
+
+    Error Context: test-results\bloque3-student-list--6-th-fa7fe-ped-by-type-track-and-level-e2e\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque3-student-list--6-th-fa7fe-ped-by-type-track-and-level-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque3-student-list--6-th-fa7fe-ped-by-type-track-and-level-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [e2e] › e2e\bloque3\workshop-review.spec.ts:18:5 › (2) workshop: hint, open question, partial score, teacher review and final grade 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('¡Muy bien! 🌟')
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('¡Muy bien! 🌟') with timeout 15000ms
+      - waiting for getByText('¡Muy bien! 🌟')
+
+
+      50 |
+      51 |     await page.getByRole("radio", { name: "Presión inspiratoria" }).check();
+    > 52 |     await expect(page.getByText("¡Muy bien! 🌟")).toBeVisible({ timeout: 15_000 });
+         |                                                   ^
+      53 |     await expect(page.getByText("En PCV se fija la presión.")).toBeVisible();
+      54 |
+      55 |     await page.getByRole("button", { name: "Siguiente" }).click();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque3\workshop-review.spec.ts:52:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque3-workshop-review--2-e74c5-cher-review-and-final-grade-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [e2e] › e2e\bloque4\admin-ai-ratings.spec.ts:81:5 › (8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV 
+
+    Error: GET /api/evaluation-attempts/01a1b0fc-423c-77fa-88df-56f938f02368/feedback → 404 evaluation.grade_feedback_not_available Feedback is available once the grade is published
+
+       at support\learning.ts:43
+
+      41 |
+      42 |       if (!response.ok()) {
+    > 43 |         throw new Error(`${method} ${path} → ${response.status()} ${payload?.code ?? ""} ${payload?.message ?? ""}`);
+         |               ^
+      44 |       }
+      45 |
+      46 |       return payload?.data as T;
+        at Object.call (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\learning.ts:43:15)
+        at _test.expect.poll.timeout (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\admin-ai-ratings.spec.ts:111:24)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\admin-ai-ratings.spec.ts:110:5
+
+    Error Context: test-results\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque4-admin-ai-ratings---503f3-oque-2-and-3-ratings-as-CSV-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [e2e] › e2e\bloque4\admin-users.spec.ts:27:5 › (4) admin: role change with confirmation, protected superadmin and the Profesores tab 
+
+    Error: Sign-in of superadmin@ventylab.demo failed (401)
+
+       at support\learning.ts:72
+
+      70 |
+      71 |     if (!response.ok()) {
+    > 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);
+         |             ^
+      73 |     }
+      74 |
+      75 |     return ((await response.json()) as Envelope<LoginData>).data;
+        at apiSignIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\learning.ts:72:13)
+        at staffSession (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\panel.ts:33:86)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\admin-users.spec.ts:29:17
+
+    Error Context: test-results\bloque4-admin-users--4-adm-93f99-dmin-and-the-Profesores-tab-e2e\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque4-admin-users--4-adm-93f99-dmin-and-the-Profesores-tab-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque4-admin-users--4-adm-93f99-dmin-and-the-Profesores-tab-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [e2e] › e2e\bloque4\lab-group-reservation.spec.ts:23:5 › (3) teacher reserves the ventilator for a group from /teacher/lab and the leader operates it from /simulador 
+
+    Error: Sign-in of superadmin@ventylab.demo failed (401)
+
+       at support\learning.ts:72
+
+      70 |
+      71 |     if (!response.ok()) {
+    > 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);
+         |             ^
+      73 |     }
+      74 |
+      75 |     return ((await response.json()) as Envelope<LoginData>).data;
+        at apiSignIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\learning.ts:72:13)
+        at staffSession (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\panel.ts:33:86)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\lab-group-reservation.spec.ts:27:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque4-lab-group-reservat-f786f--operates-it-from-simulador-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [e2e] › e2e\bloque4\profile-avatar.spec.ts:19:5 › (6) profile: upload and remove the profile photo 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      32 |
+      33 |     await page.getByTestId("profile-avatar-input").setInputFiles({ name: "foto.png", mimeType: "image/png", buffer: PNG });
+    > 34 |     expect((await uploaded).ok()).toBe(true);
+         |                                   ^
+      35 |     await expect(page.getByRole("status").filter({ hasText: "Foto de perfil actualizada correctamente" })).toBeVisible({ timeout: 30_000 });
+      36 |     await expect(avatar.locator("img")).toHaveAttribute("src", /.+/);
+      37 |
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\profile-avatar.spec.ts:34:35
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque4-profile-avatar--6--11919-nd-remove-the-profile-photo-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [e2e] › e2e\bloque4\student-detail-scope.spec.ts:18:5 › (7) a teacher without supervision gets 403 on another teacher's student (UI and API) 
+
+    Error: Sign-in of superadmin@ventylab.demo failed (401)
+
+       at support\learning.ts:72
+
+      70 |
+      71 |     if (!response.ok()) {
+    > 72 |       throw new Error(`Sign-in of ${email} failed (${response.status()})`);
+         |             ^
+      73 |     }
+      74 |
+      75 |     return ((await response.json()) as Envelope<LoginData>).data;
+        at apiSignIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\learning.ts:72:13)
+        at staffSession (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\support\panel.ts:33:86)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque4\student-detail-scope.spec.ts:22:17
+
+    Error Context: test-results\bloque4-student-detail-sco-6aa09-acher-s-student-UI-and-API--e2e\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque4-student-detail-sco-6aa09-acher-s-student-UI-and-API--e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque4-student-detail-sco-6aa09-acher-s-student-UI-and-API--e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [e2e] › e2e\bloque5\monitoreo-ia.spec.ts:25:5 › Asesoría IA opens a 380 px drawer, answers with the fake LLM and gives the focus back 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('complementary', { name: 'Asesoría IA' })
+    Timeout: 60000ms
+    - Expected substring  -  1
+    + Received string     + 12
+
+    - Respuesta de prueba (proveedor falso de E2E).
+    + Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):
+    + Todavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.
+    + Lo que va bien:
+    +
+    + SpO2 dentro del objetivo del caso (92.04).
+    + PaCO2 dentro del objetivo del caso (45).
+    +
+    + Lo que conviene revisar:
+    +
+    + PaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.
+    +
+    + Modifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría
+
+    Call log:
+      - Expect "toContainText" getByRole('complementary', { name: 'Asesoría IA' }) with timeout 60000ms
+      - waiting for getByRole('complementary', { name: 'Asesoría IA' })
+        2 × locator resolved to <aside id="_r_1r_" tabindex="-1" aria-labelledby="_r_27_" class="assist-panel_panel__b60ah">…</aside>
+          - unexpected value "Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Analizando la simulación…Pregunta (opcional)Pregunta (opcional)DetenerSolicitar asesoría"
+        3 × locator resolved to <aside id="_r_1r_" tabindex="-1" aria-labelledby="_r_27_" class="assist-panel_panel__b60ah">…</aside>
+          - unexpected value "Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Cargando contenido…¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría"
+        116 × locator resolved to <aside id="_r_1r_" tabindex="-1" aria-labelledby="_r_27_" class="assist-panel_panel__b60ah">…</aside>
+            - unexpected value "Asesoría IALa asesoría revisa el estado actual de tu simulación. Puedes escribir una pregunta concreta o dejarla vacía. La simulación sigue corriendo mientras respondo.Orientación automática (sin modelo de lenguaje):
+    Todavía no hay un ciclo respiratorio completo; espera unos segundos para interpretar las mediciones.
+    Lo que va bien:
+    
+    SpO2 dentro del objetivo del caso (92.04).
+    PaCO2 dentro del objetivo del caso (45).
+    
+    Lo que conviene revisar:
+    
+    PaCO2 elevada o pH bajo (7.27, límite 7.3): la ventilación alveolar es insuficiente para eliminar el CO2. La ventilación alveolar depende de la frecuencia, del volumen corriente y del espacio muerto. Revisa frecuencia y volumen corriente sin superar los límites de presión.
+    
+    Modifica un parámetro a la vez y observa su efecto en las curvas y en los gases antes del siguiente cambio.¿Te fue útil?Pregunta (opcional)Pregunta (opcional)Solicitar asesoría"
+
+
+      50 |   // Answer from the fake LLM, then the rating.
+      51 |   await drawer.getByRole("button", { name: "Solicitar asesoría" }).click();
+    > 52 |   await expect(drawer).toContainText(FAKE_ANSWER.replace(/\*/g, ""), { timeout: 60_000 });
+         |                        ^
+      53 |   const helpful = drawer.getByRole("button", { name: "Sí, fue útil" });
+      54 |
+      55 |   await expect(helpful).toBeEnabled({ timeout: 30_000 });
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque5\monitoreo-ia.spec.ts:52:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque5-monitoreo-ia-Aseso-60142-LM-and-gives-the-focus-back-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1280×720 ──
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "height": 684.46875,
+        "width": 952,
+        "x": 284,
+    -   "y": 44,
+    +   "y": -77,
+      }
+
+      108 |     expect(Math.abs((await boxOf(drawer, "drawer")).width - 380)).toBeLessThanOrEqual(TOLERANCE_PX);
+      109 |     await expect(drawer.getByRole("region", { name: "Alertas de validación" })).toBeVisible();
+    > 110 |     expect(await boxOf(consoleZone, "console")).toEqual(consoleBox);
+          |                                                 ^
+      111 |     await page.keyboard.press("Escape");
+      112 |     await expect(drawer).toHaveCount(0);
+      113 |     await expect(open).toBeFocused();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque5\monitoreo-julio.spec.ts:110:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque5-monitoreo-julio-Ju-584ec-o-control-order-at-1280×720-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [e2e] › e2e\bloque5\monitoreo-orden.spec.ts:77:5 › July Monitoreo order of the Real monitor at 1920×1080 and 1280×720 
+
+    Test timeout of 180000ms exceeded.
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque5-monitoreo-orden-Ju-009c5-r-at-1920×1080-and-1280×720-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [e2e] › e2e\simulator-connection.spec.ts:22:5 › holder reserves now, connects with control and sees the real monitor 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('region', { name: '1. Reserva del ventilador' })
+    Expected pattern: /Reserva:\s*Activa\s*·\s*\d+ min restantes/
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('region', { name: '1. Reserva del ventilador' }) with timeout 30000ms
+      - waiting for getByRole('region', { name: '1. Reserva del ventilador' })
+
+
+      33 |
+      34 |   try {
+    > 35 |     await expect(reservation).toContainText(/Reserva:\s*Activa\s*·\s*\d+ min restantes/, { timeout: 30_000 });
+         |                               ^
+      36 |     await connect(page);
+      37 |     await expect(connectionCard(page)).toContainText(/Control:\s*Controlas el equipo/, { timeout: 15_000 });
+      38 |
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\simulator-connection.spec.ts:35:31
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\simulator-connection-holde-d74ec-l-and-sees-the-real-monitor-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [e2e] › e2e\simulator-exam.spec.ts:24:5 › a SIMULATION question of an exam opens the console in locked mode 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByRole('group', { name: 'Control del tiempo' })
+    Expected substring: "Velocidad fija ×1 (examen, sin pausa)"
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" getByRole('group', { name: 'Control del tiempo' }) with timeout 30000ms
+      - waiting for getByRole('group', { name: 'Control del tiempo' })
+
+
+      64 |     const clock = page.getByRole("group", { name: "Control del tiempo" });
+      65 |
+    > 66 |     await expect(clock).toContainText("Velocidad fija ×1 (examen, sin pausa)", { timeout: 30_000 });
+         |                         ^
+      67 |     await expect(clock.getByRole("button")).toHaveCount(0);
+      68 |     await expect(page.getByRole("timer").filter({ hasText: "Tiempo restante del examen" })).toBeVisible();
+      69 |     await expect(page.getByRole("img", { name: CURVES_LABEL })).toBeVisible();
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\simulator-exam.spec.ts:66:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\simulator-exam-a-SIMULATIO-dd0be--the-console-in-locked-mode-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15 failed
+    [e2e] › e2e\bloque2\learning-locks.spec.ts:15:5 › (2) locked level and locked lesson: screen with the missing lessons and 403 from the server 
+    [e2e] › e2e\bloque2\tutor-ai.spec.ts:31:5 › (3) TutorAI: deepen with streaming, rate it, one question, a note and its AI analysis 
+    [e2e] › e2e\bloque3\quiz-feedback.spec.ts:16:5 › (1) quiz: immediate feedback, grade published on submit, AI feedback and its rating 
+    [e2e] › e2e\bloque3\student-list.spec.ts:18:5 › (6) the student list is grouped by type, track and level 
+    [e2e] › e2e\bloque3\workshop-review.spec.ts:18:5 › (2) workshop: hint, open question, partial score, teacher review and final grade 
+    [e2e] › e2e\bloque4\admin-ai-ratings.spec.ts:81:5 › (8) /admin/ai filters the ratings by surface and exports Bloque 2 and 3 ratings as CSV 
+    [e2e] › e2e\bloque4\admin-users.spec.ts:27:5 › (4) admin: role change with confirmation, protected superadmin and the Profesores tab 
+    [e2e] › e2e\bloque4\lab-group-reservation.spec.ts:23:5 › (3) teacher reserves the ventilator for a group from /teacher/lab and the leader operates it from /simulador 
+    [e2e] › e2e\bloque4\profile-avatar.spec.ts:19:5 › (6) profile: upload and remove the profile photo 
+    [e2e] › e2e\bloque4\student-detail-scope.spec.ts:18:5 › (7) a teacher without supervision gets 403 on another teacher's student (UI and API) 
+    [e2e] › e2e\bloque5\monitoreo-ia.spec.ts:25:5 › Asesoría IA opens a 380 px drawer, answers with the fake LLM and gives the focus back 
+    [e2e] › e2e\bloque5\monitoreo-julio.spec.ts:88:7 › July Monitoreo control order at 1280×720 ────
+    [e2e] › e2e\bloque5\monitoreo-orden.spec.ts:77:5 › July Monitoreo order of the Real monitor at 1920×1080 and 1280×720 
+    [e2e] › e2e\simulator-connection.spec.ts:22:5 › holder reserves now, connects with control and sees the real monitor 
+    [e2e] › e2e\simulator-exam.spec.ts:24:5 › a SIMULATION question of an exam opens the console in locked mode 
+  10 skipped
+  1 did not run
+  28 passed (14.0m)
+exit 1

@@ -11,16 +11,16 @@
     "caseTitle": "Pulmón normal: postoperatorio inmediato",
     "pageUrl": "/simulador",
     "replayRestarts": 7,
-    "webCommit": "2fbf674",
+    "webCommit": "3e4c78b",
     "browser": "chromium 156.0.8078.4",
     "viewport": {
       "width": 1920,
       "height": 1080
     },
-    "measuredAt": "2026-11-06T13:24:03.503Z"
+    "measuredAt": "2026-11-07T05:22:53.514Z"
   },
   "probe": {
-    "windowMs": 60023,
+    "windowMs": 60022,
     "raf": {
       "frames": 3600,
       "fps": 59.98,
@@ -38,8 +38,8 @@
     "react": {
       "hookAttached": true,
       "bundleType": 0,
-      "commits": 227,
-      "commitsPerSecond": 3.78,
+      "commits": 226,
+      "commitsPerSecond": 3.77,
       "maxCommitsInOneSecond": 5
     },
     "canvases": [
@@ -50,34 +50,34 @@
         "connected": false,
         "paintFrames": 26,
         "paintFps": 0.43,
-        "drawCalls": 402
+        "drawCalls": 403
       },
       {
         "label": "Curvas de presión, flujo y volumen",
         "width": 836,
         "height": 448,
         "connected": true,
-        "paintFrames": 3152,
-        "paintFps": 52.51,
-        "drawCalls": 15792
+        "paintFrames": 3159,
+        "paintFps": 52.63,
+        "drawCalls": 15827
       }
     ],
-    "heapUsedMb": 11.2
+    "heapUsedMb": 13
   },
   "mainThreadPerSecond": {
     "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
-    "TaskDuration": 80.69,
-    "ScriptDuration": 23.41,
-    "LayoutDuration": 4.43,
-    "RecalcStyleDuration": 1.19,
-    "LayoutCount": 3.92,
-    "RecalcStyleCount": 5.6
+    "TaskDuration": 90,
+    "ScriptDuration": 26.43,
+    "LayoutDuration": 5.05,
+    "RecalcStyleDuration": 1.41,
+    "LayoutCount": 3.88,
+    "RecalcStyleCount": 5.41
   },
   "workers": [
     {
-      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
-      "rawKb": 27.6,
-      "gzipKb": 8.9
+      "url": "/_next/static/chunks/ventylab-sim.068e308c1f150726.js",
+      "rawKb": 32.8,
+      "gzipKb": 10.4
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-06T13:30:45.321Z",
+  "generatedAt": "2026-11-07T05:29:33.208Z",
   "method": "gzip (zlib default level) over .next/static/chunks/**/*.js",
-  "totalFiles": 262,
+  "totalFiles": 264,
   "top": [
     {
       "file": "static/chunks/2bd9703c.c3c20035af93d0ec.js",
@@ -9,9 +9,9 @@
       "gzipKb": 74.4
     },
     {
-      "file": "static/chunks/pages/_app-ac64d0664b7b7215.js",
-      "rawKb": 193.2,
-      "gzipKb": 65.8
+      "file": "static/chunks/pages/_app-4adec552a4a1c187.js",
+      "rawKb": 205.8,
+      "gzipKb": 69.4
     },
     {
       "file": "static/chunks/4897.213f5d356dd8d591.js",
@@ -49,14 +49,19 @@
       "gzipKb": 29.7
     },
     {
-      "file": "static/chunks/7564-59ead4d03137ccb1.js",
-      "rawKb": 84.1,
-      "gzipKb": 27.6
+      "file": "static/chunks/9911-be264ecdea29574a.js",
+      "rawKb": 87.8,
+      "gzipKb": 28.7
     },
     {
       "file": "static/chunks/2672.c9348946fdab45ba.js",
       "rawKb": 80,
       "gzipKb": 27.3
+    },
+    {
+      "file": "static/chunks/6352-050aea48ea5bd0ca.js",
+      "rawKb": 86.4,
+      "gzipKb": 25.6
     },
     {
       "file": "static/chunks/bbce1c15.5e92324cee9ee362.js",
@@ -69,14 +74,9 @@
       "gzipKb": 23.7
     },
     {
-      "file": "static/chunks/5344-f3a1f2fb8e41e0ec.js",
-      "rawKb": 78.3,
-      "gzipKb": 23.6
-    },
-    {
-      "file": "static/chunks/9786-d5b42fd41a3a7707.js",
-      "rawKb": 72.7,
-      "gzipKb": 23.2
+      "file": "static/chunks/7449-8e00d119a9517a49.js",
+      "rawKb": 67.5,
+      "gzipKb": 21.4
     }
   ]
 }

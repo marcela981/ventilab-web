@@ -1,0 +1,62 @@
+fake LLM on http://127.0.0.1:4910/v1 (OpenAI chat completions, mode ok). TEST ONLY.
+stream (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+stream (mode ok)
+completion (mode ok)
+mode set to echo
+completion (mode echo)
+stream (mode echo)
+mode set to ok
+mode set to echo
+completion (mode echo)
+stream (mode echo)
+mode set to ok
+mode set to claims-stable
+completion (mode claims-stable)
+stream (mode claims-stable)
+stream (mode claims-stable)
+mode set to ok
+completion (mode ok)
+mode set to echo
+mode set to ok
+completion (mode ok)
+completion (mode ok)
+stream (mode ok)
+stream (mode ok)
+completion (mode ok)
+stream (mode 500)
+stream (mode 500)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+stream (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+mode set to echo
+completion (mode echo)
+stream (mode echo)
+mode set to ok
+mode set to echo
+completion (mode echo)
+stream (mode echo)
+mode set to ok
+mode set to echo
+completion (mode echo)
+stream (mode echo)
+mode set to ok
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)
+completion (mode ok)

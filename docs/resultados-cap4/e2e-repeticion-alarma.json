@@ -1,0 +1,557 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=e2e",
+      "e2e/bloque-a/asesoria-estado-actual.spec.ts",
+      "-g",
+      "Cómo estabilizar",
+      "--repeat-each=3",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\playwright.config.ts",
+    "rootDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "setup",
+        "name": "setup",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/support[\\\\/]auth\\.setup\\.ts$/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 3,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "e2e",
+        "name": "e2e",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [
+          "/perf[\\\\/]/"
+        ],
+        "testMatch": [
+          "/.*\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "perf",
+        "name": "perf",
+        "testDir": "C:/Users/ALEJANDRA/Documents/Marce/ventylab/ventilab-web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/perf[\\\\/].*\\.spec\\.ts$/"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results",
+        "repeatEach": 3,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "e2e",
+        "testDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e",
+        "snapshotDir": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e",
+        "testIgnore": {},
+        "testMatch": {},
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "channel": "chromium",
+          "storageState": "e2e/.auth/student.json"
+        },
+        "dependencies": [
+          "setup"
+        ],
+        "ignoreSnapshots": false,
+        "__projectId": "e2e"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "support\\auth.setup.ts",
+      "file": "support/auth.setup.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "sign in as student",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "reusing e2e/.auth/student.json",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\auth.setup.ts",
+                    "line": 33,
+                    "column": 11
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 438,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T05:16:53.171Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "reusing e2e/.auth/student.json",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\auth.setup.ts",
+                        "line": 33,
+                        "column": 11
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-72c728a87c4c72564a48",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        },
+        {
+          "title": "sign in as group member",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "reusing e2e/.auth/member.json",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\auth.setup.ts",
+                    "line": 33,
+                    "column": 11
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 251,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T05:16:53.914Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "reusing e2e/.auth/member.json",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\auth.setup.ts",
+                        "line": 33,
+                        "column": 11
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-f08c4e564d1f87c35a19",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        },
+        {
+          "title": "sign in as teacher",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "skip",
+                  "description": "reusing e2e/.auth/teacher.json",
+                  "location": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\auth.setup.ts",
+                    "line": 33,
+                    "column": 11
+                  }
+                }
+              ],
+              "expectedStatus": "skipped",
+              "projectId": "setup",
+              "projectName": "setup",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "skipped",
+                  "duration": 254,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T05:16:54.189Z",
+                  "annotations": [
+                    {
+                      "type": "skip",
+                      "description": "reusing e2e/.auth/teacher.json",
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\support\\auth.setup.ts",
+                        "line": 33,
+                        "column": 11
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "fdb9a254c504a0f5b8c8-735c4aa1397d4200d80e",
+          "file": "support/auth.setup.ts",
+          "line": 32,
+          "column": 8
+        }
+      ]
+    },
+    {
+      "title": "bloque-a\\asesoria-estado-actual.spec.ts",
+      "file": "bloque-a/asesoria-estado-actual.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22517,
+                  "error": {
+                    "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)",
+                    "stack": "SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)\n    at echoIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:61:15)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:121:23",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                      "column": 15,
+                      "line": 61
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 59 |\u001b[39m   \u001b[36mconst\u001b[39m json \u001b[33m=\u001b[39m text\u001b[33m.\u001b[39mslice(text\u001b[33m.\u001b[39mindexOf(\u001b[32m\"{\"\u001b[39m\u001b[33m,\u001b[39m text\u001b[33m.\u001b[39mindexOf(\u001b[33mECHO_MARKER\u001b[39m))\u001b[33m,\u001b[39m text\u001b[33m.\u001b[39mlastIndexOf(\u001b[32m\"}\"\u001b[39m) \u001b[33m+\u001b[39m \u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 60 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 61 |\u001b[39m   \u001b[36mreturn\u001b[39m \u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mparse(json) \u001b[36mas\u001b[39m \u001b[33mEcho\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 62 |\u001b[39m }\n \u001b[90m 63 |\u001b[39m\n \u001b[90m 64 |\u001b[39m \u001b[36mfunction\u001b[39m expectMatchesScreen(echo\u001b[33m:\u001b[39m \u001b[33mEcho\u001b[39m\u001b[33m,\u001b[39m screen\u001b[33m:\u001b[39m { spo2\u001b[33m:\u001b[39m number\u001b[33m,\u001b[39m severity\u001b[33m:\u001b[39m number })\u001b[33m:\u001b[39m \u001b[36mvoid\u001b[39m {\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                        "column": 15,
+                        "line": 61
+                      },
+                      "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)\n\n  59 |   const json = text.slice(text.indexOf(\"{\", text.indexOf(ECHO_MARKER)), text.lastIndexOf(\"}\") + 1);\n  60 |\n> 61 |   return JSON.parse(json) as Echo;\n     |               ^\n  62 | }\n  63 |\n  64 | function expectMatchesScreen(echo: Echo, screen: { spo2: number, severity: number }): void {\n    at echoIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:61:15)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:121:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T05:16:55.228Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                    "column": 15,
+                    "line": 61
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-81c97feec7b10d08fc46",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 110,
+          "column": 5
+        },
+        {
+          "title": "¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22553,
+                  "error": {
+                    "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)",
+                    "stack": "SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)\n    at echoIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:61:15)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:121:23",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                      "column": 15,
+                      "line": 61
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 59 |\u001b[39m   \u001b[36mconst\u001b[39m json \u001b[33m=\u001b[39m text\u001b[33m.\u001b[39mslice(text\u001b[33m.\u001b[39mindexOf(\u001b[32m\"{\"\u001b[39m\u001b[33m,\u001b[39m text\u001b[33m.\u001b[39mindexOf(\u001b[33mECHO_MARKER\u001b[39m))\u001b[33m,\u001b[39m text\u001b[33m.\u001b[39mlastIndexOf(\u001b[32m\"}\"\u001b[39m) \u001b[33m+\u001b[39m \u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 60 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 61 |\u001b[39m   \u001b[36mreturn\u001b[39m \u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mparse(json) \u001b[36mas\u001b[39m \u001b[33mEcho\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 62 |\u001b[39m }\n \u001b[90m 63 |\u001b[39m\n \u001b[90m 64 |\u001b[39m \u001b[36mfunction\u001b[39m expectMatchesScreen(echo\u001b[33m:\u001b[39m \u001b[33mEcho\u001b[39m\u001b[33m,\u001b[39m screen\u001b[33m:\u001b[39m { spo2\u001b[33m:\u001b[39m number\u001b[33m,\u001b[39m severity\u001b[33m:\u001b[39m number })\u001b[33m:\u001b[39m \u001b[36mvoid\u001b[39m {\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                        "column": 15,
+                        "line": 61
+                      },
+                      "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)\n\n  59 |   const json = text.slice(text.indexOf(\"{\", text.indexOf(ECHO_MARKER)), text.lastIndexOf(\"}\") + 1);\n  60 |\n> 61 |   return JSON.parse(json) as Echo;\n     |               ^\n  62 | }\n  63 |\n  64 | function expectMatchesScreen(echo: Echo, screen: { spo2: number, severity: number }): void {\n    at echoIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:61:15)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:121:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T05:17:19.335Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                    "column": 15,
+                    "line": 61
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-1ff5c587084eeb632a80",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 110,
+          "column": 5
+        },
+        {
+          "title": "¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "e2e",
+              "projectName": "e2e",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 22969,
+                  "error": {
+                    "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 267 (line 3 column 1)",
+                    "stack": "SyntaxError: Unexpected non-whitespace character after JSON at position 267 (line 3 column 1)\n    at echoIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:61:15)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:121:23",
+                    "location": {
+                      "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                      "column": 15,
+                      "line": 61
+                    },
+                    "snippet": "\u001b[0m \u001b[90m 59 |\u001b[39m   \u001b[36mconst\u001b[39m json \u001b[33m=\u001b[39m text\u001b[33m.\u001b[39mslice(text\u001b[33m.\u001b[39mindexOf(\u001b[32m\"{\"\u001b[39m\u001b[33m,\u001b[39m text\u001b[33m.\u001b[39mindexOf(\u001b[33mECHO_MARKER\u001b[39m))\u001b[33m,\u001b[39m text\u001b[33m.\u001b[39mlastIndexOf(\u001b[32m\"}\"\u001b[39m) \u001b[33m+\u001b[39m \u001b[35m1\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 60 |\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 61 |\u001b[39m   \u001b[36mreturn\u001b[39m \u001b[33mJSON\u001b[39m\u001b[33m.\u001b[39mparse(json) \u001b[36mas\u001b[39m \u001b[33mEcho\u001b[39m\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m               \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 62 |\u001b[39m }\n \u001b[90m 63 |\u001b[39m\n \u001b[90m 64 |\u001b[39m \u001b[36mfunction\u001b[39m expectMatchesScreen(echo\u001b[33m:\u001b[39m \u001b[33mEcho\u001b[39m\u001b[33m,\u001b[39m screen\u001b[33m:\u001b[39m { spo2\u001b[33m:\u001b[39m number\u001b[33m,\u001b[39m severity\u001b[33m:\u001b[39m number })\u001b[33m:\u001b[39m \u001b[36mvoid\u001b[39m {\u001b[0m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                        "column": 15,
+                        "line": 61
+                      },
+                      "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 267 (line 3 column 1)\n\n  59 |   const json = text.slice(text.indexOf(\"{\", text.indexOf(ECHO_MARKER)), text.lastIndexOf(\"}\") + 1);\n  60 |\n> 61 |   return JSON.parse(json) as Echo;\n     |               ^\n  62 | }\n  63 |\n  64 | function expectMatchesScreen(echo: Echo, screen: { spo2: number, severity: number }): void {\n    at echoIn (C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:61:15)\n    at C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts:121:23"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T05:17:43.521Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\test-results\\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\ALEJANDRA\\Documents\\Marce\\ventylab\\ventilab-web\\e2e\\bloque-a\\asesoria-estado-actual.spec.ts",
+                    "column": 15,
+                    "line": 61
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "dcabe01ef544632667dc-ce17c2d2a80c24288cfd",
+          "file": "bloque-a/asesoria-estado-actual.spec.ts",
+          "line": 110,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-07T05:16:52.490Z",
+    "duration": 75045.016,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

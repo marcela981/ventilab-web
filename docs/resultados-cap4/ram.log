@@ -1,0 +1,14 @@
+2026-11-06T23:47:34-05:00 | antes de npm ci | 3230 / 12128 MB
+2026-11-06T23:50:05-05:00 | antes de vitest | 2246 / 12128 MB
+2026-11-06T23:56:22-05:00 | antes de reiniciar la base (§6) | 3661 / 12128 MB
+2026-11-06T23:57:06-05:00 | antes de arrancar LLM falso y backend | 3460 / 12128 MB
+2026-11-06T23:57:40-05:00 | antes de npm run build | 3286 / 12128 MB
+2026-11-06T23:59:22-05:00 | antes de npm run e2e | 2924 / 12128 MB
+2026-11-07T00:16:50-05:00 | antes de repetir asesoria-estado-actual x3 | 2705 / 12128 MB
+2026-11-07T00:18:47-05:00 | antes de sembrar la base de carga (500) | 2658 / 12128 MB
+2026-11-07T00:18:50-05:00 | después de sembrar la base de carga | 2668 / 12128 MB
+2026-11-07T00:19:04-05:00 | antes de sembrar la base de carga (500), intento 2 | 2639 / 12128 MB
+2026-11-07T00:19:13-05:00 | después de sembrar la base de carga | 2621 / 12128 MB
+2026-11-07T00:19:24-05:00 | antes de perf:sim 1920x1080 | 2587 / 12128 MB
+2026-11-07T00:24:02-05:00 | antes de perf:sim 1280x720 | 2613 / 12128 MB
+2026-11-07T00:29:30-05:00 | antes de perf:bundle | 2472 / 12128 MB

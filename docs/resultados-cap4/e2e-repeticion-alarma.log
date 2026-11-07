@@ -1,0 +1,103 @@
+npm notice run ventilab-web@0.1.0 npx
+npm notice run playwright test --project=e2e e2e/bloque-a/asesoria-estado-actual.spec.ts -g Cómo estabilizar --repeat-each=3 --workers=1 --reporter=list,json
+
+Running 6 tests using 1 worker
+
+  -  1 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as student
+  -  2 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as group member
+  -  3 [setup] › e2e\support\auth.setup.ts:32:8 › sign in as teacher
+  ✘  4 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too (22.5s)
+  ✘  5 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too (22.6s)
+  ✘  6 [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too (23.0s)
+
+
+  1) [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too 
+
+    SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)
+
+      59 |   const json = text.slice(text.indexOf("{", text.indexOf(ECHO_MARKER)), text.lastIndexOf("}") + 1);
+      60 |
+    > 61 |   return JSON.parse(json) as Echo;
+         |               ^
+      62 | }
+      63 |
+      64 | function expectMatchesScreen(echo: Echo, screen: { spo2: number, severity: number }): void {
+        at echoIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque-a\asesoria-estado-actual.spec.ts:61:15)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque-a\asesoria-estado-actual.spec.ts:121:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too 
+
+    SyntaxError: Unexpected non-whitespace character after JSON at position 269 (line 3 column 1)
+
+      59 |   const json = text.slice(text.indexOf("{", text.indexOf(ECHO_MARKER)), text.lastIndexOf("}") + 1);
+      60 |
+    > 61 |   return JSON.parse(json) as Echo;
+         |               ^
+      62 | }
+      63 |
+      64 | function expectMatchesScreen(echo: Echo, screen: { spo2: number, severity: number }): void {
+        at echoIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque-a\asesoria-estado-actual.spec.ts:61:15)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque-a\asesoria-estado-actual.spec.ts:121:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too 
+
+    SyntaxError: Unexpected non-whitespace character after JSON at position 267 (line 3 column 1)
+
+      59 |   const json = text.slice(text.indexOf("{", text.indexOf(ECHO_MARKER)), text.lastIndexOf("}") + 1);
+      60 |
+    > 61 |   return JSON.parse(json) as Echo;
+         |               ^
+      62 | }
+      63 |
+      64 | function expectMatchesScreen(echo: Echo, screen: { spo2: number, severity: number }): void {
+        at echoIn (C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque-a\asesoria-estado-actual.spec.ts:61:15)
+        at C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventilab-web\e2e\bloque-a\asesoria-estado-actual.spec.ts:121:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\bloque-a-asesoria-estado-a-751a7-lyzes-the-current-state-too-e2e-repeat2\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too 
+    [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too 
+    [e2e] › e2e\bloque-a\asesoria-estado-actual.spec.ts:110:5 › ¿Cómo estabilizar? of the low SpO2 alarm analyzes the current state too 
+  3 skipped
+exit=1

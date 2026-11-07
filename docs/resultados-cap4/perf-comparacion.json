@@ -3,18 +3,18 @@
     "viewport": "1920x1080",
     "scenario": "live-x1",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:21:47.118Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:20:37.301Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": null,
-      "rafFps": 59.97,
+      "rafFps": 59.96,
       "framesOver50": 0,
-      "maxFrameMs": 17.3,
+      "maxFrameMs": 33.2,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
-          "size": "1040x602",
-          "paintFps": 59.32
+          "size": "1040x650",
+          "paintFps": 59.36
         }
       ],
       "otherCanvases": [],
@@ -22,9 +22,9 @@
       "maxCommits1s": 1,
       "longTasks": 0,
       "longTaskMaxMs": 0,
-      "heapEndMb": 12.9,
-      "mainThreadMsPerS": 66.25,
-      "scriptMsPerS": 17.6
+      "heapEndMb": 13.6,
+      "mainThreadMsPerS": 77.39,
+      "scriptMsPerS": 20.79
     },
     "after": {
       "commit": "5131946",
@@ -74,24 +74,53 @@
       "mainThreadMsPerS": 60.43,
       "scriptMsPerS": 17.02
     },
-    "diffsOver10": []
+    "diffsOver10": [
+      {
+        "vs": "after",
+        "metric": "maxFrameMs",
+        "base": 17.2,
+        "now": 33.2,
+        "pct": 93
+      },
+      {
+        "vs": "fixed",
+        "metric": "maxFrameMs",
+        "base": 17.4,
+        "now": 33.2,
+        "pct": 90.8
+      },
+      {
+        "vs": "fixed",
+        "metric": "mainThreadMsPerS",
+        "base": 60.43,
+        "now": 77.39,
+        "pct": 28.1
+      },
+      {
+        "vs": "fixed",
+        "metric": "scriptMsPerS",
+        "base": 17.02,
+        "now": 20.79,
+        "pct": 22.2
+      }
+    ]
   },
   {
     "viewport": "1920x1080",
     "scenario": "live-x1-cpu4",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:22:56.216Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:21:46.126Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": null,
-      "rafFps": 59.95,
-      "framesOver50": 0,
-      "maxFrameMs": 33.4,
+      "rafFps": 59.85,
+      "framesOver50": 1,
+      "maxFrameMs": 66.7,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
-          "size": "1040x602",
-          "paintFps": 59.68
+          "size": "1040x650",
+          "paintFps": 59.63
         }
       ],
       "otherCanvases": [],
@@ -99,9 +128,9 @@
       "maxCommits1s": 1,
       "longTasks": 0,
       "longTaskMaxMs": 0,
-      "heapEndMb": 12.9,
-      "mainThreadMsPerS": 332.69,
-      "scriptMsPerS": 111.13
+      "heapEndMb": 13.6,
+      "mainThreadMsPerS": 332.4,
+      "scriptMsPerS": 109.77
     },
     "after": {
       "commit": "5131946",
@@ -154,38 +183,59 @@
     "diffsOver10": [
       {
         "vs": "after",
+        "metric": "framesOver50",
+        "base": 0,
+        "now": 1,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
+        "metric": "maxFrameMs",
+        "base": 33.4,
+        "now": 66.7,
+        "pct": 99.7
+      },
+      {
+        "vs": "after",
         "metric": "mainThreadMsPerS",
         "base": 213.91,
-        "now": 332.69,
-        "pct": 55.5
+        "now": 332.4,
+        "pct": 55.4
       },
       {
         "vs": "after",
         "metric": "scriptMsPerS",
         "base": 61.37,
-        "now": 111.13,
-        "pct": 81.1
+        "now": 109.77,
+        "pct": 78.9
+      },
+      {
+        "vs": "fixed",
+        "metric": "framesOver50",
+        "base": 0,
+        "now": 1,
+        "pct": "base 0"
       },
       {
         "vs": "fixed",
         "metric": "maxFrameMs",
         "base": 50,
-        "now": 33.4,
-        "pct": -33.2
+        "now": 66.7,
+        "pct": 33.4
       },
       {
         "vs": "fixed",
         "metric": "mainThreadMsPerS",
         "base": 225.93,
-        "now": 332.69,
-        "pct": 47.3
+        "now": 332.4,
+        "pct": 47.1
       },
       {
         "vs": "fixed",
         "metric": "scriptMsPerS",
         "base": 63.23,
-        "now": 111.13,
-        "pct": 75.8
+        "now": 109.77,
+        "pct": 73.6
       }
     ]
   },
@@ -193,8 +243,8 @@
     "viewport": "1920x1080",
     "scenario": "replay-x8",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:24:03.503Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:22:53.514Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": 7,
       "rafFps": 59.98,
@@ -204,17 +254,17 @@
         {
           "label": "Curvas de presión, flujo y volumen",
           "size": "836x448",
-          "paintFps": 52.51
+          "paintFps": 52.63
         }
       ],
       "otherCanvases": [],
-      "commitsPerS": 3.78,
+      "commitsPerS": 3.77,
       "maxCommits1s": 5,
       "longTasks": 0,
       "longTaskMaxMs": 0,
-      "heapEndMb": 11.2,
-      "mainThreadMsPerS": 80.69,
-      "scriptMsPerS": 23.41
+      "heapEndMb": 13,
+      "mainThreadMsPerS": 90,
+      "scriptMsPerS": 26.43
     },
     "after": {
       "commit": "5131946",
@@ -248,6 +298,27 @@
         "base": 33.2,
         "now": 17.1,
         "pct": -48.5
+      },
+      {
+        "vs": "after",
+        "metric": "heapEndMb",
+        "base": 11.8,
+        "now": 13,
+        "pct": 10.2
+      },
+      {
+        "vs": "after",
+        "metric": "mainThreadMsPerS",
+        "base": 76.83,
+        "now": 90,
+        "pct": 17.1
+      },
+      {
+        "vs": "after",
+        "metric": "scriptMsPerS",
+        "base": 22.23,
+        "now": 26.43,
+        "pct": 18.9
       }
     ]
   },
@@ -255,28 +326,28 @@
     "viewport": "1920x1080",
     "scenario": "replay-x8-cpu4",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:25:10.413Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:24:00.458Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": 7,
-      "rafFps": 59.89,
+      "rafFps": 59.83,
       "framesOver50": 0,
       "maxFrameMs": 33.4,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
           "size": "836x448",
-          "paintFps": 55.18
+          "paintFps": 57.92
         }
       ],
       "otherCanvases": [],
-      "commitsPerS": 3.83,
+      "commitsPerS": 4.01,
       "maxCommits1s": 6,
       "longTasks": 0,
       "longTaskMaxMs": 0,
-      "heapEndMb": 11.5,
-      "mainThreadMsPerS": 382.71,
-      "scriptMsPerS": 127.39
+      "heapEndMb": 11.9,
+      "mainThreadMsPerS": 384.8,
+      "scriptMsPerS": 127.66
     },
     "after": {
       "commit": "5131946",
@@ -308,22 +379,22 @@
         "vs": "after",
         "metric": "heapEndMb",
         "base": 13.6,
-        "now": 11.5,
-        "pct": -15.4
+        "now": 11.9,
+        "pct": -12.5
       },
       {
         "vs": "after",
         "metric": "mainThreadMsPerS",
         "base": 295.65,
-        "now": 382.71,
-        "pct": 29.4
+        "now": 384.8,
+        "pct": 30.2
       },
       {
         "vs": "after",
         "metric": "scriptMsPerS",
         "base": 84.42,
-        "now": 127.39,
-        "pct": 50.9
+        "now": 127.66,
+        "pct": 51.2
       }
     ]
   },
@@ -331,18 +402,18 @@
     "viewport": "1280x720",
     "scenario": "live-x1",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:26:26.084Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:25:16.212Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": null,
       "rafFps": 59.99,
       "framesOver50": 0,
-      "maxFrameMs": 17,
+      "maxFrameMs": 17.2,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
           "size": "448x360",
-          "paintFps": 59.42
+          "paintFps": 59.52
         }
       ],
       "otherCanvases": [],
@@ -350,9 +421,9 @@
       "maxCommits1s": 1,
       "longTasks": 0,
       "longTaskMaxMs": 0,
-      "heapEndMb": 12.9,
-      "mainThreadMsPerS": 69.14,
-      "scriptMsPerS": 18.49
+      "heapEndMb": 13.4,
+      "mainThreadMsPerS": 73.06,
+      "scriptMsPerS": 19.35
     },
     "after": {
       "commit": "5131946",
@@ -385,18 +456,18 @@
     "viewport": "1280x720",
     "scenario": "live-x1-cpu4",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:27:35.132Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:26:24.962Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": null,
-      "rafFps": 59.94,
-      "framesOver50": 0,
-      "maxFrameMs": 50,
+      "rafFps": 59.5,
+      "framesOver50": 1,
+      "maxFrameMs": 416.6,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
           "size": "448x360",
-          "paintFps": 59.75
+          "paintFps": 59.16
         }
       ],
       "otherCanvases": [],
@@ -404,9 +475,9 @@
       "maxCommits1s": 1,
       "longTasks": 0,
       "longTaskMaxMs": 0,
-      "heapEndMb": 13.3,
-      "mainThreadMsPerS": 324.62,
-      "scriptMsPerS": 103.26
+      "heapEndMb": 13.2,
+      "mainThreadMsPerS": 321.71,
+      "scriptMsPerS": 104.68
     },
     "after": {
       "commit": "5131946",
@@ -436,24 +507,31 @@
     "diffsOver10": [
       {
         "vs": "after",
+        "metric": "framesOver50",
+        "base": 0,
+        "now": 1,
+        "pct": "base 0"
+      },
+      {
+        "vs": "after",
         "metric": "maxFrameMs",
         "base": 33.3,
-        "now": 50,
-        "pct": 50.2
+        "now": 416.6,
+        "pct": 1151.1
       },
       {
         "vs": "after",
         "metric": "mainThreadMsPerS",
         "base": 195.35,
-        "now": 324.62,
-        "pct": 66.2
+        "now": 321.71,
+        "pct": 64.7
       },
       {
         "vs": "after",
         "metric": "scriptMsPerS",
         "base": 55.87,
-        "now": 103.26,
-        "pct": 84.8
+        "now": 104.68,
+        "pct": 87.4
       }
     ]
   },
@@ -461,28 +539,28 @@
     "viewport": "1280x720",
     "scenario": "replay-x8",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:28:42.456Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:27:32.311Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": 7,
-      "rafFps": 58.99,
-      "framesOver50": 8,
-      "maxFrameMs": 333.3,
+      "rafFps": 59.98,
+      "framesOver50": 0,
+      "maxFrameMs": 17.1,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
           "size": "868x448",
-          "paintFps": 52.78
+          "paintFps": 52.75
         }
       ],
       "otherCanvases": [],
-      "commitsPerS": 3.82,
-      "maxCommits1s": 7,
-      "longTasks": 2,
-      "longTaskMaxMs": 154,
-      "heapEndMb": 11.6,
-      "mainThreadMsPerS": 109.68,
-      "scriptMsPerS": 34.31
+      "commitsPerS": 3.77,
+      "maxCommits1s": 5,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 11.7,
+      "mainThreadMsPerS": 86.12,
+      "scriptMsPerS": 24.61
     },
     "after": {
       "commit": "5131946",
@@ -509,84 +587,34 @@
       "scriptMsPerS": 24.33
     },
     "fixed": null,
-    "diffsOver10": [
-      {
-        "vs": "after",
-        "metric": "maxCommits1s",
-        "base": 5,
-        "now": 7,
-        "pct": 40
-      },
-      {
-        "vs": "after",
-        "metric": "longTasks",
-        "base": 0,
-        "now": 2,
-        "pct": "base 0"
-      },
-      {
-        "vs": "after",
-        "metric": "longTaskMaxMs",
-        "base": 0,
-        "now": 154,
-        "pct": "base 0"
-      },
-      {
-        "vs": "after",
-        "metric": "framesOver50",
-        "base": 0,
-        "now": 8,
-        "pct": "base 0"
-      },
-      {
-        "vs": "after",
-        "metric": "maxFrameMs",
-        "base": 17.1,
-        "now": 333.3,
-        "pct": 1849.1
-      },
-      {
-        "vs": "after",
-        "metric": "mainThreadMsPerS",
-        "base": 82.74,
-        "now": 109.68,
-        "pct": 32.6
-      },
-      {
-        "vs": "after",
-        "metric": "scriptMsPerS",
-        "base": 24.33,
-        "now": 34.31,
-        "pct": 41
-      }
-    ]
+    "diffsOver10": []
   },
   {
     "viewport": "1280x720",
     "scenario": "replay-x8-cpu4",
     "now": {
-      "commit": "2fbf674",
-      "measuredAt": "2026-11-06T13:29:50.087Z",
+      "commit": "3e4c78b",
+      "measuredAt": "2026-11-07T05:28:39.252Z",
       "browser": "chromium 156.0.8078.4",
       "replayRestarts": 7,
-      "rafFps": 57.81,
-      "framesOver50": 9,
-      "maxFrameMs": 600.1,
+      "rafFps": 59.82,
+      "framesOver50": 0,
+      "maxFrameMs": 50,
       "curves": [
         {
           "label": "Curvas de presión, flujo y volumen",
           "size": "868x448",
-          "paintFps": 52.32
+          "paintFps": 57.93
         }
       ],
       "otherCanvases": [],
-      "commitsPerS": 3.8,
-      "maxCommits1s": 5,
-      "longTasks": 4,
-      "longTaskMaxMs": 138,
-      "heapEndMb": 12,
-      "mainThreadMsPerS": 341.09,
-      "scriptMsPerS": 102.79
+      "commitsPerS": 4,
+      "maxCommits1s": 6,
+      "longTasks": 0,
+      "longTaskMaxMs": 0,
+      "heapEndMb": 12.2,
+      "mainThreadMsPerS": 386.38,
+      "scriptMsPerS": 128.03
     },
     "after": {
       "commit": "5131946",
@@ -616,52 +644,17 @@
     "diffsOver10": [
       {
         "vs": "after",
-        "metric": "maxCommits1s",
-        "base": 6,
-        "now": 5,
-        "pct": -16.7
-      },
-      {
-        "vs": "after",
-        "metric": "longTasks",
-        "base": 0,
-        "now": 4,
-        "pct": "base 0"
-      },
-      {
-        "vs": "after",
-        "metric": "longTaskMaxMs",
-        "base": 0,
-        "now": 138,
-        "pct": "base 0"
-      },
-      {
-        "vs": "after",
-        "metric": "framesOver50",
-        "base": 0,
-        "now": 9,
-        "pct": "base 0"
-      },
-      {
-        "vs": "after",
-        "metric": "maxFrameMs",
-        "base": 50,
-        "now": 600.1,
-        "pct": 1100.2
-      },
-      {
-        "vs": "after",
         "metric": "mainThreadMsPerS",
         "base": 280.85,
-        "now": 341.09,
-        "pct": 21.4
+        "now": 386.38,
+        "pct": 37.6
       },
       {
         "vs": "after",
         "metric": "scriptMsPerS",
         "base": 79.43,
-        "now": 102.79,
-        "pct": 29.4
+        "now": 128.03,
+        "pct": 61.2
       }
     ]
   }

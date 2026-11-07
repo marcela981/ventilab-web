@@ -1,0 +1,13 @@
+npm notice run ventilab-web@0.1.0 perf:bundle
+npm notice run node ./scripts/perf/bundle-sizes.mjs --json docs/resultados-cap4/bundle-rutas-bloque5.json /learn /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] /me /simulador /teacher /evaluations /profile /auth/login
+| Ruta | Propio gz (KB) | First load gz (KB) | First load sin comprimir (KB) |
+|---|---|---|---|
+| compartido (_app + main) | — | 205 | 624.6 |
+| `/learn` | 77.1 | 282.1 | 847.1 |
+| `/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]` | 88.7 | 293.7 | 883.1 |
+| `/me` | 48.6 | 253.6 | 770.1 |
+| `/simulador` | 52.6 | 257.6 | 780.7 |
+| `/teacher` | 48.8 | 253.8 | 770.5 |
+| `/evaluations` | 86.2 | 291.2 | 873.3 |
+| `/profile` | 95.5 | 300.5 | 907.8 |
+| `/auth/login` | 64.6 | 269.6 | 810 |

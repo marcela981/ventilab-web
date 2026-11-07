@@ -11,36 +11,36 @@
     "caseTitle": "Pulmón normal: postoperatorio inmediato",
     "pageUrl": "/simulador",
     "replayRestarts": 7,
-    "webCommit": "2fbf674",
+    "webCommit": "3e4c78b",
     "browser": "chromium 156.0.8078.4",
     "viewport": {
       "width": 1280,
       "height": 720
     },
-    "measuredAt": "2026-11-06T13:29:50.087Z"
+    "measuredAt": "2026-11-07T05:28:39.252Z"
   },
   "probe": {
-    "windowMs": 60038,
+    "windowMs": 60033,
     "raf": {
-      "frames": 3471,
-      "fps": 57.81,
+      "frames": 3591,
+      "fps": 59.82,
       "p50FrameMs": 16.7,
       "p95FrameMs": 16.8,
-      "maxFrameMs": 600.1,
-      "framesOver50Ms": 9
+      "maxFrameMs": 50,
+      "framesOver50Ms": 0
     },
     "longTasks": {
-      "count": 4,
-      "totalMs": 336,
-      "maxMs": 138,
+      "count": 0,
+      "totalMs": 0,
+      "maxMs": 0,
       "supported": true
     },
     "react": {
       "hookAttached": true,
       "bundleType": 0,
-      "commits": 228,
-      "commitsPerSecond": 3.8,
-      "maxCommitsInOneSecond": 5
+      "commits": 240,
+      "commitsPerSecond": 4,
+      "maxCommitsInOneSecond": 6
     },
     "canvases": [
       {
@@ -48,36 +48,36 @@
         "width": 868,
         "height": 448,
         "connected": false,
-        "paintFrames": 27,
-        "paintFps": 0.45,
-        "drawCalls": 427
+        "paintFrames": 28,
+        "paintFps": 0.47,
+        "drawCalls": 434
       },
       {
         "label": "Curvas de presión, flujo y volumen",
         "width": 868,
         "height": 448,
         "connected": true,
-        "paintFrames": 3141,
-        "paintFps": 52.32,
-        "drawCalls": 15735
+        "paintFrames": 3478,
+        "paintFps": 57.93,
+        "drawCalls": 17422
       }
     ],
-    "heapUsedMb": 12
+    "heapUsedMb": 12.2
   },
   "mainThreadPerSecond": {
     "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
-    "TaskDuration": 341.09,
-    "ScriptDuration": 102.79,
-    "LayoutDuration": 19.52,
-    "RecalcStyleDuration": 6.11,
-    "LayoutCount": 3.9,
-    "RecalcStyleCount": 5.51
+    "TaskDuration": 386.38,
+    "ScriptDuration": 128.03,
+    "LayoutDuration": 17.32,
+    "RecalcStyleDuration": 8.34,
+    "LayoutCount": 4.11,
+    "RecalcStyleCount": 6.13
   },
   "workers": [
     {
-      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
-      "rawKb": 27.6,
-      "gzipKb": 8.9
+      "url": "/_next/static/chunks/ventylab-sim.068e308c1f150726.js",
+      "rawKb": 32.8,
+      "gzipKb": 10.4
     }
   ]
 }

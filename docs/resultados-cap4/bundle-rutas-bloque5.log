@@ -1,13 +1,13 @@
 npm notice run ventilab-web@0.1.0 perf:bundle
-npm notice run node ./scripts/perf/bundle-sizes.mjs --json docs/resultados-cap4/bundle-rutas-bloque5.json /learn /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] /me /simulador /teacher /evaluations /profile /auth/login
+npm notice run node ./scripts/perf/bundle-sizes.mjs --json C:\Users\ALEJAN~1\AppData\Local\Temp\claude\dc1c5fbb9d0ec341\40c368bf-1db9-4833-b267-8ed5f4240cc2\scratchpad\aligned\bundle-rutas-bloque5.json /learn /learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber] /me /simulador /teacher /evaluations /profile /auth/login
 | Ruta | Propio gz (KB) | First load gz (KB) | First load sin comprimir (KB) |
 |---|---|---|---|
-| compartido (_app + main) | — | 205 | 624.6 |
-| `/learn` | 77.1 | 282.1 | 847.1 |
-| `/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]` | 88.7 | 293.7 | 883.1 |
-| `/me` | 48.6 | 253.6 | 770.1 |
-| `/simulador` | 52.6 | 257.6 | 780.7 |
-| `/teacher` | 48.8 | 253.8 | 770.5 |
-| `/evaluations` | 86.2 | 291.2 | 873.3 |
-| `/profile` | 95.5 | 300.5 | 907.8 |
-| `/auth/login` | 64.6 | 269.6 | 810 |
+| compartido (_app + main) | — | 208.6 | 637.2 |
+| `/learn` | 84.7 | 293.4 | 882.1 |
+| `/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]` | 96 | 304.6 | 918.2 |
+| `/me` | 57.2 | 265.8 | 807.5 |
+| `/simulador` | 60.3 | 268.9 | 815.8 |
+| `/teacher` | 51.9 | 260.5 | 794.4 |
+| `/evaluations` | 93 | 301.6 | 908 |
+| `/profile` | 102.8 | 311.4 | 942.7 |
+| `/auth/login` | 65.8 | 274.4 | 829.4 |

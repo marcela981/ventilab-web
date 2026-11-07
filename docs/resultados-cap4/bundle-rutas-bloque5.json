@@ -1,73 +1,73 @@
 {
-  "measuredAt": "2026-11-06T13:30:33.122Z",
+  "measuredAt": "2026-11-07T05:29:32.855Z",
   "shared": {
-    "gzipKb": 205,
-    "rawKb": 624.6
+    "gzipKb": 208.6,
+    "rawKb": 637.2
   },
   "routes": [
     {
       "route": "/learn",
       "present": true,
-      "pageOnlyGzipKb": 77.1,
-      "pageOnlyRawKb": 222.5,
-      "firstLoadGzipKb": 282.1,
-      "firstLoadRawKb": 847.1
+      "pageOnlyGzipKb": 84.7,
+      "pageOnlyRawKb": 244.9,
+      "firstLoadGzipKb": 293.4,
+      "firstLoadRawKb": 882.1
     },
     {
       "route": "/learn/modules/[moduleId]/lessons/[lessonId]/[pageNumber]",
       "present": true,
-      "pageOnlyGzipKb": 88.7,
-      "pageOnlyRawKb": 258.5,
-      "firstLoadGzipKb": 293.7,
-      "firstLoadRawKb": 883.1
+      "pageOnlyGzipKb": 96,
+      "pageOnlyRawKb": 281,
+      "firstLoadGzipKb": 304.6,
+      "firstLoadRawKb": 918.2
     },
     {
       "route": "/me",
       "present": true,
-      "pageOnlyGzipKb": 48.6,
-      "pageOnlyRawKb": 145.5,
-      "firstLoadGzipKb": 253.6,
-      "firstLoadRawKb": 770.1
+      "pageOnlyGzipKb": 57.2,
+      "pageOnlyRawKb": 170.3,
+      "firstLoadGzipKb": 265.8,
+      "firstLoadRawKb": 807.5
     },
     {
       "route": "/simulador",
       "present": true,
-      "pageOnlyGzipKb": 52.6,
-      "pageOnlyRawKb": 156.1,
-      "firstLoadGzipKb": 257.6,
-      "firstLoadRawKb": 780.7
+      "pageOnlyGzipKb": 60.3,
+      "pageOnlyRawKb": 178.6,
+      "firstLoadGzipKb": 268.9,
+      "firstLoadRawKb": 815.8
     },
     {
       "route": "/teacher",
       "present": true,
-      "pageOnlyGzipKb": 48.8,
-      "pageOnlyRawKb": 145.9,
-      "firstLoadGzipKb": 253.8,
-      "firstLoadRawKb": 770.5
+      "pageOnlyGzipKb": 51.9,
+      "pageOnlyRawKb": 157.2,
+      "firstLoadGzipKb": 260.5,
+      "firstLoadRawKb": 794.4
     },
     {
       "route": "/evaluations",
       "present": true,
-      "pageOnlyGzipKb": 86.2,
-      "pageOnlyRawKb": 248.7,
-      "firstLoadGzipKb": 291.2,
-      "firstLoadRawKb": 873.3
+      "pageOnlyGzipKb": 93,
+      "pageOnlyRawKb": 270.9,
+      "firstLoadGzipKb": 301.6,
+      "firstLoadRawKb": 908
     },
     {
       "route": "/profile",
       "present": true,
-      "pageOnlyGzipKb": 95.5,
-      "pageOnlyRawKb": 283.2,
-      "firstLoadGzipKb": 300.5,
-      "firstLoadRawKb": 907.8
+      "pageOnlyGzipKb": 102.8,
+      "pageOnlyRawKb": 305.5,
+      "firstLoadGzipKb": 311.4,
+      "firstLoadRawKb": 942.7
     },
     {
       "route": "/auth/login",
       "present": true,
-      "pageOnlyGzipKb": 64.6,
-      "pageOnlyRawKb": 185.4,
-      "firstLoadGzipKb": 269.6,
-      "firstLoadRawKb": 810
+      "pageOnlyGzipKb": 65.8,
+      "pageOnlyRawKb": 192.2,
+      "firstLoadGzipKb": 274.4,
+      "firstLoadRawKb": 829.4
     }
   ]
 }

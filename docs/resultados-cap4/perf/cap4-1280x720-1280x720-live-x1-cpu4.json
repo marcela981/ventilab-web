@@ -11,23 +11,23 @@
     "caseTitle": "Pulmón normal: postoperatorio inmediato",
     "pageUrl": "/simulador",
     "replayRestarts": null,
-    "webCommit": "2fbf674",
+    "webCommit": "3e4c78b",
     "browser": "chromium 156.0.8078.4",
     "viewport": {
       "width": 1280,
       "height": 720
     },
-    "measuredAt": "2026-11-06T13:27:35.132Z"
+    "measuredAt": "2026-11-07T05:26:24.962Z"
   },
   "probe": {
-    "windowMs": 60031,
+    "windowMs": 60019,
     "raf": {
-      "frames": 3598,
-      "fps": 59.94,
+      "frames": 3571,
+      "fps": 59.5,
       "p50FrameMs": 16.7,
       "p95FrameMs": 16.8,
-      "maxFrameMs": 50,
-      "framesOver50Ms": 0
+      "maxFrameMs": 416.6,
+      "framesOver50Ms": 1
     },
     "longTasks": {
       "count": 0,
@@ -57,27 +57,27 @@
         "width": 448,
         "height": 360,
         "connected": true,
-        "paintFrames": 3587,
-        "paintFps": 59.75,
-        "drawCalls": 18147
+        "paintFrames": 3551,
+        "paintFps": 59.16,
+        "drawCalls": 17965
       }
     ],
-    "heapUsedMb": 13.3
+    "heapUsedMb": 13.2
   },
   "mainThreadPerSecond": {
     "unit": "ms of main-thread time per second (Duration) or events per second (Count)",
-    "TaskDuration": 324.62,
-    "ScriptDuration": 103.26,
-    "LayoutDuration": 5,
-    "RecalcStyleDuration": 1.92,
+    "TaskDuration": 321.71,
+    "ScriptDuration": 104.68,
+    "LayoutDuration": 4.85,
+    "RecalcStyleDuration": 2.16,
     "LayoutCount": 1,
     "RecalcStyleCount": 1.07
   },
   "workers": [
     {
-      "url": "/_next/static/chunks/ventylab-sim.e9486aa2a698b14c.js",
-      "rawKb": 27.6,
-      "gzipKb": 8.9
+      "url": "/_next/static/chunks/ventylab-sim.068e308c1f150726.js",
+      "rawKb": 32.8,
+      "gzipKb": 10.4
     }
   ]
 }

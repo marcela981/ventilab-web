@@ -1,0 +1,387 @@
+== migrate deploy 2026-11-06T17:17:26-05:00
+npm notice run ventylab-server@1.0.0 npx
+npm notice run prisma migrate deploy
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "ventylab", schema "public" at "localhost:55432"
+
+40 migrations found in prisma/migrations
+
+Applying migration `20261104120000_ai_call_log_details`
+Applying migration `20261105130000_evaluation_results_release`
+Applying migration `20261105140000_simulator_ai_block_a`
+Applying migration `20261105150000_user_theme_preference`
+Applying migration `20261105151000_password_reset_tokens`
+Applying migration `20261105160000_ai_call_context_trace`
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 6.19.2 -> 8.0.0-rc.33                 │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20261104120000_ai_call_log_details/
+    └─ migration.sql
+  └─ 20261105130000_evaluation_results_release/
+    └─ migration.sql
+  └─ 20261105140000_simulator_ai_block_a/
+    └─ migration.sql
+  └─ 20261105150000_user_theme_preference/
+    └─ migration.sql
+  └─ 20261105151000_password_reset_tokens/
+    └─ migration.sql
+  └─ 20261105160000_ai_call_context_trace/
+    └─ migration.sql
+      
+All migrations have been successfully applied.
+exit 0
+== demo:reset
+npm notice run ventylab-server@1.0.0 demo:reset
+npm notice run tsx prisma/demo/run-demo-command.ts reset
+Demo reset finished in 2706 ms. Demo password for every seeded account: VentyLab-Demo-2026
+Rows per business table (audit_logs is append-only and excluded):
+table                       | rows
+----------------------------|------
+accounts                    |     0
+achievements                |     0
+activities                  |     0
+activity_assignments        |     0
+activity_submissions        |     0
+ai_call_logs                |    39
+ai_conversations            |     3
+ai_messages                 |     8
+ai_ratings                  |     3
+app_settings                |     2
+change_logs                 |     0
+clinical_cases              |     3
+content_overrides           |     0
+error_logs                  |     0
+evaluation_answers          |   167
+evaluation_assignments      |    18
+evaluation_attempt_grants   |     0
+evaluation_attempts         |     0
+evaluation_question_options |    57
+evaluation_questions        |    24
+evaluation_scenarios        |     0
+evaluations                 |     9
+expert_configurations       |     0
+grade_feedbacks             |    32
+group_members               |    12
+group_supervisions          |     2
+groups                      |     3
+learning_activity_events    |     0
+lesson_completions          |    23
+lessons                     |     3
+level_prerequisites         |     0
+levels                      |     1
+media                       |     0
+module_prerequisites        |     0
+modules                     |     2
+notes                       |     5
+notifications               |    65
+page_progress               |    45
+page_revisions              |     6
+page_sections               |    12
+pages                       |     6
+password_reset_tokens       |     0
+platform_settings           |     0
+quiz_attempts               |     0
+quizzes                     |     0
+reservations                |     9
+scores                      |     0
+sections                    |     2
+sessions                    |     0
+simulation_events           |    24
+simulation_sessions         |     8
+simulator_sessions          |     0
+steps                       |     0
+student_evaluation_attempts |    64
+teacher_students            |     0
+telemetry_chunks            |     0
+user_activity_days          |     0
+user_progress               |    15
+users                       |    13
+ventilator_commands         |     0
+ventilator_reservations     |     0
+verification_tokens         |     0
+----------------------------|------
+total                       |   685
+exit 0
+== prisma:seed
+npm notice run ventylab-server@1.0.0 prisma:seed
+npm notice run tsx prisma/seed.ts
+🌱 VentyLab Curriculum Seed
+============================
+Levels: 7
+Modules: 28
+Lessons: 31
+Level prerequisites: 4
+Module prerequisites: 15
+
+🗑️  Phase 1: Truncating content tables...
+   ✅ Content tables truncated (progress tables cleared too - no users exist)
+
+📚 Phase 2a: Seeding levels...
+   ✅ Level: "Prerequisitos" (level-prerequisitos)
+   ✅ Level: "Nivel Principiante" (level-beginner)
+   ✅ Level: "Nivel Intermedio" (level-intermedio)
+   ✅ Level: "Nivel Avanzado" (level-avanzado)
+   ✅ Level: "Principiante" (ventylab-principiante)
+   ✅ Level: "Intermedio" (ventylab-intermedio)
+   ✅ Level: "Avanzado" (ventylab-avanzado)
+
+📖 Phase 2b: Seeding modules...
+   ✅ Module: "Fisiología Respiratoria" → level-prerequisitos (order: 1)
+   ✅ Module: "Principios de Ventilación Mecánica" → level-prerequisitos (order: 2)
+   ✅ Module: "La Inversión Fisiológica: De la Presión Negativa a la Positiva" → level-beginner (order: 1)
+   ✅ Module: "El Santo Grial – La Ecuación del Movimiento Respiratorio" → level-beginner (order: 2)
+   ✅ Module: "Variables de Fase y el Ciclo Respiratorio" → level-beginner (order: 3)
+   ✅ Module: "Taxonomía de los Modos Ventilatorios" → level-beginner (order: 4)
+   ✅ Module: "Monitorización Gráfica I: Escalares y Bucles" → level-beginner (order: 5)
+   ✅ Module: "Efectos Sistémicos y VILI" → level-beginner (order: 6)
+   ✅ Module: "VCV vs PCV en el Paciente de Alta Complejidad" → level-intermedio (order: 1)
+   ✅ Module: "PEEP: Fisiopatología y Optimización de la Oxigenación" → level-intermedio (order: 2)
+   ✅ Module: "Soporte Ventilatorio: PSV, CPAP y Protección Pulmonar" → level-intermedio (order: 3)
+   ✅ Module: "Modos Duales y SIMV: Fisiopatología Avanzada" → level-intermedio (order: 4)
+   ✅ Module: "Monitorización Gráfica y Fine Tuning" → level-intermedio (order: 5)
+   ✅ Module: "Mecánicas Avanzadas y Evaluación para el Destete" → level-intermedio (order: 6)
+   ✅ Module: "Historia y Fisiología Aplicada" → ventylab-principiante (order: 1)
+   ✅ Module: "El Ventilador y sus Componentes" → ventylab-principiante (order: 2)
+   ✅ Module: "Programación de Modos Clásicos" → ventylab-intermedio (order: 1)
+   ✅ Module: "Ventilación No Invasiva y Destete" → ventylab-intermedio (order: 2)
+   ✅ Module: "Raciocinio Clínico en Patologías Críticas" → ventylab-avanzado (order: 1)
+   ✅ Module: "Innovación, Tecnología y Gestión del Aprendizaje" → ventylab-avanzado (order: 2)
+   ✅ Module: "VILI y Ventilación Protectora en el Paciente con Obesidad" → level-avanzado (order: 1)
+   ✅ Module: "Monitorización de Alto Nivel: Driving Pressure y Poder Mecánico" → level-avanzado (order: 2)
+   ✅ Module: "Advertencias, Asincronías y Situaciones Complejas" → level-avanzado (order: 3)
+   ✅ Module: "Destete Ventilatorio Complejo y VMNI en el Paciente con Obesidad" → level-avanzado (order: 4)
+   ✅ Module: "Ventilación en Obesidad y Sedentarismo: Patologías Avanzadas" → level-avanzado (order: 5)
+   ✅ Module: "Estrategias en Enfermedades Obstructivas: EPOC, Asma y Fumadores" → level-avanzado (order: 6)
+   ✅ Module: "SDRA en el Paciente Obeso: Ventilación Protectora Avanzada" → level-avanzado (order: 7)
+   ✅ Module: "Protección Extrema: Sinergia entre Fisiología Respiratoria y Arquitectura Cognitiva" → level-avanzado (order: 8)
+
+📄 Phase 2c: Seeding lessons...
+   ✅ respiratory-physiology: 3 lesson(s)
+   ✅ ventilation-principles: 2 lesson(s)
+   ✅ module-01-inversion-fisiologica: 1 lesson(s)
+   ✅ module-02-ecuacion-movimiento: 1 lesson(s)
+   ✅ module-03-variables-fase: 1 lesson(s)
+   ✅ module-04-modos-ventilatorios: 1 lesson(s)
+   ✅ module-05-monitorizacion-grafica: 1 lesson(s)
+   ✅ module-06-efectos-sistemicos: 1 lesson(s)
+   ✅ module-01-vcv-vs-pcv: 1 lesson(s)
+   ✅ module-02-peep-optimizar-oxigenacion: 1 lesson(s)
+   ✅ module-03-soporte-psv-cpap: 1 lesson(s)
+   ✅ module-04-duales-simv: 1 lesson(s)
+   ✅ module-05-graficas-fine-tuning: 1 lesson(s)
+   ✅ module-06-avanzado-evaluacion-destete: 1 lesson(s)
+   ✅ ventylab-module-01-historia-fisiologia: 1 lesson(s)
+   ✅ ventylab-module-02-ventilador-componentes: 1 lesson(s)
+   ✅ ventylab-module-03-programacion-modos: 1 lesson(s)
+   ✅ ventylab-module-04-vni-destete: 1 lesson(s)
+   ✅ ventylab-module-05-raciocinio-clinico: 1 lesson(s)
+   ✅ ventylab-module-06-innovacion-tecnologia: 1 lesson(s)
+   ✅ module-01-vili-ventilacion-protectora: 1 lesson(s)
+   ✅ module-02-monitorizacion-alto-nivel: 1 lesson(s)
+   ✅ module-03-advertencias-asincronias: 1 lesson(s)
+   ✅ module-04-destete-complejo-vmni: 1 lesson(s)
+   ✅ module-05-obesidad-sedentarismo: 1 lesson(s)
+   ✅ module-06-epoc-asma-fumadores: 1 lesson(s)
+   ✅ module-07-sdra: 1 lesson(s)
+   ✅ module-08-recuperacion-proteccion: 1 lesson(s)
+   📊 Total lessons created: 31
+
+🔗 Phase 2d: Seeding level prerequisites...
+   ✅ level-intermedio requires level-beginner
+   ✅ level-avanzado requires level-intermedio
+   ✅ ventylab-intermedio requires ventylab-principiante
+   ✅ ventylab-avanzado requires ventylab-intermedio
+
+🔗 Phase 2e: Seeding module prerequisites...
+   ✅ module-02-peep-optimizar-oxigenacion requires module-01-vcv-vs-pcv
+   ✅ module-03-soporte-psv-cpap requires module-02-peep-optimizar-oxigenacion
+   ✅ module-04-duales-simv requires module-03-soporte-psv-cpap
+   ✅ module-05-graficas-fine-tuning requires module-04-duales-simv
+   ✅ module-06-avanzado-evaluacion-destete requires module-05-graficas-fine-tuning
+   ✅ module-02-monitorizacion-alto-nivel requires module-01-vili-ventilacion-protectora
+   ✅ module-03-advertencias-asincronias requires module-02-monitorizacion-alto-nivel
+   ✅ module-04-destete-complejo-vmni requires module-03-advertencias-asincronias
+   ✅ module-05-obesidad-sedentarismo requires module-04-destete-complejo-vmni
+   ✅ module-06-epoc-asma-fumadores requires module-05-obesidad-sedentarismo
+   ✅ module-07-sdra requires module-06-epoc-asma-fumadores
+   ✅ module-08-recuperacion-proteccion requires module-07-sdra
+   ✅ ventylab-module-02-ventilador-componentes requires ventylab-module-01-historia-fisiologia
+   ✅ ventylab-module-04-vni-destete requires ventylab-module-03-programacion-modos
+   ✅ ventylab-module-06-innovacion-tecnologia requires ventylab-module-05-raciocinio-clinico
+
+🔍 Phase 3: Validating...
+   Levels:              7 (expected: 7)
+   Modules:             28 (expected: 28)
+   Lessons:             31 (expected: 31)
+   Level prerequisites: 4 (expected: 4)
+   Module prerequisites:15 (expected: 15)
+   ✅ Prerequisitos: 2 modules (expected: 2)
+   ✅ Nivel Principiante: 6 modules (expected: 6)
+   ✅ Nivel Intermedio: 6 modules (expected: 6)
+   ✅ Nivel Avanzado: 8 modules (expected: 8)
+   ✅ Principiante: 2 modules (expected: 2)
+   ✅ Intermedio: 2 modules (expected: 2)
+   ✅ Avanzado: 2 modules (expected: 2)
+   ✅ No duplicate slugs within modules
+
+   🎉 All validations passed!
+
+✅ Seed completed successfully!
+exit 0
+== UPDATE levels
+UPDATE 7
+exit 0
+== demo:seed
+npm notice run ventylab-server@1.0.0 demo:seed
+npm notice run tsx prisma/demo/run-demo-command.ts seed
+Demo seed finished in 1809 ms. Demo password for every seeded account: VentyLab-Demo-2026
+Rows per business table (audit_logs is append-only and excluded):
+table                       | rows
+----------------------------|------
+accounts                    |     0
+achievements                |     0
+activities                  |     0
+activity_assignments        |     0
+activity_submissions        |     0
+ai_call_logs                |    39
+ai_conversations            |     3
+ai_messages                 |     8
+ai_ratings                  |     3
+app_settings                |     2
+change_logs                 |     0
+clinical_cases              |     3
+content_overrides           |     0
+error_logs                  |     0
+evaluation_answers          |   167
+evaluation_assignments      |    18
+evaluation_attempt_grants   |     0
+evaluation_attempts         |     0
+evaluation_question_options |    57
+evaluation_questions        |    24
+evaluation_scenarios        |     0
+evaluations                 |     9
+expert_configurations       |     0
+grade_feedbacks             |    32
+group_members               |    12
+group_supervisions          |     2
+groups                      |     3
+learning_activity_events    |     0
+lesson_completions          |    23
+lessons                     |    34
+level_prerequisites         |     4
+levels                      |     8
+media                       |     0
+module_prerequisites        |    15
+modules                     |    30
+notes                       |     5
+notifications               |    65
+page_progress               |    45
+page_revisions              |     6
+page_sections               |    12
+pages                       |     6
+password_reset_tokens       |     0
+platform_settings           |     0
+quiz_attempts               |     0
+quizzes                     |     0
+reservations                |     9
+scores                      |     0
+sections                    |     2
+sessions                    |     0
+simulation_events           |    24
+simulation_sessions         |     8
+simulator_sessions          |     0
+steps                       |     0
+student_evaluation_attempts |    64
+teacher_students            |     0
+telemetry_chunks            |     0
+user_activity_days          |     0
+user_progress               |    15
+users                       |    13
+ventilator_commands         |     0
+ventilator_reservations     |     0
+verification_tokens         |     0
+----------------------------|------
+total                       |   770
+exit 0
+== seed-clinical-cases
+npm notice run ventylab-server@1.0.0 npx
+npm notice run tsx prisma/seed-clinical-cases.ts
+
+🩺  seed-clinical-cases — VentyLab (OE2/OE3)
+    Fuente: src/modules/simulation/patient/clinical-cases.data.ts
+
+  ✅ basic-post-surgical  [OTRAS/BEGINNER]  modo=volume Vt=480 FR=12 PEEP=5 FiO2=40% Pmax=13
+  ✅ basic-neuromuscular  [OTRAS/BEGINNER]  modo=volume Vt=340 FR=14 PEEP=5 FiO2=35% Pmax=11
+  ✅ intermediate-ards-moderate  [SDRA/INTERMEDIATE]  modo=volume Vt=340 FR=20 PEEP=12 FiO2=60% Pmax=24
+  ✅ intermediate-copd-exacerbation  [EPOC/INTERMEDIATE]  modo=pressure Vt=400 FR=14 PEEP=4 FiO2=35% Pmax=17
+  ✅ advanced-ards-severe  [SDRA/ADVANCED]  modo=pressure Vt=420 FR=24 PEEP=16 FiO2=100% Pmax=39
+  ✅ engine-normal-lung  [NORMAL/BEGINNER]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ engine-ards-obese  [SDRA/ADVANCED]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ engine-copd-exacerbation  [EPOC/INTERMEDIATE]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ engine-asthma-crisis  [ASMA/ADVANCED]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ engine-ards-unstable  [SDRA/ADVANCED]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ july-neumonia-grave  [NEUMONIA/INTERMEDIATE]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ july-epoc-descompensado  [EPOC/INTERMEDIATE]  motor fisiológico (PUBLISHED, sin validar)
+  ✅ july-sdra-sepsis  [SDRA/ADVANCED]  motor fisiológico (PUBLISHED, sin validar)
+
+────────────────────────────────────────────────────────────
+    Sembrados en esta corrida: 13
+    Total clinical_cases en BD: 16
+    Total expert_configurations en BD: 5
+────────────────────────────────────────────────────────────
+
+exit 0
+== seed-evaluation
+npm notice run ventylab-server@1.0.0 npx
+npm notice run tsx prisma/seed-evaluation.ts
+
+🌱  seed-evaluation — VentyLab
+    eval dir: C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventylab-server\prisma\seed-data\evaluation
+
+   creator: ana.torres@ventylab.demo (TEACHER)
+
+📝  Seeding quizzes...
+✅  Seeded 26 quizzes
+
+📋  Seeding exams...
+  ⚠  "examen-mecanica-l3-final": moduleId "level03-examen" not in modules table (kept in legacy_module_ref only)
+  ⚠  "examen-mecanica-l2-final": moduleId "level02-examen" not in modules table (kept in legacy_module_ref only)
+  ⚠  "examen-mecanica-l1-final": moduleId "level01-examen" not in modules table (kept in legacy_module_ref only)
+  ⚠  "examen-ventylab-l3-final": moduleId "level03-examen" not in modules table (kept in legacy_module_ref only)
+  ⚠  "examen-ventylab-l2-final": moduleId "level02-examen" not in modules table (kept in legacy_module_ref only)
+  ⚠  "examen-ventylab-l1-final": moduleId "level01-examen" not in modules table (kept in legacy_module_ref only)
+✅  Seeded 6 exams
+
+🔧  Seeding talleres...
+  ⚠  "taller-mecanica-l3-caso-epoc": moduleId "level03-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-mecanica-l3-caso-obeso": moduleId "level03-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-mecanica-l3-caso-sdra": moduleId "level03-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-mecanica-l2-analisis-grafico": moduleId "level02-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-mecanica-l2-programacion-modos": moduleId "level02-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-mecanica-l1-integracion-basica": moduleId "level01-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-ventylab-l3-resolucion-problemas": moduleId "level03-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-ventylab-l2-programacion": moduleId "level02-talleres" not in modules table (kept in legacy_module_ref only)
+  ⚠  "taller-ventylab-l1-reconocimiento": moduleId "level01-talleres" not in modules table (kept in legacy_module_ref only)
+✅  Seeded 9 talleres
+
+─────────────────────────────────────────────
+    26 quizzes | 6 exams | 9 talleres
+─────────────────────────────────────────────
+
+exit 0
+== fin 2026-11-06T17:17:50-05:00

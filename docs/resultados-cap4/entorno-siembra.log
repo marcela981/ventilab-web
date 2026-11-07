@@ -1,4 +1,4 @@
-== migrate deploy 2026-11-06T17:17:26-05:00
+== migrate deploy 2026-11-06T23:56:22-05:00
 npm notice run ventylab-server@1.0.0 npx
 npm notice run prisma migrate deploy
 warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
@@ -10,45 +10,13 @@ Datasource "db": PostgreSQL database "ventylab", schema "public" at "localhost:5
 
 40 migrations found in prisma/migrations
 
-Applying migration `20261104120000_ai_call_log_details`
-Applying migration `20261105130000_evaluation_results_release`
-Applying migration `20261105140000_simulator_ai_block_a`
-Applying migration `20261105150000_user_theme_preference`
-Applying migration `20261105151000_password_reset_tokens`
-Applying migration `20261105160000_ai_call_context_trace`
 
-┌─────────────────────────────────────────────────────────┐
-│  Update available 6.19.2 -> 8.0.0-rc.33                 │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
-The following migration(s) have been applied:
-
-migrations/
-  └─ 20261104120000_ai_call_log_details/
-    └─ migration.sql
-  └─ 20261105130000_evaluation_results_release/
-    └─ migration.sql
-  └─ 20261105140000_simulator_ai_block_a/
-    └─ migration.sql
-  └─ 20261105150000_user_theme_preference/
-    └─ migration.sql
-  └─ 20261105151000_password_reset_tokens/
-    └─ migration.sql
-  └─ 20261105160000_ai_call_context_trace/
-    └─ migration.sql
-      
-All migrations have been successfully applied.
+No pending migrations to apply.
 exit 0
-== demo:reset
+== demo:reset 2026-11-06T23:56:30-05:00
 npm notice run ventylab-server@1.0.0 demo:reset
 npm notice run tsx prisma/demo/run-demo-command.ts reset
-Demo reset finished in 2706 ms. Demo password for every seeded account: VentyLab-Demo-2026
+Demo reset finished in 2649 ms. Demo password for every seeded account: VentyLab-Demo-2026
 Rows per business table (audit_logs is append-only and excluded):
 table                       | rows
 ----------------------------|------
@@ -117,7 +85,7 @@ verification_tokens         |     0
 ----------------------------|------
 total                       |   685
 exit 0
-== prisma:seed
+== prisma:seed 2026-11-06T23:56:35-05:00
 npm notice run ventylab-server@1.0.0 prisma:seed
 npm notice run tsx prisma/seed.ts
 🌱 VentyLab Curriculum Seed
@@ -243,13 +211,13 @@ Module prerequisites: 15
 
 ✅ Seed completed successfully!
 exit 0
-== UPDATE levels
+== UPDATE levels 2026-11-06T23:56:36-05:00
 UPDATE 7
 exit 0
-== demo:seed
+== demo:seed 2026-11-06T23:56:37-05:00
 npm notice run ventylab-server@1.0.0 demo:seed
 npm notice run tsx prisma/demo/run-demo-command.ts seed
-Demo seed finished in 1809 ms. Demo password for every seeded account: VentyLab-Demo-2026
+Demo seed finished in 1948 ms. Demo password for every seeded account: VentyLab-Demo-2026
 Rows per business table (audit_logs is append-only and excluded):
 table                       | rows
 ----------------------------|------
@@ -318,7 +286,7 @@ verification_tokens         |     0
 ----------------------------|------
 total                       |   770
 exit 0
-== seed-clinical-cases
+== seed-clinical-cases 2026-11-06T23:56:40-05:00
 npm notice run ventylab-server@1.0.0 npx
 npm notice run tsx prisma/seed-clinical-cases.ts
 
@@ -346,14 +314,14 @@ npm notice run tsx prisma/seed-clinical-cases.ts
 ────────────────────────────────────────────────────────────
 
 exit 0
-== seed-evaluation
+== seed-evaluation 2026-11-06T23:56:43-05:00
 npm notice run ventylab-server@1.0.0 npx
 npm notice run tsx prisma/seed-evaluation.ts
 
 🌱  seed-evaluation — VentyLab
     eval dir: C:\Users\ALEJANDRA\Documents\Marce\ventylab\ventylab-server\prisma\seed-data\evaluation
 
-   creator: ana.torres@ventylab.demo (TEACHER)
+   creator: superadmin@ventylab.demo (ADMIN)
 
 📝  Seeding quizzes...
 ✅  Seeded 26 quizzes
@@ -384,4 +352,3 @@ npm notice run tsx prisma/seed-evaluation.ts
 ─────────────────────────────────────────────
 
 exit 0
-== fin 2026-11-06T17:17:50-05:00
