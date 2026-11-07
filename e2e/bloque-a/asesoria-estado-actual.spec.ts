@@ -10,8 +10,9 @@
 *   replaced by the deterministic suggestion with "La IA no pudo analizar el estado actual"; (4) from 1440 px the open
 *   drawer pushes the console (its curves end before the drawer). The fake LLM mode is set through its admin route and
 *   restored after each test. Needs the fake LLM (scripts/e2e/fake-llm.mjs, E2E_FAKE_LLM_URL, default
-*   http://127.0.0.1:4910). Depends on @playwright/test and the e2e support helpers.
-* Versión: 1.0
+*   http://127.0.0.1:4910). Depends on @playwright/test and the e2e support helpers. v1.1: the echoed JSON is read
+*   from the visible answer only, not from the visually hidden aria-live copy of the StreamingMessage.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -55,7 +56,17 @@ async function criticalAndPaused(page: Page): Promise<{ spo2: number, severity: 
 async function echoIn(container: Locator): Promise<Echo> {
   await expect(container).toContainText(ECHO_MARKER, { timeout: 60_000 });
 
-  const text = await container.innerText();
+  // Reads only the visible answer: the StreamingMessage also repeats it in a visually hidden aria-live region for
+  // screen readers, and including that copy would join two JSON objects.
+  const text = await container.evaluate((root) => {
+    const visible = root.cloneNode(true) as HTMLElement;
+
+    visible.querySelectorAll("[aria-live]").forEach((region) => {
+      region.remove();
+    });
+
+    return visible.textContent ?? "";
+  });
   const json = text.slice(text.indexOf("{", text.indexOf(ECHO_MARKER)), text.lastIndexOf("}") + 1);
 
   return JSON.parse(json) as Echo;
