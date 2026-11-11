@@ -12,7 +12,10 @@
 *   line, the hint to take the control again only when the backend allows it, and a dismiss button. Depends on MUI,
 *   the design-system confirm dialog, the control and revocation entities and the live page styles.
 *   v1.2 (Bloque 5, C8): `compact` (the July Real strip): the bar without its frame.
-* Versión: 1.2
+*   v1.3 (2026-11-10, real-mode control): the loss notice offers "Retomar control" (one click, the same take request)
+*   when the backend lets the caller take the free control again (own reservation as holder or group leader, or staff),
+*   instead of the hint to look for «Tomar control».
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -80,7 +83,9 @@ export function OperatorControlBar({ view, operatorName, onTake, onTakeover, onR
         <div className={cx(styles.lossNotice)} role="status" data-testid="lab-live-control-loss">
           <p className={cx(styles.lossText)}>{notice.text}</p>
           <p className={cx(styles.lossHint)}>{notice.readOnly}</p>
-          {actions.take ? <p className={cx(styles.lossHint)}>{REVOCATION_COPY.loss.retake}</p> : null}
+          {actions.take ? (
+            <Button variant="contained" size="small" disabled={busy} onClick={() => void onTake()}>{REVOCATION_COPY.loss.retake}</Button>
+          ) : null}
           <Button size="small" onClick={onDismissLoss}>{REVOCATION_COPY.loss.dismiss}</Button>
         </div>
       ) : null}

@@ -21,7 +21,8 @@
 *   preparing, notices).
 *   v0.6 (Bloque 5, C8): the real view owns its top row too: the panel hands RealMonitorSlot the top row (guides,
 *   waiting, loading) and the July pieces of the real console (mode selector, chip, the same value cards preference).
-* Versión: 0.6
+*   v0.7 (2026-11-10): tells RealMonitorSlot when the connection is CONNECTING, so a shown real console stays mounted.
+* Versión: 0.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -84,7 +85,7 @@ function DigitalMonitor({ host, leftTop, chip, cards }: DigitalMonitorProps) {
 
 export function MonitoringPanel() {
   const { sessionId, host, endedSessionId, clear } = useWorkspaceSession();
-  const { connected } = useLabConnection();
+  const { connected, state: connectionState } = useLabConnection();
   const [mode, setMode] = useState<MonitorMode>("digital");
   const [realOpened, setRealOpened] = useState(false);
   const sessionStatus = host?.running?.session.status ?? null;
@@ -121,7 +122,7 @@ export function MonitoringPanel() {
       {/* Same for the real view once opened (telemetry consumers exist only while CONNECTED). */}
       {realOpened ? (
         <div hidden={mode !== "real"}>
-          <RealMonitorSlot connected={connected} header={header} leftTop={selector} statusChip={chip} cards={cards} />
+          <RealMonitorSlot connected={connected} reconnecting={connectionState === "CONNECTING"} header={header} leftTop={selector} statusChip={chip} cards={cards} />
         </div>
       ) : null}
       <SessionResultDialog sessionId={endedSessionId} onClose={clear} />

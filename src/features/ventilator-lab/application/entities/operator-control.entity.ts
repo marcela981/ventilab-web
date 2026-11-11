@@ -22,7 +22,8 @@
 *   the 2xx would otherwise keep it and hide a later staff release); S1 "suspended" remembers that the caller operated
 *   (`suspendedOperator`), so a loss that happened in the back-forward cache is reported by the re-read.
 *   v1.3 (W7, Bloque 1): the state keeps operatorName / operatorLabelKey (projected by role; a control-changed event to another operator leaves them unknown until the re-read); OPERATOR_LABELS (Spanish texts of the generic label keys) and controlOperatorLabel (name, else generic label) for "Opera: <nombre>".
-* Versión: 1.3
+*   v1.4 (2026-11-10, real-mode control): a loss found on a re-read now carries its likely reason instead of the generic "lost": another operator → "taken"; nobody operates and the read follows a socket outage longer than the presence grace (`outageExceededGrace` of the "loaded" event) → "presence_timeout" (the backend released it while the event could not arrive); else "lost".
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -70,7 +71,8 @@ export type ControlView = {
 };
 
 export type ControlEvent =
-  | { type: "loaded", state: OperatorControlState }
+  /** v1.4: `outageExceededGrace` — read right after a socket outage longer than the operator presence grace. */
+  | { type: "loaded", state: OperatorControlState, outageExceededGrace?: boolean }
   | { type: "changed", event: VentilatorControlChangedEvent, selfUserId: string | null }
   | { type: "requested", action: ControlAction }
   | { type: "succeeded", action: ControlAction }
@@ -176,7 +178,20 @@ function lossOnChange(view: ControlView, next: OperatorControlState, event: Vent
   return { reason: event.reason as ControlLossReason, operatorUserId: event.operatorUserId };
 }
 
-function lossOnLoad(view: ControlView, next: OperatorControlState): ControlLoss | null {
+/**
+ * v1.4: the reason of a loss no event explained: someone else operates now (taken), the backend released the control
+ * because the socket was down longer than the presence grace (presence_timeout, the event was missed meanwhile), or
+ * unknown (lost).
+ */
+function unexplainedLossReason(next: OperatorControlState, outageExceededGrace: boolean): ControlLossReason {
+  if (typeof next.operatorUserId === "string") {
+    return "taken";
+  }
+
+  return outageExceededGrace ? "presence_timeout" : "lost";
+}
+
+function lossOnLoad(view: ControlView, next: OperatorControlState, outageExceededGrace: boolean): ControlLoss | null {
   const previous = view.state;
 
   if (next.isOperator) {
@@ -188,7 +203,7 @@ function lossOnLoad(view: ControlView, next: OperatorControlState): ControlLoss 
     return view.loss;
   }
 
-  return { reason: "lost", operatorUserId: typeof next.operatorUserId === "string" ? next.operatorUserId : null };
+  return { reason: unexplainedLossReason(next, outageExceededGrace), operatorUserId: typeof next.operatorUserId === "string" ? next.operatorUserId : null };
 }
 
 export function controlReducer(view: ControlView, event: ControlEvent): ControlView {
@@ -197,7 +212,7 @@ export function controlReducer(view: ControlView, event: ControlEvent): ControlV
       return {
         ...view,
         state: event.state,
-        loss: lossOnLoad(view, event.state),
+        loss: lossOnLoad(view, event.state, event.outageExceededGrace === true),
         ownRelease: event.state.isOperator ? view.ownRelease : false,
         suspendedOperator: false,
       };

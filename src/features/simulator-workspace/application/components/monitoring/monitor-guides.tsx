@@ -9,7 +9,10 @@
 *   part of the Monitoreo chunk), with the waiting message as fallback. Depends also on React.lazy and retryImport.
 *   v0.3 (Bloque 5, C8): the real slot takes the monitor top row (`header`: shown with the guides and the fallback)
 *   and the July pieces it hands to the real monitor (mode selector, signal chip, value cards).
-* Versión: 0.3
+*   v0.4 (2026-11-10, real-mode reconnection): once the real monitor was shown it stays mounted while the connection is
+*   CONNECTING again (socket reconnection, control re-read); before, deriveConnectionState's CONNECTING unmounted the
+*   whole console. The guide to connect is only for a caller who never got CONNECTED (or left the connection).
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -17,7 +20,7 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { ReactNode } from "react";
 import type { MonitorCardsController } from "@shared/ventilator-console";
 import { cx } from "@shared/lib/class-names";
@@ -54,6 +57,8 @@ export function EmptyMonitorGuide() {
 
 export type RealMonitorSlotProps = {
   connected: boolean
+  /** v0.4: the connection is CONNECTING (socket reconnecting, control re-read): a console already shown stays mounted. */
+  reconnecting?: boolean
   /** The monitor top row (mode selector and chip) for the states without the real console. */
   header?: ReactNode
   /** July pieces of the real console: left column top, curves toolbar start, value cards. */
@@ -66,11 +71,20 @@ const RealMonitor = lazy(() =>
   retryImport(() => import("./real/real-monitor")).then((module) => ({ default: module.RealMonitor })),
 );
 
-/** Real mode: the guide to connect, or the real monitor (W10) while connected. */
-export function RealMonitorSlot({ connected, header = null, leftTop = null, statusChip = null, cards }: RealMonitorSlotProps) {
+/** Real mode: the guide to connect, or the real monitor (W10) while connected and while it reconnects. */
+export function RealMonitorSlot({ connected, reconnecting = false, header = null, leftTop = null, statusChip = null, cards }: RealMonitorSlotProps) {
   const { selectTab } = useWorkspaceTab();
+  // Latched once CONNECTED and kept while CONNECTING: a reconnection must not unmount the console (curves, breath
+  // detection, pending edits and the command queue would start over); only leaving the connection drops it.
+  const [shown, setShown] = useState(connected);
 
-  if (connected) {
+  if (connected && !shown) {
+    setShown(true);
+  } else if (!connected && !reconnecting && shown) {
+    setShown(false);
+  }
+
+  if (connected || (shown && reconnecting)) {
     return (
       <section data-slot="real-monitor">
         <Suspense fallback={<>{header}<p className={cx(styles.guideText)} role="status">{MONITOR_GUIDES_COPY.realConnected}</p></>}>

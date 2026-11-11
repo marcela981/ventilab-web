@@ -14,7 +14,8 @@
 *   v1.4 (T12 review fix): a re-read answering after unmount writes nothing (no unhandled rejection from SWR's removed
 *   cache, W2); a failed re-read after a control-changed event is retried once (bounded) so SWR data is not ignored
 *   for good, and a second failure sends nothing more (S1).
-* Versión: 1.4
+*   v1.5 (2026-11-10): a re-read after a socket outage longer than the presence grace reports a presence_timeout loss.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -205,6 +206,28 @@ describe("useOperatorControl", () => {
     act(() => vi.advanceTimersByTime(20_000));
     expect(beats()).toBe(2);
     expect(count("POST /api/ventilator/control/heartbeat")).toBe(0);
+  });
+
+  it("reports a presence_timeout loss when the re-read after a socket outage longer than the grace finds the control released (2026-11-10)", async() => {
+    useHandlers();
+    controlState = stateDto({ operatorUserId: SELF, isOperator: true, canTake: false });
+    let now = 1_000_000;
+    const realtime = createRealtimeStatusControl("authenticated");
+    const { result } = renderLabHook(
+      () => useOperatorControl({ enabled: true, releaseOnLeave: () => undefined, presenceGraceMs: 15_000, now: () => now }),
+      { socket: createFakeSocket(), realtimeControl: realtime },
+    );
+    await until(() => result.current.view.state?.isOperator === true);
+
+    // The socket is down 20 s; meanwhile the backend released the control (its event could not arrive).
+    realtime.set("disconnected");
+    await settle();
+    now += 20_000;
+    controlState = stateDto({ operatorUserId: null, isOperator: false, canTake: true });
+    realtime.set("authenticated");
+
+    await until(() => result.current.view.loss !== null);
+    expect(result.current.view.loss).toEqual({ reason: "presence_timeout", operatorUserId: null });
   });
 
   it("stops beating when the control is taken over", async() => {

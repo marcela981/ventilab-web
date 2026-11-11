@@ -27,7 +27,11 @@
 *   the same monitor state, rated as an AI_CALL of SIMULATOR_ASSIST). The AI only suggests; nothing it returns reaches
 *   the ventilator commands.
 *   v0.4 (fix sim-assist-current-state): the case loaded in the workspace (`?case=`) goes with the AI help state.
-* Versión: 0.4
+*   v0.5 (2026-11-10, real-mode reconnection): the monitor now stays mounted while the connection is CONNECTING again
+*   (monitor-guides), so while the socket is back but the room / control are still being re-established it shows
+*   "Reconectando con el ventilador…" (the socket-down notice covers the outage itself). The July console sends
+*   explicitly with Enviar (no summary dialog, no automatic send).
+* Versión: 0.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -79,6 +83,7 @@ export const REAL_MONITOR_COPY = {
   noDataNotice: (seconds: number) => `Equipo sin datos: sin señal del ventilador hace más de ${seconds} segundos.`,
   noDataReason: "Equipo sin datos: los ajustes mostrados son los últimos que informó el equipo; los controles se habilitan cuando vuelva a enviar datos.",
   socketLost: "Se perdió la conexión en tiempo real con el servidor. Reconectando…",
+  reconnecting: "Reconectando con el ventilador… La consola sigue visible en solo lectura hasta recuperar la conexión.",
   socketLostOverlay: "Sin conexión con el servidor",
   socketLostReason: "Sin conexión en tiempo real: los ajustes mostrados son los últimos que informó el equipo; los controles se habilitan al reconectar.",
   observer: "Solo lectura: no tienes el control del equipo.",
@@ -186,7 +191,7 @@ function renderRealAssist(getMonitorState: () => RealMonitorStateDTO, live: bool
 
 export function RealMonitor({ header = null, leftTop = null, statusChip = null, cards }: RealMonitorProps = {}) {
   const connection = useLabConnection();
-  const { reservation, socketOnline, isOperator, canControl } = connection;
+  const { reservation, socketOnline, isOperator, canControl, state } = connection;
   const router = useRouter();
   // The case loaded in the workspace, when there is one: the AI help names it.
   const caseId = typeof router.query.case === "string" && router.query.case.trim() !== "" ? router.query.case.trim() : null;
@@ -246,6 +251,9 @@ export function RealMonitor({ header = null, leftTop = null, statusChip = null, 
       </div>
       {recording.note ? <p className={cx(styles.muted)} role="status">{recording.note}</p> : null}
       {!socketOnline ? <p className={cx(styles.notice)} role="alert">{REAL_MONITOR_COPY.socketLost}</p> : null}
+      {socketOnline && state === "CONNECTING" ? (
+        <p className={cx(styles.notice)} role="status" data-testid="real-monitor-reconnecting">{REAL_MONITOR_COPY.reconnecting}</p>
+      ) : null}
       {noData ? (
         <p className={cx(styles.notice)} role="alert" data-testid="real-monitor-no-data">
           {REAL_MONITOR_COPY.noDataNotice(Math.round(staleAfterMs / 1000))}

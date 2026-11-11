@@ -11,7 +11,9 @@
 *   the reservation). v1.2 (T9 review fix): W3 the own release is forgotten when the caller takes or is given the control again; S1 a
 *   loss during a back-forward cache stay is reported by the first re-read.
 *   v1.3 (W7, Bloque 1): the operator name and generic label (controlOperatorLabel) and their reset on a control change.
-* Versión: 1.3
+*   v1.4 (2026-11-10): a loss found on a re-read carries its reason: taken (another operator), presence_timeout (after a
+*   socket outage longer than the presence grace) or lost.
+* Versión: 1.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -156,8 +158,14 @@ describe("control loss (T9)", () => {
   });
 
   it("records a loss found on a re-read of the same reservation (missed event)", () => {
+    // Someone else operates now: taken.
     const reread = controlReducer(operator(), { type: "loaded", state: state({ operatorUserId: "teacher-1", canTake: false }) });
-    expect(reread.loss).toEqual({ reason: "lost", operatorUserId: "teacher-1" });
+    expect(reread.loss).toEqual({ reason: "taken", operatorUserId: "teacher-1" });
+    // Nobody operates after a socket outage longer than the presence grace: the backend released it (presence_timeout).
+    expect(controlReducer(operator(), { type: "loaded", state: state({ operatorUserId: null }), outageExceededGrace: true }).loss)
+      .toEqual({ reason: "presence_timeout", operatorUserId: null });
+    // Nobody operates without such an outage: unknown.
+    expect(controlReducer(operator(), { type: "loaded", state: state({ operatorUserId: null }) }).loss).toEqual({ reason: "lost", operatorUserId: null });
 
     // A re-read confirming the event keeps the event reason.
     const afterEvent = changed(operator(), "teacher-1", "takeover");
@@ -187,7 +195,7 @@ describe("control loss (T9)", () => {
     const suspended = controlReducer(operator(), { type: "suspended" });
 
     expect(controlReducer(suspended, { type: "loaded", state: state({ operatorUserId: "teacher-1", canTake: false }) }).loss)
-      .toEqual({ reason: "lost", operatorUserId: "teacher-1" });
+      .toEqual({ reason: "taken", operatorUserId: "teacher-1" });
     // Still the operator after the restore, or restored as a viewer: nothing was lost.
     expect(controlReducer(suspended, { type: "loaded", state: state({ operatorUserId: SELF, isOperator: true }) }).loss).toBeNull();
     const viewer = controlReducer(loaded({ operatorUserId: "student-2" }), { type: "suspended" });
