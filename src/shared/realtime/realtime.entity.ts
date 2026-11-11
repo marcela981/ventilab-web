@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Realtime contract types
-* Descripción: Socket.io event names and payloads used by new code, taken from ventylab-server/openapi/asyncapi.yaml (connection events authenticated/auth_error, the client authenticate message and the user-room events user:role-changed, notification:new, grade:published, achievement:unlocked). v1.1 (S0 evaluations): the group-room event evaluation:activated (an evaluation was assigned and opened for the group). v1.2 (T0 ventilator-lab): the ventilator events (telemetry batch, alarm, availability, join-rejected, device connected/disconnected with reason, control-changed, command-status), reservation:preempted (user and group rooms) and the client messages ventilator:join and ventilator:heartbeat (payload ignored by the backend), from the asyncapi messages and the backend payload interfaces. Payload schemas that live in openapi.json come from the generated api-client types. Type-only module; depends on the session entity and the generated schema. v1.3 (O4b admin-console): system:status-changed (role rooms ADMIN and TEACHER) with the global state, previous state, changed components and checkedAt, typed from the SystemStatusDTO enums of the generated schema (payload from ventylab-server system-status.service.ts; not in asyncapi). v1.4 (closure B1): notification:new is the per-type discriminated union of the generated notification variants (NotificationNewEvent), so `type` narrows `data`. v1.5 (Bloque 3): ATTEMPT_RESET joins the notification:new union (asyncapi unchanged: it travels in the existing union). v1.6 (ajustes D2): GROUP_MEMBER_ADDED joins the union.
-* Versión: 1.6
+* Descripción: Socket.io event names and payloads used by new code, taken from ventylab-server/openapi/asyncapi.yaml (connection events authenticated/auth_error, the client authenticate message and the user-room events user:role-changed, notification:new, grade:published, achievement:unlocked). v1.1 (S0 evaluations): the group-room event evaluation:activated (an evaluation was assigned and opened for the group). v1.2 (T0 ventilator-lab): the ventilator events (telemetry batch, alarm, availability, join-rejected, device connected/disconnected with reason, control-changed, command-status), reservation:preempted (user and group rooms) and the client messages ventilator:join and ventilator:heartbeat (payload ignored by the backend), from the asyncapi messages and the backend payload interfaces. Payload schemas that live in openapi.json come from the generated api-client types. Type-only module; depends on the session entity and the generated schema. v1.3 (O4b admin-console): system:status-changed (role rooms ADMIN and TEACHER) with the global state, previous state, changed components and checkedAt, typed from the SystemStatusDTO enums of the generated schema (payload from ventylab-server system-status.service.ts; not in asyncapi). v1.4 (closure B1): notification:new is the per-type discriminated union of the generated notification variants (NotificationNewEvent), so `type` narrows `data`. v1.5 (Bloque 3): ATTEMPT_RESET joins the notification:new union (asyncapi unchanged: it travels in the existing union). v1.6 (ajustes D2): GROUP_MEMBER_ADDED joins the union. v1.7 (2026-11-10, real-mode chart): TelemetryFrame adds the optional `deviceClock` (raw device uptime, not epoch) of the backend; `deviceTs` is documented as epoch ms only.
+* Versión: 1.7
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -35,7 +35,10 @@ export type EvaluationActivatedEvent = {
 /** One device frame as relayed by the backend (asyncapi `TelemetryFrame`); every optional field is device-reported. */
 export type VentilatorTelemetryFrame = {
   serverTs: number
+  /** Device clock in epoch ms; the backend sets it only when valid (> 1e12). */
   deviceTs?: number
+  /** v1.7: raw device uptime counter (non-epoch, e.g. 147); never a time base for the curves. */
+  deviceClock?: number
   seq?: number
   pressure: number
   flow: number

@@ -6,7 +6,12 @@
 *   larger value than the one already published: the console recreates (clears) its curve ring when the rate changes, so
 *   jitter must not move it, and a ring sized for a higher rate only keeps more history. A time going backwards (clock
 *   reset) restarts the window. Pure state, no React.
-* Versión: 1.0
+*   v1.1 (2026-11-10, real-mode chart): the published rate also goes DOWN, with hysteresis instead of "only grows": a
+*   new estimate is published only when it differs from the published one by at least hysteresis (25 %), so the
+*   rounding jitter between neighbouring steps (e.g. 50 ↔ 60 Hz) never clears the curve ring, while a real change
+*   (60 → 30 Hz, a reconnection at another rate) resizes it once. A 25 % margin still leaves the ring (twice the
+*   largest window) covering the whole window when the rate is underestimated.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -14,9 +19,10 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-export type SampleRateOptions = { windowMs: number, minSpanMs: number, stepHz: number, maxHz: number };
+/** `hysteresis`: relative change (0.25 = 25 %) needed to publish a new rate. */
+export type SampleRateOptions = { windowMs: number, minSpanMs: number, stepHz: number, maxHz: number, hysteresis: number };
 
-export const DEFAULT_SAMPLE_RATE_OPTIONS: SampleRateOptions = { windowMs: 2000, minSpanMs: 1000, stepHz: 10, maxHz: 200 };
+export const DEFAULT_SAMPLE_RATE_OPTIONS: SampleRateOptions = { windowMs: 2000, minSpanMs: 1000, stepHz: 10, maxHz: 200, hysteresis: 0.25 };
 
 export type SampleRateEstimator = {
   /** Adds sample times (ms) and returns the published rate (undefined until there is enough data). */
@@ -64,7 +70,7 @@ export function createSampleRateEstimator(overrides: Partial<SampleRateOptions> 
 
       const next = estimate();
 
-      if (next !== undefined && (published === undefined || next > published)) {
+      if (next !== undefined && (published === undefined || Math.abs(next - published) >= options.hysteresis * published)) {
         published = next;
       }
 

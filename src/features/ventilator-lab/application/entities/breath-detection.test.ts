@@ -2,7 +2,9 @@
 * Funcionalidad: Breath detection tests
 * Descripción: Checks the breath-cycle detection and the derived metrics against synthetic curves of KNOWN values built from a single-compartment lung (P = PEEP + V/C + R·F): volume control with an inspiratory pause (plateau), volume control without a pause (no plateau → Pplat/ΔP null), pressure control whose flow decays to zero (plateau = inspiratory pressure), and the paused volume breath with deterministic noise. Every metric must be within 2 % of the known value. Also covers chunked pushes, a stream starting mid-inspiration, data gaps, backwards time and stale metrics. v1.1 (T5 review fix): a flow offset / leak during the expiratory pause, a 1–3 L/min noisy baseline with a short spike, a patient-triggered inspiration, fast and slow rates, the restart after an apnea, a missing peak sample, the few-periods gap limit and the null PEEP of a breath without end-expiratory samples. Depends on Vitest only.
 *   v1.2 (Bloque 5, C4): the mean pressure and the flow extremes of a known pressure-control breath.
-* Versión: 1.2
+*   v1.3 (2026-11-10): gaps up to 2 s (network jitter, late batches) keep the history and the metrics; only a longer
+*   silence clears them.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -256,11 +258,11 @@ describe("breath detector stream handling", () => {
     expect(breaths.map((breath) => breath.startMs)).toEqual([4000, 8000]);
   });
 
-  it("drops the breath in progress and the previous breaths after a data gap", () => {
+  it("drops the breath in progress and the previous breaths after a long data gap (> 2 s)", () => {
     const samples = synthesize(VCV_WITH_PAUSE, 5);
-    const withGap = [...samples.slice(0, 450), ...samples.slice(520)];
+    const withGap = [...samples.slice(0, 450), ...samples.slice(560)];
 
-    // The gap (1.4 s without samples) drops the breath that started at 8000 and the breaths before it, so the metrics
+    // The gap (2.2 s without samples) drops the breath that started at 8000 and the breaths before it, so the metrics
     // stay null until a breath without a gap is complete; detection starts over at the next inspiration.
     expect(detectBreaths(withGap).map((breath) => breath.startMs)).toEqual([12000]);
     const detector = createBreathDetector();
@@ -268,13 +270,17 @@ describe("breath detector stream handling", () => {
     expect(computeBreathMetrics(detector.breaths(), detector.latestMs()).peakPressure).toBeNull();
   });
 
-  it("treats a few missing sample periods as a gap, not one second", () => {
+  it("tolerates isolated network gaps of a few hundred ms: the history and the metrics stay (v1.3)", () => {
     const samples = synthesize(VCV_WITH_PAUSE, 5);
-    // 240 ms without samples (12 periods at 50 Hz) inside the breath that starts at 8000.
-    const withGap = [...samples.slice(0, 450), ...samples.slice(462)];
+    // 240 ms and then 1.4 s without samples (late batches) inside the breath that starts at 8000.
+    const withGaps = [...samples.slice(0, 450), ...samples.slice(462, 480), ...samples.slice(550)];
+    const detector = createBreathDetector();
 
-    expect(detectBreaths(withGap).map((breath) => breath.startMs)).toEqual([12000]);
-    // A single missing sample is not a gap.
+    expect(detectBreaths(withGaps).map((breath) => breath.startMs)).toEqual([4000, 8000, 12000]);
+    detector.push(withGaps.slice(0, 450));
+    detector.push(withGaps.slice(450, 460));
+    expect(computeBreathMetrics(detector.breaths(), detector.latestMs()).peakPressure).not.toBeNull();
+    // A single missing sample is not a gap either.
     expect(detectBreaths([...samples.slice(0, 450), ...samples.slice(451)]).map((breath) => breath.startMs)).toEqual([4000, 8000, 12000]);
   });
 
