@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator command mapper tests
-* Descripción: The console confirmation becomes a SendVentilatorCommandRequestDTO only from values the operator confirmed or the device reported: FiO2 % → fraction, flow trigger → sensitivity, the unchanged required fields of the mode taken from the reported settings, the I:E ratio dropped when RR/Ti change, fields without a console control carried only while the mode is unchanged; it refuses (never guesses) without changes, without a known mode, for a change into PCV/PSV (absolute pressure limit with no console control), for a parameter without a backend field, out of the limits, when a required field was never reported and for incoherent times or pressures. The limits are the stricter of the vendored engine limits and the backend safety maxima; the editable parameters per mode and the mode options; the device report keeps the latest settings and mode; a report matches the targets within the backend tolerance. v1.1 (T8 review fix): a Vt/Ti change is refused while the device reports a fixed flow (B1), a report must be closer to the target than to the pre-command base (W1), an unsupported reported mode (S2) and a reported I:E inconsistent with FR/Ti (S3) are explained. v1.2 (T8 review fix 2): the B1 refusal also applies across a mode change and in PCV. v1.3 (T8 review fix 3): the reported flow is carried across VCV ↔ SIMV (W3) and an FR change under a reported I:E without a reported Ti is refused. v1.4 (T8 review fix 4): W1 that refusal also applies across a mode change (the device keeps its I:E even when the command does not carry it). Depends on vitest and the command mapper entity.
-* Versión: 1.4
+* Descripción: The console confirmation becomes a SendVentilatorCommandRequestDTO only from values the operator confirmed or the device reported: FiO2 % → fraction, flow trigger → sensitivity, the unchanged required fields of the mode taken from the reported settings, the I:E ratio dropped when RR/Ti change, fields without a console control carried only while the mode is unchanged; it refuses (never guesses) without changes, without a known mode, for a change into PCV/PSV (absolute pressure limit with no console control), for a parameter without a backend field, out of the limits, when a required field was never reported and for incoherent times or pressures. The limits are the stricter of the vendored engine limits and the backend safety maxima; the editable parameters per mode and the mode options; the device report keeps the latest settings and mode; a report matches the targets within the backend tolerance. v1.1 (T8 review fix): a Vt/Ti change is refused while the device reports a fixed flow (B1), a report must be closer to the target than to the pre-command base (W1), an unsupported reported mode (S2) and a reported I:E inconsistent with FR/Ti (S3) are explained. v1.2 (T8 review fix 2): the B1 refusal also applies across a mode change and in PCV. v1.3 (T8 review fix 3): the reported flow is carried across VCV ↔ SIMV (W3) and an FR change under a reported I:E without a reported Ti is refused. v1.4 (T8 review fix 4): W1 that refusal also applies across a mode change (the device keeps its I:E even when the command does not carry it). Depends on vitest and the command mapper entity. v1.5 (2026-11-10): without device settings the first command is refused until the confirmation carries the mode and every required field (the initial proposal: Digital defaults), later commands are built on the last snapshot sent, and device-reported values win over it.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -16,12 +16,15 @@ import type { LabSettings } from "./lab-settings.entity";
 import {
   buildCommandLimits,
   COMMAND_APPLICABILITY,
+  commandBase,
   commandModeOptions,
   commandRefusalMessage,
   EMPTY_DEVICE_REPORT,
+  initialProposal,
   mapConfirmationToCommand,
   reduceDeviceReport,
   reportMatchesTargets,
+  sentSnapshotOf,
 } from "./command-mapper";
 import type { DeviceReport } from "./command-mapper";
 
@@ -142,7 +145,7 @@ describe("mapConfirmationToCommand", () => {
     ["a value out of the limits", { mode: null, changes: [{ parameter: "peep", value: 16 }] }, VCV_REPORT, "out_of_limits"],
     ["a non-finite value", { mode: null, changes: [{ parameter: "peep", value: Number.NaN }] }, VCV_REPORT, "out_of_limits"],
     ["a required field never reported", { mode: null, changes: [{ parameter: "peep", value: 6 }] }, { mode: "VCV", settings: { respiratoryRate: 14, peep: 5, fio2: 0.4 } }, "missing_required"],
-    ["no reported settings at all", { mode: null, changes: [{ parameter: "peep", value: 6 }] }, { mode: "VCV", settings: null }, "missing_required"],
+    ["no reported settings at all (nothing sent yet)", { mode: null, changes: [{ parameter: "peep", value: 6 }] }, { mode: "VCV", settings: null }, "initial_unconfirmed"],
     ["an expiratory time below 0.3 s", { mode: null, changes: [{ parameter: "respiratoryRate", value: 35 }] }, { mode: "VCV", settings: { ...VCV_REPORT.settings, inspiratoryTime: 1.5 } }, "expiratory_time"],
     ["an inverse I:E ratio", { mode: null, changes: [{ parameter: "inspiratoryTime", value: 2.5 }] }, VCV_REPORT, "ie_ratio"],
     ["a pressure limit not above PEEP", { mode: null, changes: [{ parameter: "peep", value: 15 }] }, { mode: "VCV", settings: { ...VCV_REPORT.settings, pressureLimit: 12 } }, "pressure_not_above_peep"],
@@ -321,5 +324,72 @@ describe("reduceDeviceReport / reportMatchesTargets", () => {
     const result = mapConfirmationToCommand({ mode: null, changes: [{ parameter: "fio2", value: 60 }] }, VCV_REPORT, OPTIONS);
 
     expect(result.ok && result.command.targets).toEqual([{ parameter: "fio2", value: 60, base: 40 }]);
+  });
+});
+
+describe("real mode without reported settings (v1.5)", () => {
+  const NOTHING: DeviceReport = { mode: null, settings: null };
+  const proposal = initialProposal(null);
+  const fullConfirmation = { mode: proposal.mode, changes: Object.entries(proposal.values).map(([parameter, value]) => ({ parameter, value })) };
+
+  it("proposes the Digital defaults of every commandable parameter of the default mode", () => {
+    expect(proposal).toEqual({
+      mode: "VCV",
+      values: { tidalVolume: 450, respiratoryRate: 14, peep: 5, fio2: 40, inspiratoryTime: 1, flowTrigger: 2 },
+    });
+    // A mode the device reports is kept (not proposed again) and only its parameters are offered.
+    expect(initialProposal("simv")).toEqual({ mode: null, values: proposal.values });
+  });
+
+  it("refuses the first command until the mode and every required field are confirmed", () => {
+    const withoutMode = mapConfirmationToCommand({ mode: null, changes: fullConfirmation.changes }, NOTHING, OPTIONS);
+
+    expect(!withoutMode.ok && withoutMode.refusal.code).toBe("unknown_mode");
+
+    const partial = mapConfirmationToCommand({ mode: "VCV", changes: [{ parameter: "peep", value: 6 }, { parameter: "fio2", value: 50 }] }, NOTHING, OPTIONS);
+
+    expect(partial.ok).toBe(false);
+    expect(!partial.ok && partial.refusal).toEqual({ code: "initial_unconfirmed", fields: ["tidalVolume", "respiratoryRate"] });
+    expect(!partial.ok && commandRefusalMessage(partial.refusal)).toMatch(/primer envío debe incluir todos los parámetros/);
+  });
+
+  it("sends the whole configuration once it is confirmed (a full snapshot, never a guess)", () => {
+    const result = mapConfirmationToCommand(fullConfirmation, NOTHING, OPTIONS);
+
+    expect(result.ok).toBe(true);
+    expect(result.ok && result.command.request).toEqual({
+      mode: "VCV",
+      tidalVolume: 450,
+      respiratoryRate: 14,
+      peep: 5,
+      fio2: 0.4,
+      inspiratoryTime: 1,
+      sensitivity: 2,
+    });
+    expect(result.ok && result.command.modeChanged).toBe(true);
+    // Client range validation still applies to the initial configuration.
+    const outOfRange = mapConfirmationToCommand({ ...fullConfirmation, changes: [...fullConfirmation.changes, { parameter: "peep", value: 16 }] }, NOTHING, OPTIONS);
+
+    expect(!outOfRange.ok && outOfRange.refusal.code).toBe("out_of_limits");
+  });
+
+  it("builds later commands on the last snapshot sent: one change is a full snapshot", () => {
+    const sent = sentSnapshotOf({ mode: "VCV", tidalVolume: 450, respiratoryRate: 14, peep: 5, fio2: 0.4, inspiratoryTime: 1, sensitivity: 2 });
+    const result = mapConfirmationToCommand({ mode: null, changes: [{ parameter: "peep", value: 8 }] }, NOTHING, { ...OPTIONS, sent });
+
+    expect(result.ok && result.command.request).toEqual({ mode: "VCV", tidalVolume: 450, respiratoryRate: 14, peep: 8, fio2: 0.4, inspiratoryTime: 1, sensitivity: 2 });
+    expect(result.ok && result.command.modeChanged).toBe(false);
+    expect(result.ok && result.command.targets).toEqual([{ parameter: "peep", value: 8, base: 5 }]);
+  });
+
+  it("lets the device-reported values win over the last snapshot sent", () => {
+    const sent = sentSnapshotOf({ mode: "SIMV", tidalVolume: 500, respiratoryRate: 20, peep: 10, fio2: 0.6 });
+
+    expect(commandBase(VCV_REPORT, sent)).toEqual(VCV_REPORT);
+    expect(commandBase({ mode: "VCV", settings: null }, sent)).toEqual({ mode: "VCV", settings: sent.settings });
+
+    const result = mapConfirmationToCommand({ mode: null, changes: [{ parameter: "fio2", value: 50 }] }, VCV_REPORT, { ...OPTIONS, sent });
+
+    expect(result.ok && result.command.request).toMatchObject({ mode: "VCV", tidalVolume: 450, respiratoryRate: 14, peep: 5, fio2: 0.5 });
   });
 });

@@ -1,7 +1,12 @@
 /*
 * Funcionalidad: Real console adapter tests
 * Descripción: Covers the pure pieces of the real-ventilator console adapter: the telemetry sample mapper (device or server time base, monotonic tMs, late frames dropped, clock reset, non-finite values dropped), the sample-rate estimate, the frame hub (stable source, samples delivered by reference, no listener → nothing), the reported settings and state (backend keys → console ids, FiO2 fraction → %, unknown keys not shown, latest frame wins), the alarms (4 device severities → 3 console priorities, clear on inactive, frame alarm codes, the synthetic "Equipo sin datos") and the adapter composition (derived metrics marked, patient monitor only with reported vitals, read-only by default, no-data status). Depends on Vitest only. v1.1 (T5 review fix): frame alarm expiry, no prototype lookups, the ΔP description.
-* Versión: 1.1
+*   v1.2 (2026-11-10): the mapper ignores a non-epoch deviceTs and spaces same-millisecond / late server frames by the
+*   nominal period; the rate estimate goes down with hysteresis; the exact real device pattern (no deviceTs, shared
+*   milliseconds, 30–60 Hz with jitter, synthetic breaths) gives strictly increasing times and non-null metrics.
+*   v1.3 (2026-11-10): without device settings the adapter offers the initial proposal only while nothing was sent,
+*   queued or in flight, shows the last snapshot sent (settings and mode) and lets device-reported values win over it.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -12,7 +17,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { VentilatorTelemetryFrame } from "@shared/realtime";
 import type { ConsoleSampleBatch } from "@shared/ventilator-console";
-import { EMPTY_BREATH_METRICS } from "./breath-detection";
+import { computeBreathMetrics, createBreathDetector, EMPTY_BREATH_METRICS } from "./breath-detection";
 import { buildRealConsoleAdapter, toDerivedMetrics } from "./real-console-adapter";
 import { EMPTY_REPORTED_STATE, FRAME_ALARMS_TTL_MS, reduceReportedState, toConsoleSettingValues } from "./reported-settings";
 import { createSampleRateEstimator } from "./sample-rate";
@@ -47,10 +52,12 @@ function deviceAlarm(overrides: Partial<DeviceAlarm> = {}): DeviceAlarm {
 }
 
 describe("telemetry sample mapper", () => {
-  it("maps frames to console samples with times relative to the first frame, preferring the device clock", () => {
+  const EPOCH = 1_762_800_000_000;
+
+  it("maps frames to console samples with times relative to the first frame, preferring a device epoch clock", () => {
     const mapper = createTelemetrySampleMapper();
 
-    expect(mapper.map([frame(1_000_050, { deviceTs: 2_000_000 }), frame(1_000_090, { deviceTs: 2_000_033, pressure: 12, flow: -5, volume: 280 })])).toEqual([
+    expect(mapper.map([frame(1_000_050, { deviceTs: EPOCH }), frame(1_000_090, { deviceTs: EPOCH + 33, pressure: 12, flow: -5, volume: 280 })])).toEqual([
       { tMs: 0, pressure: 10, flow: 20, volume: 300 },
       { tMs: 33, pressure: 12, flow: -5, volume: 280 },
     ]);
@@ -59,28 +66,108 @@ describe("telemetry sample mapper", () => {
     expect(server.map([frame(1000), frame(1040)]).map((sample) => sample.tMs)).toEqual([0, 40]);
   });
 
-  it("drops non-finite values and late frames, and restarts the time base on a large backwards jump", () => {
+  it("ignores a deviceTs that is not epoch ms (device uptime counter) and falls back to serverTs", () => {
+    const mapper = createTelemetrySampleMapper();
+
+    expect(mapper.map([frame(1000, { deviceTs: 147 }), frame(1040, { deviceTs: 180 }), frame(1080, { deviceTs: 2e13 })]).map((sample) => sample.tMs)).toEqual([0, 40, 80]);
+  });
+
+  it("spaces frames that share a millisecond or arrive late by the nominal period, strictly increasing", () => {
+    const mapper = createTelemetrySampleMapper();
+    // 20 ms apart, then a burst of three frames stamped in the same millisecond and one 10 ms late.
+    const times = mapper.map([frame(1000), frame(1020), frame(1040), frame(1060), frame(1060), frame(1060), frame(1050), frame(1140)])
+      .map((sample) => sample.tMs);
+
+    // Spaced by the mean receipt interval of the window (60 ms / 4 = 15 ms, then less as the burst shortens it).
+    expect(times.slice(0, 5)).toEqual([0, 20, 40, 60, 75]);
+    expect(times.every((time, index) => index === 0 || time > times[index - 1]!)).toBe(true);
+    // Back on the server clock as soon as the receipt time is ahead again.
+    expect(times[times.length - 1]).toBe(140);
+  });
+
+  it("drops non-finite values and restarts the time base on a large backwards jump", () => {
     const mapper = createTelemetrySampleMapper();
 
     expect(mapper.map([frame(1000), frame(1020, { pressure: Number.NaN }), frame(1040, { flow: Number.POSITIVE_INFINITY }), frame(1060)])
       .map((sample) => sample.tMs)).toEqual([0, 60]);
-    // A frame slightly in the past (reordered) is dropped; repeated times are kept.
-    expect(mapper.map([frame(1050), frame(1060), frame(1080)]).map((sample) => sample.tMs)).toEqual([60, 80]);
     // A large jump back (device reboot, clock change) is a clock reset: the time goes back, which clears the console ring.
     expect(mapper.map([frame(-5000), frame(-4980)]).map((sample) => sample.tMs)).toEqual([0, 20]);
     expect(mapper.map([frame(-4960)]).map((sample) => sample.tMs)).toEqual([40]);
   });
 
-  it("restarts the time base when the device clock appears or disappears", () => {
+  it("restarts the time base when the device clock appears or disappears, and drops a late device frame", () => {
     const mapper = createTelemetrySampleMapper();
 
     expect(mapper.map([frame(1000), frame(1040)]).map((sample) => sample.tMs)).toEqual([0, 40]);
-    expect(mapper.map([frame(1080, { deviceTs: 9_000_000 }), frame(1110, { deviceTs: 9_000_033 })]).map((sample) => sample.tMs)).toEqual([0, 33]);
+    expect(mapper.map([frame(1080, { deviceTs: EPOCH }), frame(1110, { deviceTs: EPOCH + 33 }), frame(1120, { deviceTs: EPOCH + 20 })]).map((sample) => sample.tMs)).toEqual([0, 33]);
+  });
+});
+
+describe("real device message pattern (2026-11-10)", () => {
+  /**
+   * The device publishes {"pressure","flow","volume","timestamp"} at 30–60 Hz with no epoch clock: the backend relays
+   * each frame with its receipt time in whole ms (no deviceTs, no seq) in batches every 33 ms, so frames share a
+   * millisecond and carry network jitter. Synthetic breaths: 15 rpm, Ti 1 s with a sinusoidal inspiratory flow, a passive exponential expiration, PEEP 5,
+   * peak about 20.
+   */
+  function realFrames(seconds: number): VentilatorTelemetryFrame[] {
+    const frames: VentilatorTelemetryFrame[] = [];
+    let seed = 7;
+    const random = () => {
+      seed = (seed * 16807) % 2147483647;
+
+      return seed / 2147483647;
+    };
+    let t = 0;
+    const start = 1_762_800_000_000;
+    let receipt = start;
+    let volume = 0;
+
+    while (t < seconds * 1000) {
+      const period = 1000 / (30 + random() * 30);
+      const phase = t % 4000;
+      const flow = phase < 1000 ? 40 * Math.sin((Math.PI * phase) / 1000) : -50 * Math.exp(-(phase - 1000) / 400);
+      volume = Math.max(0, volume + (flow * period) / 60);
+      const pressure = phase < 1000 ? 5 + 15 * Math.sin((Math.PI * phase) / 1000) : 5;
+      // Bursts: about a third of the frames reach the server in the same millisecond as the previous one; the rest
+      // arrive at their time with ±6 ms of network jitter (whole ms), so some arrive before an earlier one.
+      receipt = random() < 0.35 ? receipt : Math.floor(start + t + (random() - 0.5) * 12);
+      frames.push({ serverTs: receipt, pressure, flow, volume, deviceId: "vent-1", deviceClock: Math.round(t) });
+      t += period;
+    }
+
+    return frames;
+  }
+
+  it("gives strictly increasing times and non-null Ppico, PEEP, Vte and FR", () => {
+    const hub = createTelemetryFrameHub("reservation-1");
+    const detector = createBreathDetector();
+    const frames = realFrames(20);
+    const times: number[] = [];
+
+    for (let index = 0; index < frames.length; index += 2) {
+      const samples = hub.push(frames.slice(index, index + 2));
+
+      times.push(...samples.map((sample) => sample.tMs));
+      detector.push(samples);
+    }
+
+    expect(times).toHaveLength(frames.length);
+    expect(times.every((time, index) => index === 0 || time > times[index - 1]!)).toBe(true);
+
+    const metrics = computeBreathMetrics(detector.breaths(), detector.latestMs());
+
+    expect(metrics.peakPressure).toBeGreaterThan(18);
+    expect(metrics.peep).toBeCloseTo(5, 0);
+    expect(metrics.exhaledTidalVolume).not.toBeNull();
+    expect(metrics.respiratoryRate).toBeGreaterThan(13);
+    expect(metrics.respiratoryRate).toBeLessThan(17);
+    expect(hub.sampleRateHz()).toBeGreaterThanOrEqual(30);
   });
 });
 
 describe("sample rate estimate", () => {
-  it("rounds up to 10 Hz steps once 1 s of samples is seen, and only grows", () => {
+  it("rounds to 10 Hz steps once 1 s of samples is seen and ignores small jitter (hysteresis)", () => {
     const estimator = createSampleRateEstimator();
     const at = (hz: number, from: number, count: number) => Array.from({ length: count }, (_, index) => from + (index * 1000) / hz);
 
@@ -91,6 +178,15 @@ describe("sample rate estimate", () => {
     expect(estimator.push(at(60, 5000, 120))).toBe(60);
     estimator.reset();
     expect(estimator.push(at(60, 0, 10))).toBeUndefined();
+  });
+
+  it("also goes down when the rate really drops (hysteresis 25 %), not on 50 ↔ 60 Hz rounding", () => {
+    const estimator = createSampleRateEstimator();
+    const at = (hz: number, from: number, count: number) => Array.from({ length: count }, (_, index) => from + (index * 1000) / hz);
+
+    expect(estimator.push(at(60, 0, 120))).toBe(60);
+    expect(estimator.push(at(52, 2000, 104))).toBe(60);
+    expect(estimator.push(at(30, 4000, 90))).toBe(30);
   });
 });
 
@@ -287,5 +383,30 @@ describe("real console adapter", () => {
     expect(adapter.alarms.map((alarm) => alarm.id)).toEqual([NO_DATA_ALARM_ID]);
     adapter.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] });
     expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  describe("without device settings (v1.8)", () => {
+    const base = { frames: hub.source, status: "live" as const, metrics: EMPTY_BREATH_METRICS, alarms: [] };
+    const proposal = { mode: "VCV", values: { tidalVolume: 450, peep: 5 } };
+    const sentBase = { values: { tidalVolume: 500, peep: 8 }, mode: "SIMV" };
+
+    it("offers the initial proposal only while nothing was sent, queued or in flight", () => {
+      expect(buildRealConsoleAdapter({ ...base, reported: EMPTY_REPORTED_STATE, proposal }).proposal).toEqual(proposal);
+      expect(buildRealConsoleAdapter({ ...base, reported: EMPTY_REPORTED_STATE, proposal, desired: { values: { peep: 6 }, mode: "VCV" } }).proposal).toBeUndefined();
+      expect(buildRealConsoleAdapter({ ...base, reported: EMPTY_REPORTED_STATE, proposal, sentBase }).proposal).toBeUndefined();
+      expect(buildRealConsoleAdapter({ ...base, reported: { ...EMPTY_REPORTED_STATE, settings: { peep: 5 } }, proposal }).proposal).toBeUndefined();
+    });
+
+    it("shows the last snapshot sent while the device reports nothing, and the device values once it does", () => {
+      const sent = buildRealConsoleAdapter({ ...base, reported: EMPTY_REPORTED_STATE, sentBase });
+
+      expect(sent.settings).toEqual({ current: { tidalVolume: 500, peep: 8 }, applied: { tidalVolume: 500, peep: 8 } });
+      expect(sent.mode.current).toBe("SIMV");
+
+      const reported = buildRealConsoleAdapter({ ...base, reported: { ...EMPTY_REPORTED_STATE, settings: { peep: 5 }, mode: "VCV" }, sentBase });
+
+      expect(reported.settings).toEqual({ current: { peep: 5 }, applied: { peep: 5 } });
+      expect(reported.mode.current).toBe("VCV");
+    });
   });
 });

@@ -5,41 +5,16 @@
 *   colour literals. Used by command-panel.tsx and live-console.tsx. v1.1 (T8 review fix 2, W5): `.useReported` block
 *   (explanation + «Usar los valores que informa el equipo»). v1.2 (Bloque 5, C8): the July "Comandos recientes"
 *   disclosure under the curves (title button with the latest command, a body of at most 12rem with its own scroll). v1.3 (Ajustes A, A2): `.undo`,
-*   the "Deshacer último cambio" button of the July real console.
-* Versión: 1.3
+*   the "Deshacer último cambio" button of the July real console. v1.4 (2026-11-10, reverts A-1 to A-4): `.undo` removed (the
+*   console renders "Deshacer último cambio" itself, same place in Digital and Real). v1.5 (2026-11-10): `.configNotice`,
+*   "Configuración no confirmada por el equipo" while the device reports no settings and did not acknowledge the last command.
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
 * Institución: Universidad del Valle
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
-
-/* Ajustes A (A2): "Deshacer último cambio" in the left column of the July real console. */
-.undo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--vl-space-1);
-  width: 100%;
-  min-height: var(--vl-space-6);
-  padding: 0 var(--vl-space-2);
-  font: var(--mui-font-button);
-  color: var(--vl-console-text);
-  background: transparent;
-  border: 1px solid var(--vl-console-border);
-  border-radius: var(--vl-radius-md);
-  cursor: pointer;
-}
-
-.undo:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.undo:focus-visible {
-  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
-  outline-offset: var(--vl-focus-ring-width);
-}
 
 .layout {
   display: flex;
@@ -106,6 +81,15 @@
 .notice[data-tone="info"] {
   color: var(--mui-palette-success-main);
   border-color: var(--mui-palette-success-main);
+}
+
+.configNotice {
+  margin: 0;
+  padding: var(--vl-space-1) var(--vl-space-3);
+  border: 1px dashed var(--vl-console-pending);
+  border-radius: var(--vl-radius-md);
+  font: var(--mui-font-body2);
+  color: var(--vl-console-pending);
 }
 
 .noticeText {

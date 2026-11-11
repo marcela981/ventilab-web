@@ -58,8 +58,8 @@
 *   for the auto-send of the July console: `commandOutcomeFor` (how a submitted command ended per parameter: rejected
 *   with its warning, accepted but not reported yet, mode applied), `commandRateLimitReason` (the 429 wait alone, the
 *   only read-only state left) and `commandBlockReason` (an uncertain send, an unreported change or the 429 wait, not
-*   the plain one-in-flight the queue waits for on its own). The reducer is unchanged.
-* Versión: 1.5
+*   the plain one-in-flight the queue waits for on its own). The reducer is unchanged. v1.6 (2026-11-10): a TIMEOUT is shown as "Sin confirmación del equipo" (info notice: no se sabe si el cambio se aplicó), not as a rejection: `lastTimedOut` remembers the command and `commandOutcomeFor` returns its parameters (and an unconfirmed unreported change) under `unconfirmed`. v1.7 (2026-11-10, real mode without reported settings): `sent` keeps the last snapshot the backend accepted (202) and whether the device acknowledged it (ACKED/APPLIED): it is the base of the next command while the device reports no settings (`sentReport`, `isInitialConfigRequired`) and drives the "Configuración no confirmada por el equipo" notice (`isConfigUnconfirmed`). While the device reports no settings at all an acknowledged command ends at once (there is no report to wait for, so no `unreported` block) and its parameters show "Confirmado por el equipo". v1.8 (2026-11-11, review R1): B1 the 202 snapshot is only a `candidate`: it becomes `sent` on ACKED/APPLIED (acknowledged) or TIMEOUT (published, unconfirmed) and is dropped on REJECTED (also a failed MQTT publish) or a lost status, so a rejected first configuration keeps the initial confirmation required and is never the base nor shown as sent; the REJECTED notice no longer claims the console shows the device values when the device reports no settings. I1 `history` (the commands history read) clears `sent` when it shows a later non-rejected command this console did not send (another operator of the reservation), so the next command is not built on a stale snapshot. v1.9 (2026-11-11, review R1 round 2): a TIMEOUT promotes the candidate only when the command reached SENT and its reason is not `publish_unconfirmed` / `server_shutdown_unconfirmed` (the publish was never confirmed); otherwise the candidate is dropped like a REJECTED. `history-failed` (the history read after regaining the control failed) clears `sent`.
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -71,13 +71,23 @@ import { PARAMETER_SETTINGS, tidy } from "@shared/sim-engine/console-binding";
 import type { VentilatorCommandStatus, VentilatorCommandStatusEvent } from "@shared/realtime";
 import { CONSOLE_PARAMETERS } from "@shared/ventilator-console";
 import type { ConsoleInFlight, ConsoleParameterId } from "@shared/ventilator-console";
-import { COMMAND_PARAMETERS, commandFieldName, reportedConsoleValue, reportMatchesTargets } from "./command-mapper";
+import {
+  COMMAND_PARAMETERS,
+  commandBase,
+  commandFieldName,
+  initialConfigRequired,
+  reportedConsoleValue,
+  reportMatchesTargets,
+  sentSnapshotOf,
+} from "./command-mapper";
 import type { CommandField, CommandTarget, DeviceReport, MappedCommand } from "./command-mapper";
 import { commandOutcomeReason } from "./command-messages";
 import type { SendCommandErrorDescription } from "./command-messages";
 
 /** How long a confirmed (ACKED/APPLIED) change waits for the telemetry to report it before the console is freed. */
 export const REPORT_WAIT_MS = 5000;
+/** v1.9: backend TIMEOUT reasons of a command whose MQTT publish was never confirmed (command-lifecycle.service.ts). */
+const UNPUBLISHED_TIMEOUT_REASONS: readonly string[] = ["publish_unconfirmed", "server_shutdown_unconfirmed"];
 /** Statuses that arrived before their 202 and are kept until it arrives. */
 const EARLY_LIMIT = 20;
 /** Live statuses kept for the recent list. */
@@ -166,7 +176,19 @@ export type CommandUiState = {
   abandonedMode: AbandonedMode | null
   /** Fix 3 (W1): `carryKey` of the command whose carried values the operator was warned about (repeat → send). */
   carryAcknowledged: string | null
+  /** v1.6: local id of the last command that ended in TIMEOUT (its warnings are "sin confirmación", not a rejection). */
+  lastTimedOut?: string | null
+  /** v1.7: the last snapshot published to the device (ACKED/APPLIED/TIMEOUT) and whether the device acknowledged it. */
+  sent?: SentCommand | null
+  /** v1.8 (B1): the snapshot of the command in flight that the backend accepted (202), not published yet. */
+  candidate?: SentCommand | null
 };
+
+/**
+ * v1.7: a full snapshot the backend accepted; `report` holds it with the command field names and units. v1.8 (I1):
+ * its `commandId` and the command ids known when it was submitted, to tell a later command of another console.
+ */
+export type SentCommand = { localId: string, commandId: string | null, knownIds: readonly string[], report: DeviceReport, acknowledged: boolean };
 
 export const INITIAL_COMMAND_STATE: CommandUiState = {
   active: null,
@@ -196,6 +218,10 @@ export type CommandAction =
   /** Fix 3 (W1): the command was not sent; its carried values (fix 4: and mode) are listed; an identical repeat sends it. */
   | { type: "carry-warned", key: string, carried: readonly CarriedValue[], mode?: CarriedMode | null }
   | { type: "refused", message: string }
+  /** v1.8 (I1): the commands history read (newest first). */
+  | { type: "history", records: readonly LabCommandRecord[] }
+  /** v1.9: the history read after regaining the control failed: the sent snapshot cannot be trusted. */
+  | { type: "history-failed" }
   | { type: "reset" };
 
 // TODO(i18n): move to a ventilator-lab namespace in src/i18n.
@@ -211,6 +237,10 @@ export const COMMAND_STATE_COPY = {
   uncertain: "No se sabe si el último cambio llegó al equipo: espera a que el equipo informe los valores o a que termine el tiempo de confirmación.",
   uncertainTag: "pudo haberse enviado; esperando al equipo",
   outcome: (label: string, reason: string) => `Cambio no aplicado (${label.toLowerCase()}): ${reason}. La consola muestra los valores que informa el equipo.`,
+  outcomeNotReporting: (label: string, reason: string, hasBase: boolean) => `Cambio no aplicado (${label.toLowerCase()}): ${reason}. El equipo no informa sus ajustes: ${hasBase ? "la consola muestra el último envío anterior." : "confirma de nuevo la configuración inicial."}`,
+  sentSuperseded: "Se enviaron cambios desde otra consola: confirma de nuevo la configuración completa.",
+  historyUnreadable: "No se pudo leer el historial de comandos al retomar el control: confirma de nuevo la configuración completa.",
+  timedOut: (reason: string) => `Sin confirmación del equipo: ${reason}. No se sabe si el cambio se aplicó; revisa las curvas y «Comandos recientes».`,
   notSent: "no se envió",
   unknown: "estado desconocido",
   lost: "No llegó la confirmación del estado del cambio. Revisa «Comandos recientes» y los valores que informa el equipo.",
@@ -229,6 +259,9 @@ export const COMMAND_STATE_COPY = {
     ? `Modo: ${certain ? "aceptado" : "posiblemente aceptado"} ${accepted}, el equipo no informa el modo`
     : `Modo: ${certain ? "aceptado" : "posiblemente aceptado"} ${accepted}, el equipo informa ${reported} — el próximo comando enviará ${reported}`),
   carriedModeLine: (certain: boolean, accepted: string, sent: string) => `Modo: ${certain ? "aceptado" : "posiblemente aceptado"} ${accepted} — este cambio enviará ${sent} (el modo que informa el equipo)`,
+  acknowledgedNotReporting: "El equipo confirmó el cambio. No informa sus ajustes: la consola muestra los últimos valores enviados.",
+  acknowledgedTag: "el equipo no informa sus ajustes",
+  configUnconfirmed: "Configuración no confirmada por el equipo",
 } as const;
 
 const STATUS_RANK: Readonly<Record<VentilatorCommandStatus, number>> = {
@@ -363,10 +396,23 @@ function applyStatus(state: CommandUiState, status: VentilatorCommandStatus, rea
       return state;
     }
 
+    const published = promoteCandidate(state, active, true);
+
+    // v1.7: a device that reports no settings will never report this change: the acknowledgement ends the command.
+    if (state.report.settings === null) {
+      return {
+        ...supersededByAccepted(state, active),
+        ...published,
+        active: null,
+        notice: { tone: "info", message: COMMAND_STATE_COPY.acknowledgedNotReporting, details: [] },
+      };
+    }
+
     // Fix 3 (W1): the device accepted a full setting set the operator confirmed (carried values included); fix 4 (S2):
     // only the abandoned values (and mode) that set carried are superseded.
     return finishIfReported({
       ...supersededByAccepted(state, active),
+      ...published,
       active: { ...active, status, phase: "confirmed", phaseSince: at },
       notice: { tone: "info", message: COMMAND_STATE_COPY.accepted, details: [] },
     });
@@ -375,16 +421,50 @@ function applyStatus(state: CommandUiState, status: VentilatorCommandStatus, rea
   return endWithOutcome(state, active, status, reason);
 }
 
+/**
+ * v1.8 (B1): the command was published (ACKED/APPLIED, or TIMEOUT: published but unconfirmed): its candidate snapshot
+ * becomes the sent one. Without a candidate of this command the sent snapshot stays (acknowledged when it is its own).
+ */
+function promoteCandidate(state: CommandUiState, active: ActiveCommand, acknowledged: boolean): Pick<CommandUiState, "sent" | "candidate"> {
+  const candidate = state.candidate ?? null;
+  const sent = state.sent ?? null;
+
+  if (candidate?.localId === active.localId) {
+    return { sent: { ...candidate, acknowledged }, candidate: null };
+  }
+
+  return { sent: sent?.localId === active.localId && acknowledged ? { ...sent, acknowledged: true } : sent, candidate };
+}
+
+/** v1.8 (B1): the command was not published (REJECTED, lost): its candidate is dropped and the previous sent stays. */
+function withoutCandidate(state: CommandUiState, active: ActiveCommand): CommandUiState {
+  return state.candidate?.localId === active.localId ? { ...state, candidate: null } : state;
+}
+
 /** Ends the active command as not applied (REJECTED / TIMEOUT) with the reason on its parameters. */
 function endWithOutcome(state: CommandUiState, active: ActiveCommand, status: "REJECTED" | "TIMEOUT", reason: string | null): CommandUiState {
   const reasonText = commandOutcomeReason(status, reason);
-  const label = status === "REJECTED" ? "Rechazado por el equipo" : "Sin confirmación del equipo";
+  const label = "Rechazado por el equipo";
+  // v1.9: only a TIMEOUT after SENT (the broker confirmed the publish) may have reached the device: its snapshot becomes
+  // the unconfirmed base. A REJECTED or a TIMEOUT whose publish was never confirmed (publish_unconfirmed,
+  // server_shutdown_unconfirmed) drops the candidate.
+  const published = status === "TIMEOUT" && active.status === "SENT" && !UNPUBLISHED_TIMEOUT_REASONS.includes(reason ?? "");
+  const settled: CommandUiState = published ? { ...state, ...promoteCandidate(state, active, false) } : withoutCandidate(state, active);
+  // v1.8 (B1): without device settings the console shows the previous sent snapshot (or the initial proposal).
+  const rejectedMessage = state.report.settings === null
+    ? COMMAND_STATE_COPY.outcomeNotReporting(label, reasonText, (settled.sent ?? null) !== null)
+    : COMMAND_STATE_COPY.outcome(label, reasonText);
+  // v1.6: a TIMEOUT is the device not answering (expected with a firmware without acknowledgements), not a refusal.
+  const notice: CommandNotice = status === "REJECTED"
+    ? { tone: "warning", message: rejectedMessage, details: [] }
+    : { tone: "info", message: COMMAND_STATE_COPY.timedOut(reasonText), details: [] };
 
   return {
-    ...state,
+    ...settled,
     active: null,
     warnings: warningsFor(active.targets, reasonText, state.warnings),
-    notice: { tone: "warning", message: COMMAND_STATE_COPY.outcome(label, reasonText), details: [] },
+    notice,
+    lastTimedOut: status === "TIMEOUT" ? active.localId : state.lastTimedOut ?? null,
   };
 }
 
@@ -517,7 +597,15 @@ export function commandReducer(state: CommandUiState, action: CommandAction): Co
       }
 
       const session = remember(state.session, { id: action.commandId, status: action.status, reason: null, params: active.request, at: action.at });
-      let next: CommandUiState = { ...state, session, active: { ...active, commandId: action.commandId } };
+      // v1.8 (B1): the accepted snapshot is only a candidate until the command is published (ACKED/APPLIED/TIMEOUT).
+      const candidate: SentCommand = {
+        localId: active.localId,
+        commandId: action.commandId,
+        knownIds: active.knownIds,
+        report: sentSnapshotOf(active.request),
+        acknowledged: false,
+      };
+      let next: CommandUiState = { ...state, session, candidate, active: { ...active, commandId: action.commandId } };
 
       next = applyStatus(next, action.status, null, action.at);
 
@@ -642,12 +730,35 @@ export function commandReducer(state: CommandUiState, action: CommandAction): Co
         return state;
       }
 
+      // v1.8 (B1): not known to be published: the candidate is dropped (the previous sent snapshot stays).
       return {
-        ...state,
+        ...withoutCandidate(state, active),
         active: null,
         warnings: warningsFor(active.targets, COMMAND_STATE_COPY.unknown, state.warnings),
         notice: { tone: "warning", message: COMMAND_STATE_COPY.lost, details: [] },
       };
+    }
+    case "history": {
+      if (!sentSuperseded(state, action.records)) {
+        return state;
+      }
+
+      const notice: CommandNotice | null = state.report.settings === null
+        ? { tone: "info", message: COMMAND_STATE_COPY.sentSuperseded, details: [] }
+        : state.notice;
+
+      return { ...state, sent: null, notice };
+    }
+    case "history-failed": {
+      if ((state.sent ?? null) === null) {
+        return state;
+      }
+
+      const notice: CommandNotice | null = state.report.settings === null
+        ? { tone: "info", message: COMMAND_STATE_COPY.historyUnreadable, details: [] }
+        : state.notice;
+
+      return { ...state, sent: null, notice };
     }
     case "refused":
       return { ...state, carryAcknowledged: null, notice: { tone: "error", message: action.message, details: [] } };
@@ -659,11 +770,30 @@ export function commandReducer(state: CommandUiState, action: CommandAction): Co
       const unreported = state.unreported
         ?? (active === null ? null : { mode: active.mode, modeChanged: active.modeChanged, targets: active.targets, accepted: active.phase === "confirmed" });
 
-      return { ...INITIAL_COMMAND_STATE, report: state.report, unreported, abandoned: state.abandoned, abandonedMode: state.abandonedMode };
+      return { ...INITIAL_COMMAND_STATE, report: state.report, unreported, abandoned: state.abandoned, abandonedMode: state.abandonedMode, sent: state.sent ?? null };
     }
     default:
       return state;
   }
+}
+
+/**
+ * v1.8 (I1): the history shows a non-rejected command newer than the sent snapshot that this console did not send
+ * (another operator of the reservation): the snapshot no longer describes the device. Newer = listed before the sent
+ * command (the history is newest first) or, when that one is not listed, not known when it was submitted.
+ */
+function sentSuperseded(state: CommandUiState, records: readonly LabCommandRecord[]): boolean {
+  const sent = state.sent ?? null;
+
+  if (sent === null) {
+    return false;
+  }
+
+  const own = new Set([sent.commandId, state.candidate?.commandId ?? null, state.active?.commandId ?? null]);
+  const sentIndex = records.findIndex((record) => record.id === sent.commandId);
+  const newer = sentIndex >= 0 ? records.slice(0, sentIndex) : records.filter((record) => !sent.knownIds.includes(record.id));
+
+  return newer.some((record) => record.status !== "REJECTED" && !own.has(record.id));
 }
 
 export function canSubmitCommand(state: CommandUiState, at: number): boolean {
@@ -692,13 +822,13 @@ export function commandBusyReason(state: CommandUiState, at: number): string | n
   return null;
 }
 
-/** Ajustes A (A2): the 429 wait alone, the only command state that makes the auto-send console read-only. */
+/** Ajustes A (A2): the 429 wait alone, the only command state that makes the July console (command queue) read-only. */
 export function commandRateLimitReason(state: CommandUiState, at: number): string | null {
   return state.retryAt !== null && at < state.retryAt ? COMMAND_STATE_COPY.rateLimited(Math.ceil((state.retryAt - at) / 1000)) : null;
 }
 
 /**
- * Ajustes A (A2): why queued changes cannot go out yet, without the plain "one in flight" (the auto-send queue waits
+ * Ajustes A (A2): why queued changes cannot go out yet, without the plain "one in flight" (the command queue waits
  * for it on its own): an uncertain send, an unreported change or the 429 wait; null otherwise.
  */
 export function commandBlockReason(state: CommandUiState, at: number): string | null {
@@ -707,8 +837,10 @@ export function commandBlockReason(state: CommandUiState, at: number): string | 
 
 /** Ajustes A (A2): how a submitted command ended, per console parameter; null while it is still the active one. */
 export type CommandOutcome = {
-  /** Parameter → reason: rejected, not sent, timed out or with an unknown outcome. */
+  /** Parameter → reason: rejected or not sent. */
   rejected: Readonly<Record<string, string>>
+  /** v1.6: parameter → reason: timed out or with an unknown outcome (no acknowledgement from the device). */
+  unconfirmed: Readonly<Record<string, string>>
   /** Parameter → note of an accepted value the device does not report yet. */
   notes: Readonly<Record<string, string>>
   /** The command changed the mode and the device runs it (or accepted it and has not reported it yet). */
@@ -721,20 +853,26 @@ export function commandOutcomeFor(state: CommandUiState, localId: string, comman
   }
 
   const rejected: Record<string, string> = {};
+  const unconfirmed: Record<string, string> = {};
   const notes: Record<string, string> = {};
   const { unreported } = state;
+  const timedOut = state.lastTimedOut === localId;
   const waiting = new Set(unreported?.targets.map((target) => target.parameter) ?? []);
+  // v1.7: acknowledged by a device that reports no settings: confirmed, never shown as reported.
+  const acknowledgedOnly = state.sent?.localId === localId && state.sent.acknowledged && state.report.settings === null;
 
   command.targets.forEach(({ parameter }) => {
     const warning = state.warnings[parameter];
 
     if (warning !== undefined) {
-      rejected[parameter] = warning;
+      (timedOut ? unconfirmed : rejected)[parameter] = warning;
+    } else if (acknowledgedOnly) {
+      notes[parameter] = COMMAND_STATE_COPY.acknowledgedTag;
     } else if (waiting.has(parameter)) {
       if (unreported?.accepted) {
         notes[parameter] = COMMAND_STATE_COPY.unreportedTag;
       } else {
-        rejected[parameter] = COMMAND_STATE_COPY.unconfirmedTag;
+        unconfirmed[parameter] = COMMAND_STATE_COPY.unconfirmedTag;
       }
     }
   });
@@ -742,7 +880,27 @@ export function commandOutcomeFor(state: CommandUiState, localId: string, comman
   const modeShown = reportedMode(state.report) === command.mode;
   const modeAccepted = unreported?.modeChanged === true && unreported.accepted && unreported.mode === command.mode;
 
-  return { rejected, notes, modeApplied: command.modeChanged && (modeShown || modeAccepted) };
+  return { rejected, unconfirmed, notes, modeApplied: command.modeChanged && (modeShown || modeAccepted || acknowledgedOnly) };
+}
+
+/** v1.7: the last snapshot the backend accepted, as a report, or null. */
+export function sentReport(state: CommandUiState): DeviceReport | null {
+  return state.sent?.report ?? null;
+}
+
+/** v1.7: what the next command is built on: the device report, and the sent snapshot for what it does not report. */
+export function commandBaseOf(state: CommandUiState): DeviceReport {
+  return commandBase(state.report, sentReport(state));
+}
+
+/** v1.7: no device settings and nothing sent: the first command must confirm the whole configuration. */
+export function isInitialConfigRequired(state: CommandUiState): boolean {
+  return initialConfigRequired(state.report, sentReport(state));
+}
+
+/** v1.7: the device reports no settings and did not acknowledge the last command (or none was sent). */
+export function isConfigUnconfirmed(state: CommandUiState): boolean {
+  return state.report.settings === null && state.sent?.acknowledged !== true;
 }
 
 /** The console `settings.inFlight`: the active command's parameters, else the last warning per parameter. */

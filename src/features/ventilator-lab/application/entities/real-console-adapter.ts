@@ -13,7 +13,12 @@
 *   v1.4 (W10, Bloque 1): optional alarm limits and their change callback (the AlarmLimitsPanel of the real console).
 *   v1.5 (Bloque 5, C4): the derived metrics add Pmedia and the flow extremes of the last breath (July value cards).
 *   v1.6 (Ajustes A, A2): optional auto-send input: `desired` values and mode (queued or in flight) shown over the reported ones until they settle, `sendStatus` per parameter, and `onCancel` / `onApplyNow` (Escape / Enter of the July console).
-* Versión: 1.6
+*   v1.7 (2026-11-10, reverts A-1 to A-4): `onCancel` / `onApplyNow` removed (the July console sends explicitly with Enviar).
+*   v1.8 (2026-11-10, real mode without reported settings): optional `sentBase` (the last snapshot the backend
+*   accepted, console units) is shown as the settings and mode the device does not report (device values always win;
+*   not confirmed by the device), and optional `proposal` (the initial configuration, Digital defaults) is offered to
+*   the console only while the device reports no settings, nothing was sent and nothing is queued or in flight.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -32,6 +37,7 @@ import type {
   ConsoleMetrics,
   ConsoleModeOption,
   ConsolePatient,
+  ConsoleProposal,
   ConsoleSettings,
   VentilatorConsoleAdapter,
 } from "@shared/ventilator-console";
@@ -67,14 +73,15 @@ export type RealConsoleAdapterInput = {
   pendingResetKey?: string | number | undefined
   limits?: ConsoleLimits
   inFlight?: ConsoleSettings["inFlight"]
-  /** Ajustes A (A2): auto-send status per parameter (shown next to each control, never blocks editing). */
+  /** Ajustes A (A2): command queue status per parameter (shown next to each control, never blocks editing). */
   sendStatus?: ConsoleSettings["sendStatus"]
   /** Ajustes A (A2): values and mode queued or in flight, shown over the reported ones until they settle. */
   desired?: RealDesiredSettings
+  /** v1.8: the last snapshot sent (console units), shown for what the device does not report. */
+  sentBase?: RealDesiredSettings | null
+  /** v1.8: the initial configuration to confirm while the device reports no settings and nothing was sent. */
+  proposal?: ConsoleProposal | null
   onConfirm?: (confirmation: ConsoleConfirmation) => void
-  /** Ajustes A (A2): Escape and Enter of the July auto mode (drop the queue, send it now). */
-  onCancel?: () => void
-  onApplyNow?: () => void
   /** Mode options for the reported mode (default: every mode the backend accepts). */
   modeOptionsFor?: (reportedMode: string | null) => readonly ConsoleModeOption[]
   /** W10: alarm limits of the console (client-side, real-alarm-limits) and their change callback. */
@@ -111,11 +118,18 @@ function patientOf(reported: ReportedState): ConsolePatient {
 const IGNORE_CONFIRMATION = () => undefined;
 
 export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): VentilatorConsoleAdapter {
-  const reportedSettings = input.reported.settings ?? {};
+  const sentBase = input.sentBase ?? null;
+  // v1.8: device values win; the last snapshot sent stands in only while the device reports no settings (no mode).
+  const reportedSettings = input.reported.settings ?? sentBase?.values ?? {};
+  const reportedMode = input.reported.mode ?? sentBase?.mode ?? null;
   const desired = input.desired;
+  const desiredValues = desired !== undefined && Object.keys(desired.values).length > 0;
   // The values the operator asked for replace the reported ones only while they are queued or in flight.
-  const shown = desired && Object.keys(desired.values).length > 0 ? { ...reportedSettings, ...desired.values } : reportedSettings;
+  const shown = desired && desiredValues ? { ...reportedSettings, ...desired.values } : reportedSettings;
   const patient = patientOf(input.reported);
+  // v1.8: the initial configuration only while nothing reported, sent, queued or in flight stands for the settings.
+  const proposal = input.proposal ?? null;
+  const proposing = proposal !== null && input.reported.settings === null && sentBase === null && !desiredValues && (desired?.mode ?? null) === null;
 
   return {
     frames: {
@@ -130,7 +144,7 @@ export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): Ventila
       ...(input.inFlight === undefined ? {} : { inFlight: input.inFlight }),
       ...(input.sendStatus === undefined ? {} : { sendStatus: input.sendStatus }),
     },
-    mode: { current: desired?.mode ?? input.reported.mode ?? UNKNOWN_MODE, options: input.modeOptionsFor ? input.modeOptionsFor(input.reported.mode) : REAL_MODE_OPTIONS },
+    mode: { current: desired?.mode ?? reportedMode ?? UNKNOWN_MODE, options: input.modeOptionsFor ? input.modeOptionsFor(input.reported.mode) : REAL_MODE_OPTIONS },
     metrics: toDerivedMetrics(input.metrics),
     patient,
     capabilities: { patientMonitor: Object.keys(patient.values).length > 0 },
@@ -142,9 +156,8 @@ export function buildRealConsoleAdapter(input: RealConsoleAdapterInput): Ventila
     },
     limits: input.limits ?? {},
     onConfirm: input.onConfirm ?? IGNORE_CONFIRMATION,
-    ...(input.onCancel === undefined ? {} : { onCancel: input.onCancel }),
-    ...(input.onApplyNow === undefined ? {} : { onApplyNow: input.onApplyNow }),
     ...(input.alarmLimits === undefined ? {} : { alarmLimits: input.alarmLimits }),
     ...(input.onAlarmLimitsChange === undefined ? {} : { onAlarmLimitsChange: input.onAlarmLimitsChange }),
+    ...(proposing && proposal !== null ? { proposal } : {}),
   };
 }

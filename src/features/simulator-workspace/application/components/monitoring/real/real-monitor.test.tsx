@@ -14,7 +14,10 @@
 *   v0.5 (Ajustes A, A2): the operator's PEEP change is sent on its own after the debounce (one POST, the value shown
 *   with "Enviando", no summary dialog, the console still editable) and "Deshacer último cambio" sits in the left
 *   column, disabled with nothing to undo.
-* Versión: 0.5
+*   v0.6 (2026-11-10, reverts A-1 to A-4): the PEEP change stays pending until Enviar (no POST before), then one POST;
+*   Detener is disabled; a connection back to CONNECTING keeps the same console mounted (read-only, reconnection
+*   notice) and only leaving the connection brings the guide back.
+* Versión: 0.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -179,7 +182,7 @@ function sessionValue(): SessionContextValue {
   };
 }
 
-function renderMonitor(connection: LabConnectionValue, onCommit?: () => void): FakeSocket {
+function renderMonitor(connection: LabConnectionValue, onCommit?: () => void): FakeSocket & { setConnection: (next: LabConnectionValue) => void } {
   const fake = createFakeSocket();
   const session = sessionValue();
 
@@ -195,11 +198,14 @@ function renderMonitor(connection: LabConnectionValue, onCommit?: () => void): F
     );
   }
 
-  const page = <SimulatorWorkspacePage connection={connection} />;
+  const tree = (value: LabConnectionValue) => {
+    const page = <SimulatorWorkspacePage connection={value} />;
 
-  render(onCommit ? <Profiler id="workspace" onRender={onCommit}>{page}</Profiler> : page, { wrapper: Wrapper });
+    return onCommit ? <Profiler id="workspace" onRender={onCommit}>{page}</Profiler> : page;
+  };
+  const { rerender } = render(tree(connection), { wrapper: Wrapper });
 
-  return fake;
+  return { ...fake, setConnection: (next) => rerender(tree(next)) };
 }
 
 const curvesStatus = () => document.querySelector("[data-source-status]")?.getAttribute("data-source-status") ?? null;
@@ -245,6 +251,7 @@ describe("RealMonitor", () => {
     expect(within(values).getByRole("group", { name: "Modo del monitor" })).toBeInTheDocument();
     expect(within(values).getByRole("status", { name: "Reserva activa" })).toHaveTextContent("Reserva activa · Ana Gómez");
     expect(within(values).getByRole("button", { name: "Deshacer último cambio" })).toBeDisabled();
+    expect(within(values).getByRole("button", { name: "Detener" })).toBeDisabled();
     expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Curvas" })).getByRole("status", { name: "Estado de la señal" })).toBe(chip());
     expect(screen.getByRole("button", { name: /^Comandos recientes/ })).toHaveAttribute("aria-expanded", "false");
@@ -252,6 +259,12 @@ describe("RealMonitor", () => {
 
     const peep = () => screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" });
     const peepStatus = () => document.querySelector("[data-parameter='peep'] [aria-live='polite']");
+
+    // Pending (highlighted) until Enviar: nothing is sent on its own (2026-11-10, reverts A-1 to A-4).
+    expect(document.querySelector("[data-parameter='peep']")).toHaveAttribute("data-pending", "true");
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    expect(posts).toHaveLength(0);
+    fireEvent.click(within(values).getByRole("button", { name: "Enviar" }));
 
     // The asked value stays shown with its status; no summary dialog, and the console stays editable.
     await waitFor(() => expect(peep()).toHaveAttribute("aria-valuenow", "6"));
@@ -305,6 +318,30 @@ describe("RealMonitor", () => {
     fake.dispatch("ventilator:telemetry", telemetry());
     await waitFor(() => expect(screen.queryByTestId("real-monitor-no-data")).not.toBeInTheDocument());
     expect(curvesStatus()).toBe("live");
+  });
+
+  it("keeps the console mounted, read-only, with the reconnection notice while the connection is CONNECTING again", async() => {
+    const fake = renderMonitor(OPERATOR);
+
+    await openReal(fake);
+    stopHeartbeat?.();
+    const curves = screen.getByRole("region", { name: "Curvas" });
+
+    fake.setConnection({ ...OPERATOR, state: "CONNECTING", connected: false, socketOnline: false });
+    expect(screen.getByRole("region", { name: "Curvas" })).toBe(curves);
+    expect(screen.getByText("Se perdió la conexión en tiempo real con el servidor. Reconectando…")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Aumentar PEEP" })).toBeDisabled();
+    expect(screen.queryByText("Conéctate desde la pestaña Conexión para ver los datos del ventilador físico.")).not.toBeInTheDocument();
+
+    fake.setConnection({ ...OPERATOR, state: "CONNECTING", connected: false });
+    expect(screen.getByTestId("real-monitor-reconnecting")).toBeInTheDocument();
+
+    fake.setConnection(OPERATOR);
+    expect(screen.getByRole("region", { name: "Curvas" })).toBe(curves);
+
+    // Leaving the connection drops it: the guide is back.
+    fake.setConnection({ ...OPERATOR, state: "DISCONNECTED", connected: false });
+    expect(screen.getByText("Conéctate desde la pestaña Conexión para ver los datos del ventilador físico.")).toBeInTheDocument();
   });
 
   it("without a connection keeps the guide to Conexión and mounts no telemetry consumer", async() => {

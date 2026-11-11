@@ -1,11 +1,16 @@
 /*
 * Funcionalidad: Ventilator command mapper
 * Descripción: Pure mapping from a console confirmation (mode + changed parameters, console units) to the backend
-*   SendVentilatorCommandRequestDTO of POST /api/ventilator/commands, never from a guess. The backend command is a FULL
-*   setting set (required fields per mode, `REQUIRED_PARAMETERS_BY_MODE` of ventylab-server
-*   `ventilator-command-params.ts`), so every field the operator did not change is taken from the settings the device
-*   REPORTED in its telemetry (same field names as the command: the backend matches them to resolve APPLIED); a required
-*   field the device never reported refuses the command. Units: FiO2 % → fraction, flow trigger (L/min) → `sensitivity`
+*   SendVentilatorCommandRequestDTO of POST /api/ventilator/commands, never from a guess: every value comes either from
+*   the device or from an explicit operator confirmation. The backend command is a FULL setting set (required fields per
+*   mode, `REQUIRED_PARAMETERS_BY_MODE` of ventylab-server `ventilator-command-params.ts`), so every field the operator
+*   did not change is taken from the settings the device REPORTED in its telemetry (same field names as the command: the
+*   backend matches them to resolve APPLIED) or, only while the device reports no settings (resp. no mode), from the
+*   last full snapshot the backend accepted (`sent`, confirmed by the operator, not by the device); a required field
+*   found in neither refuses the command. With neither device settings nor a sent snapshot (the first command to a
+*   firmware that reports no settings) the confirmation must carry the mode (unless the device reports it) and EVERY
+*   required field of it, i.e. the operator reviewed and confirmed the whole initial configuration (`initialProposal`:
+*   the Digital defaults of the sim engine pre-filled as pending edits); otherwise it is refused. Units: FiO2 % → fraction, flow trigger (L/min) → `sensitivity`
 *   (the backend validates it with the flow-trigger range), the rest 1:1. Pressure: the backend `pressureLimit` is an
 *   ABSOLUTE pressure (validated `> peep`) whose meaning per mode is not documented, while the console pressures are above
 *   PEEP, so no console pressure is offered, a change INTO PCV/PSV is refused (it would need a pressure limit chosen by
@@ -42,7 +47,11 @@
   device reports a `flowRate` (same fixed-flow refusal), even if the device ignores that flow in pressure control.
   v1.4 (T8 review fix 4): W1 the `ie_ratio_without_timing` refusal follows the I:E the device REPORTS, not only the
   one carried in the command: a mode change never carries `ieRatio` (not a console field), yet the device keeps it.
-* Versión: 1.4
+  v1.5 (2026-11-10, real mode without reported settings): `sent` option (the last accepted snapshot is the base while
+  the device reports no settings / no mode; device-reported values always win), `commandBase`, the
+  `initial_unconfirmed` refusal (first command without the whole configuration confirmed) and `initialProposal` (the
+  sim-engine DEFAULT_VENTILATOR_SETTINGS of the commandable parameters, console units).
+* Versión: 1.5
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -50,8 +59,8 @@
 * Contacto: marcela.mazo@correounivalle.edu.co
 */
 
-import { MIN_EXPIRATORY_TIME_S, VENTILATOR_LIMITS } from "@shared/sim-engine";
-import { PARAMETER_SETTINGS, tidy } from "@shared/sim-engine/console-binding";
+import { DEFAULT_VENTILATOR_SETTINGS, MIN_EXPIRATORY_TIME_S, VENTILATOR_LIMITS } from "@shared/sim-engine";
+import { PARAMETER_SETTINGS, tidy, toConsoleSettings } from "@shared/sim-engine/console-binding";
 import type { VentilatorTelemetryFrame } from "@shared/realtime";
 import { CONSOLE_PARAMETERS } from "@shared/ventilator-console";
 import type {
@@ -59,6 +68,7 @@ import type {
   ConsoleLimits,
   ConsoleModeOption,
   ConsoleParameterId,
+  ConsoleProposal,
   ModeParameterTable,
   ParameterLimit,
 } from "@shared/ventilator-console";
@@ -225,6 +235,57 @@ export function reduceDeviceReport(previous: DeviceReport, frames: readonly Vent
   return next;
 }
 
+/** v1.5: the last full snapshot the backend accepted, as a report (command field names and units). */
+export function sentSnapshotOf(request: SendVentilatorCommandRequestDTO): DeviceReport {
+  const { mode, ...settings } = request;
+  const values: Record<string, number> = {};
+
+  Object.entries(settings).forEach(([field, value]) => {
+    if (finite(value)) {
+      values[field] = value;
+    }
+  });
+
+  return { settings: values, mode };
+}
+
+/**
+ * v1.5: what a command is built on: the device report, and only for what the device does not report (no settings
+ * object, no mode) the last snapshot the backend accepted. Device-reported values always win.
+ */
+export function commandBase(report: DeviceReport, sent: DeviceReport | null): DeviceReport {
+  return { settings: report.settings ?? sent?.settings ?? null, mode: report.mode ?? sent?.mode ?? null };
+}
+
+/** v1.5: no device settings and nothing sent: the first command must confirm the whole configuration. */
+export function initialConfigRequired(report: DeviceReport, sent: DeviceReport | null): boolean {
+  return report.settings === null && sent === null;
+}
+
+const DEFAULT_CONSOLE_VALUES = toConsoleSettings({ ...DEFAULT_VENTILATOR_SETTINGS });
+
+/**
+ * v1.5: the initial configuration offered while the device reports no settings and nothing was sent: the Digital
+ * defaults (sim engine DEFAULT_VENTILATOR_SETTINGS) of the parameters commandable in the reported mode, else in the
+ * default mode (then also proposed as the mode). Console units.
+ */
+export function initialProposal(reportedMode: string | null): ConsoleProposal {
+  const current = normalizeMode(reportedMode);
+  const fallback = normalizeMode(DEFAULT_VENTILATOR_SETTINGS.mode) ?? "VCV";
+  const mode = current ?? fallback;
+  const values: Record<string, number> = {};
+
+  (COMMAND_APPLICABILITY[mode] ?? []).forEach((parameter) => {
+    const value = DEFAULT_CONSOLE_VALUES[parameter];
+
+    if (value !== undefined) {
+      values[parameter] = value;
+    }
+  });
+
+  return { mode: current === null ? mode : null, values };
+}
+
 export type CommandTarget = {
   parameter: string
   value: number
@@ -252,13 +313,19 @@ export type CommandRefusal =
   | { code: "unmappable_parameter", parameter: string, mode: CommandMode }
   | { code: "out_of_limits", parameter: string, limit: ParameterLimit | null }
   | { code: "missing_required", fields: readonly CommandField[] }
+  | { code: "initial_unconfirmed", fields: readonly CommandField[] }
   | { code: "expiratory_time", expiratoryTimeS: number }
   | { code: "ie_ratio", ratio: number, max: number }
   | { code: "pressure_not_above_peep", pressureLimit: number, peep: number };
 
 export type CommandMapping = { ok: true, command: MappedCommand } | { ok: false, refusal: CommandRefusal };
 
-export type CommandMappingOptions = { limits: ConsoleLimits, settings: LabSettings };
+export type CommandMappingOptions = {
+  limits: ConsoleLimits
+  settings: LabSettings
+  /** v1.5: the last snapshot the backend accepted (`sentSnapshotOf`), the base while the device reports no settings. */
+  sent?: DeviceReport | null
+};
 
 function refuse(refusal: CommandRefusal): CommandMapping {
   return { ok: false, refusal };
@@ -300,13 +367,16 @@ function coherenceRefusal(params: Partial<Record<CommandField, number>>, setting
 
 export function mapConfirmationToCommand(
   confirmation: ConsoleConfirmation,
-  report: DeviceReport,
-  { limits, settings }: CommandMappingOptions,
+  deviceReport: DeviceReport,
+  { limits, settings, sent = null }: CommandMappingOptions,
 ): CommandMapping {
   if (confirmation.mode === null && confirmation.changes.length === 0) {
     return refuse({ code: "no_changes" });
   }
 
+  // v1.5: what the device does not report comes from the last snapshot the operator sent (device values win).
+  const report = commandBase(deviceReport, sent);
+  const initial = initialConfigRequired(deviceReport, sent);
   const reportedMode = normalizeMode(report.mode);
   const requested = confirmation.mode ?? reportedMode;
 
@@ -358,6 +428,16 @@ export function mapConfirmationToCommand(
     }
 
     params[command.field] = tidy(change.value * command.scale);
+  }
+
+  // v1.5: the first command without device settings carries only what the operator confirmed: all of the mode.
+  if (initial) {
+    const confirmed = new Set(confirmation.changes.map((change) => COMMAND_PARAMETERS[change.parameter as ConsoleParameterId]?.field));
+    const unconfirmed = REQUIRED_FIELDS_BY_MODE[mode].filter((field) => !confirmed.has(field));
+
+    if (unconfirmed.length > 0) {
+      return refuse({ code: "initial_unconfirmed", fields: unconfirmed });
+    }
   }
 
   // B1: while the device reports a fixed flow it keeps that flow (the JSON encoder resends it, the hex one omits it and
@@ -455,7 +535,7 @@ export function commandRefusalMessage(refusal: CommandRefusal): string {
     case "no_changes":
       return "No hay cambios para enviar.";
     case "unknown_mode":
-      return "El equipo no ha informado su modo: no se puede armar el cambio sin saberlo.";
+      return "El equipo no informa su modo: elige el modo y confirma todos sus parámetros antes de enviar.";
     case "unsupported_mode":
       return `El modo ${refusal.mode} no se puede enviar al ventilador físico.`;
     case "reported_mode_unsupported":
@@ -481,6 +561,8 @@ export function commandRefusalMessage(refusal: CommandRefusal): string {
         : `${parameterName(refusal.parameter)} no tiene un rango permitido para enviarlo.`;
     case "missing_required":
       return `El equipo no ha informado ${refusal.fields.map(commandFieldName).join(", ")}: no se puede enviar el cambio sin esos valores.`;
+    case "initial_unconfirmed":
+      return `El equipo no informa sus ajustes: el primer envío debe incluir todos los parámetros del modo, revisados y confirmados. Falta confirmar ${refusal.fields.map(commandFieldName).join(", ")}.`;
     case "expiratory_time":
       return `Con esa FR y ese Ti el tiempo espiratorio sería de ${formatNumber(refusal.expiratoryTimeS)} s; el mínimo es ${formatNumber(MIN_EXPIRATORY_TIME_S)} s.`;
     case "ie_ratio":
