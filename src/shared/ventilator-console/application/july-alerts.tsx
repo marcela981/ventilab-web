@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July alerts (alarms bar, mechanics and detailed alerts drawer)
-* Descripción: The alerts of the July Monitoreo layout (DISENO_BLOQUE5 §6.3, §6.9, D23, D26). JulyAlarmsZone renders the alarms bar in its July variant ("Historial de alarmas" and "Límites" open the drawer; icon-only at 1280) and, while open, the "Alertas detalladas" drawer (380 px, non-modal, one of the console drawers): the validation alerts, the session alarm history and the alarm limits panel (only when the source offers limits). JulyMechanicsAlerts is the bottom of the right column: region "Estado de la mecánica" with Cst = Vte / (Pplat − PEEP) and Cdin = Vte / (Ppico − PEEP), both marked "derivada", then "Alertas (n)" and "Ver alertas detalladas" / "Ocultar alertas". The validation alerts come only from sourced data, never from clinical rules without a source (D23): console metrics outside their normal range (config defaults < console props < adapter ranges), confirmed changes the source rejected or has not applied yet, and the unconfirmed edits of the pending store. Each zone reads only its slices (compared by content), so new snapshots re-render them only when what they show changes. v0.1 (Bloque 5, C9): first version. v0.2 (Ajustes A, A1): the "cambios pendientes sin confirmar" alert only in confirm mode (`pendingAlert`); the automatic application has nothing to confirm. v0.3 (Bloque A): with a host `renderAlarmHelp`, every alarm of the bar and every onset of the drawer history is a button "¿Cómo estabilizar? <alarma>" that opens the "¿Cómo estabilizar?" drawer (380 px, one of the console drawers, so it closes the others) with the host help of that alarm; another alarm while it is open replaces its content (remounted per alarm). Depends on React, MUI icons, the console stores, config, format helpers, the alarms bar, the alarm limits panel, the console drawers and the July alerts styles.
-* Versión: 0.3
+* Descripción: The alerts of the July Monitoreo layout (DISENO_BLOQUE5 §6.3, §6.9, D23, D26). JulyAlarmsZone renders the alarms bar in its July variant ("Historial de alarmas" and "Límites" open the drawer; icon-only at 1280) and, while open, the "Alertas detalladas" drawer (380 px, non-modal, one of the console drawers): the validation alerts, the session alarm history and the alarm limits panel (only when the source offers limits). JulyMechanicsAlerts is the bottom of the right column: region "Estado de la mecánica" with Cst = Vte / (Pplat − PEEP) and Cdin = Vte / (Ppico − PEEP), both marked "derivada", then "Alertas (n)" and "Ver alertas detalladas" / "Ocultar alertas". The validation alerts come only from sourced data, never from clinical rules without a source (D23): console metrics outside their normal range (config defaults < console props < adapter ranges), confirmed changes the source rejected or has not applied yet, and the unconfirmed edits of the pending store. Each zone reads only its slices (compared by content), so new snapshots re-render them only when what they show changes. v0.1 (Bloque 5, C9): first version. v0.2 (Ajustes A, A1): the "cambios pendientes sin confirmar" alert only in confirm mode (`pendingAlert`); the automatic application has nothing to confirm. v0.3 (Bloque A): with a host `renderAlarmHelp`, every alarm of the bar and every onset of the drawer history is a button "¿Cómo estabilizar? <alarma>" that opens the "¿Cómo estabilizar?" drawer (380 px, one of the console drawers, so it closes the others) with the host help of that alarm; another alarm while it is open replaces its content (remounted per alarm). v0.4 (2026-11-10, reverts A-1 to A-4): the "cambios pendientes sin confirmar" alert is always on (no `pendingAlert`): every edit waits for Enviar. Depends on React, MUI icons, the console stores, config, format helpers, the alarms bar, the alarm limits panel, the console drawers and the July alerts styles.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -115,13 +115,13 @@ const selectSettings = (adapter: VentilatorConsoleAdapter) => adapter.settings;
 const selectAppliedMode = (adapter: VentilatorConsoleAdapter) => adapter.mode.current;
 
 /** Every validation alert: the source ones plus, in confirm mode, the unconfirmed edits. */
-function useValidationAlerts(store: ConsoleAdapterStore, pending: PendingControlsStore, ranges: RangeOverrides<ConsoleMetricId> | undefined, pendingAlert: boolean): ValidationAlert[] {
+function useValidationAlerts(store: ConsoleAdapterStore, pending: PendingControlsStore, ranges: RangeOverrides<ConsoleMetricId> | undefined): ValidationAlert[] {
   const select = useCallback((adapter: VentilatorConsoleAdapter) => sourceAlerts(adapter, ranges), [ranges]);
   const fromSource = useStoreSelector(store, select, sameData);
   const settings = useStoreSelector(store, selectSettings);
   const appliedMode = useStoreSelector(store, selectAppliedMode);
   const state = useStoreSelector(pending, selectPendingState);
-  const count = pendingAlert ? confirmationCount(buildConfirmation(state, settings.applied, appliedMode)) : 0;
+  const count = confirmationCount(buildConfirmation(state, settings.applied, appliedMode));
 
   return useMemo(
     () => (count > 0 ? [...fromSource, { id: "pending", tone: "info" as const, text: JULY_ALERTS_COPY.pending(count) }] : fromSource),
@@ -160,8 +160,6 @@ type JulyAlertsZoneProps = {
   metricRanges: RangeOverrides<ConsoleMetricId> | undefined
   /** Id of the details drawer (shared by its two opening buttons). */
   drawerId: string
-  /** Confirm mode only: the unconfirmed edits count as a validation alert (auto mode applies them on its own). */
-  pendingAlert: boolean
 };
 
 type JulyAlarmsZoneProps = JulyAlertsZoneProps & {
@@ -190,7 +188,7 @@ function ValidationList({ alerts }: { alerts: readonly ValidationAlert[] }) {
 }
 
 /** The July alarms bar and, while open, the "Alertas detalladas" drawer (it owns the session alarm history). */
-export const JulyAlarmsZone = memo(function JulyAlarmsZone({ store, pending, metricRanges, drawerId, pendingAlert, readOnly, clock, beeperFactory, renderAlarmHelp }: JulyAlarmsZoneProps) {
+export const JulyAlarmsZone = memo(function JulyAlarmsZone({ store, pending, metricRanges, drawerId, readOnly, clock, beeperFactory, renderAlarmHelp }: JulyAlarmsZoneProps) {
   const alarms = useStoreSelector(store, selectAlarms);
   const sourceHistory = useStoreSelector(store, selectAlarmHistory);
   const limits = useStoreSelector(store, selectAlarmLimits);
@@ -227,7 +225,7 @@ export const JulyAlarmsZone = memo(function JulyAlarmsZone({ store, pending, met
           <ConsoleDrawer id={drawerId} title={JULY_ALERTS_COPY.drawerTitle} closeLabel={JULY_ALERTS_COPY.hide} onClose={() => close()}>
             <section className={cx(styles.section)} aria-labelledby={validationId}>
               <h3 id={validationId} className={cx(styles.heading)}>{JULY_ALERTS_COPY.validation}</h3>
-              <DrawerValidation store={store} pending={pending} metricRanges={metricRanges} pendingAlert={pendingAlert} />
+              <DrawerValidation store={store} pending={pending} metricRanges={metricRanges} />
             </section>
             <section className={cx(styles.section)} aria-labelledby={historyId}>
               <h3 id={historyId} className={cx(styles.heading)}>{`${ALARMS_COPY.history} (${events.length})`}</h3>
@@ -247,16 +245,16 @@ export const JulyAlarmsZone = memo(function JulyAlarmsZone({ store, pending, met
   );
 });
 
-function DrawerValidation({ store, pending, metricRanges, pendingAlert }: Omit<JulyAlertsZoneProps, "drawerId">) {
-  const alerts = useValidationAlerts(store, pending, metricRanges, pendingAlert);
+function DrawerValidation({ store, pending, metricRanges }: Omit<JulyAlertsZoneProps, "drawerId">) {
+  const alerts = useValidationAlerts(store, pending, metricRanges);
 
   return <ValidationList alerts={alerts} />;
 }
 
 /** Bottom of the right column: mechanics (derived compliance), the alerts count and the drawer button. */
-export const JulyMechanicsAlerts = memo(function JulyMechanicsAlerts({ store, pending, metricRanges, drawerId, pendingAlert }: JulyAlertsZoneProps) {
+export const JulyMechanicsAlerts = memo(function JulyMechanicsAlerts({ store, pending, metricRanges, drawerId }: JulyAlertsZoneProps) {
   const { cst, cdin } = useStoreSelector(store, selectCompliance, sameData);
-  const alerts = useValidationAlerts(store, pending, metricRanges, pendingAlert);
+  const alerts = useValidationAlerts(store, pending, metricRanges);
   const { open, toggle, triggerRef } = useConsoleDrawer(ALERTS_DRAWER_KEY);
   const titleId = useId();
 

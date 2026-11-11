@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: July alerts tests
 * Descripción: The alerts of the July console (C9): "Estado de la mecánica" with the derived Cst / Cdin, "Alertas (n)" counting only sourced validation alerts (metrics outside their range, unconfirmed edits, rejected changes), "Ver alertas detalladas" and "Historial de alarmas" opening the same 380 px "Alertas detalladas" drawer (validation, alarm history, limits only when the source has them), Escape closing it and giving the focus back to the button that opened it, and the icon-only alarm actions keeping their accessible names. v0.1 (Bloque 5, C9): first version. v0.3 (Bloque A): with a host `renderAlarmHelp` every alarm (bar and drawer history onsets) is a button "¿Cómo estabilizar? <alarma>" that opens the exclusive "¿Cómo estabilizar?" drawer with the host help of that alarm (another alarm replaces it; Escape closes it and gives the focus back); without it the alarms stay plain text. Depends on Vitest, Testing Library and the console.
-* Versión: 0.3
+*   v0.4 (2026-11-10, reverts A-1 to A-4): the edits waiting for Enviar always count as a validation alert.
+* Versión: 0.4
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -58,14 +59,10 @@ describe("July alerts", () => {
     expect(within(mechanics).getAllByText("derivada")).toHaveLength(2);
     // Ppico 40 > 35 is the only out-of-range metric.
     expect(screen.getByText("Alertas (1)")).toBeInTheDocument();
-
-    // The automatic application leaves nothing unconfirmed to warn about.
-    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
-    expect(screen.getByText("Alertas (1)")).toBeInTheDocument();
   });
 
-  it("counts the unconfirmed edits as a validation alert only in confirm mode", () => {
-    render(<VentilatorConsole adapter={makeAdapter()} layout="july" applyMode="confirm" />);
+  it("counts the edits waiting for Enviar as a validation alert", () => {
+    render(<VentilatorConsole adapter={makeAdapter()} layout="july" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
     expect(screen.getByText("Alertas (2)")).toBeInTheDocument();

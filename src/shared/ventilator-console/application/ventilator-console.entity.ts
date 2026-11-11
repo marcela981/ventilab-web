@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console contract
-* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props. v1.3: optional `onPendingChange(pending)` reports whether the built-in controls hold unconfirmed edits. v1.4 (generic source state, all optional): the frame source may report `status` (`live` | `no-data`) with a `statusMessage` (no data → curves greyed under an overlay and controls disabled); `settings.inFlight` marks confirmed parameter changes the source has not applied yet (`sending` | `awaiting` | `rejected`, the displayed value stays the applied one); `permissions.readOnlyReason` explains a read-only console; a metric value may be `{ value, derived, label?, description? }` to mark it as computed from the curves and, when the source measures something narrower than the console metric (e.g. end-expiratory pressure without a hold for "PEEP total"), to relabel its tile; `capabilities.patientMonitor: false` hides the patient monitor zone. v1.5 (generic, optional): `permissions.pendingResetKey` lets the source drop the unconfirmed edits of the built-in controls. v1.6 (Ajustes A, A1, optional): `onApplyNow` (Enter in the July auto mode) and `onCancel` on Escape in that mode let a source that debounces its own sends (the real ventilator) apply now or drop that wait. v1.7 (Ajustes A, A2, optional): `settings.sendStatus` (ConsoleSendStatus per parameter: Enviando / Aplicado / Rechazado with the reason), shown by the July controls without blocking editing. v1.8 (Bloque A): an alarm may carry its short `label` (the name without the measured value), used by the July "¿Cómo estabilizar?" help; ConsoleAlarmHelpTarget is what the host help panel receives.
-* Versión: 1.8
+* Descripción: Types of the generic ventilator console adapter (the props model a consumer builds from a simulator worker, a replay or a real ventilator): a frame source that streams batches of pressure/flow/volume samples, the current and applied settings, the ventilation mode, the numeric monitoring metrics keyed by console metric id, the patient vitals with a short trend, the active alarms with priority, the control permission, the parameter limits injected by the consumer, the change callbacks (optional propose while pending, confirm with the mode + parameter diff, optional cancel), the optional alarm limits with their change callback, an optional adapter-provided alarm history and the optional capabilities (maneuvers). The console never hardcodes limits or knows the data origin. Depends only on the console config ids. v1.2: the frame source declares an optional `sourceId` (resubscribe/clear only when it changes) and `sampleRateHz` (ring capacity), sample times are monotonic non-decreasing per source, and the adapter may provide normal `ranges` that take precedence over the console range props. v1.3: optional `onPendingChange(pending)` reports whether the built-in controls hold unconfirmed edits. v1.4 (generic source state, all optional): the frame source may report `status` (`live` | `no-data`) with a `statusMessage` (no data → curves greyed under an overlay and controls disabled); `settings.inFlight` marks confirmed parameter changes the source has not applied yet (`sending` | `awaiting` | `rejected`, the displayed value stays the applied one); `permissions.readOnlyReason` explains a read-only console; a metric value may be `{ value, derived, label?, description? }` to mark it as computed from the curves and, when the source measures something narrower than the console metric (e.g. end-expiratory pressure without a hold for "PEEP total"), to relabel its tile; `capabilities.patientMonitor: false` hides the patient monitor zone. v1.5 (generic, optional): `permissions.pendingResetKey` lets the source drop the unconfirmed edits of the built-in controls. v1.6 (Ajustes A, A1, optional): `onApplyNow` (Enter in the July auto mode) and `onCancel` on Escape in that mode let a source that debounces its own sends (the real ventilator) apply now or drop that wait. v1.7 (Ajustes A, A2, optional): `settings.sendStatus` (ConsoleSendStatus per parameter: Enviando / Aplicado / Rechazado with the reason), shown by the July controls without blocking editing. v1.8 (Bloque A): an alarm may carry its short `label` (the name without the measured value), used by the July "¿Cómo estabilizar?" help; ConsoleAlarmHelpTarget is what the host help panel receives. v1.9 (2026-11-10, reverts A-1 to A-4 / v1.6): `onApplyNow` removed (the July layout confirms explicitly with Enviar); `sendStatus` adds `confirmed` and `unconfirmed`. v2.0 (2026-11-10, optional): `proposal` (ConsoleProposal), a full configuration a source offers while it has applied nothing (the real ventilator that reports no settings, before its first command): the July console pre-fills it as pending edits that stay pending even at their proposed value.
+* Versión: 2.0
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,14 +77,18 @@ export type ConsoleSettings = {
   /** Confirmed changes in flight per parameter id; while `sending`/`awaiting` the parameter cannot be edited again. */
   inFlight?: Readonly<Partial<Record<string, ConsoleInFlight>>>
   /**
-   * Optional (v1.7, July layout): status of the automatic send per parameter id, shown next to the control and
+   * Optional (v1.7, July layout): send status of the last command per parameter id, shown next to the control and
    * announced politely; unlike `inFlight` it never blocks editing (a source that queues changes on its own side).
    */
   sendStatus?: Readonly<Partial<Record<string, ConsoleSendStatus>>>
 };
 
-/** v1.7: `sending` (queued or on its way), `applied` (the source accepted it) or `rejected`, with an optional reason. */
-export type ConsoleSendStatus = { status: "sending" | "applied" | "rejected", message?: string };
+/**
+ * v1.7: `sending` (queued or on its way), `applied` (the source accepted it) or `rejected`, with an optional reason.
+ * v1.9: `confirmed` (the device acknowledged it, not reported yet) and `unconfirmed` (the device never acknowledged it,
+ * e.g. TIMEOUT: whether it was applied is unknown; not an error of the user).
+ */
+export type ConsoleSendStatus = { status: "sending" | "confirmed" | "applied" | "unconfirmed" | "rejected", message?: string };
 
 export type ConsoleModeOption = { id: string, label: string };
 
@@ -164,6 +168,13 @@ export type ConsoleConfirmation = {
   changes: readonly ConsoleParameterChange[]
 };
 
+/**
+ * v2.0: a full configuration offered by a source that has applied nothing yet (no `applied` / `current` value): the
+ * mode to select (`null` = keep the current one) and the parameter values. The July console pre-fills it as pending
+ * edits (all highlighted) whenever nothing is pending, so the next Enviar carries every one of them.
+ */
+export type ConsoleProposal = { mode: string | null, values: ConsoleSettingValues };
+
 export type ConsoleAlarmEventKind = "onset" | "clear";
 
 /** One entry of the session alarm history; `atMs` is in the console clock (wall ms) unless the adapter provides the history. */
@@ -209,10 +220,8 @@ export type VentilatorConsoleAdapter = {
   onProposeChange?: (change: ConsoleParameterChange) => void
   /** The only callback that applies a change; called once per CONFIRMAR. */
   onConfirm: (confirmation: ConsoleConfirmation) => void
-  /** Confirm mode: Cancelar / Escape dropped the edits. Auto mode (v1.6): Escape also asks a source that debounces on its own side to drop that wait. */
+  /** Cancelar / Escape dropped the pending edits. */
   onCancel?: () => void
-  /** Optional (v1.6, July auto mode): Enter asks a source that debounces on its own side to apply now. */
-  onApplyNow?: () => void
   /** Whether the built-in controls hold unconfirmed edits (reported on change, false on unmount). */
   onPendingChange?: (pending: boolean) => void
   /** Without limits the alarm limits panel is hidden; without the callback it is read-only. */
@@ -223,6 +232,8 @@ export type VentilatorConsoleAdapter = {
   capabilities?: ConsoleCapabilities
   /** Normal ranges from the source; per key they override the console range props, which override the config defaults. */
   ranges?: ConsoleRanges
+  /** v2.0 (July): a configuration to pre-fill as pending edits while the source has applied nothing. */
+  proposal?: ConsoleProposal
 };
 
 
