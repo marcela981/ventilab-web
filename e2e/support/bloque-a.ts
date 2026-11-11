@@ -4,11 +4,11 @@
 *   and session multiplier chosen by the spec, e.g. the unstable ARDS case at ×4) and open it in Monitoreo
 *   (/simulador?tab=monitoreo&session=<id>) until it is simulating; read the engine patient status chip ("Estado del
 *   paciente") and a value card of "Valores del monitor"; move a July spinbutton to a value with its arrow keys (each
-*   key is one automatic change); read the stored session events, the summary and the replay through the API; and
+*   key steps the pending value, then Enviar sends it); read the stored session events, the summary and the replay through the API; and
 *   replay a session in Node with the vendored engine (the same code the browser worker and the server run) to
 *   compare it with the server summary. Depends on @playwright/test, the e2e auth and backend helpers and the vendored
-*   simulation engine.
-* Versión: 1.0
+*   simulation engine. v1.1 (2026-11-10, reverts A-1 to A-4): stepTo ends with Enviar (edits wait for it).
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -59,7 +59,7 @@ export async function cardValue(page: Page, label: string): Promise<number | nul
   return Number.isFinite(value) ? value : null;
 }
 
-/** Moves a July spinbutton to `target` with its arrow keys (one automatic change per key). */
+/** Moves a July spinbutton to `target` with its arrow keys and sends it with Enviar (one change, 2026-11-10). */
 export async function stepTo(page: Page, name: string, target: number): Promise<void> {
   const spin = page.getByRole("spinbutton", { name, exact: true });
   const current = async () => Number(await spin.getAttribute("aria-valuenow"));
@@ -71,6 +71,11 @@ export async function stepTo(page: Page, name: string, target: number): Promise<
   }
 
   await expect.poll(current).toBe(target);
+  const send = page.getByRole("region", { name: "Valores" }).getByRole("button", { name: "Enviar" });
+
+  if (await send.isEnabled()) {
+    await send.click();
+  }
 }
 
 export type StoredEvent = { id: string, simTimeMs: number, type: string, payload: { changes?: Record<string, unknown> } };

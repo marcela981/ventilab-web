@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: E2E July Monitoreo order of the Real monitor (Bloque 5, W5-1)
-* Descripción: The Real monitor of DISENO_BLOQUE5 §6.3, at 1920×1080 and 1280×720, by role and accessible name with boundingBox (1 px tolerance). The student reserves the ventilator ("Reservar ahora"), connects with control and opens Monitoreo → Real; the local stack has no physical device (MQTT disabled), so the monitor shows "Equipo sin datos" and a read-only console, which is enough to check the disposition. Checked: the "Ventilador físico" strip above the columns with "Liberar control" left of "Grabar sesión"; the regions Valores < Curvas < Controles in x; the left column in y (logos, "Modo del monitor" with Real pressed, "Reserva activa", "Deshacer último cambio" (disabled), "Ajustar", the value cards; no Confirmar nor Cancelar since Ajustes A); the centre in y (alarms, signal chip "Conectado (Físico)" left of the zoom group, curves); the right column in y (group "Modo ventilatorio", "Más modos …", "Pausa espiratoria", "Estado de la mecánica", "Ver alertas detalladas"). Also no horizontal scroll and the curves canvas at least 360 px high. The digital order is covered by monitoreo-julio.spec.ts. Cleanup disconnects and releases the reservation. v0.1 (Bloque 5, W5-1): first version. v0.2 (Ajustes A, A2): automatic send: "Deshacer último cambio" replaces Confirmar, Cancelar and the pending status. Depends on @playwright/test and the simulator and layout order e2e helpers.
-* Versión: 0.2
+* Descripción: The Real monitor of DISENO_BLOQUE5 §6.3, at 1920×1080 and 1280×720, by role and accessible name with boundingBox (1 px tolerance). The student reserves the ventilator ("Reservar ahora"), connects with control and opens Monitoreo → Real; the local stack has no physical device (MQTT disabled), so the monitor shows "Equipo sin datos" and a read-only console, which is enough to check the disposition. Checked: the "Ventilador físico" strip above the columns with "Liberar control" left of "Grabar sesión"; the regions Valores < Curvas < Controles in x; the left column in y (logos, "Modo del monitor" with Real pressed, "Reserva activa", [Enviar][Detener] in one row, "Deshacer último cambio" (all disabled without data), "Ajustar", the value cards; no Confirmar nor Cancelar); the centre in y (alarms, signal chip "Conectado (Físico)" left of the zoom group, curves); the right column in y (group "Modo ventilatorio", "Más modos …", "Pausa espiratoria", "Estado de la mecánica", "Ver alertas detalladas"). Also no horizontal scroll and the curves canvas at least 360 px high. The digital order is covered by monitoreo-julio.spec.ts. Cleanup disconnects and releases the reservation. v0.1 (Bloque 5, W5-1): first version. v0.2 (Ajustes A, A2): automatic send: "Deshacer último cambio" replaces Confirmar, Cancelar and the pending status. v0.3 (2026-11-10, reverts A-1 to A-4): explicit Enviar: the left column has [Enviar][Detener] then "Deshacer último cambio", the same order as Digital. Depends on @playwright/test and the simulator and layout order e2e helpers.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,11 +43,16 @@ async function checkRealOrder(page: Page): Promise<void> {
     ["logo Univalle", values.getByRole("img", { name: "Univalle" })],
     ["Modo del monitor", mode],
     ["Reserva activa", values.getByRole("status", { name: "Reserva activa" })],
+    ["Enviar", values.getByRole("button", { name: "Enviar" })],
     ["Deshacer último cambio", values.getByRole("button", { name: "Deshacer último cambio" })],
     ["Ajustar", values.getByRole("button", { name: "Ajustar" })],
     ["Valores del monitor", values.getByRole("list", { name: "Valores del monitor" })],
   ]);
-  // Ajustes A: commands go out on their own; nothing to confirm and nothing to undo yet.
+  // July: [Enviar][Detener] on one row, identical to Digital (monitoreo-julio.spec.ts).
+  await expectHorizontalOrder([["Enviar", values.getByRole("button", { name: "Enviar" })], ["Detener", values.getByRole("button", { name: "Detener" })]]);
+  // Read-only without device data; nothing to send, stop or undo yet.
+  await expect(values.getByRole("button", { name: "Enviar" })).toBeDisabled();
+  await expect(values.getByRole("button", { name: "Detener" })).toBeDisabled();
   await expect(values.getByRole("button", { name: "Deshacer último cambio" })).toBeDisabled();
   await expect(page.getByRole("button", { name: "Confirmar" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Cancelar" })).toHaveCount(0);

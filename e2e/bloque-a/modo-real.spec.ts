@@ -2,14 +2,15 @@
 * Funcionalidad: Bloque A E2E — real mode with the simulated device
 * Descripción: The student reserves the ventilator now, connects (control taken automatically) and opens Monitoreo
 *   in Real mode while the fake ventilator (scripts/e2e/fake-ventilator.mjs on the TEST broker) streams telemetry:
-*   (1) three quick PEEP steps (5 → 8) go out after the debounce as ONE command (POST /api/ventilator/commands with the last
-*   PEEP), the control shows "Enviando" then "Aplicado" and the device reports the value; (2) at the safe maximum the
+*   (1) three quick PEEP steps (5 → 8) stay pending (nothing sent) until Enviar, which sends ONE command (POST
+*   /api/ventilator/commands with the last PEEP); the control shows "Enviando" then "Aplicado" and the device reports it; (2) at the safe maximum the
 *   PEEP cannot go further (stepper disabled, the arrow key does nothing) and nothing is sent; (3) "Deshacer último
-*   cambio" sends the values the device ran before the last command and the device reports the previous PEEP again;
+*   cambio" sends the values applied before the last command and the device reports the previous PEEP again;
 *   (4) an alarm help and "Asesoría IA" exist in the real console (the AI never sends commands). The reservation is
 *   released at the end. Not in the CI job: it needs a TEST MQTT broker, the fake ventilator and a backend wired to
-*   them (see e2e/bloque-a/README.md). Depends on @playwright/test and the e2e support helpers.
-* Versión: 1.0
+*   them (see e2e/bloque-a/README.md). Depends on @playwright/test and the e2e support helpers. v1.1 (2026-11-10,
+*   reverts A-1 to A-4): explicit Enviar instead of the 500 ms auto-send.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,7 +40,7 @@ function recordCommands(page: Page): SentCommand[] {
   return sent;
 }
 
-test("auto-send after the debounce, nothing beyond the safe range and undo, with the simulated device", async ({ page }) => {
+test("one command per Enviar, nothing beyond the safe range and undo, with the simulated device", async ({ page }) => {
   test.setTimeout(240_000);
   const commands = recordCommands(page);
 
@@ -70,12 +71,17 @@ test("auto-send after the debounce, nothing beyond the safe range and undo, with
 
     const stepped = 8;
 
-    // (1) Three quick steps → one command after the 500 ms debounce, with the last value.
+    // (1) Three quick steps stay pending; Enviar sends one command with the last value.
+    const send = page.getByRole("region", { name: "Valores" }).getByRole("button", { name: "Enviar" });
+
     await peep.focus();
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("ArrowUp");
     await page.keyboard.press("ArrowUp");
-    await expect(peepStatus).toHaveText(/Enviando|Aplicado/, { timeout: 5_000 });
+    await page.waitForTimeout(1_500);
+    expect(commands).toHaveLength(0);
+    await send.click();
+    await expect(peepStatus).toHaveText(/Enviando|Confirmado|Aplicado/, { timeout: 5_000 });
     await expect.poll(() => commands.length, { timeout: 10_000 }).toBe(1);
     await expect(peepStatus).toHaveText(/^Aplicado/, { timeout: 30_000 });
     await expect.poll(peepValue, { timeout: 30_000 }).toBe(stepped);
@@ -84,7 +90,9 @@ test("auto-send after the debounce, nothing beyond the safe range and undo, with
     expect(JSON.stringify(commands[0])).toContain(String(stepped));
 
     // (2) Up to the safe maximum; beyond it the control does not move and nothing else is sent.
+    await peep.focus();
     await page.keyboard.press("End");
+    await send.click();
     await expect.poll(() => commands.length, { timeout: 10_000 }).toBe(2);
     await expect(peepStatus).toHaveText(/^Aplicado/, { timeout: 30_000 });
     const max = await peepValue();

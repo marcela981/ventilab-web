@@ -1,12 +1,13 @@
 /*
 * Funcionalidad: Bloque A E2E — the replay equals the live session
-* Descripción: A live session of the unstable ARDS case (×1, patient evolution on) with two automatic PEEP changes is
-*   ended from Monitoreo; then (1) the vendored engine replays the stored events in Node up to the scored time and its
+* Descripción: A live session of the unstable ARDS case (×1, patient evolution on) with two PEEP changes (each sent with
+*   Enviar) is ended from Monitoreo; then (1) the vendored engine replays the stored events in Node up to the scored time and its
 *   final metrics (gas exchange, MAP, heart rate, patient status and severity) equal the server summary
 *   `finalMetrics`; (2) the server outcome is the patient status the live chip showed at the end and the debrief
 *   timeline holds both decisions; (3) the result dialog rebuilds the evolution in the browser worker without the
-*   "no coincide" note. Depends on @playwright/test, the e2e support helpers and the vendored engine.
-* Versión: 1.0
+*   "no coincide" note. Depends on @playwright/test, the e2e support helpers and the vendored engine. v1.1
+*   (2026-11-11, reverts A-1 to A-4): each PEEP step waits for Enviar; the spec sends it and waits for the stored event.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -39,11 +40,23 @@ test("the replay of a session with evolution equals the live session and the ser
   test.setTimeout(180_000);
   const { sessionId, api } = await startCaseSession(page, request, UNSTABLE_CASE_ID, 1);
   const increase = page.getByRole("button", { name: "Aumentar PEEP" });
+  const values = page.getByRole("region", { name: "Valores" });
+  const paramChanges = async () => (await sessionReplay(api, sessionId)).events.filter((event) => event.type === "PARAM_CHANGE").length;
+
+  // Each PEEP step stays pending until Enviar (2026-11-10): send it and wait for its stored event. The pauses between
+  // the decisions only let the simulated patient evolve.
+  const stepAndSend = async (expected: number) => {
+    await increase.click();
+    await expect(values.getByText("1 cambio pendiente")).toBeVisible();
+    await values.getByRole("button", { name: "Enviar" }).click();
+    await expect(values.getByText("Sin cambios pendientes")).toBeVisible();
+    await expect.poll(paramChanges, { timeout: 30_000 }).toBe(expected);
+  };
 
   await page.waitForTimeout(3_000);
-  await increase.click();
+  await stepAndSend(1);
   await page.waitForTimeout(3_000);
-  await increase.click();
+  await stepAndSend(2);
   await page.waitForTimeout(5_000);
 
   const liveStatus = await patientCondition(page).getAttribute("data-status");
