@@ -34,7 +34,8 @@
 *   patient shows "Paciente fallecido" in the status area and ends the session on its own (no confirmation, one
 *   POST /end, then the result); EXAM leaves the live objectives out of the case drawer; an alarm opens
 *   "¿Cómo estabilizar?", and in an EXAM without a known assistance policy it shows only the alarm (no request).
-* Versión: 2.2
+*   v2.3 (2026-11-10, reverts A-1 to A-4): an edit waits for Enviar; Enviar sends it as one PARAM_CHANGE.
+* Versión: 2.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -184,7 +185,11 @@ async function startRunning(worker: FakeWorker, simTimeMs = 4321): Promise<void>
   });
 }
 
-const increasePeep = () => fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+/** One PEEP step sent with Enviar (2026-11-10: edits wait for Enviar, no automatic application). */
+const increasePeep = () => {
+  fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+  fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+};
 
 /** Confirms the end and answers the pause with a paused batch at `pausedAtMs` (the end time). */
 async function endThroughDialog(worker: FakeWorker, pausedAtMs = 4400): Promise<void> {
@@ -296,12 +301,13 @@ describe("SessionConsolePage", () => {
     expect(screen.getByRole("spinbutton", { name: "Presión positiva al final de la espiración" })).toHaveAttribute("aria-valuenow", "10");
   });
 
-  it("an edit applies on its own: one PARAM_CHANGE with its id and no time, enqueued with the acknowledged time", async() => {
+  it("an edit waits for Enviar, then one PARAM_CHANGE with its id and no time, enqueued with the acknowledged time", async() => {
     const { worker, sendEvents, endSession } = renderPage();
 
     await startRunning(worker);
-    expect(screen.queryByRole("button", { name: "Confirmar" })).not.toBeInTheDocument();
-    increasePeep();
+    fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
+    expect(sentOfType(worker, "applyEvent")).toEqual([]);
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
 
     expect(sentOfType(worker, "applyEvent")).toEqual([
       { type: "applyEvent", event: { type: "PARAM_CHANGE", changes: { peepCmH2O: 6 }, id: "evt-1" } },
@@ -375,7 +381,7 @@ describe("SessionConsolePage", () => {
     expect(sendEvents).not.toHaveBeenCalled();
   });
 
-  it("Escape drops a slider change still debouncing: it produces no event", async() => {
+  it("Escape drops a pending slider change: it produces no event", async() => {
     const { worker, sendEvents } = renderPage();
 
     await startRunning(worker);

@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Ventilator console module (public API)
-* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy). v1.5 (B3.10): no longer exports the unused CONSOLE_BUFFER_CAPACITY. v1.6 (W2): exports the console external store (createExternalStore, useStoreSelector, ConsoleAdapterStore, reuseUnchangedSlices, createUiThrottle) that live sources use to publish ≤ 4 Hz snapshots. v1.7 (Bloque 5, C1): exports the per-console pending edits store (createPendingControlsStore and its selectors and edit operations). v1.8 (Bloque 5, C3-C4): the July layout kind, the card catalog (MONITOR_CARD_IDS, MonitorCardId) and the cycle metrics of the July cards (CYCLE_EXTRA_METRIC_IDS). v1.9 (Bloque 5, C5): the value cards preference contract (MonitorCardsController, MonitorCardsLayout, DEFAULT_CARDS_LAYOUT, createMemoryCardsController). v2.0 (Bloque 5, C6): the July drawers (ConsoleDrawer, ConsoleDrawersProvider, useConsoleDrawer). v2.1 (Ajustes A, A2): the ConsoleSendStatus type of the automatic send. v2.2 (Bloque A): the alarm help seam (AlarmHelpRenderer, ConsoleAlarmHelpTarget, alarmHelpTarget, alarmLabelOf).
-* Versión: 2.2
+* Descripción: Public surface of the generic ventilator console (engine- and feature-agnostic): the VentilatorConsole screen and its zones (curves, numeric monitor, patient monitor), the adapter contract a consumer implements, the console-owned metric/vital/curve config and the pure format helpers (T3), plus the mode selector and pending→confirm/cancel parameter controls with their pure reducer and mode→parameter table, and the alarms bar with priority sorting, 2-minute silence, optional sound, session history and alarm limits (T4). v1.2: frame source `sourceId`/`sampleRateHz`, adapter `ranges` and the sample-rate based ring capacity. v1.3: `pendingModeOf` and `buildConfirmation(state, applied, appliedMode)`. v1.4: exports the generic source-state contract (frame status, in-flight settings, metric provenance helpers, value tile and in-flight copy). v1.5 (B3.10): no longer exports the unused CONSOLE_BUFFER_CAPACITY. v1.6 (W2): exports the console external store (createExternalStore, useStoreSelector, ConsoleAdapterStore, reuseUnchangedSlices, createUiThrottle) that live sources use to publish ≤ 4 Hz snapshots. v1.7 (Bloque 5, C1): exports the per-console pending edits store (createPendingControlsStore and its selectors and edit operations). v1.8 (Bloque 5, C3-C4): the July layout kind, the card catalog (MONITOR_CARD_IDS, MonitorCardId) and the cycle metrics of the July cards (CYCLE_EXTRA_METRIC_IDS). v1.9 (Bloque 5, C5): the value cards preference contract (MonitorCardsController, MonitorCardsLayout, DEFAULT_CARDS_LAYOUT, createMemoryCardsController). v2.0 (Bloque 5, C6): the July drawers (ConsoleDrawer, ConsoleDrawersProvider, useConsoleDrawer). v2.1 (Ajustes A, A2): the ConsoleSendStatus type of the automatic send. v2.2 (Bloque A): the alarm help seam (AlarmHelpRenderer, ConsoleAlarmHelpTarget, alarmHelpTarget, alarmLabelOf). v2.3 (2026-11-10): the ConsoleProposal type (a source's initial configuration pre-filled as pending edits) and `proposeIfEmpty`.
+* Versión: 2.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -77,6 +77,7 @@ export {
   parameterBase,
   pendingConfirmation,
   pendingValueSelector,
+  proposeIfEmpty,
   selectPendingMode,
   usePendingControlsStore,
   usePendingLifecycle,
@@ -158,6 +159,7 @@ export type {
   ConsoleParameterChange,
   ConsolePatient,
   ConsolePermissions,
+  ConsoleProposal,
   ConsoleRangeOverrides,
   ConsoleRanges,
   ConsoleSample,

@@ -21,8 +21,13 @@
 *   v1.5 (W10, Bloque 1): optional `alarmLimits` gives the console the client alarm limits of the source
 *   (real-alarm-limits: kept in the store closure, changed from the AlarmLimitsPanel, evaluated on every published
 *   snapshot against the derived metrics, never while there is no data).
-*   v1.6 (Ajustes A, A2): passes the auto-send options (desired values and mode, send status, onCancel, onApplyNow); the caller options reach the store in a layout effect, so a desired value replaces the console edit before paint.
-* Versión: 1.6
+*   v1.6 (Ajustes A, A2): passes the auto-send options (desired values and mode, send status, onCancel, onApplyNow); the caller options reach the store in a layout effect, so a desired value replaces the console edit before paint. v1.7 (2026-11-10, reverts A-1 to A-4): no `onCancel` / `onApplyNow` (explicit Enviar).
+*   v1.8 (2026-11-10, real mode without reported settings): passes `sentBase` (the last snapshot sent) and `proposal`
+*   (the initial configuration to confirm) to the adapter.
+*   v1.9 (2026-11-11, fix modo-real E2E): a caller option change (e.g. the command queue settling a sent value)
+*   publishes the latest reported settings instead of the last throttled commit, so the console never shows the
+*   previous value next to "Aplicado".
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -43,6 +48,7 @@ import type {
   ConsoleFrameSource,
   ConsoleLimits,
   ConsoleModeOption,
+  ConsoleProposal,
   ConsoleSettings,
   UiThrottle,
   VentilatorConsoleAdapter,
@@ -74,12 +80,13 @@ export type UseRealConsoleAdapterOptions = {
   pendingResetKey?: string | number
   limits?: ConsoleLimits
   inFlight?: ConsoleSettings["inFlight"]
-  /** Ajustes A (A2): the auto-send status, the desired values and the Escape / Enter callbacks of the July console. */
+  /** Ajustes A (A2): the command queue status and the desired values of the July console. */
   sendStatus?: ConsoleSettings["sendStatus"]
   desired?: RealDesiredSettings
+  /** v1.8: the last snapshot sent and the initial configuration (real mode without reported settings). */
+  sentBase?: RealDesiredSettings | null
+  proposal?: ConsoleProposal | null
   onConfirm?: (confirmation: ConsoleConfirmation) => void
-  onCancel?: () => void
-  onApplyNow?: () => void
   modeOptionsFor?: (reportedMode: string | null) => readonly ConsoleModeOption[]
   /** W10: the console offers the client alarm limits (AlarmLimitsPanel, real-alarm-limits). Default false. */
   alarmLimits?: boolean
@@ -111,6 +118,8 @@ type LiveSource = {
   /** Without data the breath detection restarts (its metrics would be stale). */
   setLive: (live: boolean, now: number) => void
   snapshot: (now: number) => Snapshot
+  /** v1.9: the reported state after the last ingested batch (not throttled). */
+  reported: () => ReportedState
 };
 
 function createLiveSource(sourceId: string): LiveSource {
@@ -146,6 +155,7 @@ function createLiveSource(sourceId: string): LiveSource {
         sampleRateHz: hub.sampleRateHz(),
       };
     },
+    reported: () => reported,
   };
 }
 
@@ -160,9 +170,9 @@ type CallerOptions = {
   inFlight: ConsoleSettings["inFlight"]
   sendStatus: ConsoleSettings["sendStatus"]
   desired: RealDesiredSettings | undefined
+  sentBase: RealDesiredSettings | null
+  proposal: ConsoleProposal | null
   onConfirm: ((confirmation: ConsoleConfirmation) => void) | undefined
-  onCancel: (() => void) | undefined
-  onApplyNow: (() => void) | undefined
   modeOptionsFor: ((reportedMode: string | null) => readonly ConsoleModeOption[]) | undefined
   alarmLimits: boolean
 };
@@ -224,9 +234,9 @@ function createSourceStore(sourceId: string, initial: CallerOptions): SourceStor
       inFlight: options.inFlight,
       ...(options.sendStatus === undefined ? {} : { sendStatus: options.sendStatus }),
       ...(options.desired === undefined ? {} : { desired: options.desired }),
+      sentBase: options.sentBase,
+      proposal: options.proposal,
       ...(options.onConfirm === undefined ? {} : { onConfirm: options.onConfirm }),
-      ...(options.onCancel === undefined ? {} : { onCancel: options.onCancel }),
-      ...(options.onApplyNow === undefined ? {} : { onApplyNow: options.onApplyNow }),
       ...(options.modeOptionsFor === undefined ? {} : { modeOptionsFor: options.modeOptionsFor }),
       ...(withLimits ? { alarmLimits, onAlarmLimitsChange } : {}),
     });
@@ -242,6 +252,9 @@ function createSourceStore(sourceId: string, initial: CallerOptions): SourceStor
     setLive: (live, now) => source.setLive(live, now),
     setOptions(next) {
       options = next;
+      // v1.9: a settled desired value falls back to the reported one: use the latest report, not the last throttled
+      // commit, so "Aplicado" never shows the previous value for up to one throttle window.
+      telemetry = { ...telemetry, reported: source.reported() };
       publish();
     },
     applyAlarm(alarm) {
@@ -281,16 +294,16 @@ export function useRealConsoleAdapter({
   inFlight,
   sendStatus,
   desired,
+  sentBase = null,
+  proposal = null,
   onConfirm,
-  onCancel,
-  onApplyNow,
   modeOptionsFor,
   alarmLimits = false,
   uiThrottleMs = LIVE_UI_THROTTLE_MS,
 }: UseRealConsoleAdapterOptions): ConsoleAdapterStore | null {
   const options = useMemo<CallerOptions>(
-    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, sendStatus, desired, onConfirm, onCancel, onApplyNow, modeOptionsFor, alarmLimits }),
-    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, sendStatus, desired, onConfirm, onCancel, onApplyNow, modeOptionsFor, alarmLimits],
+    () => ({ live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, sendStatus, desired, sentBase, proposal, onConfirm, modeOptionsFor, alarmLimits }),
+    [live, noDataMessage, canControl, readOnlyReason, pendingResetKey, limits, inFlight, sendStatus, desired, sentBase, proposal, onConfirm, modeOptionsFor, alarmLimits],
   );
   // One store per source; its first snapshot uses the options of the render that creates it. A new source replaces
   // the entry during render (no effect round trip), like the console curve ring.
@@ -304,7 +317,7 @@ export function useRealConsoleAdapter({
 
   const { target } = current;
 
-  // The caller options reach the store before paint (a layout effect, so the auto-send desired value replaces the
+  // The caller options reach the store before paint (a layout effect, so the command queue desired value replaces the
   // console edit in the same frame; it also runs before the live toggle below).
   useLayoutEffect(() => {
     target?.setOptions(options);

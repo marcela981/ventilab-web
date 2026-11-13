@@ -4,8 +4,9 @@
 *   without one React render per batch (throttled commits), the reported settings/mode/vitals and the derived metrics
 *   show after the throttle window, device alarms are added and cleared, the no-data state raises the synthetic alarm
 *   and clears the metrics, the source is stable across renders and a new source id gives a new source. v1.1 (T5 review fix): a pending throttled commit of a previous source never overwrites the new source, the no-data alarm carries the time no-data started (never 0), and the frame alarm codes are hidden while there is no data. v1.2 (W2, Bloque 1): the hook returns a store adapter (read through getSnapshot) that keeps its identity for the source; batches cause no React render of the caller at all. Depends on
-*   Vitest, Testing Library and the lab test helpers.
-* Versión: 1.2
+*   Vitest, Testing Library and the lab test helpers. v1.3 (2026-11-11, fix modo-real E2E): a sent value that settles
+*   inside the throttle window shows the latest reported value, never the previous one next to "Aplicado".
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -230,5 +231,26 @@ describe("useRealConsoleAdapter", () => {
 
     rerender({ sourceId: "reservation-1", live: false, uiThrottleMs: 200 });
     await waitFor(() => expect(current(result.current).alarms.map((alarm) => alarm.id)).toEqual([NO_DATA_ALARM_ID]));
+  });
+
+  it("shows the latest reported value when a sent value settles inside the throttle window (no flash of the previous one)", () => {
+    // A long throttle window: only the first batch is committed at once, the next one waits for the trailing commit.
+    const { result, socket, rerender } = renderAdapter({ uiThrottleMs: 60_000 });
+    const frame = (peep: number) => breathFrames(0, 1, { settings: { peep }, mode: "VCV" }).slice(0, 2);
+
+    socket.dispatch("ventilator:telemetry", { frames: frame(8), serverTs: 0 });
+    expect(current(result.current).settings.applied).toMatchObject({ peep: 8 });
+
+    // Enviar: PEEP 15 in flight is shown over the reported 8.
+    rerender({ sourceId: "reservation-1", live: true, uiThrottleMs: 60_000, desired: { values: { peep: 15 }, mode: null }, sendStatus: { peep: { status: "sending" } } });
+    expect(current(result.current).settings.applied).toMatchObject({ peep: 15 });
+
+    // The device reports 15 (no commit yet) and the command settles: "Aplicado" with the reported 15, never 8.
+    socket.dispatch("ventilator:telemetry", { frames: frame(15), serverTs: 0 });
+    rerender({ sourceId: "reservation-1", live: true, uiThrottleMs: 60_000, desired: { values: {}, mode: null }, sendStatus: { peep: { status: "applied" } } });
+
+    const settled = current(result.current);
+    expect(settled.settings.sendStatus?.["peep"]).toEqual({ status: "applied" });
+    expect(settled.settings.applied).toMatchObject({ peep: 15 });
   });
 });

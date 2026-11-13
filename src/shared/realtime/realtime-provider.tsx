@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: RealtimeProvider
-* Descripción: Owns the authenticated Socket.io connection for new code. A socket exists only while the backend session (useSession) is authenticated and is disconnected when it ends. Authentication follows asyncapi.yaml: the access token travels in the handshake (`auth.token`, read on every connect and reconnect from token-storage) and, when the token rotates on a live socket, it is re-sent with the `authenticate` message on the same socket. On `auth_error` (the server disconnects the socket) it runs the shared single-flight refresh once and reconnects; a second failure leaves the status `unauthorized` until a new token arrives (no loops). A user or role change reconnects the same socket so the server rebuilds the user/role rooms. `user:role-changed` is forwarded to the session's handleRoleChanged. socket.io-client and the refresh module are imported lazily. Depends on react, the session and api-client modules, and socket.io-client.
-* Versión: 1.0
+* Descripción: Owns the authenticated Socket.io connection for new code. A socket exists only while the backend session (useSession) is authenticated and is disconnected when it ends. Authentication follows asyncapi.yaml: the access token travels in the handshake (`auth.token`, read on every connect and reconnect from token-storage) and, when the token rotates on a live socket, it is re-sent with the `authenticate` message on the same socket. On `auth_error` (the server disconnects the socket) it runs the shared single-flight refresh once and reconnects; a second failure leaves the status `unauthorized` until a new token arrives (no loops). A user or role change reconnects the same socket so the server rebuilds the user/role rooms. `user:role-changed` is forwarded to the session's handleRoleChanged. socket.io-client and the refresh module are imported lazily. Depends on react, the session and api-client modules, and socket.io-client. v1.1 (2026-11-10, real-mode reconnection): the handshake refreshes the access token first when it expires within KEEPALIVE_TOKEN_SKEW_MS (it expired while the socket was down), instead of sending a stale token, getting auth_error and spending the single refresh retry; the auth_error path is unchanged as the fallback.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -11,7 +11,8 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { getAccessToken, subscribeTokens } from "@shared/api-client/token-storage";
+import { isTokenNearExpiry } from "@shared/api-client/keepalive-auth";
+import { getAccessToken, getRefreshToken, subscribeTokens } from "@shared/api-client/token-storage";
 import type { TokenSnapshot } from "@shared/api-client/token-storage";
 import { BACKEND_ORIGIN } from "@shared/lib/env";
 import type { RoleChangedEvent } from "@shared/session/session.entity";
@@ -26,6 +27,21 @@ type SocketCallbacks = {
   onStatus: (status: RealtimeStatus) => void
   onRoleChanged: (event: RoleChangedEvent) => void
 };
+
+/**
+ * The token for a (re)connection handshake: the stored one, refreshed first when it is about to expire (e.g. it expired
+ * while the socket was down), so a reconnect does not spend the single auth_error refresh on a token known to be stale.
+ * A failed refresh hands the stored token over (the auth_error path decides).
+ */
+async function freshHandshakeToken(token: string): Promise<string | null> {
+  try {
+    const { refreshAccessToken } = await import("@shared/api-client/token-refresh");
+
+    return await refreshAccessToken();
+  } catch {
+    return getAccessToken() ?? token;
+  }
+}
 
 type ManagedSocket = {
   socket: RealtimeSocket
@@ -42,10 +58,22 @@ function createManagedSocket(io: SocketIOModule["io"], callbacks: SocketCallback
   const socket: RealtimeSocket = io(BACKEND_ORIGIN, {
     autoConnect: false,
     transports: ["websocket", "polling"],
-    // Evaluated on every connect and reconnect, so a reconnect always carries the latest token.
+    // Evaluated on every connect and reconnect, so a reconnect always carries the latest token (refreshed first when
+    // it expires within the skew: the server would answer auth_error and disconnect).
     auth: (callback) => {
-      lastToken = getAccessToken();
-      callback({ token: lastToken ?? "" });
+      const token = getAccessToken();
+
+      if (token === null || getRefreshToken() === null || !isTokenNearExpiry(token)) {
+        lastToken = token;
+        callback({ token: token ?? "" });
+
+        return;
+      }
+
+      void freshHandshakeToken(token).then((fresh) => {
+        lastToken = fresh;
+        callback({ token: fresh ?? "" });
+      });
     },
   });
 

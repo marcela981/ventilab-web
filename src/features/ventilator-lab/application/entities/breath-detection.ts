@@ -25,7 +25,12 @@
 *   sample (no fallback value). Depends only on the console sample type. v1.2 (Bloque 5, C4): per breath also the
 *   time-weighted mean pressure (Pmedia, over the whole breath) and the flow extremes (highest inspiratory flow and
 *   most negative expiratory flow, as measured, without the baseline correction), reported for the last breath.
-* Versión: 1.2
+*   v1.3 (2026-11-10, real-mode metrics): tolerant to network jitter: the gap limit is now 2 s (maxGapMs 2000, the
+*   same threshold after which the telemetry is stale and the page resets the detector), so an isolated hole of a few
+*   hundred ms (a late batch) no longer clears the history and leaves Ppico / PEEP / Cst / Cdin at "—"; the breath in
+*   progress simply spans it. Only a longer silence clears the history. Chosen over counting repeated short gaps
+*   because it needs no extra state and matches the existing stale rule.
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -56,7 +61,7 @@ export type BreathDetectionOptions = {
   baselineWindowMs: number
   /** The window is flat when the means of its halves differ by at most this (L/min). */
   baselineSlopeLpm: number
-  /** A longer interval between samples drops the breath in progress and the previous breaths. */
+  /** A longer interval between samples drops the breath in progress and the previous breaths (v1.3: 2 s, jitter-tolerant). */
   maxGapMs: number
   minBreathMs: number
   maxBreathMs: number
@@ -75,7 +80,7 @@ export const DEFAULT_BREATH_DETECTION: BreathDetectionOptions = {
   peepWindowMs: 100,
   plateauFlowLpm: 2,
   plateauMinMs: 150,
-  maxGapMs: 200,
+  maxGapMs: 2000,
   minBreathMs: 500,
   maxBreathMs: 60_000,
   historySize: 8,

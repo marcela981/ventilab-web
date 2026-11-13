@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: VentilatorConsole July layout render isolation tests
 * Descripción: With a store adapter, the July layout keeps the zones isolated: v0.2 (Ajustes A, A1): the edit applies on its own through adapter.onConfirm. An edit (a click on a control) re-renders neither the curves zone nor the value cards, and a new metrics snapshot does not re-render the shell, so neither the curves nor the cards host are re-rendered from above (the real cards subscribe to the metrics on their own). The curves zone and the value cards are mocked as render counters. v0.1 (Bloque 5, C3): first version. Depends on Vitest, Testing Library and the console.
-* Versión: 0.2
+*   v0.3 (2026-11-10, reverts A-1 to A-4): the edits wait for Enviar, which emits them once.
+* Versión: 0.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -67,8 +68,10 @@ describe("VentilatorConsole layout=\"july\" with a store adapter", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
     fireEvent.click(screen.getByRole("button", { name: "Aumentar PEEP" }));
-    // Applied on its own, through the adapter, each time (Ajustes A).
-    expect(confirmed).toHaveBeenCalledTimes(2);
+    // Pending until Enviar (2026-11-10, reverts A-1 to A-4); then one confirmation through the adapter.
+    expect(confirmed).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+    expect(confirmed).toHaveBeenCalledTimes(1);
     expect(counts).toEqual(mounted);
 
     act(() => {

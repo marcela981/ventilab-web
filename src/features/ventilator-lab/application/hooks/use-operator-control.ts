@@ -30,7 +30,10 @@
 *   answers; a second failure leaves it closed until the next event, action, re-authentication or bfcache restore).
 *   v1.5 (A6, AUDIT_SYNC F4): while the caller is the operator the access token is kept fresh
 *   (`keepAccessTokenFresh`), so the keepalive release on leaving carries a valid token.
-* Versión: 1.5
+*   v1.6 (2026-11-10, real-mode control): remembers when the socket stopped being authenticated; the re-read after the
+*   re-authentication tells the reducer whether the outage outlasted the presence grace (CONTROL_PRESENCE_GRACE_MS), so a
+*   loss it finds shows "se interrumpió tu conexión" (presence_timeout) instead of the generic message.
+* Versión: 1.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -63,6 +66,9 @@ import type { ControlAction, ControlView } from "../entities/operator-control.en
 
 export const CONTROL_HEARTBEAT_MS = controlHeartbeatIntervalMs(VENDORED_LAB_BACKEND_DEFAULTS["control.operatorGraceSeconds"]);
 
+/** The backend releases the operator control this long after the operator's last socket closes (presence_timeout). */
+export const CONTROL_PRESENCE_GRACE_MS = VENDORED_LAB_BACKEND_DEFAULTS["control.operatorGraceSeconds"] * 1000;
+
 export type UseOperatorControlOptions = {
   /** False: no read, no beat, no release (e.g. no console session). */
   enabled: boolean
@@ -73,6 +79,10 @@ export type UseOperatorControlOptions = {
   releaseOnLeaveEnabled?: boolean
   /** S1 (T12 review fix): delay of the single retry of a failed re-read after a control-changed event. */
   rereadRetryMs?: number
+  /** v1.6: presence grace of the backend (a re-read after a longer socket outage reports a presence_timeout loss). */
+  presenceGraceMs?: number
+  /** v1.6: injectable clock (tests). */
+  now?: () => number
 };
 
 export type UseOperatorControlResult = {
@@ -101,6 +111,8 @@ export function useOperatorControl({
   releaseOnLeave = releaseControlKeepalive,
   releaseOnLeaveEnabled = true,
   rereadRetryMs = CONTROL_REREAD_RETRY_MS,
+  presenceGraceMs = CONTROL_PRESENCE_GRACE_MS,
+  now = Date.now,
 }: UseOperatorControlOptions): UseOperatorControlResult {
   const { user } = useSession();
   const selfUserId = user?.id ?? null;
@@ -128,6 +140,9 @@ export function useOperatorControl({
   // S1 (T12 review fix): the event sequence whose failed re-read was already retried, and the pending retry timer.
   const retriedEventSeqRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // v1.6: when the socket stopped being authenticated (null while it is), to tell a presence_timeout loss.
+  const downSinceRef = useRef<number | null>(null);
+  const clockRef = useRef({ now, presenceGraceMs });
 
   useEffect(() => {
     activeRef.current = true;
@@ -152,6 +167,7 @@ export function useOperatorControl({
     socketRef.current = { socket, status };
     releaseOnLeaveRef.current = releaseOnLeave;
     releaseEnabledRef.current = releaseOnLeaveEnabled;
+    clockRef.current = { now, presenceGraceMs };
   });
 
   // S1: the SWR data (also deduplicated or cached reads, which skip onSuccess) is the loaded state.
@@ -163,7 +179,7 @@ export function useOperatorControl({
 
   // W2: the re-read goes through the service (SWR's bound mutate resolves with the stale cache when the fetch fails or
   // is superseded); a failed or superseded answer is dropped and never verifies the state.
-  const reread = useCallback(function rereadState() {
+  const reread = useCallback(function rereadState(outageExceededGrace = false) {
     readSeqRef.current += 1;
     const seq = readSeqRef.current;
     const epoch = authEpochRef.current;
@@ -177,7 +193,7 @@ export function useOperatorControl({
       // The SWR cache may be gone (unmount in the same tick, provider removed): its rejection is not ours to raise.
       void mutate(result, { revalidate: false }).catch(() => undefined);
       // An identical answer keeps the SWR data reference, so the effect above would not run: apply it here.
-      dispatch({ type: "loaded", state: toOperatorControlState(result.data) });
+      dispatch({ type: "loaded", state: toOperatorControlState(result.data), outageExceededGrace });
 
       if (epoch > 0 && epoch === authEpochRef.current && socketRef.current.status === "authenticated") {
         verifiedEpochRef.current = epoch;
@@ -199,7 +215,7 @@ export function useOperatorControl({
           retryTimerRef.current = null;
 
           if (activeRef.current && seq === readSeqRef.current) {
-            rereadState();
+            rereadState(outageExceededGrace);
           }
         }, rereadRetryMs);
       }
@@ -221,9 +237,22 @@ export function useOperatorControl({
   // The server forgets nothing about the control on reconnect, but events may have been missed meanwhile (and the
   // presence grace may have released the control while the socket was down).
   useEffect(() => {
-    if (enabled && status === "authenticated") {
+    const clock = clockRef.current;
+
+    if (status !== "authenticated") {
+      downSinceRef.current ??= clock.now();
+
+      return;
+    }
+
+    const downSince = downSinceRef.current;
+
+    downSinceRef.current = null;
+
+    if (enabled) {
       authEpochRef.current += 1;
-      reread();
+      // v1.6: a loss found by this read after a longer outage is the backend presence release.
+      reread(downSince !== null && clock.now() - downSince >= clock.presenceGraceMs);
     }
   }, [enabled, status, reread]);
 

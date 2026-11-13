@@ -1,7 +1,8 @@
 /*
 * Funcionalidad: RealtimeProvider behavior tests
 * Descripción: Tests of the authenticated socket layer with a mocked socket.io-client (no network) and a stub session context: no connection without a backend session, handshake authentication, disconnect on sign-out, re-authentication on reconnect and after a token refresh on the SAME socket, one refresh then re-auth after auth_error (no loop), reconnect on identity change, useSocketEvent subscription lifecycle across socket replacement, and user:role-changed wiring to handleRoleChanged. Depends on vitest, Testing Library and the session/api-client modules.
-* Versión: 1.0
+*   v1.1 (2026-11-10): a token about to expire is refreshed before the (re)connection handshake.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -323,6 +324,26 @@ describe("RealtimeProvider auth errors", () => {
     act(() => socket.fire("connect"));
     act(() => socket.fire("authenticated", { userId: "u1" }));
     await waitFor(() => expect(realtime?.status).toBe("authenticated"));
+  });
+
+  it("refreshes a token that expires before the handshake instead of sending it stale (reconnection, 2026-11-10)", async () => {
+    const payload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 5 })).replace(/=+$/, "");
+
+    saveTokens(`header.${payload}.signature`, "refresh-1");
+    mocks.refreshAccessToken.mockImplementation(() => {
+      setAccessToken("access-2");
+
+      return Promise.resolve("access-2");
+    });
+    render(<Tree session={authenticated()} />);
+    const socket = await currentSocket();
+    const token = await new Promise<string>((resolve) => {
+      socket.options.auth?.((data) => resolve(data.token));
+    });
+
+    expect(token).toBe("access-2");
+    expect(mocks.refreshAccessToken).toHaveBeenCalledTimes(1);
+    expect(socket.emitted).toEqual([]);
   });
 
   it("gives up after a second auth_error without refreshing again", async () => {

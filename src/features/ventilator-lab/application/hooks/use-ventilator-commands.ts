@@ -38,7 +38,21 @@
 *   its result (sent with its local id and mapped command, busy while no command may be sent, refused with the
 *   message), `outcomeOf` says how a submitted command ended, `reportedValueOf` / `reportedMode` read the device
 *   report, and `activeLocalId`, `canSubmitNow`, `rateLimitReason` and `blockReason` tell the queue when it may move.
-* Versión: 1.6
+*   v1.7 (2026-11-10, reverts A-1 to A-4): the same send path now serves the explicit Enviar of the July console (command
+*   queue); `activePhase` tells the queue when the device acknowledged the command in flight ("Confirmado").
+*   v1.8 (2026-11-10, real mode without reported settings): the mapper receives the last snapshot the backend accepted
+*   (`sent`, the base while the device reports no settings; device values win), `reportedValueOf` / `reportedMode` read
+*   that same base, and the hook returns `sentBase` (that snapshot in console units, for the console), `initialProposal`
+*   (the Digital defaults the operator must confirm while `initialConfigRequired`) and `configUnconfirmed` (the "no
+*   confirmada por el equipo" notice). A telemetry batch also renders when the device starts or stops reporting settings.
+*   v1.9 (2026-11-11, review R1): `sentBase` is the snapshot actually published (ACKED/APPLIED/TIMEOUT, see the state
+*   machine v1.8); I1 every history read is handed to the state machine (a later command of another console clears the
+*   sent snapshot) and the history is re-read when the caller regains the control.
+*   v2.0 (2026-11-11, review R1 round 2): after regaining the control nothing is sent (`submit` busy, `canSubmitNow`
+*   false) until that history read settles; a failed read clears the sent snapshot (`history-failed`).
+*   v2.1 (2026-11-11, review R1 round 3 follow-up M-D): each regain of the control is numbered; a regain while the
+*   previous history read is in flight cancels that read, and only the read of the latest regain ends the wait.
+* Versión: 2.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -57,6 +71,9 @@ import type {
   ConsoleInFlight,
   ConsoleLimits,
   ConsoleModeOption,
+  ConsoleParameterId,
+  ConsoleProposal,
+  ConsoleSettingValues,
   ModeParameterTable,
 } from "@shared/ventilator-console";
 import {
@@ -72,11 +89,13 @@ import {
   COMMAND_APPLICABILITY,
   commandModeOptions,
   commandRefusalMessage,
+  COMMAND_PARAMETERS,
+  initialProposal,
   mapConfirmationToCommand,
   reduceDeviceReport,
   reportedConsoleValue,
 } from "../entities/command-mapper";
-import type { MappedCommand } from "../entities/command-mapper";
+import type { DeviceReport, MappedCommand } from "../entities/command-mapper";
 import { describeSendCommandError, SEND_COMMAND_ERROR_CODES } from "../entities/command-messages";
 import {
   canSubmitCommand,
@@ -84,6 +103,7 @@ import {
   carriedMode,
   carriedValues,
   carryKey,
+  commandBaseOf,
   commandBlockReason,
   commandBusyReason,
   commandInFlight,
@@ -93,11 +113,14 @@ import {
   commandReducer,
   COMMAND_STATE_COPY,
   INITIAL_COMMAND_STATE,
+  isConfigUnconfirmed,
+  isInitialConfigRequired,
   isTerminalCommandStatus,
   mergeRecentCommands,
   REPORT_WAIT_MS,
+  sentReport,
 } from "../entities/command-state";
-import type { CommandAction, CommandNotice, CommandOutcome, CommandUiState, LabCommandRecord, RecentCommandItem } from "../entities/command-state";
+import type { CommandAction, CommandNotice, CommandOutcome, CommandPhase, CommandUiState, LabCommandRecord, RecentCommandItem } from "../entities/command-state";
 import type { LabSettings } from "../entities/lab-settings.entity";
 
 /** Margin over commands.ackTimeoutMs before a command without a terminal status is looked up. */
@@ -116,6 +139,28 @@ export type CommandSubmitResult =
   | { sent: false, busy: true }
   | { sent: false, busy: false, message: string };
 
+/** v1.8: the last snapshot sent, in console units, shown while the device reports no settings (not confirmed by it). */
+export type SentBase = { values: ConsoleSettingValues, mode: string | null };
+
+/** v1.8: the sent snapshot in console units (only the parameters the console shows). */
+function toSentBase(report: DeviceReport | null): SentBase | null {
+  if (report === null) {
+    return null;
+  }
+
+  const values: Record<string, number> = {};
+
+  (Object.keys(COMMAND_PARAMETERS) as ConsoleParameterId[]).forEach((parameter) => {
+    const value = reportedConsoleValue(report, parameter);
+
+    if (value !== null) {
+      values[parameter] = value;
+    }
+  });
+
+  return { values, mode: report.mode };
+}
+
 export type UseVentilatorCommandsOptions = {
   reservationId: string
   /** The caller is the operator and the console is live (decided by the page). */
@@ -131,7 +176,7 @@ export type VentilatorCommands = {
   /** Why no command can be sent now (one in flight, 429 wait), or null. */
   busyReason: string | null
   onConfirm: (confirmation: ConsoleConfirmation) => void
-  /** Ajustes A (A2): onConfirm with its result, for the auto-send queue. */
+  /** Ajustes A (A2): onConfirm with its result, for the command queue. */
   submit: (confirmation: ConsoleConfirmation) => CommandSubmitResult
   /** Ajustes A (A2): how the command `localId` ended (null while it is the active one). */
   outcomeOf: (localId: string, command: MappedCommand) => CommandOutcome | null
@@ -140,15 +185,25 @@ export type VentilatorCommands = {
   reportedMode: () => string | null
   /** Ajustes A (A2): local id of the command in flight; a change means the queue may move. */
   activeLocalId: string | null
+  /** v1.7: phase of the command in flight (`confirmed`: acknowledged by the device, waiting for its report). */
+  activePhase: CommandPhase | null
   /** Ajustes A (A2): the caller may send and the command machine accepts a command now. */
   canSubmitNow: boolean
-  /** Ajustes A (A2): the 429 wait alone (the auto-send console is read-only only then). */
+  /** Ajustes A (A2): the 429 wait alone (the July console is read-only only then). */
   rateLimitReason: string | null
   /** Ajustes A (A2): an uncertain send, an unreported change or the 429 wait (not the plain one in flight). */
   blockReason: string | null
   /** W5: an unreported block can be lifted now with «Usar los valores que informa el equipo». */
   canUseReported: boolean
   onUseReported: () => void
+  /** v1.8: the last snapshot the backend accepted (console units), the console base while the device reports none. */
+  sentBase: SentBase | null
+  /** v1.8: no device settings and nothing sent: the first Enviar must confirm the whole configuration. */
+  initialConfigRequired: boolean
+  /** v1.8: the configuration pre-filled (Digital defaults) while `initialConfigRequired`. */
+  initialProposal: ConsoleProposal | null
+  /** v1.8: the device reports no settings and did not acknowledge the last command ("no confirmada por el equipo"). */
+  configUnconfirmed: boolean
   notice: CommandNotice | null
   recent: readonly RecentCommandItem[]
   recentLoading: boolean
@@ -206,6 +261,71 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
     }
   }, [latest, store]);
 
+  // v1.9 (I1): a later command of another console in the history makes the sent snapshot stale (state machine).
+  useEffect(() => {
+    if (records !== null) {
+      dispatch({ type: "history", records });
+    }
+  }, [records, dispatch]);
+
+  // v1.9 (I1): when the caller (re)gains the control, re-read the history: commands sent meanwhile by another operator.
+  // v2.0 (review R1 round 2): sending waits until that read settles; a failed read clears the sent snapshot.
+  // The regain is detected during render (previous `canSend` kept in state), so the read is pending in the same
+  // render that enables sending; the ref mirrors it for `submit`.
+  // v2.1 (review R1 round 3, M-D): each regain gets a sequence number; a new regain while a read is in flight cancels
+  // it and starts another, and only the read of the latest regain settles the wait (it was requested after any command
+  // of the other operator).
+  const [couldSend, setCouldSend] = useState(canSend);
+  const [regainSeq, setRegainSeq] = useState(0);
+  const [settledSeq, setSettledSeq] = useState(0);
+  const regainReading = regainSeq !== settledSeq;
+  const regainReadRef = useRef(false);
+
+  if (couldSend !== canSend) {
+    setCouldSend(canSend);
+
+    if (canSend) {
+      // From the rendered value (not an updater), so a repeated render sets the same number.
+      setRegainSeq(regainSeq + 1);
+    }
+  }
+
+  useLayoutEffect(() => {
+    regainReadRef.current = regainReading;
+  });
+
+  useEffect(() => {
+    if (regainSeq === settledSeq) {
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    regainReadRef.current = true;
+    fetchVentilatorCommands(reservationId).then(
+      (records) => {
+        if (!cancelled) {
+          dispatch({ type: "history", records });
+        }
+      },
+      () => {
+        if (!cancelled) {
+          dispatch({ type: "history-failed" });
+        }
+      },
+    ).finally(() => {
+      if (!cancelled) {
+        regainReadRef.current = false;
+        setSettledSeq(regainSeq);
+        void revalidateHistory();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [regainSeq, settledSeq, reservationId, dispatch, revalidateHistory]);
+
   useSocketEvent("ventilator:telemetry", (batch) => {
     const previous = latest();
     const report = reduceDeviceReport(previous.report, batch.frames);
@@ -216,8 +336,11 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
 
     const next = commandReducer(previous, { type: "reported", report, at: Date.now() });
 
-    // Render only when the report ends a confirmed command (no render per batch).
-    store(next, next.active !== previous.active || next.notice !== previous.notice);
+    // Render only when the report ends a confirmed command, the device starts / stops reporting settings or changes its
+    // reported mode (v1.8: the initial configuration and the "no confirmada" notice depend on them).
+    const settingsToggled = (next.report.settings === null) !== (previous.report.settings === null);
+
+    store(next, next.active !== previous.active || next.notice !== previous.notice || settingsToggled || next.report.mode !== previous.report.mode);
   });
 
   useSocketEvent("ventilator:command-status", (event) => {
@@ -352,11 +475,12 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
   const submit = useCallback((confirmation: ConsoleConfirmation): CommandSubmitResult => {
     const at = Date.now();
 
-    if (!canSend || !canSubmitCommand(latest(), at)) {
+    // v2.0: after regaining the control nothing is sent until the history read settles.
+    if (!canSend || regainReadRef.current || !canSubmitCommand(latest(), at)) {
       return { sent: false, busy: true };
     }
 
-    const mapping = mapConfirmationToCommand(confirmation, latest().report, { limits, settings });
+    const mapping = mapConfirmationToCommand(confirmation, latest().report, { limits, settings, sent: sentReport(latest()) });
 
     if (!mapping.ok) {
       const message = commandRefusalMessage(mapping.refusal);
@@ -417,8 +541,9 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
   }, [submit]);
 
   const outcomeOf = useCallback((localId: string, command: MappedCommand) => commandOutcomeFor(latest(), localId, command), [latest]);
-  const reportedValueOf = useCallback((parameter: string) => reportedConsoleValue(latest().report, parameter), [latest]);
-  const reportedMode = useCallback(() => latest().report.mode, [latest]);
+  // v1.8: the base of the next command (the device report, the sent snapshot for what the device does not report).
+  const reportedValueOf = useCallback((parameter: string) => reportedConsoleValue(commandBaseOf(latest()), parameter), [latest]);
+  const reportedMode = useCallback(() => commandBaseOf(latest()).mode, [latest]);
 
   // W5: «Usar los valores que informa el equipo» lifts the unreported block (only while the caller may send).
   const onUseReported = useCallback(() => {
@@ -430,6 +555,11 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
   const inFlight = useMemo(() => commandInFlight(state), [state]);
   const notice = useMemo(() => commandNoticeView(state), [state]);
   const recent = useMemo(() => mergeRecentCommands(records, state, RECENT_COMMANDS_LIMIT), [records, state]);
+  const sent = state.sent ?? null;
+  const sentBase = useMemo(() => toSentBase(sent?.report ?? null), [sent]);
+  const initialConfigRequired = isInitialConfigRequired(state);
+  const reportedModeNow = state.report.mode;
+  const proposal = useMemo(() => (initialConfigRequired ? initialProposal(reportedModeNow) : null), [initialConfigRequired, reportedModeNow]);
 
   return {
     limits,
@@ -443,11 +573,16 @@ export function useVentilatorCommands({ reservationId, canSend, settings }: UseV
     reportedValueOf,
     reportedMode,
     activeLocalId: state.active?.localId ?? null,
-    canSubmitNow: canSend && canSubmitCommand(state, now),
+    activePhase: state.active?.phase ?? null,
+    canSubmitNow: canSend && !regainReading && canSubmitCommand(state, now),
     rateLimitReason: commandRateLimitReason(state, now),
     blockReason: commandBlockReason(state, now),
     canUseReported: canSend && canUseReportedValues(state),
     onUseReported,
+    sentBase,
+    initialConfigRequired,
+    initialProposal: proposal,
+    configUnconfirmed: isConfigUnconfirmed(state),
     notice,
     recent,
     recentLoading: !history.data && history.isLoading,

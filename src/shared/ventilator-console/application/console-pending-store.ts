@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console pending edits store
-* Descripción: Per-console external store of the unconfirmed edits (selected parameter, pending values and pending mode), so controls spread over several zones of the console (July layout: input row, right column, confirm buttons on the left) share one state while each one re-renders only for its own slice. It runs the same pure controls reducer (console-controls.reducer.ts) behind `subscribe`/`getSnapshot` (the console store pattern, useStoreSelector), with cached per-parameter selectors (a primitive per control, so a click re-renders only the touched control, the counter and the buttons, never the metrics or the curves). Also the shared edit operations the classic ConsoleControls and the July controls call at event time (adjust a parameter from its reported base, select a mode with its applicable parameters, confirm and cancel) and the lifecycle hook that reports pending transitions (onPendingChange, also false on unmount) and drops the edits when `pendingResetKey` changes. v0.1 (Bloque 5, C1): lifted from the local useReducer of ConsoleControls without changing its behaviour. Depends on React, the console store and the controls reducer.
-* Versión: 0.1
+* Descripción: Per-console external store of the unconfirmed edits (selected parameter, pending values and pending mode), so controls spread over several zones of the console (July layout: input row, right column, confirm buttons on the left) share one state while each one re-renders only for its own slice. It runs the same pure controls reducer (console-controls.reducer.ts) behind `subscribe`/`getSnapshot` (the console store pattern, useStoreSelector), with cached per-parameter selectors (a primitive per control, so a click re-renders only the touched control, the counter and the buttons, never the metrics or the curves). Also the shared edit operations the classic ConsoleControls and the July controls call at event time (adjust a parameter from its reported base, select a mode with its applicable parameters, confirm and cancel) and the lifecycle hook that reports pending transitions (onPendingChange, also false on unmount) and drops the edits when `pendingResetKey` changes. v0.1 (Bloque 5, C1): lifted from the local useReducer of ConsoleControls without changing its behaviour. Depends on React, the console store and the controls reducer. v0.2 (2026-11-10): `adjustPending` takes the source's `proposal` as the base of a parameter nothing applied (the edit then stays pending even at that value) and `proposeIfEmpty` pre-fills that proposal as the pending edits while nothing is pending.
+* Versión: 0.2
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -21,6 +21,7 @@ import type {
   ConsoleLimits,
   ConsoleMode,
   ConsoleParameterChange,
+  ConsoleProposal,
   ConsoleSettings,
   ParameterLimit,
 } from "./ventilator-console.entity";
@@ -94,19 +95,26 @@ export type AdjustRequest = {
   adjustment: Adjustment
   settings: ConsoleSettings
   onProposeChange?: ((change: ConsoleParameterChange) => void) | undefined
+  /** v0.2: the source's initial configuration; its value is the base of a parameter nothing applied. */
+  proposal?: ConsoleProposal | undefined
 };
 
-/** Steps or sets a parameter from its reported base and previews the pending value; false when it has no base. */
-export function adjustPending(pending: PendingControlsStore, { parameter, limit, adjustment, settings, onProposeChange }: AdjustRequest): boolean {
-  const base = parameterBase(settings, parameter);
+/**
+ * Steps or sets a parameter from its reported base and previews the pending value; false when it has no base. v0.2: a
+ * parameter nothing applied takes its proposed value as the base and stays pending even at that value.
+ */
+export function adjustPending(pending: PendingControlsStore, { parameter, limit, adjustment, settings, onProposeChange, proposal }: AdjustRequest): boolean {
+  const reported = parameterBase(settings, parameter);
+  const base = reported ?? proposal?.values[parameter];
 
   if (base === undefined) {
     return false;
   }
 
+  const keep = reported === undefined;
   const action: ControlsAction = adjustment.kind === "steps"
-    ? { type: "adjust", parameter, steps: adjustment.steps, base, limit }
-    : { type: "setValue", parameter, value: adjustment.value, base, limit };
+    ? { type: "adjust", parameter, steps: adjustment.steps, base, limit, keep }
+    : { type: "setValue", parameter, value: adjustment.value, base, limit, keep };
   const next = pending.dispatch(action);
 
   onProposeChange?.({ parameter, value: next.pendingValues[parameter] ?? base });
@@ -128,6 +136,19 @@ export function selectPendingMode(
     appliedMode: mode.current,
     applicable: getParametersForMode(modeId, limits, applicability),
   });
+}
+
+/** v0.2: pre-fills the source's proposal as the pending edits when nothing is pending; true when it did. */
+export function proposeIfEmpty(pending: PendingControlsStore, proposal: ConsoleProposal): boolean {
+  const state = pending.getSnapshot();
+
+  if (Object.keys(state.pendingValues).length > 0 || state.pendingMode !== null) {
+    return false;
+  }
+
+  pending.dispatch({ type: "propose", mode: proposal.mode, values: proposal.values });
+
+  return true;
 }
 
 /** The diff CONFIRMAR would emit now (`null`: nothing pending). */

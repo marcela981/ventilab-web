@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: July console controls styles
-* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" stays on one line. vX.x (Bloque 5, Ola 4): "Más modos" wraps its mode list onto a second line in a narrow column instead of cutting it ("Más modos (PSV, CPAP, SI..."); the button text and name are unchanged.
-* Versión: 0.3
+* Descripción: Styles of the July layout controls on the dark console surface (mockup 05-monitoreo-digital, monitor.css): the three-field input row, the round VOL CTRL / PRES CTRL buttons (pressed in the primary colour with the pressure-red ring, pending in the pending token), the discreet "Más modos" button, the Insp/Esp and rate sliders (native range in the primary colour), the read-only I:E line, the disabled expiratory pause, the "Más parámetros" collapser and the Confirmar / Cancelar pair with the pending counter. Console and design-system tokens only. v0.1 (Bloque 5, C2): first version. v0.2 (Bloque 5, C6): "Más modos" stays on one line. vX.x (Bloque 5, Ola 4): "Más modos" wraps its mode list onto a second line in a narrow column instead of cutting it ("Más modos (PSV, CPAP, SI..."); the button text and name are unchanged. v0.4 (2026-11-10, reverts A-1 to A-4): `.undo`, the full-width "Deshacer último cambio" under the Enviar / Detener pair (same place in Digital and Real). v0.5 (2026-11-11, review R1): `.stopUnavailable` (named apart from the expiratory pause `.unavailable`; the focusable wrapper of the unavailable Detener, with its focus ring) and `.visuallyHidden` (its accessible description). v0.6 (2026-11-11, review R1 round 2): the Detener wrapper class renamed `.stopUnavailable` (it collided with `.unavailable`).
+* Versión: 0.6
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -242,6 +242,33 @@
 
 .action {
   flex: 1 1 0;
+  justify-content: center;
+}
+
+/* v0.5: the unavailable Detener: a focusable wrapper (tooltip on hover and focus) in the button's place. */
+.stopUnavailable {
+  display: flex;
+  flex: 1 1 0;
+  border-radius: var(--vl-radius-md);
+}
+
+.stopUnavailable:focus-visible {
+  outline: var(--vl-focus-ring-width) solid var(--vl-console-focus-ring);
+  outline-offset: var(--vl-focus-ring-width);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* "Deshacer último cambio": full width under Enviar / Detener. */
+.undo {
+  width: 100%;
   justify-content: center;
 }
 

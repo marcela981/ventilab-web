@@ -1,7 +1,7 @@
 <!--
 * Funcionalidad: Fake ventilator usage
-* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E. v1.5 (cierre IA): fault injection modes of the fake LLM (per request, runtime and start mode) and the deterministic fallback E2E of Profundizar. v1.6 (Bloque A): the fake LLM answers the simulator case interpretation; Bloque A E2E (e2e/bloque-a) with the stack on its own ports, a TEST Mosquitto broker and the fake ventilator for the real mode. v1.7 (fix sim-assist-current-state): answer modes `echo` and `claims-stable` of the fake LLM and the current-state E2E of the AI help.
-* Versión: 1.7
+* Descripción: How to run the fake ventilator (scripts/e2e/fake-ventilator.mjs) for automated tests of /lab/live against a TEST backend and a TEST broker. v1.3 (W10, Bloque 2): the fake LLM (scripts/e2e/fake-llm.mjs) for the TutorAI E2E specs. v1.4 (Bloque 3): the fake LLM also answers grade feedback prompts; Block 3 evaluation E2E. v1.5 (cierre IA): fault injection modes of the fake LLM (per request, runtime and start mode) and the deterministic fallback E2E of Profundizar. v1.6 (Bloque A): the fake LLM answers the simulator case interpretation; Bloque A E2E (e2e/bloque-a) with the stack on its own ports, a TEST Mosquitto broker and the fake ventilator for the real mode. v1.7 (fix sim-assist-current-state): answer modes `echo` and `claims-stable` of the fake LLM and the current-state E2E of the AI help. v1.8 (2026-11-10, reverts A-1 to A-4): `aplicacion-automatica` became `envio-explicito` (explicit Enviar and undo); `modo-real` sends with Enviar.
+* Versión: 1.8
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -185,14 +185,14 @@ Block A E2E (simulator adjustments, `e2e/bloque-a/`; helpers in `e2e/support/blo
 
 | Spec | Covers | CI |
 | --- | --- | --- |
-| `aplicacion-automatica` | Digital: a PEEP change applies with no confirm button and reaches the stored session events | yes |
+| `envio-explicito` | Digital: a PEEP change stays pending until Enviar, goes out as one PARAM_CHANGE in the stored session events, and "Deshacer último cambio" sends the previous PEEP back | yes |
 | `paciente-fallecido` | `engine-ards-unstable` ("SDRA grave inestable") at ×4 left alone: Inestable → Crítico, the session ends on its own and the debrief shows "Paciente fallecido" and the "Línea de tiempo" (≈ 40 s) | yes |
 | `mejoria` | Same case with PEEP 12, FiO2 80 % and Vt 380 mL: the status chip reaches Estable and the SpO2 card rises; the debrief lists the decisions | yes |
 | `alarma-ayuda` | "¿Cómo estabilizar? SpO₂ baja": rules with their source, the fake LLM suggestion and its AI_CALL / SIM_ALARM rating | yes |
 | `repeticion` | The vendored engine replays the stored events in Node and equals the server `finalMetrics`; the live status chip equals the server outcome; the browser replay shows no mismatch note | yes |
 | `asesoria-estado-actual` | Same unstable case at ×4 left alone until "Crítico", paused: with the fake LLM in `echo` mode "Asesoría IA" and "¿Cómo estabilizar?" send the console time and snapshot and the echoed SpO2 and severity match the screen (±2 %), with the header "Analizado en t = mm:ss · gravedad X %"; in `claims-stable` mode the answer is replaced by the deterministic suggestion with "La IA no pudo analizar el estado actual"; from 1440 px the drawer pushes the curves | yes |
 | `modo-real-asesoria` | Real mode, fake LLM in `echo` mode: "Asesoría IA" sends the latest telemetry with its time and age and the echoed peak pressure matches the screen | no (needs MQTT) |
-| `modo-real` | Real mode with the fake ventilator: three quick PEEP steps go out as one command after the 500 ms debounce ("Enviando" → "Aplicado"), nothing is sent beyond the safe maximum, "Deshacer último cambio" restores the previous PEEP | no (needs MQTT) |
+| `modo-real` | Real mode with the fake ventilator: three quick PEEP steps stay pending and Enviar sends them as one command ("Enviando" → "Aplicado"), nothing is sent beyond the safe maximum, "Deshacer último cambio" restores the previous PEEP | no (needs MQTT) |
 
 Local run on the Block A ports (database `ventylab_a`, backend :4110, web :3110, fake LLM :4911, TEST broker :1893):
 

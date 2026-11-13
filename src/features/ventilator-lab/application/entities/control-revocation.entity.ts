@@ -13,7 +13,8 @@
 *   the backend gave, else "Otra persona"), presence_timeout, a release by a teacher/admin, or a loss found on a
 *   re-read. Backend semantics (operator-control.service): takeover reassigns the operator and keeps the reservation,
 *   so it is a notice, not the revoked modal. Depends on the realtime event types and the reservation entity.
-* Versión: 1.0
+*   v1.1 (2026-11-10): `loss.retake` is the label of the one-click "Retomar control" button of the loss notice.
+* Versión: 1.1
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -69,7 +70,7 @@ export const REVOCATION_COPY = {
     released: "Un docente o un administrador liberó tu control del equipo.",
     lost: "Ya no tienes el control del equipo.",
     readOnly: "La consola quedó en solo lectura; los cambios sin confirmar se descartaron.",
-    retake: "Puedes volver a tomarlo con «Tomar control».",
+    retake: "Retomar control",
     dismiss: "Cerrar aviso",
   },
 } as const;

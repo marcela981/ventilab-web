@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: useVentilatorCommands tests
-* Descripción: The commands hook with msw and a fake socket: a confirmation becomes ONE POST /api/ventilator/commands with the full setting set built from the reported telemetry settings (FiO2 fraction, unchanged fields as reported), the in-flight state goes sending → awaiting (202) → waiting for the report (command-status APPLIED) and ends only when the telemetry reports the value; a second confirmation in flight sends nothing; statuses of another reservation are ignored; REJECTED leaves a warning; the Spanish copy of a 403 / 423 / 503 / 422 (violations) / 429 (Retry-After countdown, sending paused); a refusal of the mapper and a caller who is not the operator send nothing; the recent list merges the history read with the live statuses; a status that never arrives is looked up and marked unknown. v1.1 (T7 review fix S5): a not_operator refusal re-reads the control state. v1.2 (T8 review fix W2): a command found SENT by the lookup keeps the console locked and is looked up again until terminal, lost only after the lookup window; a lost connection during the send keeps the console locked until the device reports the value. v1.3 (T8 review fix 2): the end of an uncertain wait reads the history (APPLIED → blocked until «usar los valores que informa», unreadable → blocked as unknown, no trace → freed). v1.4 (T8 review fix 3): W2 only the caller's own early REJECTED ends an uncertain wait; W1 the abandoned accepted value is named and a change carrying another value is sent only when repeated. v1.5 (T8 review fix 4): B1 an abandoned accepted mode change (VCV → SIMV the device never reports) is named and a change built from the reported VCV is sent only when repeated; a report that moves between the warning and the repeat warns again. Depends on vitest, msw, Testing Library, the lab test helpers and the commands hook.
-* Versión: 1.5
+* Descripción: The commands hook with msw and a fake socket: a confirmation becomes ONE POST /api/ventilator/commands with the full setting set built from the reported telemetry settings (FiO2 fraction, unchanged fields as reported), the in-flight state goes sending → awaiting (202) → waiting for the report (command-status APPLIED) and ends only when the telemetry reports the value; a second confirmation in flight sends nothing; statuses of another reservation are ignored; REJECTED leaves a warning; the Spanish copy of a 403 / 423 / 503 / 422 (violations) / 429 (Retry-After countdown, sending paused); a refusal of the mapper and a caller who is not the operator send nothing; the recent list merges the history read with the live statuses; a status that never arrives is looked up and marked unknown. v1.1 (T7 review fix S5): a not_operator refusal re-reads the control state. v1.2 (T8 review fix W2): a command found SENT by the lookup keeps the console locked and is looked up again until terminal, lost only after the lookup window; a lost connection during the send keeps the console locked until the device reports the value. v1.3 (T8 review fix 2): the end of an uncertain wait reads the history (APPLIED → blocked until «usar los valores que informa», unreadable → blocked as unknown, no trace → freed). v1.4 (T8 review fix 3): W2 only the caller's own early REJECTED ends an uncertain wait; W1 the abandoned accepted value is named and a change carrying another value is sent only when repeated. v1.5 (T8 review fix 4): B1 an abandoned accepted mode change (VCV → SIMV the device never reports) is named and a change built from the reported VCV is sent only when repeated; a report that moves between the warning and the repeat warns again. Depends on vitest, msw, Testing Library, the lab test helpers and the commands hook. v1.6 (2026-11-10): a device that reports no settings: the initial proposal must be confirmed whole, the accepted snapshot becomes the base of the next command (full snapshot), the "no confirmada" flag follows the acknowledgement, and device-reported settings end it. v1.7 (2026-11-11, review R1): B1 the 202 snapshot becomes the base only when published (ACKED/TIMEOUT); a REJECTED first send keeps the initial confirmation required and a later REJECTED keeps the previous base; I1 a later command of another console in the history (re-read when the control is regained) clears the base. v1.8 (2026-11-11, review R1 round 2): after regaining the control nothing is sent until the history read settles, and a failed read clears the base. v1.9 (2026-11-11, review R1 round 3 follow-up M-D): a regain while the previous history read is in flight waits for the read of the latest regain, and only that read is used.
+* Versión: 1.9
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -244,13 +244,254 @@ describe("useVentilatorCommands", { timeout: 20_000 }, () => {
     const { result } = render(socket);
 
     act(() => result.current.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
-    expect(result.current.notice?.message).toMatch(/no ha informado su modo/);
+    expect(result.current.notice?.message).toMatch(/no informa su modo/);
 
     const viewer = render(createFakeSocket(), { canSend: false });
 
     act(() => viewer.result.current.onConfirm({ mode: null, changes: [{ parameter: "peep", value: 6 }] }));
     expect(viewer.result.current.notice).toBeNull();
     expect(posts).toHaveLength(0);
+  });
+
+  it("without device settings: whole initial configuration first, then the last snapshot sent is the base (v1.6)", async() => {
+    acceptPosts();
+    const socket = createFakeSocket();
+    const { result } = render(socket);
+
+    // The firmware sends curves only (no mode, no settings).
+    socket.dispatch("ventilator:telemetry", { serverTs: 1, frames: [{ serverTs: 1, pressure: 5, flow: 0, volume: 0, deviceId: "esp" }] });
+    expect(result.current.initialConfigRequired).toBe(true);
+    expect(result.current.configUnconfirmed).toBe(true);
+    expect(result.current.sentBase).toBeNull();
+
+    const proposal = result.current.initialProposal;
+
+    expect(proposal?.mode).toBe("VCV");
+
+    // A partial first change is refused before any POST.
+    act(() => result.current.onConfirm({ mode: "VCV", changes: [{ parameter: "peep", value: 6 }] }));
+    expect(result.current.notice?.message).toMatch(/primer envío debe incluir todos los parámetros/);
+    expect(posts).toHaveLength(0);
+
+    // The whole proposal, reviewed and confirmed: one full snapshot.
+    const changes = Object.entries(proposal?.values ?? {}).map(([parameter, value]) => ({ parameter, value: parameter === "peep" ? 6 : value }));
+
+    act(() => result.current.onConfirm({ mode: "VCV", changes }));
+    await waitFor(() => expect(result.current.inFlight.peep?.status).toBe("awaiting"), { timeout: 5000 });
+    expect(posts).toEqual([{ mode: "VCV", tidalVolume: 450, respiratoryRate: 14, peep: 6, fio2: 0.4, inspiratoryTime: 1, sensitivity: 2 }]);
+    // v1.7 (B1): accepted by the backend (202) but not published yet: not the base, nothing shown as sent.
+    expect(result.current.sentBase).toBeNull();
+    expect(result.current.configUnconfirmed).toBe(true);
+
+    // ACKED: the device will never report the values, so the command ends at once and the notice hides.
+    socket.dispatch("ventilator:command-status", status("c1", "ACKED"));
+    expect(result.current.initialConfigRequired).toBe(false);
+    expect(result.current.initialProposal).toBeNull();
+    expect(result.current.sentBase).toEqual({ values: { tidalVolume: 450, respiratoryRate: 14, peep: 6, fio2: 40, inspiratoryTime: 1, flowTrigger: 2 }, mode: "VCV" });
+    expect(result.current.busyReason).toBeNull();
+    expect(result.current.configUnconfirmed).toBe(false);
+    expect(result.current.notice?.message).toBe(COMMAND_STATE_COPY.acknowledgedNotReporting);
+    expect(result.current.reportedValueOf("peep")).toBe(6);
+    expect(result.current.reportedMode()).toBe("VCV");
+
+    // A later single change is a full snapshot built on the one sent.
+    acceptPosts("c2");
+    act(() => result.current.onConfirm({ mode: null, changes: [{ parameter: "fio2", value: 50 }] }));
+    await waitFor(() => expect(posts).toHaveLength(2), { timeout: 5000 });
+    expect(posts[1]).toEqual({ mode: "VCV", tidalVolume: 450, respiratoryRate: 14, peep: 6, fio2: 0.5, inspiratoryTime: 1, sensitivity: 2 });
+    await waitFor(() => expect(result.current.inFlight.fio2?.status).toBe("awaiting"));
+    expect(result.current.sentBase?.values.fio2).toBe(40);
+    // v1.7 (B1): a TIMEOUT was published but not confirmed: it becomes the base, the "no confirmada" notice stays.
+    socket.dispatch("ventilator:command-status", status("c2", "TIMEOUT"));
+    expect(result.current.sentBase?.values.fio2).toBe(50);
+    expect(result.current.configUnconfirmed).toBe(true);
+
+    // The device starts reporting its settings: they win, and the notice hides.
+    socket.dispatch("ventilator:telemetry", telemetry(REPORTED));
+    expect(result.current.configUnconfirmed).toBe(false);
+    expect(result.current.reportedValueOf("peep")).toBe(5);
+  });
+
+  it("without device settings: a REJECTED send (e.g. a failed publish) never becomes the base (v1.7, review B1)", async() => {
+    acceptPosts();
+    const socket = createFakeSocket();
+    const { result } = render(socket);
+
+    socket.dispatch("ventilator:telemetry", { serverTs: 1, frames: [{ serverTs: 1, pressure: 5, flow: 0, volume: 0, deviceId: "esp" }] });
+
+    const changes = Object.entries(result.current.initialProposal?.values ?? {}).map(([parameter, value]) => ({ parameter, value }));
+
+    // First send rejected: the initial confirmation is required again, nothing is shown as sent.
+    act(() => result.current.onConfirm({ mode: "VCV", changes }));
+    await waitFor(() => expect(result.current.inFlight.peep?.status).toBe("awaiting"), { timeout: 5000 });
+    socket.dispatch("ventilator:command-status", status("c1", "REJECTED", { reason: "publish_failed" }));
+    expect(result.current.initialConfigRequired).toBe(true);
+    expect(result.current.sentBase).toBeNull();
+    expect(result.current.initialProposal).not.toBeNull();
+    expect(result.current.notice?.message).toMatch(/confirma de nuevo la configuración inicial/);
+
+    // Confirmed again and acknowledged: the base.
+    acceptPosts("c2");
+    act(() => result.current.onConfirm({ mode: "VCV", changes }));
+    await waitFor(() => expect(posts).toHaveLength(2), { timeout: 5000 });
+    await waitFor(() => expect(result.current.inFlight.peep?.status).toBe("awaiting"));
+    socket.dispatch("ventilator:command-status", status("c2", "ACKED"));
+    expect(result.current.sentBase?.values.fio2).toBe(40);
+
+    // A later change rejected: the acknowledged snapshot stays the base.
+    acceptPosts("c3");
+    act(() => result.current.onConfirm({ mode: null, changes: [{ parameter: "fio2", value: 60 }] }));
+    await waitFor(() => expect(posts).toHaveLength(3), { timeout: 5000 });
+    await waitFor(() => expect(result.current.inFlight.fio2?.status).toBe("awaiting"));
+    socket.dispatch("ventilator:command-status", status("c3", "REJECTED"));
+    expect(result.current.sentBase?.values.fio2).toBe(40);
+    expect(result.current.reportedValueOf("fio2")).toBe(40);
+    expect(result.current.configUnconfirmed).toBe(false);
+  });
+
+  it("clears the sent snapshot when the history shows a later command of another console (review I1)", async() => {
+    acceptPosts();
+    const socket = createFakeSocket();
+    const { result, rerender } = renderLabHook(
+      ({ canSend }: { canSend: boolean }) => useVentilatorCommands({ reservationId: RESERVATION, canSend, settings: LAB_SETTING_DEFAULTS }),
+      { socket, initialProps: { canSend: true } },
+    );
+
+    socket.dispatch("ventilator:telemetry", { serverTs: 1, frames: [{ serverTs: 1, pressure: 5, flow: 0, volume: 0, deviceId: "esp" }] });
+
+    const changes = Object.entries(result.current.initialProposal?.values ?? {}).map(([parameter, value]) => ({ parameter, value }));
+
+    act(() => result.current.onConfirm({ mode: "VCV", changes }));
+    await waitFor(() => expect(result.current.inFlight.peep?.status).toBe("awaiting"), { timeout: 5000 });
+    socket.dispatch("ventilator:command-status", status("c1", "ACKED"));
+    expect(result.current.initialConfigRequired).toBe(false);
+
+    // The control passes to another operator, who sends a command; this console takes the control back.
+    history = [historyDto("other-1", "ACKED"), historyDto("c1", "ACKED")];
+    rerender({ canSend: false });
+    rerender({ canSend: true });
+
+    await waitFor(() => expect(result.current.initialConfigRequired).toBe(true));
+    expect(result.current.sentBase).toBeNull();
+    expect(result.current.notice?.message).toBe(COMMAND_STATE_COPY.sentSuperseded);
+  });
+
+  it("after regaining the control sends nothing until the history read settles, and a failed read clears the base (review R1 round 2)", async() => {
+    acceptPosts();
+    const socket = createFakeSocket();
+    const { result, rerender } = renderLabHook(
+      ({ canSend }: { canSend: boolean }) => useVentilatorCommands({ reservationId: RESERVATION, canSend, settings: LAB_SETTING_DEFAULTS }),
+      { socket, initialProps: { canSend: true } },
+    );
+
+    socket.dispatch("ventilator:telemetry", { serverTs: 1, frames: [{ serverTs: 1, pressure: 5, flow: 0, volume: 0, deviceId: "esp" }] });
+
+    const changes = Object.entries(result.current.initialProposal?.values ?? {}).map(([parameter, value]) => ({ parameter, value }));
+
+    act(() => result.current.onConfirm({ mode: "VCV", changes }));
+    await waitFor(() => expect(result.current.inFlight.peep?.status).toBe("awaiting"), { timeout: 5000 });
+    socket.dispatch("ventilator:command-status", status("c1", "ACKED"));
+    expect(result.current.initialConfigRequired).toBe(false);
+
+    // The history read after regaining the control is slow, then fails.
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+
+    server.use(http.get(apiUrl("/api/ventilator/commands"), async() => {
+      await gate;
+
+      return HttpResponse.json({ success: false, message: "boom", data: null, code: "boom", timestamp: "", traceId: "t", pagination: null }, { status: 500 });
+    }));
+    rerender({ canSend: false });
+    rerender({ canSend: true });
+
+    expect(result.current.canSubmitNow).toBe(false);
+    let submitted: ReturnType<VentilatorCommands["submit"]> | null = null;
+
+    act(() => {
+      submitted = result.current.submit({ mode: null, changes: [{ parameter: "fio2", value: 50 }] });
+    });
+    expect(submitted).toEqual({ sent: false, busy: true });
+    expect(posts).toHaveLength(1);
+
+    release();
+    await waitFor(() => expect(result.current.initialConfigRequired).toBe(true));
+    expect(result.current.sentBase).toBeNull();
+    expect(result.current.notice?.message).toBe(COMMAND_STATE_COPY.historyUnreadable);
+    expect(result.current.canSubmitNow).toBe(true);
+  });
+
+  it("a regain while the previous history read is in flight waits for the read of the latest regain (review R1 round 3, M-D)", async() => {
+    acceptPosts();
+    const socket = createFakeSocket();
+    const { result, rerender } = renderLabHook(
+      ({ canSend }: { canSend: boolean }) => useVentilatorCommands({ reservationId: RESERVATION, canSend, settings: LAB_SETTING_DEFAULTS }),
+      { socket, initialProps: { canSend: true } },
+    );
+
+    socket.dispatch("ventilator:telemetry", { serverTs: 1, frames: [{ serverTs: 1, pressure: 5, flow: 0, volume: 0, deviceId: "esp" }] });
+
+    const changes = Object.entries(result.current.initialProposal?.values ?? {}).map(([parameter, value]) => ({ parameter, value }));
+
+    act(() => result.current.onConfirm({ mode: "VCV", changes }));
+    await waitFor(() => expect(result.current.inFlight.peep?.status).toBe("awaiting"), { timeout: 5000 });
+    socket.dispatch("ventilator:command-status", status("c1", "ACKED"));
+    expect(result.current.initialConfigRequired).toBe(false);
+
+    // Let the revalidation after the ACKED status settle, then every history read waits until the test answers it;
+    // once open, reads answer the current history.
+    await act(async() => {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+    const pending: Array<(items: VentilatorCommandDTO[]) => void> = [];
+    let open = false;
+
+    server.use(http.get(apiUrl("/api/ventilator/commands"), async() => {
+      if (open) {
+        return HttpResponse.json(envelope(history));
+      }
+
+      const items = await new Promise<VentilatorCommandDTO[]>((resolve) => {
+        pending.push(resolve);
+      });
+
+      return HttpResponse.json(envelope(items));
+    }));
+
+    // Regain, lose and regain again while the first read is still pending.
+    rerender({ canSend: false });
+    rerender({ canSend: true });
+    await waitFor(() => expect(pending).toHaveLength(1));
+    rerender({ canSend: false });
+    rerender({ canSend: true });
+    await waitFor(() => expect(pending).toHaveLength(2));
+
+    // The first read (requested before the other operator's command) does not end the wait.
+    await act(async() => {
+      pending[0]?.([historyDto("c1", "ACKED")]);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
+    expect(result.current.canSubmitNow).toBe(false);
+    expect(result.current.initialConfigRequired).toBe(false);
+
+    let submitted: ReturnType<VentilatorCommands["submit"]> | null = null;
+
+    act(() => {
+      submitted = result.current.submit({ mode: null, changes: [{ parameter: "fio2", value: 50 }] });
+    });
+    expect(submitted).toEqual({ sent: false, busy: true });
+    expect(posts).toHaveLength(1);
+
+    // The read of the latest regain shows the other operator's command: it is used and sending is allowed again.
+    history = [historyDto("other-1", "ACKED"), historyDto("c1", "ACKED")];
+    open = true;
+    pending[1]?.(history);
+    await waitFor(() => expect(result.current.canSubmitNow).toBe(true));
+    expect(result.current.initialConfigRequired).toBe(true);
+    expect(result.current.sentBase).toBeNull();
+    expect(result.current.notice?.message).toBe(COMMAND_STATE_COPY.sentSuperseded);
   });
 
   it("merges the history read with the live statuses", async() => {

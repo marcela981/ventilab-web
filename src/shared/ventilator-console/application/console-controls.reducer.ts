@@ -1,7 +1,7 @@
 /*
 * Funcionalidad: Console controls reducer
-* Descripción: Pure state of the real-device control pattern of the ventilator console: the selected parameter, the pending (unconfirmed) parameter values and the pending mode. Adjustments step or set a value clamped and snapped to the injected limit; a value back at the applied one stops being pending; a mode change makes the mode pending and drops pending values of parameters that no longer apply; reset clears everything (after confirm or cancel). Also the keyboard mapping (arrows, PageUp/PageDown ×10, Home/End) and the confirmation diff. Emits nothing itself: the component calls onConfirm with buildConfirmation, which ignores values and a mode the source already applied. A step that is zero, negative or not finite disables snapping; steps in exponent form keep their precision. v1.2: without a valid step grid the step keys (arrows, PageUp/PageDown) map to nothing and a step adjustment leaves the state unchanged; hasStepGrid is exported. Depends only on the console contract types.
-* Versión: 1.2
+* Descripción: Pure state of the real-device control pattern of the ventilator console: the selected parameter, the pending (unconfirmed) parameter values and the pending mode. Adjustments step or set a value clamped and snapped to the injected limit; a value back at the applied one stops being pending; a mode change makes the mode pending and drops pending values of parameters that no longer apply; reset clears everything (after confirm or cancel). Also the keyboard mapping (arrows, PageUp/PageDown ×10, Home/End) and the confirmation diff. Emits nothing itself: the component calls onConfirm with buildConfirmation, which ignores values and a mode the source already applied. A step that is zero, negative or not finite disables snapping; steps in exponent form keep their precision. v1.2: without a valid step grid the step keys (arrows, PageUp/PageDown) map to nothing and a step adjustment leaves the state unchanged; hasStepGrid is exported. Depends only on the console contract types. v1.3 (2026-11-10): `propose` replaces the pending edits with a source's initial configuration (ConsoleProposal), and an adjustment with `keep` stays pending even at its base (a proposed value the source never applied).
+* Versión: 1.3
 * Autor: Marcela Mazo Castro
 * Proyecto: VentyLab
 * Tesis: Desarrollo de una aplicación web para la enseñanza de mecánica ventilatoria que integre un sistema de retroalimentación usando modelos de lenguaje
@@ -20,12 +20,17 @@ export type ControlsState = {
 
 export const INITIAL_CONTROLS_STATE: ControlsState = { selected: null, pendingValues: {}, pendingMode: null };
 
-/** `base` is the applied value the pending one is compared with. */
+/**
+ * `base` is the applied value the pending one is compared with; v1.3: with `keep` the value stays pending even at
+ * `base` (a proposed value the source never applied).
+ */
 export type ControlsAction =
   | { type: "select", parameter: string | null }
-  | { type: "adjust", parameter: string, steps: number, base: number, limit: ParameterLimit }
-  | { type: "setValue", parameter: string, value: number, base: number, limit: ParameterLimit }
+  | { type: "adjust", parameter: string, steps: number, base: number, limit: ParameterLimit, keep?: boolean }
+  | { type: "setValue", parameter: string, value: number, base: number, limit: ParameterLimit, keep?: boolean }
   | { type: "selectMode", mode: string, appliedMode: string, applicable: readonly string[] }
+  /** v1.3: the source's initial configuration becomes the pending edits. */
+  | { type: "propose", mode: string | null, values: Readonly<Record<string, number>> }
   | { type: "reset" };
 
 export type Adjustment = { kind: "steps", steps: number } | { kind: "value", value: number };
@@ -87,9 +92,9 @@ export function keyToAdjustment(key: string, limit: ParameterLimit): Adjustment 
   }
 }
 
-function withPending(state: ControlsState, parameter: string, value: number, base: number): ControlsState {
+function withPending(state: ControlsState, parameter: string, value: number, base: number, keep = false): ControlsState {
   const others = Object.fromEntries(Object.entries(state.pendingValues).filter(([id]) => id !== parameter));
-  const pendingValues = value === base ? others : { ...others, [parameter]: value };
+  const pendingValues = value === base && !keep ? others : { ...others, [parameter]: value };
 
   return { ...state, selected: parameter, pendingValues };
 }
@@ -107,10 +112,10 @@ export function controlsReducer(state: ControlsState, action: ControlsAction): C
       const from = state.pendingValues[action.parameter] ?? action.base;
       const value = clampToLimit(from + action.steps * action.limit.step, action.limit);
 
-      return withPending(state, action.parameter, value, action.base);
+      return withPending(state, action.parameter, value, action.base, action.keep);
     }
     case "setValue":
-      return withPending(state, action.parameter, clampToLimit(action.value, action.limit), action.base);
+      return withPending(state, action.parameter, clampToLimit(action.value, action.limit), action.base, action.keep);
     case "selectMode": {
       const applicable = new Set(action.applicable);
       const pendingValues = Object.fromEntries(Object.entries(state.pendingValues).filter(([parameter]) => applicable.has(parameter)));
@@ -118,6 +123,8 @@ export function controlsReducer(state: ControlsState, action: ControlsAction): C
 
       return { selected, pendingValues, pendingMode: action.mode === action.appliedMode ? null : action.mode };
     }
+    case "propose":
+      return { selected: null, pendingValues: { ...action.values }, pendingMode: action.mode };
     case "reset":
       return INITIAL_CONTROLS_STATE;
   }
